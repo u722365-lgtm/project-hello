@@ -127,7 +127,6 @@ export function useAgenticToolDispatch() {
 
         case "document_generator":
         case "presentation_builder":
-        case "code_canvas":
         case "strategy_agent":
           navigate(
             tool === "presentation_builder"
@@ -136,6 +135,10 @@ export function useAgenticToolDispatch() {
                 ? "/strategy"
                 : "/workspace"
           );
+          return { handled: true };
+
+        case "code_canvas":
+          navigate("/ide");
           return { handled: true };
 
         default:

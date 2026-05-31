@@ -12,6 +12,7 @@ const VOICE_ROUTES = [
   { path: "/pricing", names: ["pricing", "plans", "prices", "subscription"] },
   { path: "/strategy", names: ["strategy", "strategy agent", "business strategy"] },
   { path: "/workspace", names: ["workspace", "ai workspace", "work space"] },
+  { path: "/ide", names: ["ide", "code ide", "code editor", "open ide"] },
   { path: "/marketplace", names: ["marketplace", "market place", "store", "agents"] },
   { path: "/missioncontrol", names: ["mission control", "missions", "mission"] },
   { path: "/presentations", names: ["presentations", "slides", "presentation builder"] },

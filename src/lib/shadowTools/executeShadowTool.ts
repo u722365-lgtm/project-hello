@@ -68,6 +68,7 @@ const UI_ROUTES: Partial<Record<ToolType, { path: string; label: string }>> = {
   mission_control: { path: "/missioncontrol", label: "Mission Control (S.E.E.)" },
   strategy_agent: { path: "/strategy", label: "Strategy Agent" },
   workspace: { path: "/workspace", label: "AI Workspace" },
+  ide: { path: "/ide", label: "Code IDE" },
   marketplace: { path: "/marketplace", label: "Marketplace" },
   presentation_builder: { path: "/presentations", label: "Presentation Builder" },
   knowledge_vault: { path: "/knowledge", label: "Knowledge Graph" },

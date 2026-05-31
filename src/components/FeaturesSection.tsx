@@ -83,7 +83,7 @@ const FeaturesSection = () => {
     {
       icon: Code,
       title: "Code Generator",
-      href: "/workspace",
+      href: "/ide",
       description: "Generate, debug, and optimize code in any programming language with an in-browser IDE.",
       gradient: "from-destructive/20 to-destructive/5",
       iconColor: "text-destructive",

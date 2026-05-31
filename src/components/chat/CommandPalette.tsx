@@ -267,8 +267,8 @@ export const CommandPalette = ({ open, onOpenChange, onAction }: CommandPaletteP
     },
     {
       id: "code-workspace",
-      label: "Code Workspace",
-      description: "Full IDE with execution",
+      label: "Code IDE",
+      description: "Monaco editor, preview, and project templates",
       icon: <Code className="h-4 w-4" />,
       shortcut: "⌘⇧E",
       category: "Productivity",
@@ -567,6 +567,15 @@ export const CommandPalette = ({ open, onOpenChange, onAction }: CommandPaletteP
       category: "Productivity",
       action: () => navigate("/workspace"),
       keywords: ["workspace", "persistent", "memory", "context"],
+    },
+    {
+      id: "code-ide",
+      label: "Code IDE",
+      description: "In-browser Monaco IDE with live preview",
+      icon: <Code className="h-4 w-4" />,
+      category: "Productivity",
+      action: () => navigate("/ide"),
+      keywords: ["ide", "code", "editor", "monaco", "programming"],
     },
     
     // Collaboration Rooms (already exists but adding Chat Rooms link)

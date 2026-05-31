@@ -22,7 +22,8 @@ const pages = [
   { name: "Chatbot", href: "/chatbot", icon: MessageSquare, desc: "AI chat assistant" },
   { name: "Pricing", href: "/pricing", icon: Shield, desc: "Plans & pricing" },
   { name: "Strategy Agent", href: "/strategy", icon: Brain, desc: "AI strategy advisor" },
-  { name: "AI Workspace", href: "/workspace", icon: Sparkles, desc: "Collaborative workspace" },
+  { name: "AI Workspace", href: "/workspace", icon: Sparkles, desc: "Business memory & context" },
+  { name: "Code IDE", href: "/ide", icon: Code, desc: "Monaco editor & live preview" },
   { name: "Marketplace", href: "/marketplace", icon: Store, desc: "Agent marketplace" },
   { name: "Mission Control", href: "/missioncontrol", icon: Target, desc: "Manage missions" },
   { name: "Presentations", href: "/presentations", icon: Presentation, desc: "Build presentations" },
@@ -93,7 +94,9 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ open, onOpenChange }) =
     onOpenChange(false);
   }, [navigate, onOpenChange]);
 
-  const core = pages.filter(p => ["/chatbot", "/workspace", "/strategy", "/pricing", "/marketplace", "/missioncontrol"].includes(p.href));
+  const core = pages.filter(p =>
+    ["/chatbot", "/ide", "/workspace", "/strategy", "/pricing", "/marketplace", "/missioncontrol"].includes(p.href),
+  );
   const tools = pages.filter(p => ["/presentations", "/developers", "/research", "/knowledge", "/strategy-lab", "/command-center", "/security-audit", "/data-insights"].includes(p.href));
   const rest = pages.filter(p => !core.includes(p) && !tools.includes(p));
 

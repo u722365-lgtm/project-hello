@@ -68,6 +68,7 @@ function getPageName(path: string): string {
     '/business-memory': 'Business Memory',
     '/shadow-memory': 'Shadow Memory',
     '/workspace': 'AI Workspace',
+    '/ide': 'Code IDE',
     '/strategy': 'Strategy Agent',
     '/billing': 'Billing',
     '/analytics': 'Analytics',
