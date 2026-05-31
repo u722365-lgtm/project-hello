@@ -696,7 +696,7 @@ const ChatbotPage = () => {
       setUpgradeOpen(true);
       toast({
         title: "Daily limit reached",
-        description: "Upgrade to Pro ($5/mo) or Premium ($15/mo) for unlimited messages.",
+        description: "Premium ($15/mo) unlocks unlimited messages and Mission Control — best value for daily use.",
         variant: "destructive",
       });
       return;
@@ -999,7 +999,7 @@ const ChatbotPage = () => {
             open={upgradeOpen}
             onOpenChange={setUpgradeOpen}
             limitReached={nudge.shouldBlockSend}
-            requiredPlan="pro"
+            requiredPlan="premium"
           />
           <div className={`flex-1 overflow-hidden relative flex flex-col ${isEmptyChat ? "justify-center" : ""}`}>
             <AnimatePresence mode="wait">
