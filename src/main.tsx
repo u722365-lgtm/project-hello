@@ -5,6 +5,7 @@
  import "./index.css";
  import { initPerformanceMonitoring, deferNonCritical } from "./lib/performance";
  import { configureTransformersEnv, warmWebGPUProbe } from "./lib/webgpuRuntime";
+ import { warmHardwareProfile, prewarmFastestLocalPath } from "./lib/hardwareIntelligence";
  
  // Environment validation
  const validateEnvironment = () => {
@@ -45,6 +46,8 @@
  deferNonCritical(() => {
    void configureTransformersEnv();
    warmWebGPUProbe();
+   warmHardwareProfile();
+   prewarmFastestLocalPath();
  });
 
  // Defer non-critical initialization

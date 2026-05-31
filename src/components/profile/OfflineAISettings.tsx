@@ -11,6 +11,7 @@ import { useGemmaOffline } from "@/hooks/useGemmaOffline";
 import { useToast } from "@/hooks/use-toast";
 import { deleteModel, getModelStatus, isOpfsAvailable, type ModelStatus } from "@/lib/offline/opfsModelStore";
 import type { GemmaModelKey } from "@/lib/offline/gemmaEngine";
+import { useHardwareIntelligence } from "@/hooks/useHardwareIntelligence";
 
 /**
  * Settings panel — Opt-in download of on-device Gemma + routing preferences.
@@ -34,6 +35,7 @@ export const OfflineAISettings = () => {
     activeDevice,
     activeDeviceLabel,
   } = useGemmaOffline();
+  const { profile: hwProfile } = useHardwareIntelligence();
   const { toast } = useToast();
   const [opfsOk, setOpfsOk] = useState(true);
   const [storedStatus, setStoredStatus] = useState<ModelStatus | null>(null);
@@ -107,6 +109,19 @@ export const OfflineAISettings = () => {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        {hwProfile && (
+          <div className="rounded-md border border-primary/30 bg-primary/5 p-3 text-xs">
+            <div className="font-medium text-foreground">Recommended speed path</div>
+            <p className="text-muted-foreground mt-1">{hwProfile.summary}</p>
+            <p className="text-muted-foreground mt-1">
+              CPU {hwProfile.cpuScore}/100 · GPU {hwProfile.gpuScore}/100 ·{" "}
+              {hwProfile.path === "cloud"
+                ? "Cloud chat is fastest on this device when online"
+                : "Download a model below to unlock GPU/CPU turbo"}
+            </p>
+          </div>
+        )}
+
         {/* Capability summary */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
           <div className="rounded-md border p-2">

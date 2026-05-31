@@ -2,18 +2,17 @@
  * Hybrid Cloud-Local Router (Option B from Shadowoffline blueprint)
  * --------------------------------------------------
  * Decides whether a chat completion runs on-device (Gemma via WebGPU) or in
- * the cloud (Lovable AI Gateway). The decision is based on:
- *   1. Network connectivity   → offline ⇒ local (if engine ready)
- *   2. User preference        → "force-local" ⇒ local
- *   3. Engine readiness       → not ready ⇒ cloud
- *   4. Heuristic complexity   → very long / structured → cloud
- *
- * This module purposefully does NOT call the cloud itself; instead it returns
- * a routing decision so the existing ChatbotPage cloud pipeline keeps owning
- * the network/auth concerns.
+ * the cloud (Lovable AI Gateway). Uses hardware intelligence for speed:
+ *   - Turbo GPU / fast CPU → prefer local when model is ready
+ *   - Weak devices + online → cloud for fastest first token
  */
 
-import { getGemmaEngine } from "./gemmaEngine";
+import { isAnyLocalModelReady } from "./localChat";
+import {
+  getCachedHardwareProfile,
+  shouldPreferLocalInference,
+  type HardwareProfile,
+} from "@/lib/hardwareIntelligence";
 
 export type RoutingMode = "auto" | "local-only" | "cloud-only";
 
@@ -44,7 +43,6 @@ export type LocalModelKey = "default" | "e2b" | "e4b";
 export function getPreferredLocalModel(): LocalModelKey {
   const v = localStorage.getItem(PREF_MODEL_KEY);
   if (v === "e2b" || v === "e4b" || v === "default") return v;
-  // Migrate legacy values
   return "e2b";
 }
 
@@ -54,11 +52,18 @@ export function setPreferredLocalModel(key: LocalModelKey) {
 
 function isComplex(messages: RouterMessage[]): boolean {
   const last = messages[messages.length - 1]?.content ?? "";
-  if (last.length > 4000) return true; // very long prompt
-  // Multi-turn with very large context — cloud handles long context better
+  if (last.length > 4000) return true;
   const totalChars = messages.reduce((s, m) => s + m.content.length, 0);
   if (totalChars > 12000) return true;
   return false;
+}
+
+function hardwareWantsLocal(profile: HardwareProfile | null): boolean {
+  if (!profile) return false;
+  if (profile.path === "cloud") return false;
+  if (profile.path === "local-webgpu" || profile.path === "local-wasm") return true;
+  // hybrid: local for simple when turbo/performance tier
+  return profile.tier === "turbo" || profile.tier === "performance";
 }
 
 export function decideRoute(
@@ -67,6 +72,8 @@ export function decideRoute(
 ): RoutingDecision {
   const mode = getRoutingMode();
   const localReady = isAnyLocalModelReady();
+  const profile = getCachedHardwareProfile();
+  const preferLocalHw = shouldPreferLocalInference(profile) && hardwareWantsLocal(profile);
 
   if (mode === "cloud-only") {
     return { target: "cloud", reason: "User forced cloud-only mode" };
@@ -88,9 +95,33 @@ export function decideRoute(
     };
   }
 
-  // Auto mode (online): use local for simple queries when Tier A/B is ready
+  // Auto mode (online)
   if (localReady && !isComplex(messages)) {
-    return { target: "local", reason: "Auto: simple query handled on-device for privacy" };
+    if (preferLocalHw) {
+      const hw = profile?.summary ?? "fast hardware";
+      return { target: "local", reason: `Turbo path: ${hw}` };
+    }
+    // Mid-tier: still allow local for privacy on simple prompts
+    if (profile?.tier === "balanced") {
+      return { target: "local", reason: "Balanced hardware — on-device for simple chat" };
+    }
   }
-  return { target: "cloud", reason: "Auto: cloud chosen (complex query or model not loaded)" };
+
+  if (localReady && preferLocalHw && !isComplex(messages)) {
+    return { target: "local", reason: "Hardware-optimized local inference" };
+  }
+
+  if (profile?.path === "cloud" || profile?.tier === "cloud") {
+    return {
+      target: "cloud",
+      reason: "Cloud turbo — fastest on this device for quality responses",
+    };
+  }
+
+  return {
+    target: "cloud",
+    reason: localReady
+      ? "Cloud chosen (complex query or hardware profile)"
+      : "Cloud (load a local model in Profile for GPU/CPU turbo)",
+  };
 }

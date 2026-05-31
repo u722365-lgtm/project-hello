@@ -17,11 +17,13 @@ import {
 import {
   configureTransformersEnv,
   deviceLabel,
+  getAccelerationPreference,
   getDeviceMemoryGb,
   probeWebGPU,
   resolveComputeDevice,
   type ComputeDevice,
 } from "@/lib/webgpuRuntime";
+import { buildHardwareProfile, detectHardwareProfile } from "@/lib/hardwareIntelligence";
 
 export type EngineCapabilities = {
   webgpu: boolean;
@@ -67,12 +69,12 @@ export const GEMMA_MODELS = {
 export type GemmaModelKey = keyof typeof GEMMA_MODELS;
 
 export async function detectCapabilities(): Promise<EngineCapabilities> {
+  const profile = await detectHardwareProfile();
   const probe = await probeWebGPU();
-  const recommendedDevice = resolveComputeDevice(probe);
   return {
     webgpu: probe.available,
     wasm: true,
-    recommendedDevice,
+    recommendedDevice: profile.computeDevice,
     memoryGB: getDeviceMemoryGb(),
     gpuLabel: probe.adapterLabel,
   };
@@ -173,7 +175,10 @@ export class GemmaEngine {
       try {
         await configureTransformersEnv();
         const probe = await probeWebGPU();
-        let device = resolveComputeDevice(probe);
+        const pref = getAccelerationPreference();
+        const profile = buildHardwareProfile(probe);
+        let device: ComputeDevice =
+          pref === "auto" ? profile.computeDevice : resolveComputeDevice(probe, pref);
         this.device = device;
         this.deviceLabel = deviceLabel(device, probe);
 
