@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { 
   Search, Image, Play, Wand2, Globe, Shield, FileText, Music, 
   Brain, Camera, Table, Calculator, Mic, Eye, Zap, CheckCircle2, 
-  Loader2, AlertCircle, ExternalLink
+  Loader2, AlertCircle, ExternalLink, Layout
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ToolType } from '@/hooks/useToolOrchestrator';
@@ -34,6 +34,7 @@ const TOOL_META: Record<string, { label: string; icon: React.ElementType; color:
   calculator: { label: 'Calculator', icon: Calculator, color: 'text-emerald-400' },
   shadow_live: { label: 'Voice Chat', icon: Mic, color: 'text-violet-400' },
   code_canvas: { label: 'Code Editor', icon: Zap, color: 'text-yellow-400' },
+  app_builder: { label: 'App Builder', icon: Layout, color: 'text-indigo-400' },
   daily_planner: { label: 'Daily Planner', icon: FileText, color: 'text-sky-400' },
   presentation_builder: { label: 'Presentations', icon: FileText, color: 'text-orange-400' },
   eco_actions: { label: 'Eco Actions', icon: Globe, color: 'text-green-400' },

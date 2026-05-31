@@ -173,6 +173,7 @@ export function useShadowToolBridge(handlers: ShadowToolUIHandlers) {
 | **Research** | "research competitors in …", "deep dive on …" |
 | **Images** | "generate an image of …", "analyze this image" (attach file) |
 | **Code** | "write a React component …", "debug this code" |
+| **Apps** | "build a mobile app for …", "create a full web app …" (opens multi-file IDE) |
 | **Security** | "security audit https://…", paste code in HSCA mode |
 | **Web** | "scrape https://…", "browse …" |
 | **Missions** | "run a mission to …", "mission control" |

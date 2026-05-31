@@ -12,6 +12,7 @@ const IdePage = () => {
 
   const initialCode = payload?.code;
   const language = payload?.language ?? "javascript";
+  const initialProject = payload?.project;
 
   const handleClose = () => {
     if (window.history.length > 1) navigate(-1);
@@ -23,8 +24,9 @@ const IdePage = () => {
       <SEOHead meta={PAGE_SEO.ide} />
       <div className="min-h-[100dvh] bg-background">
         <PersonalIDE
-          initialCode={initialCode}
+          initialCode={initialProject ? undefined : initialCode}
           language={language}
+          initialProject={initialProject}
           onClose={handleClose}
           defaultOutputPanel="preview"
         />

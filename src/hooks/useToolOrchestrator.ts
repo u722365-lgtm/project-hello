@@ -12,6 +12,7 @@ export type ToolType =
   | 'multi_model'
   | 'api_marketplace'
   | 'code_canvas'
+  | 'app_builder'
   | 'analytics'
   | 'stealth_vault'
   | 'data_organizer'
@@ -198,9 +199,29 @@ const TOOL_PATTERNS: Array<{
     }
   },
   {
+    tool: 'app_builder',
+    patterns: [
+      /\b(build|create|make|generate|scaffold|develop)\s+(?:me\s+)?(?:a\s+)?(?:entire|full|complete|whole\s+)?(?:mobile|web|ios|android)?\s*(?:app|application|website|web\s*app|mobile\s*app)/i,
+      /\b(build|create|make)\s+(?:a\s+)?(?:todo|fitness|e-?commerce|social|chat|dashboard|saas|landing)\s+app/i,
+      /\b(generate|scaffold)\s+(?:a\s+)?(?:full|complete)\s+(?:web|mobile)\s+(?:app|application|project)/i,
+      /\bcreate\s+(?:an?\s+)?(?:entire|full)\s+(?:website|web\s+application)/i,
+    ],
+    priority: 9,
+    autoExecute: true,
+    extractParams: (msg) => {
+      const mobile = /\b(mobile|ios|android|iphone|pwa)\b/i.test(msg);
+      const web = /\b(web|website|landing|saas|browser)\b/i.test(msg);
+      return {
+        platform: mobile && !web ? "mobile" : "web",
+        prompt: msg,
+      };
+    },
+  },
+  {
     tool: 'code_canvas',
     patterns: [
-      /\b(write|create|generate|build)\s+(?:some\s+)?(?:code|program|script|function|app|application)/i,
+      /\b(write|create|generate|build)\s+(?:some\s+)?(?:code|program|script|function)(?!\s+(?:mobile|web)\s+app)/i,
+      /\b(write|create|generate|build)\s+(?:a\s+)?(?:python|javascript|typescript|react|java|c\+\+)\s+(?:script|function|component)/i,
       /\b(code|program|develop|implement)\s+(?:a\s+|an\s+)?(?:\w+\s+)?(?:in\s+)?(?:python|javascript|typescript|react|java|c\+\+)/i,
       /\b(fix|debug|refactor)\s+(?:this\s+)?code/i,
       /\bopen\s+(?:the\s+)?code\s+(?:editor|canvas|workspace)/i,

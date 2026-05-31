@@ -39,9 +39,17 @@ interface ConsoleLog {
   timestamp: Date;
 }
 
+export interface IDEInitialProject {
+  title?: string;
+  platform?: "web" | "mobile";
+  files: Array<{ name: string; language: string; content: string }>;
+}
+
 interface PersonalIDEProps {
   initialCode?: string;
   language?: string;
+  /** Full multi-file project from App Builder */
+  initialProject?: IDEInitialProject;
   onClose: () => void;
   /** Which bottom panel to show first (e.g. preview for HTML from chat). */
   defaultOutputPanel?: "console" | "preview" | "terminal";
@@ -166,6 +174,7 @@ const getFileIcon = (lang: string) => FILE_ICONS[lang] || FILE_ICONS.default;
 export const PersonalIDE = ({
   initialCode,
   language,
+  initialProject,
   onClose,
   defaultOutputPanel = "preview",
 }: PersonalIDEProps) => {
@@ -174,6 +183,11 @@ export const PersonalIDE = ({
   
   // Determine initial files
   const getInitialFiles = (): IDEFile[] => {
+    if (initialProject?.files?.length) {
+      return initialProject.files.map((f) =>
+        createFile(f.name, f.language, f.content),
+      );
+    }
     if (initialCode && language) {
       const lang = LANG_MAP[language.toLowerCase()] || language.toLowerCase();
       return [createFile(`main.${EXT_MAP[lang] || "txt"}`, lang, initialCode)];
@@ -192,11 +206,13 @@ export const PersonalIDE = ({
   );
   const [theme, setTheme] = useState("vs-dark");
   const [previewHtml, setPreviewHtml] = useState("");
-  const [viewportPreset, setViewportPreset] = useState("desktop");
+  const [viewportPreset, setViewportPreset] = useState(
+    initialProject?.platform === "mobile" ? "mobile" : "desktop",
+  );
   const [showSettings, setShowSettings] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
-  const [showTemplates, setShowTemplates] = useState(!initialCode);
+  const [showTemplates, setShowTemplates] = useState(!initialCode && !initialProject?.files?.length);
   const [isAIAssisting, setIsAIAssisting] = useState(false);
   const [copied, setCopied] = useState(false);
 
