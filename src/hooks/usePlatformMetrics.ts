@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { formatMetricCount } from "@/lib/formatMetrics";
+import {
+  buildCommunityHighlights,
+  type CommunityHighlight,
+  type PlatformMetrics,
+} from "@/lib/platformMetricsShared";
+import { usePlatformMetricsContext } from "@/contexts/PlatformMetricsContext";
 
-export interface PlatformMetrics {
-  totalUsers: number;
-  dailyActiveUsers: number;
-  totalConversations: number;
-  isLoading: boolean;
-}
+export type { CommunityHighlight, PlatformMetrics };
+export { buildCommunityHighlights };
 
 const initial: PlatformMetrics = {
   totalUsers: 0,
@@ -17,9 +18,12 @@ const initial: PlatformMetrics = {
 };
 
 export function usePlatformMetrics(): PlatformMetrics {
+  const shared = usePlatformMetricsContext();
   const [metrics, setMetrics] = useState<PlatformMetrics>(initial);
 
   useEffect(() => {
+    if (shared) return;
+
     let cancelled = false;
 
     const load = async () => {
@@ -28,7 +32,7 @@ export function usePlatformMetrics(): PlatformMetrics {
       const [usersRes, convsRes, activityRes] = await Promise.all([
         supabase.from("profiles").select("id", { count: "exact", head: true }),
         supabase.from("conversations").select("id", { count: "exact", head: true }),
-        supabase.from("usage_analytics").select("user_id").gte("created_at", dayAgo).limit(5000),
+        supabase.from("usage_analytics").select("user_id").gte("created_at", dayAgo).limit(400),
       ]);
 
       if (cancelled) return;
@@ -43,52 +47,20 @@ export function usePlatformMetrics(): PlatformMetrics {
       });
     };
 
-    load();
+    const start = () => void load();
+    if (typeof window.requestIdleCallback === "function") {
+      const id = window.requestIdleCallback(start, { timeout: 3000 });
+      return () => {
+        cancelled = true;
+        window.cancelIdleCallback(id);
+      };
+    }
+    const t = window.setTimeout(start, 500);
     return () => {
       cancelled = true;
+      window.clearTimeout(t);
     };
-  }, []);
+  }, [shared]);
 
-  return metrics;
-}
-
-export type CommunityHighlight = {
-  label: string;
-  value: string;
-  description: string;
-};
-
-export function buildCommunityHighlights(metrics: PlatformMetrics): CommunityHighlight[] {
-  const usersDisplay = metrics.isLoading ? "…" : formatMetricCount(metrics.totalUsers);
-  const dauDisplay = metrics.isLoading ? "…" : formatMetricCount(metrics.dailyActiveUsers);
-  const convDisplay = metrics.isLoading ? "…" : formatMetricCount(metrics.totalConversations);
-
-  return [
-    {
-      label: "ShadowTalk users",
-      value: usersDisplay,
-      description: metrics.totalUsers
-        ? `${metrics.totalUsers.toLocaleString()} creators and teams on the platform.`
-        : "Be among the first builders on the platform.",
-    },
-    {
-      label: "Daily active users",
-      value: dauDisplay,
-      description: metrics.dailyActiveUsers
-        ? "People who used ShadowTalk in the last 24 hours — from live analytics."
-        : "Daily active count updates from usage analytics.",
-    },
-    {
-      label: "AI conversations",
-      value: convDisplay,
-      description: metrics.totalConversations
-        ? `${metrics.totalConversations.toLocaleString()} conversations stored on the platform.`
-        : "Conversation count grows with every chat you start.",
-    },
-    {
-      label: "Ship cadence",
-      value: "Weekly",
-      description: "Features and fixes driven by what you actually use.",
-    },
-  ];
+  return shared ?? metrics;
 }

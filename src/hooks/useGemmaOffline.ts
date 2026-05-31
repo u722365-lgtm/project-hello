@@ -29,6 +29,7 @@ import {
   type RoutingMode,
 } from "@/lib/offline/hybridRouter";
 import { requestPersistentStorage } from "@/lib/offline/opfsModelStore";
+import { ACCELERATION_CHANGE_EVENT } from "@/lib/webgpuRuntime";
 
 export interface UseGemmaOfflineState {
   isOnline: boolean;
@@ -40,6 +41,8 @@ export interface UseGemmaOfflineState {
   routingMode: RoutingMode;
   preferredModel: GemmaModelKey;
   activeModelLabel: string;
+  activeDevice: "webgpu" | "wasm" | null;
+  activeDeviceLabel: string | null;
 }
 
 export function useGemmaOffline() {
@@ -53,6 +56,8 @@ export function useGemmaOffline() {
   const [preferredModel, setPreferredModelState] = useState<GemmaModelKey>(
     getPreferredLocalModel() as GemmaModelKey,
   );
+  const [activeDevice, setActiveDevice] = useState<"webgpu" | "wasm" | null>(null);
+  const [activeDeviceLabel, setActiveDeviceLabel] = useState<string | null>(null);
 
   useEffect(() => {
     detectCapabilities().then(setCapabilities).catch(() => null);
@@ -65,16 +70,30 @@ export function useGemmaOffline() {
     const engine = getGemmaEngine();
     setIsReady(engine.isReady);
     setIsLoading(engine.isLoading);
+    if (engine.isReady) {
+      setActiveDevice(engine.activeDevice);
+      setActiveDeviceLabel(engine.activeDeviceLabel);
+    }
     if (engine.progress) setProgress(engine.progress);
     const off = engine.subscribe((p) => {
       setProgress(p);
       setIsLoading(engine.isLoading);
-      if (p.stage === "ready") setIsReady(true);
+      if (p.stage === "ready") {
+        setIsReady(true);
+        setActiveDevice(engine.activeDevice);
+        setActiveDeviceLabel(engine.activeDeviceLabel);
+      }
     });
+
+    const onAccelChange = () => {
+      detectCapabilities().then(setCapabilities).catch(() => null);
+    };
+    window.addEventListener(ACCELERATION_CHANGE_EVENT, onAccelChange);
 
     return () => {
       window.removeEventListener("online", onOnline);
       window.removeEventListener("offline", onOffline);
+      window.removeEventListener(ACCELERATION_CHANGE_EVENT, onAccelChange);
       off();
     };
   }, []);
@@ -145,6 +164,8 @@ export function useGemmaOffline() {
     routingMode,
     preferredModel,
     activeModelLabel: GEMMA_MODELS[preferredModel].label,
+    activeDevice,
+    activeDeviceLabel,
   };
 
   return {

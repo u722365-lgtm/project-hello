@@ -31,6 +31,8 @@ export const OfflineAISettings = () => {
     unloadModel,
     updateRoutingMode,
     updatePreferredModel,
+    activeDevice,
+    activeDeviceLabel,
   } = useGemmaOffline();
   const { toast } = useToast();
   const [opfsOk, setOpfsOk] = useState(true);
@@ -125,6 +127,15 @@ export const OfflineAISettings = () => {
               {isReady ? "Loaded" : isLoading ? "Loading…" : storedStatus ? "Cached" : "Not installed"}
             </div>
           </div>
+          {isReady && activeDeviceLabel && (
+            <div className="rounded-md border p-2 col-span-2 sm:col-span-4">
+              <div className="text-muted-foreground">Accelerator</div>
+              <div className="font-medium">
+                {activeDevice === "webgpu" ? "⚡ " : ""}
+                {activeDeviceLabel}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Model picker */}
@@ -224,7 +235,7 @@ export const OfflineAISettings = () => {
           </div>
           <div className="flex items-center gap-2">
             <Zap className="h-3.5 w-3.5" />
-            WebGPU acceleration available on Chrome/Edge desktop. CPU fallback works elsewhere but is slower.
+            Use the GPU selector in the top nav (Auto / WebGPU / CPU) to control acceleration. Chrome and Edge desktop get the fastest WebGPU path.
           </div>
         </div>
       </CardContent>

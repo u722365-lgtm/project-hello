@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import chatbotLogo from "@/assets/chatbot-logo.png";
 
 interface BootScreenProps {
@@ -11,59 +11,63 @@ type Phase = 'void' | 'emerge' | 'reveal' | 'loading' | 'ascend';
 const GLYPHS = "⟁⟐⟡⟢⟣⟤⟥⬡⬢⬣◇◈◆❖✦✧⊡⊞⊟";
 
 const BootScreen = ({ onComplete }: BootScreenProps) => {
+  const reducedMotion = useReducedMotion();
   const [progress, setProgress] = useState(0);
   const [phase, setPhase] = useState<Phase>('void');
   const [glitchText, setGlitchText] = useState("");
 
+  const particleCount =
+    typeof window !== "undefined" && window.matchMedia("(max-width: 768px)").matches ? 12 : 24;
+
   // Randomized particle positions (stable across renders)
   const particles = useMemo(() => 
-    Array.from({ length: 40 }, (_, i) => ({
+    Array.from({ length: particleCount }, (_, i) => ({
       x: Math.random() * 100,
       y: Math.random() * 100,
       size: Math.random() * 2 + 0.5,
       delay: Math.random() * 3,
       duration: Math.random() * 4 + 3,
       glyph: GLYPHS[Math.floor(Math.random() * GLYPHS.length)],
-    })), []
+    })), [particleCount],
   );
 
   useEffect(() => {
+    if (reducedMotion) {
+      onComplete();
+      return;
+    }
+
+    const totalMs = 2200;
     const timers = [
-      setTimeout(() => setPhase('emerge'), 400),
-      setTimeout(() => setPhase('reveal'), 1000),
-      setTimeout(() => setPhase('loading'), 1600),
-      setTimeout(() => setPhase('ascend'), 4200),
-      setTimeout(onComplete, 4800),
+      setTimeout(() => setPhase('emerge'), 150),
+      setTimeout(() => setPhase('reveal'), 450),
+      setTimeout(() => setPhase('loading'), 700),
+      setTimeout(() => setPhase('ascend'), totalMs - 350),
+      setTimeout(onComplete, totalMs),
     ];
 
     const progressInterval = setInterval(() => {
       setProgress(prev => {
         if (prev >= 100) { clearInterval(progressInterval); return 100; }
-        return prev + Math.random() * 3 + 1.5;
+        return prev + Math.random() * 4 + 2;
       });
-    }, 80);
+    }, 60);
 
-    // Glitch text cycle
     const glitchInterval = setInterval(() => {
       const fragments = [
         "INIT_SOVEREIGN_CORE",
-        "DECRYPT_LAYER_0x7F",
-        "ZERO_KNOWLEDGE_SYNC",
         "NEURAL_MESH_ONLINE",
-        "PHANTOM_PROTOCOL_OK",
-        "E2E_VERIFIED ✓",
         "LOCAL_AI_READY",
-        "KILL_SWITCH_ARMED",
       ];
       setGlitchText(fragments[Math.floor(Math.random() * fragments.length)]);
-    }, 200);
+    }, 400);
 
     return () => {
       timers.forEach(clearTimeout);
       clearInterval(progressInterval);
       clearInterval(glitchInterval);
     };
-  }, [onComplete]);
+  }, [onComplete, reducedMotion]);
 
   const title = "SHADOWTALK";
 

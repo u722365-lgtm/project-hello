@@ -14,12 +14,21 @@ import {
   AutoModelForImageTextToText,
   TextStreamer,
 } from "@huggingface/transformers";
+import {
+  configureTransformersEnv,
+  deviceLabel,
+  getDeviceMemoryGb,
+  probeWebGPU,
+  resolveComputeDevice,
+  type ComputeDevice,
+} from "@/lib/webgpuRuntime";
 
 export type EngineCapabilities = {
   webgpu: boolean;
   wasm: boolean;
-  recommendedDevice: "webgpu" | "wasm";
+  recommendedDevice: ComputeDevice;
   memoryGB: number;
+  gpuLabel: string | null;
 };
 
 export type LoadProgress = {
@@ -58,23 +67,14 @@ export const GEMMA_MODELS = {
 export type GemmaModelKey = keyof typeof GEMMA_MODELS;
 
 export async function detectCapabilities(): Promise<EngineCapabilities> {
-  let webgpu = false;
-  try {
-    if ("gpu" in navigator) {
-      // @ts-ignore - WebGPU types
-      const adapter = await navigator.gpu.requestAdapter();
-      webgpu = !!adapter;
-    }
-  } catch {
-    webgpu = false;
-  }
-  // @ts-expect-error - deviceMemory is non-standard
-  const memoryGB = (navigator.deviceMemory as number | undefined) ?? 4;
+  const probe = await probeWebGPU();
+  const recommendedDevice = resolveComputeDevice(probe);
   return {
-    webgpu,
+    webgpu: probe.available,
     wasm: true,
-    recommendedDevice: webgpu ? "webgpu" : "wasm",
-    memoryGB,
+    recommendedDevice,
+    memoryGB: getDeviceMemoryGb(),
+    gpuLabel: probe.adapterLabel,
   };
 }
 
@@ -85,7 +85,8 @@ export class GemmaEngine {
   private processor: any | null = null;
   private model: any | null = null;
   private modelKey: GemmaModelKey = "default";
-  private device: "webgpu" | "wasm" = "wasm";
+  private device: ComputeDevice = "wasm";
+  private deviceLabel = "CPU (WASM)";
   private loading = false;
   private currentLoad: Promise<boolean> | null = null;
   private lastProgress: LoadProgress | null = null;
@@ -106,6 +107,9 @@ export class GemmaEngine {
   get activeDevice() {
     return this.device;
   }
+  get activeDeviceLabel() {
+    return this.deviceLabel;
+  }
 
   subscribe(fn: (p: LoadProgress) => void): () => void {
     this.listeners.add(fn);
@@ -118,8 +122,29 @@ export class GemmaEngine {
   private emit(p: LoadProgress) {
     this.lastProgress = p;
     this.listeners.forEach((fn) => {
-      try { fn(p); } catch { /* ignore */ }
+      try {
+        fn(p);
+      } catch {
+        /* ignore */
+      }
     });
+  }
+
+  private async loadWeights(modelId: string, device: ComputeDevice, onPC: (data: unknown) => void) {
+    this.processor = await AutoProcessor.from_pretrained(modelId, {
+      progress_callback: onPC,
+    });
+
+    this.model = await AutoModelForImageTextToText.from_pretrained(modelId, {
+      dtype: {
+        audio_encoder: device === "webgpu" ? "fp32" : "q4",
+        vision_encoder: device === "webgpu" ? "fp32" : "q4",
+        embed_tokens: "q4",
+        decoder_model_merged: "q4",
+      },
+      device,
+      progress_callback: onPC,
+    } as any);
   }
 
   async load(
@@ -132,7 +157,11 @@ export class GemmaEngine {
     }
     if (this.currentLoad) {
       const off = onProgress ? this.subscribe(onProgress) : null;
-      try { return await this.currentLoad; } finally { off?.(); }
+      try {
+        return await this.currentLoad;
+      } finally {
+        off?.();
+      }
     }
 
     this.loading = true;
@@ -142,12 +171,14 @@ export class GemmaEngine {
 
     this.currentLoad = (async () => {
       try {
-        const caps = await detectCapabilities();
-        this.device = caps.recommendedDevice;
-        this.emit({ stage: "init", percent: 0, message: `Initializing ${this.device.toUpperCase()}` });
+        await configureTransformersEnv();
+        const probe = await probeWebGPU();
+        let device = resolveComputeDevice(probe);
+        this.device = device;
+        this.deviceLabel = deviceLabel(device, probe);
 
         const fileProgress = new Map<string, number>();
-        const onPC = (data: any) => {
+        const onPC = (data: { status?: string; file?: string; progress?: number }) => {
           if (data?.status === "progress" && data?.file) {
             fileProgress.set(data.file, Math.round(data.progress ?? 0));
             const avg = Math.round(
@@ -161,24 +192,32 @@ export class GemmaEngine {
           }
         };
 
-        // Processor (tokenizer + image/audio preprocessing) — small
-        this.processor = await AutoProcessor.from_pretrained(modelId, {
-          progress_callback: onPC,
+        const tryLoad = async (target: ComputeDevice) => {
+          this.device = target;
+          this.deviceLabel = deviceLabel(target, probe);
+          this.emit({
+            stage: "init",
+            percent: 0,
+            message: `Initializing ${this.deviceLabel}`,
+          });
+          await this.loadWeights(modelId, target, onPC);
+        };
+
+        try {
+          await tryLoad(device);
+        } catch (firstErr) {
+          if (device !== "webgpu") throw firstErr;
+          console.warn("[GemmaEngine] WebGPU load failed, falling back to WASM:", firstErr);
+          await this.dispose();
+          device = "wasm";
+          await tryLoad("wasm");
+        }
+
+        this.emit({
+          stage: "ready",
+          percent: 100,
+          message: `Ready on ${this.deviceLabel}`,
         });
-
-        // Multimodal model — large weight files
-        this.model = await AutoModelForImageTextToText.from_pretrained(modelId, {
-          dtype: {
-            audio_encoder: this.device === "webgpu" ? "fp32" : "q4",
-            vision_encoder: this.device === "webgpu" ? "fp32" : "q4",
-            embed_tokens: "q4",
-            decoder_model_merged: "q4",
-          },
-          device: this.device,
-          progress_callback: onPC,
-        } as any);
-
-        this.emit({ stage: "ready", percent: 100, message: "Model loaded" });
         return true;
       } catch (err) {
         console.error("[GemmaEngine] Load failed:", err);
@@ -201,7 +240,6 @@ export class GemmaEngine {
   async chat(messages: ChatMessage[], options: GenerateOptions = {}): Promise<string> {
     if (!this.isReady) throw new Error("GemmaEngine not loaded");
 
-    // Convert plain text messages to multimodal content blocks expected by 3n
     const mm = messages.map((m) => ({
       role: m.role,
       content: [{ type: "text", text: m.content }],
@@ -232,7 +270,6 @@ export class GemmaEngine {
     });
 
     if (collected) return collected;
-    // Fallback: decode if streaming yielded nothing
     try {
       const decoded = this.processor.batch_decode(
         outputs.slice(null, [inputs.input_ids.dims.at(-1), null]),
@@ -245,7 +282,11 @@ export class GemmaEngine {
   }
 
   async dispose() {
-    try { await this.model?.dispose?.(); } catch { /* ignore */ }
+    try {
+      await this.model?.dispose?.();
+    } catch {
+      /* ignore */
+    }
     this.model = null;
     this.processor = null;
     this.lastProgress = null;

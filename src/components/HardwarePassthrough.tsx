@@ -5,6 +5,11 @@ import { Cpu, Zap, Monitor, Settings2, ChevronDown, Activity } from "lucide-reac
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useHardwareCapabilities } from "@/hooks/useHardwareCapabilities";
+import {
+  getAccelerationPreference,
+  setAccelerationPreference,
+  type AccelerationMode,
+} from "@/lib/webgpuRuntime";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -15,13 +20,11 @@ import {
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 
-type AccelerationMode = 'auto' | 'webgpu' | 'npu' | 'cpu';
-
 export const HardwarePassthrough = () => {
   const { capabilities } = useHardwareCapabilities();
-  const [accelerationMode, setAccelerationMode] = useState<AccelerationMode>(() => {
-    return (localStorage.getItem('shadowtalk_acceleration_mode') as AccelerationMode) || 'auto';
-  });
+  const [accelerationMode, setAccelerationMode] = useState<AccelerationMode>(() =>
+    getAccelerationPreference(),
+  );
 
   // Load from backend on mount
   useEffect(() => {
@@ -44,7 +47,7 @@ export const HardwarePassthrough = () => {
 
   const handleModeChange = (mode: AccelerationMode) => {
     setAccelerationMode(mode);
-    localStorage.setItem('shadowtalk_acceleration_mode', mode);
+    setAccelerationPreference(mode);
 
     // Sync to backend
     supabase.auth.getUser().then(({ data: { user } }) => {

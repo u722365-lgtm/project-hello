@@ -199,36 +199,50 @@ const App = () => {
   const [showBootScreen, setShowBootScreen] = useState(true);
   const [hasBooted, setHasBooted] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
+  const [deferredChrome, setDeferredChrome] = useState(false);
 
   useEffect(() => {
     import("@/lib/shadowMode").then(({ initShadowMode }) => initShadowMode());
 
-    // Check if user has seen boot screen this session
     const hasSeenBoot = sessionStorage.getItem('shadowtalk-booted');
     if (hasSeenBoot) {
       setShowBootScreen(false);
       setHasBooted(true);
     }
 
-    // Auto-resume any previously-started on-device model download.
-    // The engine singleton outlives every route, so once load() is called
-    // the fetch+cache pipeline keeps running even after the user navigates away.
-    if (localStorage.getItem('shadowtalk_offline_autoresume') === '1') {
-      (async () => {
-        try {
-          const [{ getGemmaEngine }, { getPreferredLocalModel }, { requestPersistentStorage }] = await Promise.all([
-            import('@/lib/offline/gemmaEngine'),
-            import('@/lib/offline/hybridRouter'),
-            import('@/lib/offline/opfsModelStore'),
-          ]);
-          await requestPersistentStorage();
-          const key = getPreferredLocalModel() as any;
-          getGemmaEngine().load(key).catch((e) => console.warn('[Offline] auto-resume failed', e));
-        } catch (e) {
-          console.warn('[Offline] auto-resume bootstrap failed', e);
-        }
-      })();
+    const enableChrome = () => setDeferredChrome(true);
+    if (typeof window.requestIdleCallback === "function") {
+      const chromeId = window.requestIdleCallback(enableChrome, { timeout: 4000 });
+      const cleanupChrome = () => window.cancelIdleCallback(chromeId);
+
+      const resumeOffline = () => {
+        if (localStorage.getItem('shadowtalk_offline_autoresume') !== '1') return;
+        void (async () => {
+          try {
+            const [{ getGemmaEngine }, { getPreferredLocalModel }, { requestPersistentStorage }] =
+              await Promise.all([
+                import('@/lib/offline/gemmaEngine'),
+                import('@/lib/offline/hybridRouter'),
+                import('@/lib/offline/opfsModelStore'),
+              ]);
+            await requestPersistentStorage();
+            const key = getPreferredLocalModel() as Parameters<ReturnType<typeof getGemmaEngine>['load']>[0];
+            getGemmaEngine().load(key).catch((e) => console.warn('[Offline] auto-resume failed', e));
+          } catch (e) {
+            console.warn('[Offline] auto-resume bootstrap failed', e);
+          }
+        })();
+      };
+
+      const offlineId = window.requestIdleCallback(resumeOffline, { timeout: 12000 });
+      return () => {
+        cleanupChrome();
+        window.cancelIdleCallback(offlineId);
+      };
     }
+
+    const t = window.setTimeout(enableChrome, 1500);
+    return () => window.clearTimeout(t);
   }, []);
 
   const handleBootComplete = () => {
@@ -255,14 +269,16 @@ const App = () => {
                <BrowserRouter>
                  <AnimatedRoutes />
                  <CommandPalette open={cmdOpen} onOpenChange={setCmdOpen} />
-                  <Suspense fallback={null}>
-                    <OnboardingFlow />
-                    <ShadowMemoryTracker />
-                   <JourneyTracker />
-                   <PWABanner />
-                   <CookieConsent />
-                   <CustomerSupportWidget />
-                 </Suspense>
+                  {deferredChrome && (
+                    <Suspense fallback={null}>
+                      <OnboardingFlow />
+                      <ShadowMemoryTracker />
+                      <JourneyTracker />
+                      <PWABanner />
+                      <CookieConsent />
+                      <CustomerSupportWidget />
+                    </Suspense>
+                  )}
                </BrowserRouter>
               </CommandPaletteContext.Provider>
               </ShadowMemoryProvider>
