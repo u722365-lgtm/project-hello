@@ -7,16 +7,27 @@ vi.mock('@/integrations/supabase/client', () => {
   const chain = {
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
+    in: vi.fn().mockReturnThis(),
     order: vi.fn().mockReturnThis(),
     limit: vi.fn().mockResolvedValue({ data: [], error: null }),
     insert: vi.fn().mockReturnThis(),
     update: vi.fn().mockReturnThis(),
+    delete: vi.fn().mockReturnThis(),
     single: vi.fn().mockResolvedValue({ data: { id: 'conv-1', title: 'New Chat', created_at: new Date().toISOString() }, error: null }),
+    maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
   };
+  const from = vi.fn(() => ({
+    ...chain,
+    order: vi.fn().mockResolvedValue({ data: [], error: null }),
+  }));
   return {
     supabase: {
-      auth: { getSession: vi.fn().mockResolvedValue({ data: { session: null } }) },
-      from: vi.fn(() => chain),
+      auth: {
+        getSession: vi.fn().mockResolvedValue({ data: { session: null } }),
+        getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'test-user' } }, error: null }),
+      },
+      from,
+      rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
       channel: vi.fn(() => ({ on: vi.fn().mockReturnThis(), subscribe: vi.fn() })),
       removeChannel: vi.fn(),
       functions: { invoke: vi.fn().mockResolvedValue({ data: { keys: [] }, error: null }) },

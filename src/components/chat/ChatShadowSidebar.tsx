@@ -17,6 +17,7 @@ import { Switch } from "@/components/ui/switch";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { getShadowModeEnabled, setShadowModeEnabled } from "@/lib/shadowMode";
+import { InstalledAgentsPanel } from "@/components/marketplace/InstalledAgentsPanel";
 
 const NAV = [
   { label: "Chat", icon: MessageSquare, to: "/chatbot", end: true },
@@ -87,7 +88,11 @@ export function ChatShadowSidebar({
         )}
       </div>
 
-      <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto">
+      <div className="px-3 pb-2 border-b border-sidebar-border/60">
+        <InstalledAgentsPanel compact />
+      </div>
+
+      <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto min-h-0">
         {NAV.map((item) => {
           const { label, icon: Icon, to } = item;
           const end = "end" in item && item.end;

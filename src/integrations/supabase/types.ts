@@ -1501,6 +1501,7 @@ export type Database = {
       }
       marketplace_agents: {
         Row: {
+          agent_config: Json | null
           author: string
           author_id: string | null
           category: string
@@ -1518,6 +1519,7 @@ export type Database = {
           verified: boolean
         }
         Insert: {
+          agent_config?: Json | null
           author: string
           author_id?: string | null
           category?: string
@@ -1535,6 +1537,7 @@ export type Database = {
           verified?: boolean
         }
         Update: {
+          agent_config?: Json | null
           author?: string
           author_id?: string | null
           category?: string

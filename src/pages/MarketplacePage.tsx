@@ -1,37 +1,90 @@
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Star, Download, Users, Bot, FileText, TrendingUp, Shield, Zap, Code, Loader2, Check } from "lucide-react";
+import { Search, Users, Bot, FileText, TrendingUp, Shield, Zap, Code, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMarketplace } from "@/hooks/useMarketplace";
+import { useFeatureGating } from "@/hooks/useFeatureGating";
+import { MarketplaceAgentCard } from "@/components/marketplace/MarketplaceAgentCard";
 import type { LucideIcon } from "lucide-react";
+import type { MarketplaceAgent } from "@/lib/marketplace/types";
 
 const iconMap: Record<string, LucideIcon> = {
-  Bot, FileText, TrendingUp, Shield, Zap, Code,
+  Bot,
+  FileText,
+  TrendingUp,
+  Shield,
+  Zap,
+  Code,
 };
 
 const MarketplacePage = () => {
   const navigate = useNavigate();
+  const { isProOrHigher } = useFeatureGating();
   const [searchQuery, setSearchQuery] = useState("");
-  const { agents, installedIds, loading, installingId, installAgent, uninstallAgent } = useMarketplace();
+  const {
+    agents,
+    installedAgents,
+    installedIds,
+    loading,
+    installingId,
+    installAgent,
+    uninstallAgent,
+    runAgent,
+  } = useMarketplace();
 
   const filteredAgents = agents.filter(
     (a) =>
       a.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       a.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      a.tags.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase()))
+      a.tags.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase())),
+  );
+
+  const handleRun = (agent: MarketplaceAgent, openIde = false) => {
+    void runAgent(agent, {
+      isProOrHigher,
+      onNavigate: navigate,
+      openIde,
+    });
+  };
+
+  const renderGrid = (tab: string) => (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+      {filteredAgents
+        .filter((a) => tab === "all" || a.category === tab)
+        .map((agent) => (
+          <MarketplaceAgentCard
+            key={agent.id}
+            agent={agent}
+            iconMap={iconMap}
+            isInstalled={installedIds.has(agent.id)}
+            isLoading={installingId === agent.id}
+            onInstall={() => void installAgent(agent.id)}
+            onUninstall={() => void uninstallAgent(agent.id)}
+            onRun={() => handleRun(agent)}
+            onOpenScript={
+              agent.category === "scripts" ? () => handleRun(agent, true) : undefined
+            }
+            onTagClick={setSearchQuery}
+          />
+        ))}
+      {filteredAgents.filter((a) => tab === "all" || a.category === tab).length === 0 && (
+        <div className="col-span-full text-center py-12 text-muted-foreground">
+          No agents found matching &quot;{searchQuery}&quot;
+        </div>
+      )}
+    </div>
   );
 
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
       <div className="container mx-auto px-4 pt-24 pb-16">
-        {/* Header */}
         <div className="text-center mb-12">
           <Badge variant="outline" className="mb-4">
             <Bot className="h-3.5 w-3.5 mr-1.5" />
@@ -41,11 +94,10 @@ const MarketplacePage = () => {
             Agent & Script <span className="gradient-text">Marketplace</span>
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Browse community-built agents, smart scripts, and strategy templates. Creators earn 80% of revenue.
+            Install agents, run them in chat with specialized instructions, or open script templates in the Code IDE.
           </p>
         </div>
 
-        {/* Search */}
         <div className="max-w-xl mx-auto mb-8 relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -56,123 +108,69 @@ const MarketplacePage = () => {
           />
         </div>
 
-        {/* Tabs */}
-        <Tabs defaultValue="all" className="mb-8">
-          <TabsList className="mx-auto flex w-fit">
+        <Tabs defaultValue={installedAgents.length > 0 ? "installed" : "all"} className="mb-8">
+          <TabsList className="mx-auto flex w-fit flex-wrap h-auto gap-1">
+            <TabsTrigger value="installed">My library ({installedAgents.length})</TabsTrigger>
             <TabsTrigger value="all">All</TabsTrigger>
             <TabsTrigger value="strategy">Strategy Agents</TabsTrigger>
             <TabsTrigger value="scripts">Smart Scripts</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="installed">
+            {loading ? (
+              <div className="flex justify-center py-20">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : installedAgents.length === 0 ? (
+              <Card className="mt-6">
+                <CardContent className="py-12 text-center text-muted-foreground">
+                  No agents installed yet. Browse the catalog and click <strong>Run</strong> or{" "}
+                  <strong>Install</strong>.
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+                {installedAgents.map((agent) => (
+                  <MarketplaceAgentCard
+                    key={agent.id}
+                    agent={agent}
+                    iconMap={iconMap}
+                    isInstalled
+                    isLoading={installingId === agent.id}
+                    onInstall={() => void installAgent(agent.id)}
+                    onUninstall={() => void uninstallAgent(agent.id)}
+                    onRun={() => handleRun(agent)}
+                    onOpenScript={
+                      agent.category === "scripts" ? () => handleRun(agent, true) : undefined
+                    }
+                    onTagClick={setSearchQuery}
+                  />
+                ))}
+              </div>
+            )}
+          </TabsContent>
 
           {loading ? (
             <div className="flex justify-center py-20">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : (
-            ["all", "strategy", "scripts"].map((tab) => (
-              <TabsContent key={tab} value={tab}>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-                  {filteredAgents
-                    .filter((a) => tab === "all" || a.category === tab)
-                    .map((agent) => {
-                      const IconComp = iconMap[agent.icon] || Bot;
-                      const isInstalled = installedIds.has(agent.id);
-                      const isLoading = installingId === agent.id;
-
-                      return (
-                        <Card key={agent.id} className="hover:border-primary/30 transition-colors group">
-                          <CardHeader className="pb-3">
-                            <div className="flex items-start justify-between">
-                              <div className="flex items-center gap-3">
-                                <div className="p-2 rounded-lg bg-primary/10">
-                                  <IconComp className="h-5 w-5 text-primary" />
-                                </div>
-                                <div>
-                                  <CardTitle className="text-base flex items-center gap-2">
-                                    {agent.name}
-                                    {agent.verified && (
-                                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0">Verified</Badge>
-                                    )}
-                                  </CardTitle>
-                                  <p className="text-xs text-muted-foreground">by {agent.author}</p>
-                                </div>
-                              </div>
-                              <Badge variant={agent.price === "Free" ? "outline" : "default"} className="text-xs">
-                                {agent.price}
-                              </Badge>
-                            </div>
-                          </CardHeader>
-                          <CardContent>
-                            <p className="text-sm text-muted-foreground mb-4">{agent.description}</p>
-                            <div className="flex flex-wrap gap-1.5 mb-4">
-                              {agent.tags.map((tag) => (
-                                <Badge
-                                  key={tag}
-                                  variant="outline"
-                                  className="text-[10px] cursor-pointer hover:bg-primary/10"
-                                  onClick={() => setSearchQuery(tag)}
-                                >
-                                  {tag}
-                                </Badge>
-                              ))}
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                                <span className="flex items-center gap-1">
-                                  <Star className="h-3 w-3 text-yellow-500" /> {Number(agent.rating).toFixed(1)}
-                                </span>
-                                <span className="flex items-center gap-1">
-                                  <Download className="h-3 w-3" /> {agent.downloads.toLocaleString()}
-                                </span>
-                              </div>
-                              {isInstalled ? (
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  className="text-xs"
-                                  disabled={isLoading}
-                                  onClick={() => uninstallAgent(agent.id)}
-                                >
-                                  {isLoading ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Check className="h-3 w-3 mr-1" />}
-                                  Installed
-                                </Button>
-                              ) : (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="text-xs"
-                                  disabled={isLoading}
-                                  onClick={() => installAgent(agent.id)}
-                                >
-                                  {isLoading ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
-                                  Install
-                                </Button>
-                              )}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-                  {filteredAgents.filter((a) => tab === "all" || a.category === tab).length === 0 && (
-                    <div className="col-span-full text-center py-12 text-muted-foreground">
-                      No agents found matching "{searchQuery}"
-                    </div>
-                  )}
-                </div>
-              </TabsContent>
-            ))
+            <>
+              <TabsContent value="all">{renderGrid("all")}</TabsContent>
+              <TabsContent value="strategy">{renderGrid("strategy")}</TabsContent>
+              <TabsContent value="scripts">{renderGrid("scripts")}</TabsContent>
+            </>
           )}
         </Tabs>
 
-        {/* Creator CTA */}
         <Card className="mt-12 border-primary/20 bg-primary/5">
           <CardContent className="p-8 text-center">
             <Users className="h-8 w-8 text-primary mx-auto mb-4" />
             <h3 className="text-2xl font-bold mb-2">Build for the Marketplace</h3>
             <p className="text-muted-foreground mb-4 max-w-lg mx-auto">
-              Create agents and scripts, publish them to the marketplace, and earn 80% of every sale. Join the creator economy.
+              Publish agents with system prompts and starter workflows. Contact admin to list your agent in the catalog.
             </p>
-            <Button onClick={() => navigate("/developers")}>Start Building</Button>
+            <Button onClick={() => navigate("/developers")}>Developer docs</Button>
           </CardContent>
         </Card>
       </div>

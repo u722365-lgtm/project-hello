@@ -37,6 +37,16 @@ import { Loader2 } from "lucide-react";
 import { useShadowMemoryContext } from "@/contexts/ShadowMemoryContext";
 import { useIntelligenceHub } from "@/hooks/useIntelligenceHub";
 import { useGemmaOffline } from "@/hooks/useGemmaOffline";
+import { useMarketplace } from "@/hooks/useMarketplace";
+import { resolveAgentRuntime } from "@/lib/marketplace/resolveAgentConfig";
+import { prependAgentSystemPrompt } from "@/lib/marketplace/applyAgentToChat";
+import {
+  clearActiveMarketplaceAgent,
+  getActiveMarketplaceSession,
+  setActiveMarketplaceAgent,
+} from "@/lib/marketplace/activeAgentSession";
+import { MarketplaceAgentBanner } from "@/components/chat/MarketplaceAgentBanner";
+import type { MarketplaceAgent, MarketplaceAgentRuntime } from "@/lib/marketplace/types";
 import { runOfflineCompletion } from "@/lib/offline/runOfflineCompletion";
 import { prewarmFastestLocalPath, warmHardwareProfile } from "@/lib/hardwareIntelligence";
 import { runLocalChat, isAnyLocalModelReady } from "@/lib/offline/localChat";
@@ -103,6 +113,9 @@ const ChatbotPage = () => {
   const { getOfflineSession } = useOfflineAuth();
   const toolOrchestrator = useToolOrchestrator();
   const gemmaOffline = useGemmaOffline();
+  const { getAgentById, agents: marketplaceAgents, loading: marketplaceCatalogLoading } = useMarketplace();
+  const [activeMarketplaceAgent, setActiveMarketplaceAgentState] = useState<MarketplaceAgent | null>(null);
+  const marketplaceRuntimeRef = useRef<MarketplaceAgentRuntime | null>(null);
   const { aiConfig, hasVerifiedKey, keys, switchToPlatformDefault, setDefault, refresh: refreshApiKeys } =
     useCustomApiKeys();
   
@@ -203,6 +216,58 @@ const ChatbotPage = () => {
     }
   }, [searchParams]);
 
+  const activateMarketplaceAgent = useCallback((agent: MarketplaceAgent) => {
+    const runtime = resolveAgentRuntime(agent);
+    if (!runtime) return;
+    setActiveMarketplaceAgent(agent);
+    setActiveMarketplaceAgentState(agent);
+    marketplaceRuntimeRef.current = runtime;
+    if (runtime.chatMode) setChatMode(runtime.chatMode);
+    if (runtime.personality) setPersonality(runtime.personality);
+    setCurrentConversationId(null);
+    setMessages([
+      {
+        id: "agent-welcome",
+        type: "ai",
+        content: runtime.welcomeMessage ?? `**${agent.name}** is now active. Ask anything in this specialty.`,
+        timestamp: new Date(),
+      },
+    ]);
+  }, []);
+
+  useEffect(() => {
+    const agentId = searchParams.get("agent") ?? getActiveMarketplaceSession()?.agentId;
+    if (!agentId) {
+      setActiveMarketplaceAgentState(null);
+      marketplaceRuntimeRef.current = null;
+      return;
+    }
+
+    const fromCatalog = getAgentById(agentId);
+    if (fromCatalog) {
+      activateMarketplaceAgent(fromCatalog);
+      return;
+    }
+
+    if (marketplaceCatalogLoading) return;
+
+    void supabase
+      .from("marketplace_agents")
+      .select("*")
+      .eq("id", agentId)
+      .eq("is_active", true)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) activateMarketplaceAgent(data as MarketplaceAgent);
+      });
+  }, [searchParams, marketplaceAgents, marketplaceCatalogLoading, getAgentById, activateMarketplaceAgent]);
+
+  const clearMarketplaceAgentSession = useCallback(() => {
+    setActiveMarketplaceAgentState(null);
+    marketplaceRuntimeRef.current = null;
+    clearActiveMarketplaceAgent();
+  }, []);
+
   useEffect(() => {
     const offlineSession = getOfflineSession();
     if (user || offlineSession) {
@@ -301,6 +366,7 @@ const ChatbotPage = () => {
     setMessages([welcomeMessage()]);
     setMessage("");
     setSelectedFile(null);
+    clearMarketplaceAgentSession();
   };
 
   const handleNewChat = () => {
@@ -558,7 +624,8 @@ const ChatbotPage = () => {
       const controller = new AbortController();
       abortControllerRef.current = controller;
 
-      const routerMessages: RouterMessage[] = chatMessages.map((m) => ({
+      const augmented = prependAgentSystemPrompt(chatMessages, marketplaceRuntimeRef.current);
+      const routerMessages: RouterMessage[] = augmented.map((m) => ({
         role: m.role as RouterMessage["role"],
         content: m.content,
       }));
@@ -628,7 +695,7 @@ const ChatbotPage = () => {
         },
         signal: controller.signal,
         body: stringifyChatBody({
-          messages: chatMessages,
+          messages: augmented,
           personality,
           mode: chatMode,
           ...buildChatProviderPayload(aiProvider, aiConfig, keys),
@@ -1099,6 +1166,14 @@ const ChatbotPage = () => {
                 </motion.div>
               ) : (
                 <div className="h-full flex flex-col overflow-hidden">
+                  {activeMarketplaceAgent && marketplaceRuntimeRef.current && (
+                    <MarketplaceAgentBanner
+                      agentName={activeMarketplaceAgent.name}
+                      runtime={marketplaceRuntimeRef.current}
+                      onClear={clearMarketplaceAgentSession}
+                      onStarterSelect={(p) => setMessage(p)}
+                    />
+                  )}
                   <ChatMessages
                     messages={messages}
                     isLoading={isLoading}
