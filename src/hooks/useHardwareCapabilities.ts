@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { probeWebGPU } from '@/lib/webgpuRuntime';
 
 export interface HardwareCapabilities {
   // GPU
@@ -115,38 +116,12 @@ export const useHardwareCapabilities = () => {
     try {
       const caps: Partial<HardwareCapabilities> = {};
 
-      // Detect WebGPU and GPU capabilities
-      if ('gpu' in navigator) {
-        try {
-          const adapter = await (navigator as any).gpu?.requestAdapter();
-          if (adapter) {
-            caps.hasWebGPU = true;
-            
-            // Get adapter info
-            const info = await adapter.requestAdapterInfo?.();
-            caps.gpuAdapter = info?.description || info?.device || 'Unknown GPU';
-            caps.gpuVendor = info?.vendor || 'Unknown';
-            
-            // Estimate VRAM from max buffer size
-            const limits = adapter.limits;
-            caps.gpuMaxBufferSize = limits?.maxBufferSize || 0;
-            
-            // Rough VRAM estimation based on max buffer size
-            // Modern GPUs typically allow buffer sizes up to VRAM/4
-            const estimatedVRAMBytes = (limits?.maxBufferSize || 0) * 4;
-            caps.estimatedVRAM = Math.round(estimatedVRAMBytes / (1024 * 1024 * 1024) * 10) / 10;
-            
-            // If estimation is too low, use device memory as fallback
-            if (caps.estimatedVRAM < 2) {
-              const memory = (navigator as any).deviceMemory || 4;
-              // Integrated GPUs typically share system memory
-              caps.estimatedVRAM = Math.min(memory / 2, 4);
-            }
-          }
-        } catch (e) {
-          console.warn('[Hardware] WebGPU detection failed:', e);
-          caps.hasWebGPU = false;
-        }
+      const gpuProbe = await probeWebGPU();
+      if (gpuProbe.available) {
+        caps.hasWebGPU = true;
+        caps.gpuAdapter = gpuProbe.adapterLabel;
+        caps.gpuVendor = gpuProbe.vendor ?? 'Unknown';
+        caps.estimatedVRAM = gpuProbe.estimatedVRAMGb;
       }
 
       // Detect system memory

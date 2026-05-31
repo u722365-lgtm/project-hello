@@ -4,6 +4,7 @@
  import App from "./App.tsx";
  import "./index.css";
  import { initPerformanceMonitoring, deferNonCritical } from "./lib/performance";
+ import { configureTransformersEnv, warmWebGPUProbe } from "./lib/webgpuRuntime";
  
  // Environment validation
  const validateEnvironment = () => {
@@ -40,6 +41,12 @@
    });
  }
  
+ // Warm WebGPU + configure on-device inference runtimes (idle, non-blocking)
+ deferNonCritical(() => {
+   void configureTransformersEnv();
+   warmWebGPUProbe();
+ });
+
  // Defer non-critical initialization
  deferNonCritical(() => {
    // Register service worker for PWA

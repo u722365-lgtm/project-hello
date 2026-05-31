@@ -4,6 +4,7 @@
  */
 
 import { requestPersistentStorage } from "./opfsModelStore";
+import { configureTransformersEnv, probeWebGPU } from "@/lib/webgpuRuntime";
 
 export const TIER_A_MODEL_ID = "SmolLM2-135M-Instruct-q4f16_1-MLC";
 export const TIER_A_SIZE_MB = 130;
@@ -59,7 +60,14 @@ class SmolLMEngine {
 
     try {
       await requestPersistentStorage();
-      report({ progress: 0.02, text: "Loading offline AI runtime…" });
+      await configureTransformersEnv();
+      const gpu = await probeWebGPU();
+      report({
+        progress: 0.02,
+        text: gpu.available
+          ? `Loading offline AI (WebGPU${gpu.adapterLabel ? ` · ${gpu.adapterLabel}` : ""})…`
+          : "Loading offline AI (CPU)…",
+      });
 
       const webllm = await import("@mlc-ai/web-llm");
       const cached = await webllm.hasModelInCache(TIER_A_MODEL_ID).catch(() => false);
