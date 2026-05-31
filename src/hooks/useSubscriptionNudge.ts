@@ -4,6 +4,7 @@ import { useFeatureGating } from "@/hooks/useFeatureGating";
 import {
   getEndowmentMessage,
   getLossAversionMessage,
+  NUDGE_THRESHOLDS,
   RECOMMENDED_MONTHLY_PLAN,
 } from "@/lib/conversionPsychology";
 
@@ -33,9 +34,9 @@ export function useSubscriptionNudge(dailyMessagesUsed: number, conversationCoun
     const ratio = limit > 0 ? dailyMessagesUsed / limit : 0;
 
     let intensity: NudgeIntensity = "none";
-    if (ratio >= 1) intensity = "blocking";
-    else if (ratio >= 0.85) intensity = "strong";
-    else if (ratio >= 0.55) intensity = "soft";
+    if (ratio >= NUDGE_THRESHOLDS.block) intensity = "blocking";
+    else if (ratio >= NUDGE_THRESHOLDS.strong) intensity = "strong";
+    else if (ratio >= NUDGE_THRESHOLDS.soft) intensity = "soft";
 
     const shouldShowBanner = intensity !== "none";
     const shouldBlockSend = intensity === "blocking";

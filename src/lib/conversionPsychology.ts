@@ -1,7 +1,20 @@
 import { PLAN_DETAILS } from "@/lib/stripe";
 
-/** Primary monthly plan we steer most users toward (decoy pricing: Elite makes this look fair). */
+/**
+ * Best default for ShadowTalk: Premium $15/mo.
+ * - Pro ($5) = entry hook for price-sensitive users only
+ * - Premium ($15) = main revenue + matches ChatGPT Plus anchor with more tools
+ * - Elite ($20) = decoy that makes Premium feel like the smart middle
+ */
 export const RECOMMENDED_MONTHLY_PLAN = "premium" as const;
+export const BEST_MONTHLY_PLAN = RECOMMENDED_MONTHLY_PLAN;
+
+/** When to show in-chat upgrade nudges (ratio of free daily message limit). */
+export const NUDGE_THRESHOLDS = {
+  soft: 0.4,
+  strong: 0.72,
+  block: 1,
+} as const;
 
 export type MonthlyPlanId = "pro" | "premium" | "elite";
 
@@ -35,7 +48,7 @@ export function getLossAversionMessage(used: number, limit: number, unit = "mess
     return `You've hit today's ${limit} free ${unit}. Upgrade to keep your flow — waiting resets at midnight.`;
   }
   if (remaining <= 5) {
-    return `Only ${remaining} free ${unit} left today. Pro members never pause mid-thought.`;
+    return `Only ${remaining} free ${unit} left today. Premium members never pause mid-thought.`;
   }
   const pct = Math.round((used / limit) * 100);
   return `You're at ${pct}% of today's free ${unit}. Power users upgrade before they hit the wall.`;
