@@ -17,6 +17,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { HardwareTurboBadge } from "@/components/chat/HardwareTurboBadge";
 
 interface ChatToolbarProps {
   hasActiveChat: boolean;
@@ -42,6 +43,9 @@ export function ChatToolbar({
       <div
         className={`flex items-center gap-1 px-4 md:px-6 py-1.5 border-b border-border/40 glass-subtle shrink-0 ${className}`}
       >
+        <div className="mr-auto flex items-center">
+          <HardwareTurboBadge />
+        </div>
         <Tooltip>
           <TooltipTrigger asChild>
             <Button

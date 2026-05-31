@@ -30,6 +30,9 @@ export function getAccelerationPreference(): AccelerationMode {
 export function setAccelerationPreference(mode: AccelerationMode): void {
   localStorage.setItem(ACCELERATION_MODE_KEY, mode);
   if (typeof window !== "undefined") {
+    void import("@/lib/hardwareIntelligence").then(({ invalidateHardwareProfileCache }) =>
+      invalidateHardwareProfileCache(),
+    );
     window.dispatchEvent(new CustomEvent(ACCELERATION_CHANGE_EVENT, { detail: mode }));
   }
 }
@@ -102,8 +105,9 @@ export function resolveComputeDevice(
   preference: AccelerationMode = getAccelerationPreference(),
 ): ComputeDevice {
   if (preference === "cpu") return "wasm";
-  if (preference === "webgpu") return probe.available ? "webgpu" : "wasm";
-  // auto and npu: use WebGPU when the browser exposes it (NPU path is future)
+  if (preference === "webgpu" || preference === "npu") {
+    return probe.available ? "webgpu" : "wasm";
+  }
   return probe.available ? "webgpu" : "wasm";
 }
 

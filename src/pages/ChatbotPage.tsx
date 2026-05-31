@@ -37,6 +37,11 @@ import { Loader2 } from "lucide-react";
 import { useShadowMemoryContext } from "@/contexts/ShadowMemoryContext";
 import { useIntelligenceHub } from "@/hooks/useIntelligenceHub";
 import { useGemmaOffline } from "@/hooks/useGemmaOffline";
+import { runOfflineCompletion } from "@/lib/offline/runOfflineCompletion";
+import { prewarmFastestLocalPath, warmHardwareProfile } from "@/lib/hardwareIntelligence";
+import { runLocalChat, isAnyLocalModelReady } from "@/lib/offline/localChat";
+import type { RouterMessage } from "@/lib/offline/hybridRouter";
+import { decideRoute } from "@/lib/offline/hybridRouter";
 import { useCustomApiKeys } from "@/hooks/useCustomApiKeys";
 import { stringifyChatBody } from "@/lib/chatRequest";
 import { ByokProviderKeyDialog } from "@/components/chat/ByokProviderKeyDialog";
@@ -142,6 +147,11 @@ const ChatbotPage = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useGeoLocation();
+
+  useEffect(() => {
+    warmHardwareProfile();
+    prewarmFastestLocalPath();
+  }, []);
 
   useEffect(() => {
     if (keys.length === 0 && !aiConfig.useCustomKey && loadCustomAiConfig().usePlatformDefault) return;
@@ -548,6 +558,67 @@ const ChatbotPage = () => {
       const controller = new AbortController();
       abortControllerRef.current = controller;
 
+      const routerMessages: RouterMessage[] = chatMessages.map((m) => ({
+        role: m.role as RouterMessage["role"],
+        content: m.content,
+      }));
+
+      const route = decideRoute(routerMessages, navigator.onLine);
+      if (route.target === "local") {
+        if (!isAnyLocalModelReady()) {
+          prewarmFastestLocalPath();
+        }
+
+        const aiMessageId = crypto.randomUUID();
+        let assistantContent = "";
+
+        const streamToken = (token: string) => {
+          assistantContent += token;
+          setMessages((prev) => {
+            const exists = prev.find((m) => m.id === aiMessageId);
+            if (exists) {
+              return prev.map((m) =>
+                m.id === aiMessageId ? { ...m, content: assistantContent } : m,
+              );
+            }
+            return [
+              ...prev,
+              { id: aiMessageId, type: "ai", content: assistantContent, timestamp: new Date() },
+            ];
+          });
+        };
+
+        const offline = await runOfflineCompletion({
+          messages: routerMessages,
+          personality,
+          isOnline: navigator.onLine,
+          onToken: streamToken,
+          gemmaChat: gemmaOffline.chatLocal,
+        });
+
+        if (offline?.content) {
+          if (!assistantContent) {
+            streamToken(offline.content);
+          }
+          if (user) {
+            await saveMessage(offline.content, "assistant", conversationId);
+          }
+          return;
+        }
+
+        if (isAnyLocalModelReady()) {
+          try {
+            const { content } = await runLocalChat(routerMessages, streamToken);
+            if (content && user) {
+              await saveMessage(content, "assistant", conversationId);
+            }
+            return;
+          } catch (e) {
+            console.warn("[Chat] Local turbo path failed, using cloud:", e);
+          }
+        }
+      }
+
       const { data: { session } } = await supabase.auth.getSession();
       const resp = await fetch(CHAT_URL, {
         method: "POST",
@@ -628,7 +699,7 @@ const ChatbotPage = () => {
         await saveMessage(assistantContent, "assistant", conversationId);
       }
     },
-    [aiProvider, aiConfig, keys, chatMode, personality, user],
+    [aiProvider, aiConfig, keys, chatMode, personality, user, gemmaOffline.chatLocal],
   );
 
   const handleStopGeneration = () => {
