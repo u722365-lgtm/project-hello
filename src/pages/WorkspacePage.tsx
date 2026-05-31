@@ -17,8 +17,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { 
   ArrowLeft, Brain, Plus, Trash2, Edit2, Building2, Mic, Users, FileText, 
-  Sparkles, Check, X, Loader2 
+  Sparkles, Check, X, Loader2, Store
 } from 'lucide-react';
+import { InstalledAgentsPanel } from '@/components/marketplace/InstalledAgentsPanel';
 
 const categoryIcons: Record<MemoryCategory, React.ReactNode> = {
   profile: <Building2 className="h-5 w-5" />,
@@ -239,6 +240,19 @@ const WorkspacePage: React.FC = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8">
+        <Card className="mb-8 border-primary/20">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Store className="h-4 w-4 text-primary" />
+              Installed marketplace agents
+            </CardTitle>
+            <CardDescription>Run specialized agents in chat — same library as /marketplace</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <InstalledAgentsPanel />
+          </CardContent>
+        </Card>
+
         {/* Category Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {MEMORY_CATEGORIES.map(category => {
