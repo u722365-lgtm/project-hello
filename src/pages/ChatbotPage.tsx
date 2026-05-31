@@ -59,6 +59,7 @@ import { ChatUpgradeNudge } from "@/components/monetization/ChatUpgradeNudge";
 import { UpgradePrompt } from "@/components/monetization/UpgradePrompt";
 import { useSubscriptionNudge } from "@/hooks/useSubscriptionNudge";
 import { getDailyMessageCount, incrementDailyMessageCount } from "@/lib/dailyMessageCounter";
+import { saveIdePayload } from "@/lib/idePayloadStorage";
 // Types
 interface Message { 
   id: string; 
@@ -1039,16 +1040,17 @@ const ChatbotPage = () => {
                     onEdit={handleEditMessage}
                     onRegenerate={handleRegenerateMessage}
                     onTextToSpeech={speakMessage}
-                    onOpenCodeCanvas={(code) => {
-                      setMessage(`\`\`\`\n${code}\n\`\`\``);
-                      navigate("/workspace");
+                    onOpenCodeCanvas={(code, language) => {
+                      saveIdePayload({ code, language: language || "javascript" });
+                      navigate("/ide");
                     }}
                     onOpenIDE={(code, language) => {
-                      sessionStorage.setItem(
-                        "shadowtalk_ide_payload",
-                        JSON.stringify({ code, language }),
-                      );
-                      navigate("/workspace");
+                      saveIdePayload({ code, language });
+                      navigate("/ide");
+                    }}
+                    onLaunchWebsite={(code) => {
+                      saveIdePayload({ code, language: "html", openPreview: true });
+                      navigate("/ide");
                     }}
                     onOpenInBrowser={(url) => {
                       if (url) window.open(url, "_blank", "noopener,noreferrer");

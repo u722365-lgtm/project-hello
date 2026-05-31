@@ -166,6 +166,13 @@ export const PAGE_SEO: Record<string, PageMeta> = {
     keywords: ['AI workspace', 'collaboration', 'team productivity', 'project management'],
     canonical: 'https://www.shadowtalk-ai.com/workspace',
   },
+  ide: {
+    title: 'Code IDE - In-Browser Editor',
+    description:
+      'Monaco-powered IDE inside ShadowTalk: multi-file projects, live HTML preview, templates, console, and AI-assisted coding.',
+    keywords: ['browser IDE', 'online code editor', 'Monaco editor', 'AI coding'],
+    canonical: 'https://www.shadowtalk-ai.com/ide',
+  },
   marketplace: {
     title: 'Agent Marketplace',
     description: 'Browse and install specialized AI agents for your workflow. Extend ShadowTalk AI with community-built tools.',

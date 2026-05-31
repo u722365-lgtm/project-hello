@@ -93,6 +93,7 @@ const Navigation = ({ landingAnimated = false }: NavigationProps) => {
     { name: t("nav.pricing"), href: "/pricing", icon: Shield, isLink: true },
     { name: "Strategy Agent", href: "/strategy", icon: Brain, isLink: true },
     { name: "AI Workspace", href: "/workspace", icon: Sparkles, isLink: true },
+    { name: "Code IDE", href: "/ide", icon: Code, isLink: true },
   ];
 
   const secondaryNavItems = [

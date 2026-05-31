@@ -121,6 +121,9 @@ const WorkspacePage: React.FC = () => {
               </div>
             </div>
             <div className="flex items-center gap-3">
+              <Button variant="outline" size="sm" onClick={() => navigate("/ide")}>
+                Open Code IDE
+              </Button>
               <Badge variant="outline" className="gap-1">
                 <Sparkles className="h-3 w-3" />
                 {activeCount} Active Memories

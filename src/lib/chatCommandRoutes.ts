@@ -15,7 +15,7 @@ export const CHAT_COMMAND_NAV_ROUTES: Record<string, string> = {
   security: "/security-audit",
   "knowledge-vault": "/knowledge",
   memory: "/shadow-memory",
-  code: "/workspace",
+  code: "/ide",
   planner: "/workspace",
   organize: "/workspace",
   eco: "/transparency",
@@ -26,7 +26,7 @@ export const CHAT_COMMAND_NAV_ROUTES: Record<string, string> = {
   branching: "/chatbot",
   "image-decoder": "/chatbot",
   "cognitive-loop": "/missioncontrol",
-  "canvas-document": "/workspace",
+  "canvas-document": "/ide",
   wordle: "/chatbot",
 };
 

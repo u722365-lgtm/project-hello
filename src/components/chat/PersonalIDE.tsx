@@ -43,6 +43,8 @@ interface PersonalIDEProps {
   initialCode?: string;
   language?: string;
   onClose: () => void;
+  /** Which bottom panel to show first (e.g. preview for HTML from chat). */
+  defaultOutputPanel?: "console" | "preview" | "terminal";
 }
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -161,7 +163,12 @@ const getFileIcon = (lang: string) => FILE_ICONS[lang] || FILE_ICONS.default;
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export const PersonalIDE = ({ initialCode, language, onClose }: PersonalIDEProps) => {
+export const PersonalIDE = ({
+  initialCode,
+  language,
+  onClose,
+  defaultOutputPanel = "preview",
+}: PersonalIDEProps) => {
   const { toast } = useToast();
   const iframeRef = useRef<HTMLIFrameElement>(null);
   
@@ -180,7 +187,9 @@ export const PersonalIDE = ({ initialCode, language, onClose }: PersonalIDEProps
   const [isRunning, setIsRunning] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(true);
   const [showExplorer, setShowExplorer] = useState(false);
-  const [outputPanel, setOutputPanel] = useState<"console" | "preview" | "terminal">("preview");
+  const [outputPanel, setOutputPanel] = useState<"console" | "preview" | "terminal">(
+    defaultOutputPanel,
+  );
   const [theme, setTheme] = useState("vs-dark");
   const [previewHtml, setPreviewHtml] = useState("");
   const [viewportPreset, setViewportPreset] = useState("desktop");
