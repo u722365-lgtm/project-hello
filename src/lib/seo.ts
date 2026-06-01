@@ -11,28 +11,35 @@
    noIndex?: boolean;
  }
  
- // Generate meta tags for a page
- export function generateMetaTags(meta: PageMeta): Record<string, string> {
-   const baseUrl = 'https://www.shadowtalk-ai.com';
-   const defaultImage = 'https://lovable.dev/opengraph-image-p98pqg.png';
-   
-   return {
-     title: `${meta.title} | ShadowTalk AI`,
-     description: meta.description.slice(0, 160),
-     keywords: meta.keywords?.join(', ') || '',
-     canonical: meta.canonical || baseUrl,
-     'og:title': meta.title,
-     'og:description': meta.description.slice(0, 160),
-     'og:image': meta.ogImage || defaultImage,
-     'og:type': meta.ogType || 'website',
-     'og:url': meta.canonical || baseUrl,
-     'twitter:card': meta.twitterCard || 'summary_large_image',
-     'twitter:title': meta.title,
-     'twitter:description': meta.description.slice(0, 160),
-     'twitter:image': meta.ogImage || defaultImage,
-     robots: meta.noIndex ? 'noindex, nofollow' : 'index, follow',
-   };
- }
+// Generate meta tags for a page
+export function generateMetaTags(meta: PageMeta): Record<string, string> {
+  const baseUrl = 'https://www.shadowtalk-ai.com';
+  // Use our own branded OG image (sits in /public). Falls back gracefully if missing.
+  const defaultImage = `${baseUrl}/og-image.png`;
+  const brand = 'ShadowTalk AI';
+  // Avoid double-branding the title if it already contains the brand name.
+  const fullTitle = meta.title.toLowerCase().includes('shadowtalk')
+    ? meta.title
+    : `${meta.title} | ${brand}`;
+
+  return {
+    title: fullTitle,
+    description: meta.description.slice(0, 160),
+    keywords: meta.keywords?.join(', ') || '',
+    canonical: meta.canonical || baseUrl,
+    'og:title': fullTitle,
+    'og:description': meta.description.slice(0, 160),
+    'og:image': meta.ogImage || defaultImage,
+    'og:type': meta.ogType || 'website',
+    'og:url': meta.canonical || baseUrl,
+    'twitter:card': meta.twitterCard || 'summary_large_image',
+    'twitter:title': fullTitle,
+    'twitter:description': meta.description.slice(0, 160),
+    'twitter:image': meta.ogImage || defaultImage,
+    robots: meta.noIndex ? 'noindex, nofollow' : 'index, follow',
+  };
+}
+
  
  // Structured data for Organization
  export function getOrganizationSchema() {
