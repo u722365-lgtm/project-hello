@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -22,7 +21,9 @@ import {
 } from "@/lib/profilePreferences";
 import { SettingsSectionHeader } from "@/components/settings/SettingsSectionHeader";
 import { SettingsStagger, SettingsStaggerItem } from "@/components/settings/SettingsStagger";
+import { SettingsShellCard } from "@/components/settings/SettingsShellCard";
 import { useSettingsMotion } from "@/hooks/useSettingsMotion";
+import { cn } from "@/lib/utils";
 
 function SettingRow({
   children,
@@ -59,116 +60,100 @@ export function SettingsGeneralSection() {
       <SettingsSectionHeader
         icon={Settings}
         title="General"
-        description="Appearance and interface — theme, language, and feedback like leading AI apps"
+        description="Appearance and interface — theme, language, and feedback"
       />
 
       <SettingsStaggerItem>
-        <motion.div whileHover={{ y: -2 }} transition={{ type: "spring", stiffness: 400, damping: 28 }}>
-          <Card className="glass border-border/50 card-glass overflow-hidden">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Palette className="h-5 w-5 text-primary" />
-                Appearance
-              </CardTitle>
-              <CardDescription>How ShadowTalk looks on your device</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-1">
-              <SettingRow className="flex items-center justify-between p-4 rounded-xl">
-                <div className="flex items-center gap-3">
-                  <Moon className="h-4 w-4 text-primary" />
-                  <div>
-                    <p className="text-sm font-medium">Theme</p>
-                    <p className="text-xs text-muted-foreground">Sovereign dark brand theme</p>
-                  </div>
-                </div>
-                <Select value="dark" onValueChange={() => setTheme("dark")}>
-                  <SelectTrigger className="w-36 bg-muted/30 border-border/50">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="dark">ShadowTalk Dark</SelectItem>
-                  </SelectContent>
-                </Select>
-              </SettingRow>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <SettingsShellCard
+            title="ShadowTalk Dark"
+            description="Sovereign neural theme optimized for long sessions"
+            icon={Palette}
+            highlight
+            className="md:row-span-2"
+            contentClassName="space-y-4"
+          >
+            <div
+              className={cn(
+                "relative h-28 rounded-xl overflow-hidden border border-primary/30",
+                "bg-gradient-to-br from-primary/30 via-background to-secondary/20",
+              )}
+            >
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,hsl(var(--primary)/0.4),transparent_50%)]" />
+              <Moon className="absolute bottom-3 right-3 h-8 w-8 text-primary/80" />
+            </div>
+            <SettingRow className="flex items-center justify-between gap-3 rounded-xl p-3 -mx-1">
+              <div className="flex items-center gap-2">
+                <Moon className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium">Active theme</span>
+              </div>
+              <Select value="dark" onValueChange={() => setTheme("dark")}>
+                <SelectTrigger className="w-36 bg-muted/30 border-border/50">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="dark">ShadowTalk Dark</SelectItem>
+                </SelectContent>
+              </Select>
+            </SettingRow>
+          </SettingsShellCard>
 
-              <SettingRow className="flex items-center justify-between p-4 rounded-xl">
-                <div className="flex items-center gap-3">
-                  <Monitor className="h-4 w-4 text-primary" />
-                  <div>
-                    <p className="text-sm font-medium">Compact mode</p>
-                    <p className="text-xs text-muted-foreground">Tighter spacing across the app</p>
-                  </div>
-                </div>
-                <Switch
-                  checked={compactMode}
-                  onCheckedChange={(v) => {
-                    setCompactMode(v);
-                    setUiCompactMode(v);
-                  }}
-                />
-              </SettingRow>
+          <SettingsShellCard title="Compact mode" description="Tighter spacing" icon={Monitor}>
+            <SettingRow className="flex items-center justify-between p-3 rounded-xl">
+              <p className="text-sm">Enable compact UI</p>
+              <Switch
+                checked={compactMode}
+                onCheckedChange={(v) => {
+                  setCompactMode(v);
+                  setUiCompactMode(v);
+                }}
+              />
+            </SettingRow>
+          </SettingsShellCard>
 
-              <SettingRow className="flex items-center justify-between p-4 rounded-xl">
-                <div className="flex items-center gap-3">
-                  <Volume2 className="h-4 w-4 text-primary" />
-                  <div>
-                    <p className="text-sm font-medium">Sound effects</p>
-                    <p className="text-xs text-muted-foreground">UI feedback sounds</p>
-                  </div>
-                </div>
-                <Switch
-                  checked={soundEnabled}
-                  onCheckedChange={(v) => {
-                    setSoundEnabled(v);
-                    setUiSoundEnabled(v);
-                  }}
-                />
-              </SettingRow>
-            </CardContent>
-          </Card>
-        </motion.div>
+          <SettingsShellCard title="Sound effects" description="UI feedback" icon={Volume2}>
+            <SettingRow className="flex items-center justify-between p-3 rounded-xl">
+              <p className="text-sm">Play sounds</p>
+              <Switch
+                checked={soundEnabled}
+                onCheckedChange={(v) => {
+                  setSoundEnabled(v);
+                  setUiSoundEnabled(v);
+                }}
+              />
+            </SettingRow>
+          </SettingsShellCard>
+        </div>
       </SettingsStaggerItem>
 
       <SettingsStaggerItem>
-        <motion.div whileHover={{ y: -2 }} transition={{ type: "spring", stiffness: 400, damping: 28 }}>
-          <Card className="glass border-border/50 card-glass overflow-hidden">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Globe className="h-5 w-5 text-primary" />
-                Language
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <SettingRow className="flex items-center justify-between p-4 rounded-xl">
-                <div>
-                  <Label>Display language</Label>
-                  <p className="text-xs text-muted-foreground">
-                    UI language preference (stored on device)
-                  </p>
-                </div>
-                <Select
-                  value={language}
-                  onValueChange={(code) => {
-                    setLanguage(code);
-                    setUiLanguage(code);
-                  }}
-                >
-                  <SelectTrigger className="w-32 bg-muted/30 border-border/50">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="en">English</SelectItem>
-                    <SelectItem value="es">Español</SelectItem>
-                    <SelectItem value="fr">Français</SelectItem>
-                    <SelectItem value="de">Deutsch</SelectItem>
-                    <SelectItem value="ar">العربية</SelectItem>
-                    <SelectItem value="zh">中文</SelectItem>
-                  </SelectContent>
-                </Select>
-              </SettingRow>
-            </CardContent>
-          </Card>
-        </motion.div>
+        <SettingsShellCard title="Language" description="Display language (stored on device)" icon={Globe}>
+          <SettingRow className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-xl">
+            <div>
+              <Label>Display language</Label>
+              <p className="text-xs text-muted-foreground mt-0.5">Applies to UI labels</p>
+            </div>
+            <Select
+              value={language}
+              onValueChange={(code) => {
+                setLanguage(code);
+                setUiLanguage(code);
+              }}
+            >
+              <SelectTrigger className="w-full sm:w-36 bg-muted/30 border-border/50">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="en">English</SelectItem>
+                <SelectItem value="es">Español</SelectItem>
+                <SelectItem value="fr">Français</SelectItem>
+                <SelectItem value="de">Deutsch</SelectItem>
+                <SelectItem value="ar">العربية</SelectItem>
+                <SelectItem value="zh">中文</SelectItem>
+              </SelectContent>
+            </Select>
+          </SettingRow>
+        </SettingsShellCard>
       </SettingsStaggerItem>
     </SettingsStagger>
   );

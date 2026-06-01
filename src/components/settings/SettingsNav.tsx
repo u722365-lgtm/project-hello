@@ -51,10 +51,10 @@ export function SettingsNav({ sections, activeId, onSelect }: SettingsNavProps) 
         </div>
       </nav>
 
-      {/* Desktop sidebar */}
-      <nav className="hidden lg:block lg:w-60 shrink-0" aria-label="Settings sections">
+      {/* Desktop sidebar (embedded in glass panel on SettingsPage) */}
+      <nav className="hidden lg:block w-full" aria-label="Settings sections">
         <motion.ul
-          className="space-y-1 sticky top-24"
+          className="space-y-1"
           initial="hidden"
           animate="visible"
           variants={{

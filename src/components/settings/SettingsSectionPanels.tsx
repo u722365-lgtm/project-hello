@@ -25,18 +25,18 @@ import { PrivacyDataCard } from "@/components/profile/PrivacyDataCard";
 import { CustomApiKeysPanel } from "@/components/profile/CustomApiKeysPanel";
 import { DesktopAppSettings } from "@/components/desktop/DesktopAppSettings";
 import { useSettingsMotion } from "@/hooks/useSettingsMotion";
+import { SettingsHomeGrid } from "@/components/settings/SettingsHomeGrid";
+import { SettingsShellCard } from "@/components/settings/SettingsShellCard";
+import type { SettingsNavSection } from "@/components/settings/SettingsNav";
+import type { SettingsSectionId } from "@/lib/settingsTypes";
+import { Brain } from "lucide-react";
 
-export type SettingsSectionId =
-  | "general"
-  | "personalization"
-  | "chat"
-  | "models"
-  | "data"
-  | "connections"
-  | "account";
+export type { SettingsSectionId } from "@/lib/settingsTypes";
 
 interface SettingsSectionPanelsProps {
   section: SettingsSectionId;
+  sections: readonly SettingsNavSection[];
+  onSelectSection: (id: string) => void;
   learningEnabled: boolean;
   onLearningChange: (enabled: boolean) => void;
 }
@@ -71,9 +71,15 @@ function AnimatedCard({
 
 export function SettingsSectionPanels({
   section,
+  sections,
+  onSelectSection,
   learningEnabled,
   onLearningChange,
 }: SettingsSectionPanelsProps) {
+  if (section === "home") {
+    return <SettingsHomeGrid sections={sections} onSelect={onSelectSection} />;
+  }
+
   if (section === "general") {
     return <SettingsGeneralSection />;
   }
@@ -164,23 +170,19 @@ export function SettingsSectionPanels({
         </SettingsStaggerItem>
         <SettingsStaggerItem>
           <AnimatedCard>
-            <Card className="glass border-border/50 card-glass">
-              <CardHeader>
-                <CardTitle className="text-base">Adaptive learning</CardTitle>
-                <CardDescription>
-                  On-device behavior learning (separate from analytics cookies)
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <motion.div
-                  className="flex items-center justify-between p-4 rounded-xl bg-muted/20 border border-border/40"
-                  whileTap={{ scale: 0.995 }}
-                >
-                  <p className="text-sm font-medium">Enable adaptive learning</p>
-                  <Switch checked={learningEnabled} onCheckedChange={onLearningChange} />
-                </motion.div>
-              </CardContent>
-            </Card>
+            <SettingsShellCard
+              title="Adaptive learning"
+              description="On-device behavior learning (separate from analytics cookies)"
+              icon={Brain}
+            >
+              <motion.div
+                className="flex items-center justify-between p-4 rounded-xl bg-muted/20 border border-border/40"
+                whileTap={{ scale: 0.995 }}
+              >
+                <p className="text-sm font-medium">Enable adaptive learning</p>
+                <Switch checked={learningEnabled} onCheckedChange={onLearningChange} />
+              </motion.div>
+            </SettingsShellCard>
           </AnimatedCard>
         </SettingsStaggerItem>
         <SettingsStaggerItem>
