@@ -23,39 +23,60 @@ export function SettingsShellCard({
   contentClassName,
   highlight,
 }: SettingsShellCardProps) {
-  const { reduced } = useSettingsMotion();
+  const { reduced, spring } = useSettingsMotion();
 
   return (
     <motion.div
-      whileHover={reduced ? undefined : { y: -3 }}
-      transition={{ type: "spring", stiffness: 380, damping: 26 }}
-      className={cn("group relative", className)}
+      whileHover={reduced ? undefined : { y: -4, scale: 1.005 }}
+      whileTap={reduced ? undefined : { scale: 0.995 }}
+      transition={spring}
+      className={cn("group relative settings-panel-shine", className)}
     >
       <div
         className={cn(
-          "pointer-events-none absolute -inset-px rounded-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-100",
+          "pointer-events-none absolute -inset-px rounded-2xl opacity-0 transition-opacity duration-700 group-hover:opacity-100",
           highlight
-            ? "bg-gradient-to-br from-primary/40 via-secondary/20 to-transparent"
-            : "bg-gradient-to-br from-primary/25 via-transparent to-accent/10",
+            ? "bg-gradient-to-br from-primary/45 via-secondary/25 to-transparent"
+            : "bg-gradient-to-br from-primary/30 via-transparent to-accent/15",
         )}
       />
+      {!reduced && (
+        <motion.div
+          className="pointer-events-none absolute inset-0 rounded-2xl overflow-hidden opacity-0 group-hover:opacity-100"
+          initial={false}
+        >
+          <motion.div
+            className="absolute -inset-y-4 w-1/2 bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-12"
+            animate={{ x: ["-120%", "220%"] }}
+            transition={{ duration: 1.2, ease: "easeInOut", repeat: Infinity, repeatDelay: 2.5 }}
+          />
+        </motion.div>
+      )}
       <Card
         className={cn(
           "relative glass border-border/50 card-glass overflow-hidden rounded-2xl",
-          highlight && "ring-1 ring-primary/25",
+          highlight && "ring-1 ring-primary/30",
         )}
       >
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-60" />
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2.5 text-base font-semibold">
+          <CardTitle className="flex items-center gap-2.5 text-base font-semibold tracking-tight">
             {Icon && (
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/15 border border-primary/20">
+              <motion.span
+                className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/15 border border-primary/20"
+                whileHover={{ rotate: [0, -6, 6, 0], scale: 1.06 }}
+                transition={{ duration: 0.45 }}
+              >
                 <Icon className="h-4 w-4 text-primary" />
-              </span>
+              </motion.span>
             )}
             {title}
           </CardTitle>
-          {description && <CardDescription className="text-sm leading-relaxed">{description}</CardDescription>}
+          {description && (
+            <CardDescription className="text-sm leading-relaxed text-muted-foreground">
+              {description}
+            </CardDescription>
+          )}
         </CardHeader>
         <CardContent className={cn("pt-0", contentClassName)}>{children}</CardContent>
       </Card>

@@ -1,6 +1,21 @@
 import type { Transition, Variants } from "framer-motion";
 
-export const SETTINGS_EASE = [0.22, 1, 0.36, 1] as const;
+/** Premium ease — soft deceleration */
+export const SETTINGS_EASE = [0.16, 1, 0.3, 1] as const;
+
+export const SETTINGS_SPRING: Transition = {
+  type: "spring",
+  stiffness: 380,
+  damping: 32,
+  mass: 0.8,
+};
+
+export const SETTINGS_SPRING_SNAPPY: Transition = {
+  type: "spring",
+  stiffness: 520,
+  damping: 34,
+  mass: 0.65,
+};
 
 export type SettingsMotionProfile = {
   reduced: boolean;
@@ -9,35 +24,52 @@ export type SettingsMotionProfile = {
 
 export function settingsDuration(profile: SettingsMotionProfile, desktop = 0.45): number {
   if (profile.reduced) return 0.01;
-  return profile.mobile ? Math.min(desktop, 0.35) : desktop;
+  return profile.mobile ? Math.min(desktop, 0.32) : desktop;
 }
 
-export function settingsStagger(profile: SettingsMotionProfile, desktop = 0.08): number {
+export function settingsStagger(profile: SettingsMotionProfile, desktop = 0.06): number {
   if (profile.reduced) return 0;
-  return profile.mobile ? desktop * 0.7 : desktop;
+  return profile.mobile ? desktop * 0.65 : desktop;
 }
 
 export function sectionPanelVariants(profile: SettingsMotionProfile): Variants {
-  const x = profile.reduced ? 0 : profile.mobile ? 0 : 16;
-  const y = profile.reduced ? 0 : profile.mobile ? 10 : 0;
+  if (profile.reduced) {
+    return {
+      initial: { opacity: 0 },
+      animate: { opacity: 1, transition: { duration: 0.01 } },
+      exit: { opacity: 0, transition: { duration: 0.01 } },
+    };
+  }
+
   return {
-    initial: { opacity: 0, x, y, filter: profile.reduced ? "blur(0px)" : "blur(6px)" },
+    initial: (dir: number) => {
+      const direction = dir >= 0 ? 1 : -1;
+      return {
+        opacity: 0,
+        x: profile.mobile ? 0 : direction * 28,
+        y: profile.mobile ? direction * 18 : 8,
+        scale: 0.98,
+        filter: "blur(8px)",
+      };
+    },
     animate: {
       opacity: 1,
       x: 0,
       y: 0,
+      scale: 1,
       filter: "blur(0px)",
-      transition: {
-        duration: settingsDuration(profile, 0.4),
-        ease: SETTINGS_EASE,
-      },
+      transition: SETTINGS_SPRING,
     },
-    exit: {
-      opacity: 0,
-      x: profile.reduced ? 0 : -8,
-      y: profile.reduced ? 0 : 6,
-      filter: profile.reduced ? "blur(0px)" : "blur(4px)",
-      transition: { duration: settingsDuration(profile, 0.22) },
+    exit: (dir: number) => {
+      const direction = dir >= 0 ? 1 : -1;
+      return {
+        opacity: 0,
+        x: -direction * (profile.mobile ? 12 : 20),
+        y: -4,
+        scale: 0.99,
+        filter: "blur(4px)",
+        transition: { duration: 0.2, ease: SETTINGS_EASE },
+      };
     },
   };
 }
@@ -47,40 +79,39 @@ export function staggerListVariants(profile: SettingsMotionProfile): Variants {
     hidden: {},
     visible: {
       transition: {
-        staggerChildren: settingsStagger(profile, 0.07),
-        delayChildren: profile.reduced ? 0 : 0.04,
+        staggerChildren: settingsStagger(profile, 0.055),
+        delayChildren: profile.reduced ? 0 : 0.06,
       },
     },
   };
 }
 
 export function staggerItemVariants(profile: SettingsMotionProfile): Variants {
-  const y = profile.reduced ? 0 : 14;
+  const y = profile.reduced ? 0 : 20;
   return {
-    hidden: { opacity: 0, y, scale: profile.reduced ? 1 : 0.98 },
+    hidden: { opacity: 0, y, scale: profile.reduced ? 1 : 0.97 },
     visible: {
       opacity: 1,
       y: 0,
       scale: 1,
-      transition: {
-        duration: settingsDuration(profile, 0.38),
-        ease: SETTINGS_EASE,
-      },
+      transition: SETTINGS_SPRING,
     },
   };
 }
 
 export function navItemSpring(): Transition {
-  return { type: "spring", stiffness: 420, damping: 32 };
+  return SETTINGS_SPRING_SNAPPY;
 }
 
 export function headerRevealVariants(profile: SettingsMotionProfile): Variants {
   return {
-    hidden: { opacity: 0, y: profile.reduced ? 0 : -12 },
+    hidden: { opacity: 0, y: profile.reduced ? 0 : -16 },
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: settingsDuration(profile, 0.5), ease: SETTINGS_EASE },
+      transition: profile.reduced
+        ? { duration: 0.01 }
+        : { ...SETTINGS_SPRING, delay: 0.02 },
     },
   };
 }
@@ -90,9 +121,48 @@ export function loadingPulseVariants(profile: SettingsMotionProfile): Variants {
     animate: profile.reduced
       ? { opacity: 1 }
       : {
-          opacity: [0.4, 1, 0.4],
-          scale: [0.96, 1, 0.96],
-          transition: { duration: 1.6, repeat: Infinity, ease: "easeInOut" },
+          opacity: [0.5, 1, 0.5],
+          scale: [0.94, 1, 0.94],
+          transition: { duration: 2, repeat: Infinity, ease: "easeInOut" },
         },
+  };
+}
+
+export function heroCollapseVariants(profile: SettingsMotionProfile): Variants {
+  return {
+    expanded: {
+      height: "auto",
+      opacity: 1,
+      marginBottom: profile.mobile ? 16 : 24,
+      transition: SETTINGS_SPRING,
+    },
+    collapsed: {
+      height: 0,
+      opacity: 0,
+      marginBottom: 0,
+      transition: { duration: settingsDuration(profile, 0.28), ease: SETTINGS_EASE },
+    },
+  };
+}
+
+export function dockItemVariants(profile: SettingsMotionProfile): Variants {
+  return {
+    idle: { scale: 1 },
+    hover: { scale: profile.reduced ? 1 : 1.08, transition: SETTINGS_SPRING_SNAPPY },
+    tap: { scale: 0.92 },
+  };
+}
+
+export function searchResultVariants(profile: SettingsMotionProfile): Variants {
+  return {
+    hidden: { opacity: 0, x: profile.reduced ? 0 : -8 },
+    visible: (i: number) => ({
+      opacity: 1,
+      x: 0,
+      transition: {
+        delay: profile.reduced ? 0 : i * 0.04,
+        ...SETTINGS_SPRING,
+      },
+    }),
   };
 }
