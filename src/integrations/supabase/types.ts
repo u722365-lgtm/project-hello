@@ -583,7 +583,6 @@ export type Database = {
       }
       conversations: {
         Row: {
-          archived_at: string | null
           created_at: string
           id: string
           title: string | null
@@ -591,7 +590,6 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          archived_at?: string | null
           created_at?: string
           id?: string
           title?: string | null
@@ -599,7 +597,6 @@ export type Database = {
           user_id: string
         }
         Update: {
-          archived_at?: string | null
           created_at?: string
           id?: string
           title?: string | null
@@ -1501,7 +1498,6 @@ export type Database = {
       }
       marketplace_agents: {
         Row: {
-          agent_config: Json | null
           author: string
           author_id: string | null
           category: string
@@ -1519,7 +1515,6 @@ export type Database = {
           verified: boolean
         }
         Insert: {
-          agent_config?: Json | null
           author: string
           author_id?: string | null
           category?: string
@@ -1537,7 +1532,6 @@ export type Database = {
           verified?: boolean
         }
         Update: {
-          agent_config?: Json | null
           author?: string
           author_id?: string | null
           category?: string

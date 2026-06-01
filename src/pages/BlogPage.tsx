@@ -17,6 +17,9 @@ import { useBlogPosts } from "@/hooks/useCMSContent";
 import { format } from "date-fns";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import SEOHead from "@/components/SEOHead";
+import { PAGE_SEO } from "@/lib/seo";
+
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30, filter: "blur(6px)" },
@@ -57,9 +60,26 @@ const BlogPage = () => {
   const categories = ["All", ...Array.from(new Set(posts.map(p => p.category)))];
   const filteredPosts = activeCategory === "All" ? gridPosts : gridPosts.filter(p => p.category === activeCategory);
 
+  // CollectionPage schema built from the live blog posts.
+  const blogSchema = posts.length > 0 ? {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "ShadowTalk AI Blog",
+    url: "https://www.shadowtalk-ai.com/blog",
+    hasPart: posts.slice(0, 20).map((p) => ({
+      "@type": "BlogPosting",
+      headline: p.title,
+      datePublished: p.published_at || undefined,
+      author: { "@type": "Person", name: p.author },
+      url: `https://www.shadowtalk-ai.com/blog#${p.id}`,
+    })),
+  } : undefined;
+
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead meta={PAGE_SEO.blog} structuredData={blogSchema} />
       <Navigation />
+
 
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-1/4 right-1/3 w-[500px] h-[500px] bg-secondary/5 rounded-full blur-[180px]" />

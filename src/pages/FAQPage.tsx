@@ -12,6 +12,9 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { useFAQItems } from "@/hooks/useCMSContent";
+import SEOHead from "@/components/SEOHead";
+import { PAGE_SEO, getFAQSchema } from "@/lib/seo";
+
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30, filter: "blur(6px)" },
@@ -50,9 +53,15 @@ const FAQPage = () => {
       }))
     : [];
 
+  // Build FAQPage JSON-LD from real loaded items (skip if none).
+  const faqItems = dbItems.map((item: any) => ({ question: item.question, answer: item.answer }));
+  const faqSchema = faqItems.length > 0 ? getFAQSchema(faqItems) : undefined;
+
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead meta={PAGE_SEO.faq} structuredData={faqSchema} />
       <Navigation />
+
       
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-1/4 right-1/3 w-[500px] h-[500px] bg-secondary/5 rounded-full blur-[180px]" />
