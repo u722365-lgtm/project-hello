@@ -1,8 +1,124 @@
-import { checkRateLimit } from "../_shared/rate-limit.ts";
-import { requireAuth } from "../_shared/auth.ts";
-import { getCorsHeaders, handleCorsOptions } from "../_shared/cors.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+type OAuthProvider = "google" | "github" | "slack" | "notion";
+
+interface StateData {
+  userId: string;
+  provider: OAuthProvider;
+  scope?: string;
+}
+
+const REDIRECT_URI = `${Deno.env.get("SUPABASE_URL")}/functions/v1/oauth-callback`;
+
+async function exchangeCode(
+  provider: OAuthProvider,
+  code: string,
+): Promise<{ access_token: string; refresh_token?: string | null; expires_in?: number; error?: string }> {
+  if (provider === "google") {
+    const clientId = Deno.env.get("GOOGLE_OAUTH_CLIENT_ID");
+    const clientSecret = Deno.env.get("GOOGLE_OAUTH_CLIENT_SECRET");
+    if (!clientId || !clientSecret) return { access_token: "", error: "Google OAuth not configured" };
+
+    const res = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        code,
+        client_id: clientId,
+        client_secret: clientSecret,
+        redirect_uri: REDIRECT_URI,
+        grant_type: "authorization_code",
+      }),
+    });
+    return res.json();
+  }
+
+  if (provider === "github") {
+    const clientId = Deno.env.get("GITHUB_OAUTH_CLIENT_ID");
+    const clientSecret = Deno.env.get("GITHUB_OAUTH_CLIENT_SECRET");
+    if (!clientId || !clientSecret) return { access_token: "", error: "GitHub OAuth not configured" };
+
+    const res = await fetch("https://github.com/login/oauth/access_token", {
+      method: "POST",
+      headers: { Accept: "application/json", "Content-Type": "application/json" },
+      body: JSON.stringify({ client_id: clientId, client_secret: clientSecret, code, redirect_uri: REDIRECT_URI }),
+    });
+    const data = await res.json();
+    return {
+      access_token: data.access_token,
+      refresh_token: data.refresh_token ?? null,
+      expires_in: data.expires_in,
+      error: data.error,
+    };
+  }
+
+  if (provider === "slack") {
+    const clientId = Deno.env.get("SLACK_OAUTH_CLIENT_ID");
+    const clientSecret = Deno.env.get("SLACK_OAUTH_CLIENT_SECRET");
+    if (!clientId || !clientSecret) return { access_token: "", error: "Slack OAuth not configured" };
+
+    const res = await fetch("https://slack.com/api/oauth.v2.access", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        client_id: clientId,
+        client_secret: clientSecret,
+        code,
+        redirect_uri: REDIRECT_URI,
+      }),
+    });
+    const data = await res.json();
+    if (!data.ok) return { access_token: "", error: data.error || "Slack token exchange failed" };
+    return {
+      access_token: data.access_token,
+      refresh_token: data.refresh_token ?? null,
+      expires_in: undefined,
+    };
+  }
+
+  if (provider === "notion") {
+    const clientId = Deno.env.get("NOTION_OAUTH_CLIENT_ID");
+    const clientSecret = Deno.env.get("NOTION_OAUTH_CLIENT_SECRET");
+    if (!clientId || !clientSecret) return { access_token: "", error: "Notion OAuth not configured" };
+
+    const credentials = btoa(`${clientId}:${clientSecret}`);
+    const res = await fetch("https://api.notion.com/v1/oauth/token", {
+      method: "POST",
+      headers: {
+        Authorization: `Basic ${credentials}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "authorization_code",
+        code,
+        redirect_uri: REDIRECT_URI,
+      }),
+    });
+    const data = await res.json();
+    return {
+      access_token: data.access_token,
+      refresh_token: data.refresh_token ?? null,
+      error: data.error,
+    };
+  }
+
+  return { access_token: "", error: "Unknown provider" };
+}
+
+const VAULT_NAMES: Record<OAuthProvider, string> = {
+  google: "Google Workspace",
+  github: "GitHub",
+  slack: "Slack",
+  notion: "Notion",
+};
+
+const VAULT_TYPES: Record<OAuthProvider, string> = {
+  google: "email",
+  github: "custom",
+  slack: "messaging",
+  notion: "storage",
+};
 
 serve(async (req) => {
   try {
@@ -11,14 +127,10 @@ serve(async (req) => {
     const state = url.searchParams.get("state");
     const error = url.searchParams.get("error");
 
-    // Handle OAuth error
     if (error) {
-      console.error("[OAuth Callback] OAuth error:", error);
-      return new Response(renderErrorPage(error), {
-        headers: { "Content-Type": "text/html" },
-      });
+      return new Response(renderErrorPage(error), { headers: { "Content-Type": "text/html" } });
     }
-    
+
     if (!code || !state) {
       return new Response(renderErrorPage("Missing authorization code or state"), {
         status: 400,
@@ -26,8 +138,7 @@ serve(async (req) => {
       });
     }
 
-    // Decode state parameter
-    let stateData: { userId: string; scope: string };
+    let stateData: StateData;
     try {
       stateData = JSON.parse(atob(state));
     } catch {
@@ -37,80 +148,41 @@ serve(async (req) => {
       });
     }
 
-    const GOOGLE_CLIENT_ID = Deno.env.get("GOOGLE_OAUTH_CLIENT_ID");
-    const GOOGLE_CLIENT_SECRET = Deno.env.get("GOOGLE_OAUTH_CLIENT_SECRET");
-
-    if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
-      return new Response(renderErrorPage("OAuth not properly configured"), {
-        status: 500,
-        headers: { "Content-Type": "text/html" },
-      });
-    }
-    
-    // Exchange code for tokens
-    const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        code,
-        client_id: GOOGLE_CLIENT_ID,
-        client_secret: GOOGLE_CLIENT_SECRET,
-        redirect_uri: `${Deno.env.get("SUPABASE_URL")}/functions/v1/oauth-callback`,
-        grant_type: "authorization_code",
-      }),
-    });
-    
-    const tokens = await tokenResponse.json();
-
-    if (tokens.error) {
-      console.error("[OAuth Callback] Token exchange error:", tokens);
-      return new Response(renderErrorPage(tokens.error_description || tokens.error), {
+    const tokens = await exchangeCode(stateData.provider, code);
+    if (tokens.error || !tokens.access_token) {
+      return new Response(renderErrorPage(tokens.error || "Token exchange failed"), {
         status: 400,
         headers: { "Content-Type": "text/html" },
       });
     }
-    
-    // Store tokens in database
+
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
-
-    // Check if token already exists for this user/provider
-    const { data: existing } = await supabase
-      .from("oauth_tokens")
-      .select("id")
-      .eq("user_id", stateData.userId)
-      .eq("provider", "google")
-      .single();
 
     const tokenData = {
       user_id: stateData.userId,
-      provider: "google",
-      scope: stateData.scope,
+      provider: stateData.provider,
+      scope: stateData.scope ?? "default",
       access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token || null,
-      expires_at: tokens.expires_in 
-        ? new Date(Date.now() + tokens.expires_in * 1000).toISOString() 
+      refresh_token: tokens.refresh_token ?? null,
+      expires_at: tokens.expires_in
+        ? new Date(Date.now() + tokens.expires_in * 1000).toISOString()
         : null,
       updated_at: new Date().toISOString(),
     };
 
-    let dbError;
-    if (existing) {
-      // Update existing token
-      const { error } = await supabase
-        .from("oauth_tokens")
-        .update(tokenData)
-        .eq("id", existing.id);
-      dbError = error;
-    } else {
-      // Insert new token
-      const { error } = await supabase
-        .from("oauth_tokens")
-        .insert(tokenData);
-      dbError = error;
-    }
+    const { data: existing } = await supabase
+      .from("oauth_tokens")
+      .select("id")
+      .eq("user_id", stateData.userId)
+      .eq("provider", stateData.provider)
+      .maybeSingle();
+
+    const dbError = existing
+      ? (await supabase.from("oauth_tokens").update(tokenData).eq("id", existing.id)).error
+      : (await supabase.from("oauth_tokens").insert(tokenData)).error;
 
     if (dbError) {
       console.error("[OAuth Callback] Database error:", dbError);
@@ -120,15 +192,27 @@ serve(async (req) => {
       });
     }
 
-    // Get redirect URL for the app
-    const appOrigin = Deno.env.get("APP_URL") || "https://shadowtalk-ai.lovable.app";
-    const previewOrigin = "https://id-preview--0497e2a8-1dfb-4b9b-b437-30ee6b3f7741.lovable.app";
+    await supabase.from("shadow_vault_connections").upsert(
+      {
+        user_id: stateData.userId,
+        service_name: VAULT_NAMES[stateData.provider],
+        service_type: VAULT_TYPES[stateData.provider],
+        is_connected: true,
+        is_active: true,
+        sync_status: "idle",
+      },
+      { onConflict: "user_id,service_name" },
+    );
 
-    return new Response(renderSuccessPage(appOrigin, previewOrigin), { 
-      headers: { "Content-Type": "text/html" } 
+    const appOrigin = Deno.env.get("APP_URL") || "https://shadowtalk-ai.lovable.app";
+    const previewOrigin = Deno.env.get("PREVIEW_APP_URL") ||
+      "https://id-preview--0497e2a8-1dfb-4b9b-b437-30ee6b3f7741.lovable.app";
+
+    return new Response(renderSuccessPage(appOrigin, previewOrigin, stateData.provider), {
+      headers: { "Content-Type": "text/html" },
     });
-  } catch (error) {
-    console.error("[OAuth Callback] Error:", error);
+  } catch (err) {
+    console.error("[OAuth Callback] Error:", err);
     return new Response(renderErrorPage("An unexpected error occurred"), {
       status: 500,
       headers: { "Content-Type": "text/html" },
@@ -136,159 +220,69 @@ serve(async (req) => {
   }
 });
 
-function renderSuccessPage(appOrigin: string, previewOrigin: string): string {
+function renderSuccessPage(appOrigin: string, previewOrigin: string, provider: string): string {
   return `
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Authorization Successful - ShadowTalk AI</title>
+  <title>Connected - ShadowTalk AI</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-    }
-    .container {
-      text-align: center;
-      padding: 2rem;
-      max-width: 400px;
-    }
-    .icon {
-      width: 80px;
-      height: 80px;
-      margin: 0 auto 1.5rem;
-      background: linear-gradient(135deg, #7c3aed, #8b5cf6);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .icon svg { width: 40px; height: 40px; color: white; }
-    h1 { font-size: 1.5rem; margin-bottom: 0.5rem; }
-    p { color: #a1a1aa; margin-bottom: 1.5rem; }
-    .btn {
-      background: linear-gradient(135deg, #7c3aed, #8b5cf6);
-      color: white;
-      border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 8px;
-      font-size: 1rem;
-      cursor: pointer;
-      text-decoration: none;
-      display: inline-block;
-    }
+    body { font-family: system-ui, sans-serif; background: #0a0a0a; color: #fff; min-height: 100vh; display: flex; align-items: center; justify-content: center; margin: 0; }
+    .box { text-align: center; padding: 2rem; max-width: 360px; }
+    h1 { font-size: 1.25rem; }
+    p { color: #a1a1aa; font-size: 0.9rem; }
+    button { margin-top: 1rem; background: #7c3aed; color: #fff; border: none; padding: 0.6rem 1.2rem; border-radius: 8px; cursor: pointer; }
   </style>
   <script>
-    // Notify parent window of successful OAuth
+    const provider = "${provider}";
     const origins = ["${appOrigin}", "${previewOrigin}", window.location.origin];
     origins.forEach(origin => {
       try {
         if (window.opener) {
-          window.opener.postMessage({ type: "oauth-success", provider: "google" }, origin);
+          window.opener.postMessage({ type: "oauth-success", provider }, origin);
         }
-      } catch(e) { console.log("Could not post to", origin); }
+      } catch (e) {}
     });
-    
-    // Auto-close after 2 seconds
     setTimeout(() => window.close(), 2000);
   </script>
 </head>
 <body>
-  <div class="container">
-    <div class="icon">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-      </svg>
-    </div>
-    <h1>Authorization Successful!</h1>
-    <p>Your account has been connected. You can now close this window and return to ShadowTalk AI.</p>
-    <button class="btn" onclick="window.close()">Close Window</button>
-    <p style="margin-top: 1rem; font-size: 0.875rem; color: #71717a;">This window will close automatically...</p>
+  <div class="box">
+    <h1>Connected successfully</h1>
+    <p>Your ${provider} account is linked. You can close this window.</p>
+    <button onclick="window.close()">Close</button>
   </div>
 </body>
-</html>
-`;
+</html>`;
 }
 
 function renderErrorPage(error: string): string {
+  const safe = error.replace(/</g, "&lt;").replace(/>/g, "&gt;");
   return `
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Authorization Failed - ShadowTalk AI</title>
+  <title>Authorization Failed</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-    }
-    .container {
-      text-align: center;
-      padding: 2rem;
-      max-width: 400px;
-    }
-    .icon {
-      width: 80px;
-      height: 80px;
-      margin: 0 auto 1.5rem;
-      background: #ef4444;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .icon svg { width: 40px; height: 40px; color: white; }
-    h1 { font-size: 1.5rem; margin-bottom: 0.5rem; }
-    p { color: #a1a1aa; margin-bottom: 1.5rem; }
-    .error { color: #fca5a5; font-size: 0.875rem; margin-bottom: 1rem; }
-    .btn {
-      background: #27272a;
-      color: white;
-      border: 1px solid #3f3f46;
-      padding: 0.75rem 1.5rem;
-      border-radius: 8px;
-      font-size: 1rem;
-      cursor: pointer;
-      text-decoration: none;
-      display: inline-block;
-    }
+    body { font-family: system-ui, sans-serif; background: #0a0a0a; color: #fff; min-height: 100vh; display: flex; align-items: center; justify-content: center; margin: 0; }
+    .box { text-align: center; padding: 2rem; max-width: 360px; }
+    .err { color: #fca5a5; font-size: 0.85rem; margin: 1rem 0; }
+    button { background: #27272a; color: #fff; border: 1px solid #3f3f46; padding: 0.6rem 1.2rem; border-radius: 8px; cursor: pointer; }
   </style>
   <script>
-    // Notify parent window of OAuth error
     if (window.opener) {
-      try {
-        window.opener.postMessage({ type: "oauth-error", error: "${error}" }, "*");
-      } catch(e) {}
+      try { window.opener.postMessage({ type: "oauth-error", error: "${safe}" }, "*"); } catch (e) {}
     }
   </script>
 </head>
 <body>
-  <div class="container">
-    <div class="icon">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-      </svg>
-    </div>
-    <h1>Authorization Failed</h1>
-    <p class="error">${error}</p>
-    <p>Please close this window and try again.</p>
-    <button class="btn" onclick="window.close()">Close Window</button>
+  <div class="box">
+    <h1>Authorization failed</h1>
+    <p class="err">${safe}</p>
+    <button onclick="window.close()">Close</button>
   </div>
 </body>
-</html>
-`;
+</html>`;
 }
