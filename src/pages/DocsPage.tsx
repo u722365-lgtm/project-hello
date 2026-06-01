@@ -1,5 +1,17 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  DOC_TAGLINE,
+  DOC_QUICK_START,
+  DOC_ROUTES,
+  DOC_WORKSPACE_GUIDE,
+  DOC_FEATURES,
+  DOC_FAQ,
+  DOC_TROUBLESHOOTING,
+  docSearchBlob,
+  type DocFeatureIconKey,
+} from "@/content/productDocs";
+import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,8 +24,25 @@ import {
   Settings, Lock, Bell, Globe, Keyboard, FileText, HelpCircle, Lightbulb,
   Terminal, Database, Cloud, Smartphone, Monitor, Wifi, WifiOff, Volume2,
   Upload, Share2, History, Star, Crown, Check, X, Compass, Eye, TrendingUp,
-  Link2, Bookmark
+  Link2, Bookmark, Rocket, LayoutDashboard, KeyRound
 } from "lucide-react";
+
+const DOC_FEATURE_ICONS: Record<DocFeatureIconKey, LucideIcon> = {
+  brain: Brain,
+  zap: Zap,
+  users: Users,
+  code: Code,
+  compass: Compass,
+  search: Search,
+  shield: Shield,
+  file: FileText,
+  lock: Lock,
+  "wifi-off": WifiOff,
+  key: KeyRound,
+  message: MessageSquare,
+};
+
+const QUICK_START_ICONS = [MessageSquare, Zap, LayoutDashboard, Crown] as const;
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { motion } from "framer-motion";
@@ -121,26 +150,67 @@ const DocsPage = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
 
-  const features = [
-    { icon: Brain, title: "Multi-Model AI Engine", description: "Powered by Gemini & GPT-5 with adaptive model routing for optimal responses", badge: "Core" },
-    { icon: Compass, title: "ShadowBrowser", description: "Built-in AI-powered browser with Browse Together mode for real-time assistance", badge: "Free" },
-    { icon: Eye, title: "Browse Together", description: "AI assists while you browse — summaries, insights, and contextual Q&A", badge: "Free" },
-    { icon: MessageSquare, title: "AI Chat", description: "Natural conversations with context memory, personality modes, and streaming responses", badge: "Free" },
-    { icon: Shield, title: "Cyber Command Center", description: "Full security operations suite — threat intel, OSINT, pentest copilot, bug bounty tracker", badge: "New" },
-    { icon: Mic, title: "Voice Input & TTS", description: "Speak to AI with voice recognition and ElevenLabs text-to-speech output", badge: "Free" },
-    { icon: Code, title: "Code Generation", description: "Generate, debug, and explain code in multiple languages with Code Canvas", badge: "Pro" },
-    { icon: Brain, title: "AI Memory System", description: "Persistent memory that learns your preferences and business context over time", badge: "Core" },
-    { icon: Palette, title: "White-Label Branding", description: "Full workspace customization — logos, colors, fonts, and custom domains", badge: "Elite" },
-    { icon: Users, title: "Collaborative Rooms", description: "Real-time multi-user AI chat rooms with document collaboration", badge: "Pro" },
-    { icon: Lock, title: "Stealth Vault", description: "AES-256-GCM encrypted storage for sensitive data — never leaves your device", badge: "Elite" },
-  ];
+  const q = searchQuery.trim().toLowerCase();
+  const matches = (text: string) => !q || text.toLowerCase().includes(q);
 
-  const quickStartSteps = [
-    { step: 1, title: "Open the Workspace", description: "Visit shadowtalk-ai.com — you land on /chatbot instantly. A session starts automatically (link an email anytime from Profile).", icon: MessageSquare },
-    { step: 2, title: "Start Chatting", description: "Type in the composer pill, pick a provider (Sovereign or your BYOK key), and press Send or Enter.", icon: Zap },
-    { step: 3, title: "Explore Tools", description: "Use the tools menu, Mission Control, ShadowBrowser, voice, deep research, and the IDE from chat.", icon: Compass },
-    { step: 4, title: "Upgrade for More", description: "Visit /pricing for Pro, Premium, or Elite — unlimited messages, images, vault, offline, and API access.", icon: Crown },
-  ];
+  const features = useMemo(
+    () =>
+      DOC_FEATURES.filter(
+        (f) => matches(f.title) || matches(f.description) || matches(f.badge ?? ""),
+      ).map((f) => ({
+        icon: DOC_FEATURE_ICONS[f.icon],
+        title: f.title,
+        description: f.description,
+        badge: f.badge,
+      })),
+    [q],
+  );
+
+  const quickStartSteps = useMemo(
+    () => DOC_QUICK_START.filter((s) => matches(s.title) || matches(s.description)),
+    [q],
+  );
+
+  const docRoutes = useMemo(
+    () => DOC_ROUTES.filter((r) => matches(r.path) || matches(r.label) || matches(r.desc)),
+    [q],
+  );
+
+  const workspaceGuide = useMemo(
+    () =>
+      DOC_WORKSPACE_GUIDE.filter(
+        (w) => matches(w.title) || w.items.some((item) => matches(item)),
+      ),
+    [q],
+  );
+
+  const faqItems = useMemo(
+    () => DOC_FAQ.filter((f) => matches(f.q) || matches(f.a)),
+    [q],
+  );
+
+  const troubleshooting = useMemo(
+    () => DOC_TROUBLESHOOTING.filter((t) => matches(t.issue) || t.solutions.some(matches)),
+    [q],
+  );
+
+  const hasSearchResults = useMemo(() => {
+    if (!q) return true;
+    return (
+      docSearchBlob({
+        features: DOC_FEATURES,
+        faq: DOC_FAQ,
+        troubleshooting: DOC_TROUBLESHOOTING,
+        workspace: DOC_WORKSPACE_GUIDE,
+      }).includes(q) ||
+      features.length > 0 ||
+      quickStartSteps.length > 0 ||
+      docRoutes.length > 0 ||
+      workspaceGuide.length > 0 ||
+      faqItems.length > 0 ||
+      troubleshooting.length > 0
+    );
+  }, [q, features.length, quickStartSteps.length, docRoutes.length, workspaceGuide.length, faqItems.length, troubleshooting.length]);
 
   const apiEndpoints = [
     { method: "POST", endpoint: "/functions/v1/chat", description: "Send a message and receive streaming AI response", example: `{\n  "messages": [{"role": "user", "content": "Hello!"}],\n  "personality": "friendly"\n}` },
@@ -161,15 +231,6 @@ const DocsPage = () => {
     { name: "Brainstorm", icon: Lightbulb, description: "Generate ideas and explore concepts.", color: "from-secondary to-secondary/60" },
     { name: "Explain", icon: HelpCircle, description: "Break down complex topics simply.", color: "from-primary to-secondary" },
     { name: "Music", icon: Volume2, description: "Get music recommendations.", color: "from-accent to-accent/60" },
-  ];
-
-  const troubleshooting = [
-    { issue: "Messages not sending", solutions: ["Check your internet connection", "Refresh /chatbot and try again", "Clear your browser cache", "Open Settings and verify your provider or BYOK key", "Check if you've exceeded your daily message limit on the free tier"] },
-    { issue: "Stuck on loading screen", solutions: ["Hard refresh (Ctrl+Shift+R)", "Ensure you're on the latest deploy — workspace should open without a boot splash", "Check Supabase Anonymous sign-in is enabled for your project", "Try /chatbot directly"] },
-    { issue: "Voice input not working", solutions: ["Allow microphone permissions in your browser", "Check if your microphone is working in other apps", "Try using Chrome or Edge for best compatibility", "Ensure you're in a quiet environment", "Check your system audio settings"] },
-    { issue: "Images not generating", solutions: ["Ensure you have a Pro or Elite subscription", "Check your daily image generation limit", "Try a simpler prompt", "Avoid prohibited content in prompts", "Wait a few seconds and try again"] },
-    { issue: "Collaborative room issues", solutions: ["Ensure all participants have Pro or Elite plans", "Check if the room hasn't reached max participants", "Verify the room link is correct", "Try refreshing the page", "Check if you've been banned from the room"] },
-    { issue: "PWA installation problems", solutions: ["Make sure you're using a supported browser", "On iOS, use Safari to install", "Clear browser data and try again", "Check for browser updates", "Try incognito mode first"] },
   ];
 
   return (
@@ -206,7 +267,7 @@ const DocsPage = () => {
               transition={{ delay: 0.2 }}
               className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto"
             >
-              Comprehensive guides, tutorials, and reference documentation
+              {DOC_TAGLINE}
             </motion.p>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
               <div className="max-w-md mx-auto relative">
@@ -238,14 +299,21 @@ const DocsPage = () => {
         {/* Main Content */}
         <div className="max-w-6xl mx-auto px-4 py-12">
           <Tabs defaultValue="getting-started" className="space-y-8">
-            <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 max-w-3xl mx-auto gap-1 glass-subtle border-border/30 p-1">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-7 max-w-4xl mx-auto gap-1 glass-subtle border-border/30 p-1">
               <TabsTrigger value="getting-started">Get Started</TabsTrigger>
+              <TabsTrigger value="workspace">Workspace</TabsTrigger>
               <TabsTrigger value="features">Features</TabsTrigger>
               <TabsTrigger value="modes">Chat Modes</TabsTrigger>
               <TabsTrigger value="api">API</TabsTrigger>
               <TabsTrigger value="troubleshooting">Help</TabsTrigger>
               <TabsTrigger value="faq">FAQ</TabsTrigger>
             </TabsList>
+
+            {q && !hasSearchResults && (
+              <p className="text-center text-muted-foreground py-8 glass-subtle rounded-xl">
+                No results for &ldquo;{searchQuery}&rdquo;. Try &ldquo;chatbot&rdquo;, &ldquo;BYOK&rdquo;, or &ldquo;offline&rdquo;.
+              </p>
+            )}
 
             {/* Getting Started */}
             <TabsContent value="getting-started" className="space-y-8">
@@ -256,7 +324,9 @@ const DocsPage = () => {
                   Marketing and feature tours live at <strong className="text-foreground">/home</strong>.
                 </p>
                 <div className="grid gap-5 md:grid-cols-2">
-                  {quickStartSteps.map((item, i) => (
+                  {quickStartSteps.map((item, i) => {
+                    const StepIcon = QUICK_START_ICONS[i] ?? MessageSquare;
+                    return (
                     <motion.div key={item.step} custom={i} variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}
                       whileHover={{ y: -4, transition: { type: "spring", stiffness: 400 } }}
                     >
@@ -265,7 +335,7 @@ const DocsPage = () => {
                         <CardHeader className="relative z-10">
                           <div className="flex items-center gap-4">
                             <div className="w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                              <item.icon className="h-6 w-6 text-primary" />
+                              <StepIcon className="h-6 w-6 text-primary" />
                             </div>
                             <div>
                               <Badge variant="outline" className="mb-1 glass-subtle border-primary/20 text-xs">Step {item.step}</Badge>
@@ -276,20 +346,13 @@ const DocsPage = () => {
                         </CardHeader>
                       </Card>
                     </motion.div>
-                  ))}
+                  );})}
                 </div>
               </DocSection>
 
               <DocSection title="URLs & navigation">
                 <div className="grid gap-4 md:grid-cols-2">
-                  {[
-                    { path: "/chatbot", label: "Workspace (default)", desc: "Main chat — opens when you visit the site root" },
-                    { path: "/home", label: "Marketing", desc: "Landing page, features, and pricing overview" },
-                    { path: "/pricing", label: "Pricing", desc: "Plans, billing toggle, and upgrade" },
-                    { path: "/settings", label: "Settings", desc: "Chat defaults, offline AI, API keys" },
-                    { path: "/ide", label: "IDE", desc: "Code editor and App Builder projects" },
-                    { path: "/marketplace", label: "Marketplace", desc: "Install and run specialist agents" },
-                  ].map((row) => (
+                  {docRoutes.map((row) => (
                     <Card key={row.path} className="card-glass">
                       <CardHeader className="pb-2">
                         <CardTitle className="text-base font-mono text-primary">{row.path}</CardTitle>
@@ -382,10 +445,64 @@ const DocsPage = () => {
               </DocSection>
             </TabsContent>
 
+            {/* Workspace */}
+            <TabsContent value="workspace" className="space-y-8">
+              <DocSection title="Using the /chatbot workspace">
+                <p className="text-muted-foreground mb-6">
+                  ShadowTalk opens here by default. This is the main product — not a demo chat widget.
+                </p>
+                <div className="grid gap-5 md:grid-cols-2">
+                  {workspaceGuide.map((section, idx) => (
+                    <motion.div key={section.title} custom={idx} variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+                      <Card className="card-glass h-full overflow-hidden">
+                        <CardHeader className="relative z-10">
+                          <CardTitle className="text-lg flex items-center gap-2">
+                            <LayoutDashboard className="h-5 w-5 text-primary" />
+                            {section.title}
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="relative z-10">
+                          <ul className="space-y-2 text-sm">
+                            {section.items.map((item, j) => (
+                              <li key={j} className="flex items-start gap-2">
+                                <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                                <span className="text-muted-foreground">{item}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </div>
+              </DocSection>
+
+              <DocSection title="Composer controls">
+                <Card className="card-glass">
+                  <CardContent className="pt-6 space-y-3 text-sm text-muted-foreground">
+                    <p><strong className="text-foreground">+ Attach</strong> — images or files before sending.</p>
+                    <p><strong className="text-foreground">Provider chip</strong> — Sovereign (platform) or your BYOK provider when keys are saved.</p>
+                    <p><strong className="text-foreground">Mic</strong> — voice input / ShadowTalk Live.</p>
+                    <p><strong className="text-foreground">Send</strong> — gradient button inside the pill; Enter to send, Shift+Enter for new line.</p>
+                    <p className="text-xs pt-2">Hardware speed routing is automatic — there is no Turbo toggle in the UI.</p>
+                  </CardContent>
+                </Card>
+              </DocSection>
+
+              <div className="flex flex-wrap gap-3">
+                <Button className="btn-glow rounded-xl" onClick={() => navigate("/chatbot")}>
+                  <Rocket className="h-4 w-4 mr-2" /> Open workspace
+                </Button>
+                <Button variant="outline" className="rounded-xl" onClick={() => navigate("/changelog")}>
+                  <History className="h-4 w-4 mr-2" /> View changelog
+                </Button>
+              </div>
+            </TabsContent>
+
             {/* Features */}
             <TabsContent value="features" className="space-y-8">
               <DocSection title="Core Features">
-                <p className="text-muted-foreground mb-6">Powerful features designed to enhance your productivity and creativity.</p>
+                <p className="text-muted-foreground mb-6">Agentic workspace capabilities — chat, code, missions, security, and offline.</p>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                   {features.map((feature, i) => (
                     <motion.div key={i} custom={i} variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}
@@ -684,10 +801,10 @@ const DocsPage = () => {
                   <p className="text-muted-foreground mb-6">Our support team is available to assist you</p>
                   <div className="flex justify-center gap-4 flex-wrap">
                     <Button variant="outline" className="rounded-xl glass-subtle border-border/30 hover:border-primary/40" onClick={() => navigate('/chatbot')}>
-                      <MessageSquare className="h-4 w-4 mr-2" /> Ask AI Assistant
+                      <MessageSquare className="h-4 w-4 mr-2" /> Open workspace
                     </Button>
-                    <Button className="btn-glow rounded-xl">
-                      <ExternalLink className="h-4 w-4 mr-2" /> Contact Support
+                    <Button variant="outline" className="rounded-xl glass-subtle border-border/30 hover:border-primary/40" onClick={() => navigate('/contact')}>
+                      <ExternalLink className="h-4 w-4 mr-2" /> Contact support
                     </Button>
                   </div>
                 </div>
@@ -698,15 +815,7 @@ const DocsPage = () => {
             <TabsContent value="faq" className="space-y-8">
               <DocSection title="Frequently Asked Questions">
                 <Accordion type="single" collapsible className="space-y-3">
-                  {[
-                    { q: "How do I get started with ShadowTalk AI?", a: "Sign up for a free account using your email. No credit card required. Once signed up, you can immediately start chatting with our AI assistant." },
-                    { q: "What AI models does ShadowTalk use?", a: "We use Google's Gemini models (Gemini 3 Flash Preview, Gemini 2.5 Pro/Flash) and OpenAI GPT-5 family through adaptive model routing that picks the best model for each query." },
-                    { q: "Is my data secure and private?", a: "Yes. We use end-to-end encryption, and our Stealth Vault processes everything locally with AES-256-GCM. We don't train on your data." },
-                    { q: "What is the Cyber Command Center?", a: "It's a full security operations platform with AI Pentest Copilot, live threat intelligence (CVE feeds), OSINT tools, bug bounty tracker, and incident response war room — all connected to real backends." },
-                    { q: "Can I use ShadowTalk in my own application?", a: "Yes! Our API provides access to chat, security scanning, and AI capabilities. Available on Elite plans with full documentation." },
-                    { q: "How does offline mode work?", a: "We use WebLLM technology to run AI models directly in your browser. No internet needed, and your data never leaves your device. Available on Elite plans." },
-                    { q: "Does the blog use AI-generated content?", a: "Yes! Our blog is automatically updated daily with fresh, AI-generated articles covering cybersecurity, AI technology, tutorials, and industry insights." },
-                  ].map((faq, i) => (
+                  {faqItems.map((faq, i) => (
                     <AccordionItem key={i} value={`faq-${i}`} className="card-glass px-5 border-border/30">
                       <AccordionTrigger className="text-left hover:no-underline hover:text-primary transition-colors font-medium">{faq.q}</AccordionTrigger>
                       <AccordionContent className="text-muted-foreground">{faq.a}</AccordionContent>
