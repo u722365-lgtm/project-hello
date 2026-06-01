@@ -319,11 +319,11 @@ export const CommandPalette = ({ open, onOpenChange, onAction }: CommandPaletteP
     {
       id: "settings",
       label: "Settings",
-      description: "Customize your experience",
+      description: "Chat & AI settings (like ChatGPT / Claude)",
       icon: <Settings className="h-4 w-4" />,
       shortcut: "⌘,",
       category: "Navigation",
-      action: () => navigate("/profile"),
+      action: () => navigate("/settings"),
       keywords: ["settings", "preferences", "customize", "config"],
     },
     {

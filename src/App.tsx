@@ -32,6 +32,7 @@ export const CommandPaletteContext = createContext<{ open: () => void }>({ open:
  const ChatRoomsPage = lazy(() => import("./pages/ChatRoomsPage"));
  const CollaborativeRoom = lazy(() => import("./pages/CollaborativeRoom"));
  const ProfilePage = lazy(() => import("./pages/ProfilePage"));
+ const SettingsPage = lazy(() => import("./pages/SettingsPage"));
  const APIPage = lazy(() => import("./pages/APIPage"));
  const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
  const EnterpriseSettingsPage = lazy(() => import("./pages/EnterpriseSettingsPage"));
@@ -142,6 +143,7 @@ const AnimatedRoutes = () => {
           <Route path="/rooms" element={<PageTransition><ChatRoomsPage /></PageTransition>} />
           <Route path="/rooms/:roomId" element={<PageTransition><CollaborativeRoom /></PageTransition>} />
           <Route path="/profile" element={<PageTransition><ProfilePage /></PageTransition>} />
+          <Route path="/settings" element={<PageTransition><SettingsPage /></PageTransition>} />
           <Route path="/api" element={<PageTransition><APIPage /></PageTransition>} />
           <Route path="/analytics" element={<PageTransition><AnalyticsPage /></PageTransition>} />
           <Route path="/enterprise" element={<PageTransition><EnterpriseSettingsPage /></PageTransition>} />

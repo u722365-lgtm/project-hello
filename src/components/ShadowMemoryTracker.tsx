@@ -72,7 +72,7 @@ function getPageName(path: string): string {
     '/strategy': 'Strategy Agent',
     '/billing': 'Billing',
     '/analytics': 'Analytics',
-    '/settings': 'Settings',
+    '/settings': 'Chat Settings',
     '/security-audit': 'Security Audit',
     '/command-center': 'Command Center',
     '/transparency': 'Transparency',

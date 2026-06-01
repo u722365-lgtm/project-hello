@@ -361,7 +361,7 @@ export const ChatHeader = ({
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onOpenGeminiAnalytics} className="gap-3 rounded-xl py-3 px-4">
                 <Settings className="h-4 w-4 text-muted-foreground/60" />
-                <span className="text-[14px] font-medium">Neural Settings</span>
+                <span className="text-[14px] font-medium">Settings</span>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onExport} className="gap-3 rounded-xl py-3 px-4">
                 <Download className="h-4 w-4 text-muted-foreground/60" />

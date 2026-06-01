@@ -77,6 +77,7 @@ import { getDailyMessageCount, incrementDailyMessageCount } from "@/lib/dailyMes
 import { openProjectInIde, saveIdePayload } from "@/lib/idePayloadStorage";
 import { detectAppBuilderIntent, generateAppProject } from "@/lib/appBuilder";
 import { useShadowTalkModel } from "@/hooks/useShadowTalkModel";
+import { useChatSettings } from "@/hooks/useChatSettings";
 // Types
 interface Message { 
   id: string; 
@@ -139,6 +140,8 @@ const ChatbotPage = () => {
   const [personality, setPersonality] = useState<Personality>("friendly");
   const [chatMode, setChatMode] = useState<ChatMode>("general");
   const [aiProvider, setAiProvider] = useState<AIProvider>("lovable");
+  const { preferences: chatPreferences, isLoading: chatPrefsLoading } = useChatSettings();
+  const appliedChatDefaults = useRef(false);
   const [byokDialogOpen, setByokDialogOpen] = useState(false);
   const [pendingByokProvider, setPendingByokProvider] = useState<AIProvider | null>(null);
   const [showSidebar, setShowSidebar] = useState(false);
@@ -212,6 +215,14 @@ const ChatbotPage = () => {
     },
     [refreshApiKeys],
   );
+
+  useEffect(() => {
+    if (chatPrefsLoading || appliedChatDefaults.current) return;
+    appliedChatDefaults.current = true;
+    setAiProvider(chatPreferences.defaultProvider);
+    setPersonality(chatPreferences.defaultPersonality as Personality);
+    setChatMode(chatPreferences.defaultMode);
+  }, [chatPrefsLoading, chatPreferences]);
 
   useEffect(() => {
     const prompt = searchParams.get("q");
@@ -1218,7 +1229,7 @@ const ChatbotPage = () => {
             onOpenAgentWorkflows={() => navigate("/workspace")}
             onOpenModelFineTuning={() => navigate("/workspace")}
             onOpenWhiteLabelBranding={() => navigate("/workspace")}
-            onOpenGeminiAnalytics={() => navigate("/profile")}
+            onOpenGeminiAnalytics={() => navigate("/settings")}
             onOpenCanvas={() => navigate("/workspace")}
             onOpenDeepResearch={() => setShowDeepResearch(true)}
             onOpenGoogleIntegration={() => navigate("/profile?tab=linked")}

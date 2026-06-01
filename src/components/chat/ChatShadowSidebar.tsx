@@ -28,7 +28,7 @@ const NAV = [
   { label: "Signals", icon: Radio, to: "/analytics" },
   { label: "Automations", icon: Workflow, to: "/workspace" },
   { label: "Integrations", icon: Plug, to: "/developers" },
-  { label: "Settings", icon: Settings, to: "/profile" },
+  { label: "Settings", icon: Settings, to: "/settings" },
 ] as const;
 
 interface ChatShadowSidebarProps {

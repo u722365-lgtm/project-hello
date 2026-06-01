@@ -1,4 +1,5 @@
-import { MessageSquarePlus, History, Eraser, Trash2 } from "lucide-react";
+import { MessageSquarePlus, History, Eraser, Trash2, Settings } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -38,6 +39,8 @@ export function ChatToolbar({
   onDeleteAllChats,
   className = "",
 }: ChatToolbarProps) {
+  const navigate = useNavigate();
+
   return (
     <TooltipProvider delayDuration={300}>
       <div
@@ -46,6 +49,22 @@ export function ChatToolbar({
         <div className="mr-auto flex items-center">
           <HardwareTurboBadge />
         </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate("/settings")}
+              className="h-8 gap-1.5 rounded-full text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50"
+            >
+              <Settings className="h-4 w-4" />
+              <span className="hidden sm:inline">Settings</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Chat & AI settings</TooltipContent>
+        </Tooltip>
+
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
