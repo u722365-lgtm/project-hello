@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import Navigation from "@/components/Navigation";
+import LandingNavigation from "@/components/landing/LandingNavigation";
 import HeroSection from "@/components/HeroSection";
 import CouponBanner from "@/components/CouponBanner";
 import { SEOHead } from "@/components/SEOHead";
@@ -28,7 +28,7 @@ const Index = () => {
           <LandingMotionProvider>
             <div className="min-h-screen bg-background text-foreground landing-page-content">
               <CouponBanner />
-              <Navigation landingAnimated />
+              <LandingNavigation />
               <HeroSection />
               <Suspense fallback={<LandingSectionFallback />}>
                 <LandingSectionReveal preset="fadeUp">
