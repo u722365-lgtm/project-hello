@@ -164,7 +164,8 @@ const DocsPage = () => {
   ];
 
   const troubleshooting = [
-    { issue: "Messages not sending", solutions: ["Check your internet connection", "Refresh the page and try again", "Clear your browser cache", "Make sure you're logged in", "Check if you've exceeded your daily message limit"] },
+    { issue: "Messages not sending", solutions: ["Check your internet connection", "Refresh /chatbot and try again", "Clear your browser cache", "Open Settings and verify your provider or BYOK key", "Check if you've exceeded your daily message limit on the free tier"] },
+    { issue: "Stuck on loading screen", solutions: ["Hard refresh (Ctrl+Shift+R)", "Ensure you're on the latest deploy — workspace should open without a boot splash", "Check Supabase Anonymous sign-in is enabled for your project", "Try /chatbot directly"] },
     { issue: "Voice input not working", solutions: ["Allow microphone permissions in your browser", "Check if your microphone is working in other apps", "Try using Chrome or Edge for best compatibility", "Ensure you're in a quiet environment", "Check your system audio settings"] },
     { issue: "Images not generating", solutions: ["Ensure you have a Pro or Elite subscription", "Check your daily image generation limit", "Try a simpler prompt", "Avoid prohibited content in prompts", "Wait a few seconds and try again"] },
     { issue: "Collaborative room issues", solutions: ["Ensure all participants have Pro or Elite plans", "Check if the room hasn't reached max participants", "Verify the room link is correct", "Try refreshing the page", "Check if you've been banned from the room"] },
@@ -275,6 +276,32 @@ const DocsPage = () => {
                         </CardHeader>
                       </Card>
                     </motion.div>
+                  ))}
+                </div>
+              </DocSection>
+
+              <DocSection title="URLs & navigation">
+                <div className="grid gap-4 md:grid-cols-2">
+                  {[
+                    { path: "/chatbot", label: "Workspace (default)", desc: "Main chat — opens when you visit the site root" },
+                    { path: "/home", label: "Marketing", desc: "Landing page, features, and pricing overview" },
+                    { path: "/pricing", label: "Pricing", desc: "Plans, billing toggle, and upgrade" },
+                    { path: "/settings", label: "Settings", desc: "Chat defaults, offline AI, API keys" },
+                    { path: "/ide", label: "IDE", desc: "Code editor and App Builder projects" },
+                    { path: "/marketplace", label: "Marketplace", desc: "Install and run specialist agents" },
+                  ].map((row) => (
+                    <Card key={row.path} className="card-glass">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base font-mono text-primary">{row.path}</CardTitle>
+                        <CardDescription className="font-medium text-foreground">{row.label}</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-muted-foreground">{row.desc}</p>
+                        <Button variant="link" className="px-0 mt-2 h-auto" onClick={() => navigate(row.path)}>
+                          Open <ChevronRight className="h-3 w-3 ml-1" />
+                        </Button>
+                      </CardContent>
+                    </Card>
                   ))}
                 </div>
               </DocSection>
