@@ -4,7 +4,6 @@ import type { SettingsMotionProfile } from "@/lib/settingsMotion";
 import {
   SETTINGS_SPRING,
   SETTINGS_SPRING_SNAPPY,
-  dockItemVariants,
   headerRevealVariants,
   heroCollapseVariants,
   loadingPulseVariants,

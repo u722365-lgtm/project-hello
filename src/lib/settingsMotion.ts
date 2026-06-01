@@ -145,14 +145,6 @@ export function heroCollapseVariants(profile: SettingsMotionProfile): Variants {
   };
 }
 
-export function dockItemVariants(profile: SettingsMotionProfile): Variants {
-  return {
-    idle: { scale: 1 },
-    hover: { scale: profile.reduced ? 1 : 1.08, transition: SETTINGS_SPRING_SNAPPY },
-    tap: { scale: 0.92 },
-  };
-}
-
 export function searchResultVariants(profile: SettingsMotionProfile): Variants {
   return {
     hidden: { opacity: 0, x: profile.reduced ? 0 : -8 },
