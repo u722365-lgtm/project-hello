@@ -4,7 +4,7 @@ import { ShadowTalkLogo } from "@/components/brand/ShadowTalkLogo";
 export function ShadowTalkOrb() {
   return (
     <div className="mb-8 flex items-center justify-center">
-      <ShadowTalkLogo size={96} ambient animated />
+      <ShadowTalkLogo size={104} variant="icon" ambient animated />
     </div>
   );
 }

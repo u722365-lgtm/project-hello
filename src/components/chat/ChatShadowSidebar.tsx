@@ -59,7 +59,7 @@ export function ChatShadowSidebar({
         className="flex items-center gap-3 px-5 pt-6 pb-8 text-left w-full hover:opacity-90 transition-opacity"
       >
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-card/80 ring-1 ring-border/50">
-          <ShadowTalkLogo size={36} ambient={false} animated={false} />
+          <ShadowTalkLogo size={40} variant="icon" ambient={false} animated={false} />
         </div>
         <div>
           <p className="text-sm font-semibold text-sidebar-foreground tracking-tight">ShadowTalk AI</p>
