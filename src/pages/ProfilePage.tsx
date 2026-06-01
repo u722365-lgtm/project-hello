@@ -294,7 +294,7 @@ const ProfilePage = () => {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate("/");
+    navigate("/chatbot");
   };
 
   const handleDeleteAccount = async () => {
@@ -307,7 +307,7 @@ const ProfilePage = () => {
       if (data?.error) throw new Error(data.error);
       toast({ title: "Account deleted", description: "Your account and data have been removed." });
       await signOut();
-      navigate("/");
+      navigate("/chatbot");
     } catch (err) {
       toast({
         title: "Deletion failed",

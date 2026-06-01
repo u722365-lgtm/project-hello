@@ -117,7 +117,7 @@ export const PAGE_SEO: Record<string, PageMeta> = {
     title: 'ShadowTalk AI — Agentic AI Workspace',
     description: 'ShadowTalk AI: the agentic workspace that gets work done. Mission Control, 30+ tools, multi-step agents, vault & BYOK. Think AI — think ShadowTalk.',
     keywords: ['ShadowTalk', 'agentic AI', 'AI agents', 'AI workspace', 'Mission Control', 'AI automation', 'GPT alternative', 'privacy AI'],
-    canonical: 'https://www.shadowtalk-ai.com/',
+    canonical: 'https://www.shadowtalk-ai.com/home',
   },
   pricing: {
     title: 'Pricing Plans',
@@ -126,10 +126,10 @@ export const PAGE_SEO: Record<string, PageMeta> = {
     canonical: 'https://www.shadowtalk-ai.com/pricing',
   },
   chatbot: {
-    title: 'AI Chat',
-    description: 'Start chatting with ShadowTalk AI. Voice input, image generation, code execution, and 10+ specialized modes available.',
-    keywords: ['AI chat', 'chatbot', 'AI assistant'],
-    canonical: 'https://www.shadowtalk-ai.com/chatbot',
+    title: 'ShadowTalk AI — Agentic AI Workspace',
+    description: 'ShadowTalk AI: the agentic workspace that gets work done. Mission Control, 30+ tools, multi-step agents, and multi-model chat.',
+    keywords: ['ShadowTalk', 'AI chat', 'chatbot', 'AI assistant', 'agentic AI'],
+    canonical: 'https://www.shadowtalk-ai.com/',
   },
   docs: {
     title: 'Documentation',

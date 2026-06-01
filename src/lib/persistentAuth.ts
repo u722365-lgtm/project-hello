@@ -50,9 +50,6 @@ export function getRememberedWorkspacePath(): string {
   return path?.startsWith("/") ? path : DEFAULT_WORKSPACE;
 }
 
-/** Paths where returning users should skip marketing/auth and open the app directly. */
-export const AUTO_ENTER_PATHS = new Set(["/", "/auth"]);
-
 export function isAnonymousUser(session: Session | null): boolean {
   if (!session?.user) return false;
   return session.user.is_anonymous === true;

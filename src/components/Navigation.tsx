@@ -141,7 +141,7 @@ const Navigation = ({ landingAnimated = false }: NavigationProps) => {
           >
             <motion.div
               className="flex items-center space-x-2.5 cursor-pointer flex-shrink-0 group"
-              onClick={() => navigate("/")}
+              onClick={() => navigate("/chatbot")}
               whileHover={animate ? hoverLift : undefined}
             >
               <div className="relative">

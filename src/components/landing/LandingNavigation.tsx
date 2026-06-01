@@ -101,7 +101,7 @@ const LandingNavigation = () => {
             {/* Brand */}
             <motion.button
               type="button"
-              onClick={() => navigate("/")}
+              onClick={() => navigate("/chatbot")}
               className="landing-nav-brand flex shrink-0 items-center gap-2.5"
               whileHover={profile.reduced ? undefined : hoverLift}
               whileTap={profile.reduced ? undefined : { scale: 0.98 }}

@@ -123,7 +123,7 @@ export function ChatShadowSidebar({
             type="button"
             onClick={() => {
               settingsHapticTick();
-              navigate("/");
+              navigate("/chatbot");
               onNavigate?.();
             }}
             whileTap={{ scale: 0.98 }}

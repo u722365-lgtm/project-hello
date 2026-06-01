@@ -49,7 +49,7 @@ const NotFound = () => {
 
           {/* Actions */}
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button onClick={() => navigate("/")} className="gap-2">
+            <Button onClick={() => navigate("/chatbot")} className="gap-2">
               <Home className="h-4 w-4" />
               Go Home
             </Button>
