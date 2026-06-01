@@ -1,0 +1,43 @@
+# ShadowTalk AI
+
+> ShadowTalk AI is a privacy-first agentic AI workspace. It runs autonomous multi-step missions, ships 30+ specialized tools (chat, code, voice, vision, deep research, image generation, security audit), and supports fully offline on-device models via WebGPU.
+
+## Pages
+
+- [Home](/): Overview of ShadowTalk AI, the agentic workspace.
+- [Chatbot](/chatbot): Conversational AI with 10+ specialized modes, voice, vision, and tool use.
+- [Mission Control](/missioncontrol): Launch and monitor autonomous multi-step AI missions.
+- [Deep Research](/research): SERP-grounded multi-step research with cited synthesis.
+- [Strategy Agent](/strategy): AI business intelligence, market and competitor analysis.
+- [Workspace](/workspace): Collaborative AI workspace for teams and projects.
+- [Creative Studio](/studio): AI media editor for images, documents, and creative output.
+- [Presentation Builder](/presentations): Auto-generate slides and decks from a prompt.
+- [Code IDE](/ide): In-browser Monaco IDE with AI-assisted coding and live preview.
+- [Knowledge Graph](/knowledge): Visual force-directed graph of saved entities and notes.
+- [Marketplace](/marketplace): Browse and install specialized AI agents and plugins.
+- [Cyber Command](/cyber): Cybersecurity operations center with 8 integrated modules.
+- [Security Audit](/security-audit): Hyper-Security Contextual Auditor for code and URLs.
+- [Privacy Score](/privacy-score): Score and improve your digital privacy posture.
+- [Transparency](/transparency): How ShadowTalk handles data, processing, and encryption.
+- [Pricing](/pricing): Plans — Free, Pro, Premium, and Elite tiers.
+- [Lifetime Deal](/lifetime-deal): One-time payment for lifetime Elite access.
+- [Blog](/blog): Product updates, tutorials, and AI research notes.
+- [Changelog](/changelog): Release notes and shipped features.
+- [Docs](/docs): How to use ShadowTalk AI effectively.
+- [Developers](/developers): SDKs, webhooks, and developer resources.
+- [API](/api): API management, keys, and integration docs.
+- [FAQ](/faq): Common questions about features, pricing, and privacy.
+- [Help Center](/help): Guides, tutorials, and troubleshooting.
+- [About](/about): Company, mission, and team.
+- [Careers](/careers): Open roles at ShadowTalk AI.
+- [Press](/press): Press resources and media kit.
+- [Contact](/contact): Get in touch with the team.
+- [Status](/status): System status and uptime.
+
+## Legal
+
+- [Privacy Policy](/privacy): How we collect, use, and protect data.
+- [Terms of Service](/terms): Rules and guidelines for using ShadowTalk AI.
+- [Cookie Policy](/cookies): How we use cookies and tracking.
+- [GDPR](/gdpr): GDPR compliance and your data rights.
+- [Trust](/trust): Security and compliance posture.
