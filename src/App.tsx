@@ -10,6 +10,7 @@ import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/components/AuthProvider";
 import { SecurityProvider } from "@/components/SecurityProvider";
 import { ShadowMemoryProvider } from "@/contexts/ShadowMemoryContext";
+import { AutoImproveProvider } from "@/contexts/AutoImproveContext";
 import { StealthKillSwitchProvider } from "@/contexts/StealthKillSwitchContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import BootScreen from "@/components/BootScreen";
@@ -78,6 +79,7 @@ const ComplianceDashboardPage = lazy(() => import("./pages/ComplianceDashboardPa
 const TrustPage = lazy(() => import("./pages/TrustPage"));
 const CreativeStudioPage = lazy(() => import("./pages/CreativeStudioPage"));
 const CyberCommandPage = lazy(() => import("./pages/CyberCommandPage"));
+const AutoImproveEngine = lazy(() => import("@/components/autoImprove/AutoImproveEngine"));
 const PersonalLLMPage = lazy(() => import("./pages/PersonalLLMPage"));
 const PWABanner = lazy(() => import("./components/PWABanner"));
 const CookieConsent = lazy(() => import("./components/CookieConsent"));
@@ -260,6 +262,7 @@ const App = () => {
               <StealthKillSwitchProvider>
               <SecurityProvider>
               <ShadowMemoryProvider>
+              <AutoImproveProvider>
               <CommandPaletteContext.Provider value={{ open: () => setCmdOpen(true) }}>
               {showBootScreen && !hasBooted && (
                 <BootScreen onComplete={handleBootComplete} />
@@ -274,6 +277,7 @@ const App = () => {
                       <OnboardingFlow />
                       <ShadowMemoryTracker />
                       <JourneyTracker />
+                      <AutoImproveEngine />
                       <PWABanner />
                       <CookieConsent />
                       <CustomerSupportWidget />
@@ -281,6 +285,7 @@ const App = () => {
                   )}
                </BrowserRouter>
               </CommandPaletteContext.Provider>
+              </AutoImproveProvider>
               </ShadowMemoryProvider>
               </SecurityProvider>
               </StealthKillSwitchProvider>
