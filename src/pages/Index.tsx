@@ -1,7 +1,6 @@
 import { lazy, Suspense } from "react";
 import LandingNavigation from "@/components/landing/LandingNavigation";
 import HeroSection from "@/components/HeroSection";
-import CouponBanner from "@/components/CouponBanner";
 import { SEOHead } from "@/components/SEOHead";
 import { PAGE_SEO } from "@/lib/seo";
 import LandingPageShell from "@/components/landing/LandingPageShell";
