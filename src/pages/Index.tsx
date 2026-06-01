@@ -26,7 +26,6 @@ const Index = () => {
         <LandingPageShell>
           <LandingMotionProvider>
             <div className="min-h-screen bg-background text-foreground landing-page-content">
-              <CouponBanner />
               <LandingNavigation />
               <HeroSection />
               <Suspense fallback={<LandingSectionFallback />}>
