@@ -1,5 +1,6 @@
-import { useEffect } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import { useAuth } from "@/components/AuthProvider";
 import {
   Settings,
@@ -11,26 +12,18 @@ import {
   Link2,
   User,
   Loader2,
-  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { SettingsGeneralSection } from "@/components/settings/SettingsGeneralSection";
-import { SettingsDefaultModelsCard } from "@/components/settings/SettingsDefaultModelsCard";
-import { CustomInstructionsProfileCard } from "@/components/profile/CustomInstructionsProfileCard";
-import { ChatAIPreferencesCard } from "@/components/profile/ChatAIPreferencesCard";
-import { OfflineAISettings } from "@/components/profile/OfflineAISettings";
-import { ShadowTalkModelPanel } from "@/components/profile/ShadowTalkModelPanel";
-import { AutoImproveInsights } from "@/components/autoImprove/AutoImproveInsights";
-import { PrivacyDataCard } from "@/components/profile/PrivacyDataCard";
-import { CustomApiKeysPanel } from "@/components/profile/CustomApiKeysPanel";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
+import { SettingsAmbientBackground } from "@/components/settings/SettingsAmbientBackground";
+import { SettingsNav, type SettingsNavSection } from "@/components/settings/SettingsNav";
+import {
+  SettingsSectionPanels,
+  type SettingsSectionId,
+} from "@/components/settings/SettingsSectionPanels";
+import { useSettingsMotion } from "@/hooks/useSettingsMotion";
 import { isLearningEnabled, setLearningEnabled } from "@/lib/autoImprove/learningConsent";
-import { useState } from "react";
-import { DesktopAppSettings } from "@/components/desktop/DesktopAppSettings";
 
-const SECTIONS = [
+const SECTIONS: readonly SettingsNavSection[] = [
   { id: "general", label: "General", icon: Settings, desc: "Theme, language, sounds" },
   { id: "personalization", label: "Personalization", icon: Sparkles, desc: "Instructions & tone" },
   { id: "chat", label: "Chat behavior", icon: MessageSquare, desc: "Sending, timestamps, routing" },
@@ -38,9 +31,7 @@ const SECTIONS = [
   { id: "data", label: "Data controls", icon: Database, desc: "Learning & privacy" },
   { id: "connections", label: "Connections", icon: Link2, desc: "API keys & integrations" },
   { id: "account", label: "Account", icon: User, desc: "Profile, billing, security" },
-] as const;
-
-type SectionId = (typeof SECTIONS)[number]["id"];
+];
 
 const VALID = new Set(SECTIONS.map((s) => s.id));
 
@@ -49,201 +40,112 @@ export default function SettingsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { user, loading: authLoading } = useAuth();
   const [learningEnabled, setLearningEnabledState] = useState(isLearningEnabled());
+  const { sectionPanel, headerReveal, loadingPulse, shouldAnimateAmbient } = useSettingsMotion();
 
   const section = (() => {
     const s = searchParams.get("section") || "general";
-    return VALID.has(s as SectionId) ? (s as SectionId) : "general";
+    return VALID.has(s) ? (s as SettingsSectionId) : "general";
   })();
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/auth");
   }, [user, authLoading, navigate]);
 
+  const selectSection = (id: string) => {
+    setSearchParams({ section: id }, { replace: true });
+  };
+
   if (authLoading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 neural-bg">
+        <SettingsAmbientBackground enabled={shouldAnimateAmbient} />
+        <motion.div variants={loadingPulse} animate="animate">
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        </motion.div>
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-sm text-muted-foreground"
+        >
+          Loading settings…
+        </motion.p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-xl">
+    <div className="min-h-screen relative">
+      <SettingsAmbientBackground enabled={shouldAnimateAmbient} />
+
+      <motion.header
+        variants={headerReveal}
+        initial="hidden"
+        animate="visible"
+        className="sticky top-0 z-50 border-b border-border/40 bg-background/70 backdrop-blur-2xl"
+      >
+        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
         <div className="container mx-auto px-4 h-14 flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/chatbot")} aria-label="Back to chat">
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div className="flex items-center gap-2">
-            <Settings className="h-5 w-5 text-primary" />
-            <h1 className="text-lg font-semibold">Settings</h1>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/chatbot")}
+              aria-label="Back to chat"
+              className="rounded-xl"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          </motion.div>
+          <div className="flex items-center gap-2.5">
+            <motion.span
+              className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/15 border border-primary/30"
+              animate={
+                shouldAnimateAmbient
+                  ? { boxShadow: ["0 0 0px hsl(var(--primary)/0)", "0 0 24px hsl(var(--primary)/0.25)", "0 0 0px hsl(var(--primary)/0)"] }
+                  : undefined
+              }
+              transition={{ duration: 3, repeat: Infinity }}
+            >
+              <Settings className="h-4 w-4 text-primary" />
+            </motion.span>
+            <div>
+              <h1 className="text-lg font-semibold leading-tight">
+                <span className="gradient-text">Settings</span>
+              </h1>
+              <p className="text-[11px] text-muted-foreground hidden sm:block">
+                Neural workspace preferences
+              </p>
+            </div>
           </div>
-          <p className="hidden sm:block text-sm text-muted-foreground ml-2">
-            Customize ShadowTalk like ChatGPT, Claude, or Gemini
+          <p className="hidden md:block text-sm text-muted-foreground ml-auto max-w-md text-right">
+            Customize ShadowTalk — theme, models, chat, and privacy in one place
           </p>
         </div>
-      </header>
+      </motion.header>
 
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <div className="flex flex-col lg:flex-row gap-8">
-          <nav className="lg:w-56 shrink-0">
-            <ul className="space-y-1 sticky top-20">
-              {SECTIONS.map((item) => {
-                const active = section === item.id;
-                return (
-                  <li key={item.id}>
-                    <button
-                      type="button"
-                      onClick={() => setSearchParams({ section: item.id }, { replace: true })}
-                      className={cn(
-                        "w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition-colors",
-                        active
-                          ? "bg-primary/15 text-foreground font-medium"
-                          : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
-                      )}
-                    >
-                      <item.icon className={cn("h-4 w-4 shrink-0", active && "text-primary")} />
-                      <span className="flex-1 min-w-0">
-                        <span className="block truncate">{item.label}</span>
-                        <span className="block text-[10px] text-muted-foreground truncate">{item.desc}</span>
-                      </span>
-                      {active && <ChevronRight className="h-4 w-4 shrink-0 text-primary" />}
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </nav>
+      <div className="container mx-auto px-4 py-6 sm:py-8 max-w-6xl relative">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
+          <SettingsNav sections={SECTIONS} activeId={section} onSelect={selectSection} />
 
-          <main className="flex-1 min-w-0 pb-16">
-            {section === "general" && <SettingsGeneralSection />}
-
-            {section === "personalization" && (
-              <div className="space-y-6">
-                <div>
-                  <h2 className="text-xl font-semibold tracking-tight">Personalization</h2>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Custom instructions and default style for every conversation
-                  </p>
-                </div>
-                <SettingsDefaultModelsCard />
-                <CustomInstructionsProfileCard />
-              </div>
-            )}
-
-            {section === "chat" && (
-              <div className="space-y-6">
-                <div>
-                  <h2 className="text-xl font-semibold tracking-tight">Chat behavior</h2>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Keyboard, display, and how messages are routed
-                  </p>
-                </div>
-                <ChatAIPreferencesCard />
-              </div>
-            )}
-
-            {section === "models" && (
-              <div className="space-y-6">
-                <div>
-                  <h2 className="text-xl font-semibold tracking-tight">Models & AI</h2>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    On-device models, hardware acceleration, and sovereign learning
-                  </p>
-                </div>
-                <SettingsDefaultModelsCard />
-                <OfflineAISettings />
-                <ShadowTalkModelPanel />
-                <DesktopAppSettings />
-              </div>
-            )}
-
-            {section === "data" && (
-              <div className="space-y-6">
-                <div>
-                  <h2 className="text-xl font-semibold tracking-tight">Data controls</h2>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Learning, analytics consent, and local data
-                  </p>
-                </div>
-                <AutoImproveInsights />
-                <Card className="glass border-border/50">
-                  <CardHeader>
-                    <CardTitle className="text-base">Adaptive learning</CardTitle>
-                    <CardDescription>
-                      On-device behavior learning (separate from analytics cookies)
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between p-4 rounded-xl bg-muted/20">
-                      <p className="text-sm font-medium">Enable adaptive learning</p>
-                      <Switch
-                        checked={learningEnabled}
-                        onCheckedChange={(v) => {
-                          setLearningEnabled(v);
-                          setLearningEnabledState(v);
-                        }}
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-                <PrivacyDataCard />
-              </div>
-            )}
-
-            {section === "connections" && (
-              <div className="space-y-6">
-                <div>
-                  <h2 className="text-xl font-semibold tracking-tight">Connections</h2>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    API keys and linked services (Google, GitHub, Slack, WhatsApp)
-                  </p>
-                </div>
-                <CustomApiKeysPanel />
-                <Card className="glass border-border/50">
-                  <CardContent className="pt-6 flex flex-wrap gap-3">
-                    <Button asChild variant="secondary">
-                      <Link to="/profile?tab=linked">Manage linked accounts</Link>
-                    </Button>
-                    <Button asChild variant="outline">
-                      <Link to="/developers">Developer integrations</Link>
-                    </Button>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
-
-            {section === "account" && (
-              <div className="space-y-6">
-                <div>
-                  <h2 className="text-xl font-semibold tracking-tight">Account</h2>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Profile, subscription, security, and notifications
-                  </p>
-                </div>
-                <Card className="glass border-border/50 divide-y divide-border/40">
-                  {[
-                    { label: "Profile & avatar", href: "/profile?tab=profile", desc: "Name, bio, photo" },
-                    { label: "Notifications", href: "/profile?tab=notifications", desc: "Email & alerts" },
-                    { label: "Security & 2FA", href: "/profile?tab=security", desc: "Password, API vault" },
-                    { label: "Billing & plan", href: "/profile?tab=billing", desc: "Subscription & credits" },
-                    { label: "Activity history", href: "/profile?tab=activity", desc: "Past conversations" },
-                  ].map((row) => (
-                    <Link
-                      key={row.href}
-                      to={row.href}
-                      className="flex items-center justify-between px-5 py-4 hover:bg-muted/30 transition-colors"
-                    >
-                      <div>
-                        <p className="text-sm font-medium">{row.label}</p>
-                        <p className="text-xs text-muted-foreground">{row.desc}</p>
-                      </div>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                    </Link>
-                  ))}
-                </Card>
-              </div>
-            )}
+          <main className="flex-1 min-w-0 pb-20">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={section}
+                variants={sectionPanel}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+              >
+                <SettingsSectionPanels
+                  section={section}
+                  learningEnabled={learningEnabled}
+                  onLearningChange={(v) => {
+                    setLearningEnabled(v);
+                    setLearningEnabledState(v);
+                  }}
+                />
+              </motion.div>
+            </AnimatePresence>
           </main>
         </div>
       </div>
