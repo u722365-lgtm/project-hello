@@ -588,8 +588,30 @@
 
   /* ShadowTalk Composer — single pill input (approved) */
   .shadowtalk-composer {
-    @apply relative flex items-center gap-2 min-h-[56px] w-full rounded-full border border-[#2a3548] bg-[#141a24] px-2 py-1.5 transition-all duration-200;
+    @apply relative flex items-center gap-2 min-h-[56px] w-full rounded-full border border-[#2a3548] bg-[#141a24] pl-2 pr-1.5 py-1.5 transition-all duration-200 overflow-hidden;
     box-shadow: 0 4px 24px rgb(0 0 0 / 0.35);
+  }
+
+  .shadowtalk-composer__textarea {
+    min-width: 0;
+    padding-right: 0.5rem;
+  }
+
+  @media (min-width: 640px) {
+    .shadowtalk-composer__textarea {
+      padding-right: 10.5rem;
+    }
+  }
+
+  @media (max-width: 639px) {
+    .shadowtalk-composer__textarea {
+      padding-right: 8.75rem;
+    }
+  }
+
+  .shadowtalk-composer__actions {
+    @apply absolute right-1.5 top-1/2 z-10 flex items-center gap-1 -translate-y-1/2 shrink-0;
+    max-width: calc(100% - 3.5rem);
   }
 
   .shadowtalk-composer::before {
@@ -626,14 +648,14 @@
   }
 
   .shadowtalk-composer__send {
-    @apply h-9 w-9 shrink-0 rounded-full text-white transition-all duration-200;
+    @apply h-9 w-9 shrink-0 rounded-full border-0 text-white transition-all duration-200;
     background: linear-gradient(135deg, #22d3ee 0%, #6366f1 55%, #a855f7 100%);
     box-shadow: 0 2px 12px rgb(99 102 241 / 0.45);
   }
 
   .shadowtalk-composer__send:hover:not(:disabled) {
     filter: brightness(1.08);
-    transform: scale(1.04);
+    transform: none;
   }
 
   .shadowtalk-composer__send:disabled {

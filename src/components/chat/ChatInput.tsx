@@ -5,7 +5,6 @@ import { FileUpload } from "@/components/chat/FileUpload";
 import { ModeSelector, ChatMode } from "@/components/chat/ModeSelector";
 import { SearchHistory } from "@/components/chat/SearchHistory";
 import { ProviderSelector, AIProvider } from "@/components/chat/ProviderSelector";
-import { HardwareTurboBadge } from "@/components/chat/HardwareTurboBadge";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Tooltip,
@@ -141,24 +140,21 @@ export const ChatInput = ({
               onChange={(e) => onMessageChange(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={isListening ? "Listening..." : "Ask ShadowTalk"}
-              className="flex-1 min-h-[40px] max-h-[200px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 py-2.5 px-2 text-[15px] placeholder:text-muted-foreground/50 leading-relaxed overflow-y-auto custom-scrollbar"
+              className="shadowtalk-composer__textarea flex-1 min-h-[40px] max-h-[200px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 py-2.5 pl-2 pr-2 text-[15px] placeholder:text-muted-foreground/50 leading-relaxed overflow-y-auto custom-scrollbar"
               disabled={isLoading}
               rows={1}
             />
 
-            <div className="flex items-center gap-1.5 shrink-0 pr-0.5">
-              <div className="flex items-center gap-1 max-w-[140px] sm:max-w-none overflow-hidden">
-                <HardwareTurboBadge />
-                {onProviderChange && (
-                  <ProviderSelector
-                    provider={aiProvider}
-                    onProviderChange={onProviderChange}
-                    hasKeyForProvider={hasKeyForProvider}
-                    disabled={isLoading}
-                    variant="chip"
-                  />
-                )}
-              </div>
+            <div className="shadowtalk-composer__actions">
+              {onProviderChange && (
+                <ProviderSelector
+                  provider={aiProvider}
+                  onProviderChange={onProviderChange}
+                  hasKeyForProvider={hasKeyForProvider}
+                  disabled={isLoading}
+                  variant="chip"
+                />
+              )}
 
               <TooltipProvider>
                 <Tooltip>
@@ -195,6 +191,7 @@ export const ChatInput = ({
               <Button
                 onClick={onSend}
                 size="icon"
+                type="button"
                 className="shadowtalk-composer__send"
                 disabled={!canSend || isLoading}
                 aria-label="Send message"

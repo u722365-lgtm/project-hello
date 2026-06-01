@@ -20,8 +20,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { HardwareTurboBadge } from "@/components/chat/HardwareTurboBadge";
-
 interface ChatToolbarProps {
   hasActiveChat: boolean;
   conversationCount: number;
@@ -52,9 +50,7 @@ export function ChatToolbar({
         animate="visible"
         className={`flex items-center gap-1 px-4 md:px-6 py-2 border-b border-border/40 glass-subtle shrink-0 ${className}`}
       >
-        <div className="mr-auto flex items-center">
-          <HardwareTurboBadge />
-        </div>
+        <div className="ml-auto flex items-center gap-1">
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
@@ -120,7 +116,7 @@ export function ChatToolbar({
           <TooltipContent>Clear messages in this chat</TooltipContent>
         </Tooltip>
 
-        <div className="flex-1" />
+        </div>
 
         {conversationCount > 0 && (
           <AlertDialog>
