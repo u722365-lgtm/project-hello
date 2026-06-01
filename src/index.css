@@ -354,6 +354,18 @@
     scroll-padding-top: 7rem;
   }
 
+  /* Profile compact mode — tighter spacing app-wide */
+  html.shadowtalk-compact {
+    --radius: 0.625rem;
+  }
+  html.shadowtalk-compact .container {
+    @apply py-4;
+  }
+  html.shadowtalk-compact [class*="py-8"] {
+    padding-top: 1.25rem;
+    padding-bottom: 1.25rem;
+  }
+
   /* ===== Neural Expressive Redesign ===== */
   @keyframes fluid-gradient {
     0% { background-position: 0% 50%; }

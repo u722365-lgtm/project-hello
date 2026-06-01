@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   User, Bell, Shield, Save, Loader2, CreditCard, ExternalLink, Crown,
   Lock, KeyRound, LogOut, Trash2, Mail, Eye, EyeOff, CheckCircle2,
-  AlertTriangle, Activity, Settings, Link2,
+  AlertTriangle, Activity, Settings, Link2, Bot,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import ReferralProgram from "@/components/ReferralProgram";
@@ -27,6 +27,9 @@ import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { ProfileTab } from "@/components/profile/ProfileTab";
 import { ActivityTab } from "@/components/profile/ActivityTab";
 import { PreferencesTab } from "@/components/profile/PreferencesTab";
+import { AiSettingsTab } from "@/components/profile/AiSettingsTab";
+import { NotificationsExtras } from "@/components/profile/NotificationsExtras";
+import { PrivacyDataCard } from "@/components/profile/PrivacyDataCard";
 import { LinkedAccountsTab } from "@/components/profile/LinkedAccountsTab";
 import { CustomApiKeysPanel } from "@/components/profile/CustomApiKeysPanel";
 import { AdminPanelLink } from "@/components/admin/AdminPanelLink";
@@ -52,6 +55,7 @@ const PROFILE_TABS = new Set([
   "notifications",
   "security",
   "linked",
+  "ai",
   "preferences",
   "billing",
 ]);
@@ -226,26 +230,29 @@ const ProfilePage = () => {
           onValueChange={(tab) => setSearchParams({ tab }, { replace: true })}
           className="space-y-6"
         >
-          <TabsList className="grid grid-cols-7 w-full max-w-2xl mx-auto bg-muted/50 backdrop-blur-sm">
-            <TabsTrigger value="profile" className="gap-1 text-xs">
+          <TabsList className="inline-flex w-full max-w-3xl mx-auto h-auto flex-wrap justify-center gap-1 bg-muted/50 backdrop-blur-sm p-1">
+            <TabsTrigger value="profile" className="gap-1 text-xs shrink-0">
               <User className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Profile</span>
             </TabsTrigger>
-            <TabsTrigger value="activity" className="gap-1 text-xs">
+            <TabsTrigger value="activity" className="gap-1 text-xs shrink-0">
               <Activity className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Activity</span>
             </TabsTrigger>
-            <TabsTrigger value="notifications" className="gap-1 text-xs">
+            <TabsTrigger value="notifications" className="gap-1 text-xs shrink-0">
               <Bell className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Alerts</span>
             </TabsTrigger>
-            <TabsTrigger value="security" className="gap-1 text-xs">
+            <TabsTrigger value="security" className="gap-1 text-xs shrink-0">
               <Shield className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Security</span>
             </TabsTrigger>
-            <TabsTrigger value="linked" className="gap-1 text-xs">
+            <TabsTrigger value="linked" className="gap-1 text-xs shrink-0">
               <Link2 className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Linked</span>
             </TabsTrigger>
-            <TabsTrigger value="preferences" className="gap-1 text-xs">
+            <TabsTrigger value="ai" className="gap-1 text-xs shrink-0">
+              <Bot className="h-3.5 w-3.5" /> <span className="hidden sm:inline">AI</span>
+            </TabsTrigger>
+            <TabsTrigger value="preferences" className="gap-1 text-xs shrink-0">
               <Settings className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Prefs</span>
             </TabsTrigger>
-            <TabsTrigger value="billing" className="gap-1 text-xs">
+            <TabsTrigger value="billing" className="gap-1 text-xs shrink-0">
               <CreditCard className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Billing</span>
             </TabsTrigger>
           </TabsList>
@@ -279,25 +286,15 @@ const ProfilePage = () => {
                   </CardTitle>
                   <CardDescription>Control how and when you receive alerts</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-1">
-                  {[
-                    { label: "Email Notifications", desc: "Receive email updates about your conversations", value: notificationEmail, onChange: setNotificationEmail, icon: Mail },
-                    { label: "Push Notifications", desc: "Get push notifications on your device", value: notificationPush, onChange: setNotificationPush, icon: Bell },
-                    { label: "Mention Notifications", desc: "Get notified when someone mentions you", value: notificationMentions, onChange: setNotificationMentions, icon: User },
-                  ].map((item, i) => (
-                    <div key={i} className="flex items-center justify-between p-4 rounded-xl hover:bg-muted/30 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-primary/10">
-                          <item.icon className="h-4 w-4 text-primary" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-sm">{item.label}</p>
-                          <p className="text-xs text-muted-foreground">{item.desc}</p>
-                        </div>
-                      </div>
-                      <Switch checked={item.value} onCheckedChange={item.onChange} />
-                    </div>
-                  ))}
+                <CardContent>
+                  <NotificationsExtras
+                    notificationEmail={notificationEmail}
+                    setNotificationEmail={setNotificationEmail}
+                    notificationPush={notificationPush}
+                    setNotificationPush={setNotificationPush}
+                    notificationMentions={notificationMentions}
+                    setNotificationMentions={setNotificationMentions}
+                  />
                 </CardContent>
               </Card>
             </motion.div>
@@ -319,6 +316,8 @@ const ProfilePage = () => {
               </Card>
 
               <CustomApiKeysPanel />
+
+              <PrivacyDataCard />
 
               <Card className="glass border-border/50">
                 <CardHeader>
@@ -369,6 +368,11 @@ const ProfilePage = () => {
           {/* ===== LINKED ACCOUNTS TAB ===== */}
           <TabsContent value="linked">
             {user && <LinkedAccountsTab userId={user.id} email={user.email || ""} />}
+          </TabsContent>
+
+          {/* ===== AI TAB ===== */}
+          <TabsContent value="ai">
+            <AiSettingsTab />
           </TabsContent>
 
           {/* ===== PREFERENCES TAB ===== */}

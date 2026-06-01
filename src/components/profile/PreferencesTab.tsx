@@ -1,30 +1,38 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Settings, Globe, Palette, Monitor, Moon, Sun, Volume2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useTheme } from "next-themes";
-import { OfflineAISettings } from "./OfflineAISettings";
 import { DesktopAppSettings } from "@/components/desktop/DesktopAppSettings";
 import { AutoImproveInsights } from "@/components/autoImprove/AutoImproveInsights";
-import { ShadowTalkModelPanel } from "@/components/profile/ShadowTalkModelPanel";
 import { isLearningEnabled, setLearningEnabled } from "@/lib/autoImprove/learningConsent";
+import {
+  getUiCompactMode,
+  setUiCompactMode,
+  getUiSoundEnabled,
+  setUiSoundEnabled,
+  getUiLanguage,
+  setUiLanguage,
+} from "@/lib/profilePreferences";
 
 const tabMotion = { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.3 } };
 
 export const PreferencesTab = () => {
   const { theme, setTheme } = useTheme();
-  const [soundEnabled, setSoundEnabled] = useState(true);
-  const [compactMode, setCompactMode] = useState(false);
-  const [language, setLanguage] = useState("en");
+  const [soundEnabled, setSoundEnabled] = useState(() => getUiSoundEnabled());
+  const [compactMode, setCompactMode] = useState(() => getUiCompactMode());
+  const [language, setLanguage] = useState(() => getUiLanguage());
   const [learningEnabled, setLearningEnabledState] = useState(isLearningEnabled());
+
+  useEffect(() => {
+    setUiCompactMode(compactMode);
+  }, [compactMode]);
 
   return (
     <motion.div {...tabMotion} className="space-y-6">
       <AutoImproveInsights />
-      <ShadowTalkModelPanel />
 
       <Card className="glass border-border/50">
         <CardHeader>
@@ -92,7 +100,13 @@ export const PreferencesTab = () => {
                 <p className="text-xs text-muted-foreground">Reduce spacing for more content density</p>
               </div>
             </div>
-            <Switch checked={compactMode} onCheckedChange={setCompactMode} />
+            <Switch
+              checked={compactMode}
+              onCheckedChange={(v) => {
+                setCompactMode(v);
+                setUiCompactMode(v);
+              }}
+            />
           </div>
 
           <div className="flex items-center justify-between p-4 rounded-xl hover:bg-muted/30 transition-colors">
@@ -105,7 +119,13 @@ export const PreferencesTab = () => {
                 <p className="text-xs text-muted-foreground">Play sounds for notifications and actions</p>
               </div>
             </div>
-            <Switch checked={soundEnabled} onCheckedChange={setSoundEnabled} />
+            <Switch
+              checked={soundEnabled}
+              onCheckedChange={(v) => {
+                setSoundEnabled(v);
+                setUiSoundEnabled(v);
+              }}
+            />
           </div>
         </CardContent>
       </Card>
@@ -129,7 +149,13 @@ export const PreferencesTab = () => {
                 <p className="text-xs text-muted-foreground">Select your preferred language</p>
               </div>
             </div>
-            <Select value={language} onValueChange={setLanguage}>
+            <Select
+              value={language}
+              onValueChange={(code) => {
+                setLanguage(code);
+                setUiLanguage(code);
+              }}
+            >
               <SelectTrigger className="w-32 bg-muted/30">
                 <SelectValue />
               </SelectTrigger>
@@ -146,8 +172,7 @@ export const PreferencesTab = () => {
         </CardContent>
       </Card>
 
-      {/* On-Device AI (new offline mode — opt-in download) */}
-      <OfflineAISettings />
+      <DesktopAppSettings />
     </motion.div>
   );
 };

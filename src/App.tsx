@@ -205,6 +205,7 @@ const App = () => {
 
   useEffect(() => {
     import("@/lib/shadowMode").then(({ initShadowMode }) => initShadowMode());
+    import("@/lib/profilePreferences").then(({ initProfileUiPreferences }) => initProfileUiPreferences());
 
     const hasSeenBoot = sessionStorage.getItem('shadowtalk-booted');
     if (hasSeenBoot) {
