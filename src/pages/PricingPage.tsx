@@ -1,22 +1,26 @@
 import Navigation from "@/components/Navigation";
-import PricingSection from "@/components/PricingSection";
 import Footer from "@/components/Footer";
 import ChatWidget from "@/components/ChatWidget";
 import { SEOHead } from "@/components/SEOHead";
 import { PAGE_SEO } from "@/lib/seo";
+import PricingPageShell from "@/components/pricing/PricingPageShell";
+import PricingPageContent from "@/components/pricing/PricingPageContent";
+import { LandingMotionProvider } from "@/components/landing/LandingMotionProvider";
 
 const PricingPage = () => {
   return (
     <>
       <SEOHead meta={PAGE_SEO.pricing} />
-      <div className="min-h-screen bg-background">
-      <Navigation />
-      <div className="pt-16">
-        <PricingSection />
-      </div>
-      <Footer />
-      <ChatWidget />
-      </div>
+      <LandingMotionProvider>
+        <PricingPageShell>
+          <Navigation />
+          <main>
+            <PricingPageContent />
+          </main>
+          <Footer />
+          <ChatWidget />
+        </PricingPageShell>
+      </LandingMotionProvider>
     </>
   );
 };

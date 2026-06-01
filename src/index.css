@@ -1227,6 +1227,210 @@
     }
   }
 
+  /* ===== Pricing page ===== */
+  .pricing-page-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 80% 50% at 50% -20%, hsl(var(--primary) / 0.08), transparent 55%),
+      hsl(var(--background));
+  }
+
+  .pricing-scroll-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    z-index: 100;
+    transform-origin: left;
+    background: linear-gradient(
+      90deg,
+      hsl(var(--primary)),
+      hsl(var(--secondary)),
+      hsl(var(--accent))
+    );
+    box-shadow: 0 0 12px hsl(var(--primary) / 0.45);
+  }
+
+  .pricing-orb {
+    position: fixed;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .pricing-orb-a {
+    width: min(90vw, 520px);
+    height: min(90vw, 520px);
+    top: -10%;
+    left: -15%;
+    background: hsl(var(--primary) / 0.12);
+    filter: blur(100px);
+  }
+
+  .pricing-orb-b {
+    width: min(80vw, 440px);
+    height: min(80vw, 440px);
+    top: 20%;
+    right: -10%;
+    background: hsl(var(--secondary) / 0.1);
+    filter: blur(90px);
+  }
+
+  .pricing-billing-toggle {
+    box-shadow: 0 8px 32px -12px hsl(var(--primary) / 0.2);
+  }
+
+  .pricing-compare-track-wrap {
+    mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent);
+  }
+
+  .pricing-compare-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 1.1rem;
+    border-radius: 9999px;
+    border: 1px solid hsl(var(--border) / 0.5);
+    background: hsl(var(--card) / 0.5);
+    backdrop-filter: blur(8px);
+  }
+
+  .pricing-compare-chip--us {
+    border-color: hsl(var(--primary) / 0.35);
+    background: linear-gradient(
+      135deg,
+      hsl(var(--primary) / 0.12),
+      hsl(var(--secondary) / 0.06)
+    );
+    box-shadow: 0 0 24px -8px hsl(var(--primary) / 0.35);
+  }
+
+  .pricing-plan-card {
+    border-radius: 1.25rem;
+    transition: transform 0.35s ease;
+  }
+
+  .pricing-plan-card--recommended .pricing-plan-inner {
+    border-color: hsl(var(--primary) / 0.45);
+    box-shadow: 0 24px 60px -20px hsl(var(--primary) / 0.35);
+  }
+
+  .pricing-plan-card--focused {
+    z-index: 2;
+  }
+
+  .pricing-plan-glow {
+    position: absolute;
+    inset: -1px;
+    border-radius: 1.3rem;
+    background: linear-gradient(
+      135deg,
+      hsl(var(--primary) / 0.5),
+      hsl(var(--accent) / 0.3),
+      hsl(var(--secondary) / 0.4)
+    );
+    opacity: 0.6;
+    filter: blur(8px);
+    z-index: 0;
+  }
+
+  .pricing-plan-inner {
+    position: relative;
+    z-index: 1;
+    border-radius: 1.2rem;
+    border: 1px solid hsl(var(--border) / 0.55);
+    background: hsl(var(--card) / 0.65);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    overflow: hidden;
+  }
+
+  .pricing-plan-inner::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(var(--primary) / 0.6),
+      transparent
+    );
+  }
+
+  .pricing-plan-icon {
+    background: hsl(var(--primary) / 0.1);
+    border: 1px solid hsl(var(--primary) / 0.2);
+  }
+
+  .pricing-lifetime-card {
+    background: hsl(var(--card) / 0.7);
+    backdrop-filter: blur(16px);
+    box-shadow: 0 24px 80px -24px hsl(var(--warning) / 0.25);
+  }
+
+  .pricing-lifetime-shine {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      105deg,
+      transparent 40%,
+      hsl(var(--warning) / 0.08) 50%,
+      transparent 60%
+    );
+    animation: pricing-shine 4s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  @keyframes pricing-shine {
+    0%,
+    100% {
+      transform: translateX(-30%);
+    }
+    50% {
+      transform: translateX(30%);
+    }
+  }
+
+  .pricing-addon-card,
+  .pricing-extra-card {
+    background: hsl(var(--card) / 0.45);
+    backdrop-filter: blur(10px);
+    transition:
+      border-color 0.25s ease,
+      box-shadow 0.25s ease;
+  }
+
+  .pricing-addon-card:hover,
+  .pricing-extra-card:hover {
+    border-color: hsl(var(--primary) / 0.3);
+    box-shadow: 0 12px 40px -16px hsl(var(--primary) / 0.2);
+  }
+
+  .pricing-trust-panel {
+    background: linear-gradient(
+      180deg,
+      hsl(var(--card) / 0.5),
+      hsl(var(--muted) / 0.15)
+    );
+    backdrop-filter: blur(12px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pricing-compare-track {
+      animation: none !important;
+    }
+    .pricing-lifetime-shine {
+      animation: none;
+    }
+  }
+
   .landing-interactive-card {
     position: relative;
     transform-style: preserve-3d;
