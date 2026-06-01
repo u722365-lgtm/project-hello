@@ -7,6 +7,7 @@ import { useRef } from "react";
 import { LANDING_COPY } from "@/lib/brand";
 import { useLandingMotion } from "@/hooks/use-landing-motion";
 import LandingSectionHeader from "@/components/landing/LandingSectionHeader";
+import LandingInteractiveCard from "@/components/landing/LandingInteractiveCard";
 
 const competitorCardVariants = {
   hidden: { opacity: 0, y: 40, rotateX: 8 },
@@ -119,14 +120,10 @@ const CompetitiveComparison = () => {
         {/* Competitor Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16 max-w-5xl mx-auto" style={{ perspective: "1000px" }}>
           {detailedComparisons.map((comp, i) => (
-            <motion.div
+            <LandingInteractiveCard
               key={i}
-              custom={i}
+              index={i}
               variants={competitorCardVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              whileHover={hoverLift}
             >
               <Card className="h-full border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-[0_10px_40px_-15px_hsl(var(--primary)/0.2)]">
                 <CardContent className="p-6">
@@ -172,7 +169,7 @@ const CompetitiveComparison = () => {
                   </div>
                 </CardContent>
               </Card>
-            </motion.div>
+            </LandingInteractiveCard>
           ))}
         </div>
 

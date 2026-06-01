@@ -1,11 +1,12 @@
 import { motion, type HTMLMotionProps } from "framer-motion";
 import { useLandingMotionContext } from "@/components/landing/LandingMotionProvider";
-import { variantForPreset, type LandingAnimatePreset } from "@/lib/landingMotion";
+import { LANDING_SPRING, tapScale, variantForPreset, type LandingAnimatePreset } from "@/lib/landingMotion";
 
 type LandingAnimateProps = HTMLMotionProps<"div"> & {
   preset?: LandingAnimatePreset;
   index?: number;
   inView?: boolean;
+  interactive?: boolean;
   as?: "div" | "section" | "article" | "span" | "li" | "header" | "footer" | "nav";
 };
 
@@ -24,6 +25,7 @@ const LandingAnimate = ({
   preset = "fadeUp",
   index,
   inView = true,
+  interactive = false,
   as = "div",
   children,
   className,
@@ -34,6 +36,9 @@ const LandingAnimate = ({
   const { profile, viewport, hoverLift } = useLandingMotionContext();
   const Component = motionTags[as];
   const motionVariants = variantForPreset(profile, preset);
+  const defaultHover =
+    interactive || preset === "card" ? hoverLift : undefined;
+  const defaultTap = whileTap ?? (interactive ? tapScale(profile) : undefined);
 
   return (
     <Component
@@ -43,8 +48,9 @@ const LandingAnimate = ({
       {...(inView
         ? { whileInView: "visible" as const, viewport }
         : { animate: "visible" as const })}
-      whileHover={whileHover ?? (preset === "card" ? hoverLift : undefined)}
-      whileTap={whileTap}
+      transition={interactive ? LANDING_SPRING.gentle : undefined}
+      whileHover={whileHover ?? defaultHover}
+      whileTap={defaultTap}
       className={className}
       {...rest}
     >

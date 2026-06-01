@@ -6,6 +6,7 @@ import {
   fadeSlideUp,
   floatingOrbTransition,
   hoverLift,
+  magneticStrength,
   landingViewport,
   motionDuration,
   parallaxRange,
@@ -18,6 +19,8 @@ import {
   slideInRight,
   staggerContainer,
   staggerDelay,
+  tapScale,
+  tiltStrength,
 } from "@/lib/landingMotion";
 
 /**
@@ -47,6 +50,9 @@ export function useLandingMotion() {
       popIn: popIn(profile),
     },
     hoverLift: hoverLift(profile),
+    tapScale: tapScale(profile),
+    tiltStrength: tiltStrength(profile),
+    magneticStrength: magneticStrength(profile),
     orbTransition: (duration = 6) => floatingOrbTransition(profile, duration),
     parallaxRange: parallaxRange(profile),
     scrollOpacityRange: scrollOpacityRange(profile),

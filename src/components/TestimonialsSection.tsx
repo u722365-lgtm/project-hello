@@ -7,6 +7,7 @@ import { LANDING_COPY } from "@/lib/brand";
 import { useLandingMotion } from "@/hooks/use-landing-motion";
 import LandingSectionHeader from "@/components/landing/LandingSectionHeader";
 import LandingAmbientOrb from "@/components/landing/LandingAmbientOrb";
+import LandingInteractiveCard from "@/components/landing/LandingInteractiveCard";
 
 const TestimonialsSection = () => {
   const { hoverLift, variants, viewport, isMobile } = useLandingMotion();
@@ -55,15 +56,7 @@ const TestimonialsSection = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 max-w-5xl mx-auto mb-10 sm:mb-12">
           {pillars.map((item, i) => (
-            <motion.div
-              key={item.title}
-              custom={i}
-              variants={variants.cardReveal}
-              initial="hidden"
-              whileInView="visible"
-              viewport={viewport}
-              whileHover={hoverLift}
-            >
+            <LandingInteractiveCard key={item.title} index={i}>
               <Card className="border-border/50 h-full">
                 <CardContent className="p-5 sm:p-6">
                   <item.icon className="h-6 w-6 text-primary/70 mb-3" />
@@ -71,7 +64,7 @@ const TestimonialsSection = () => {
                   <p className="text-sm text-muted-foreground leading-relaxed">{item.body}</p>
                 </CardContent>
               </Card>
-            </motion.div>
+            </LandingInteractiveCard>
           ))}
         </div>
 

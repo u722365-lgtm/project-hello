@@ -17,6 +17,7 @@ import { LANDING_COPY } from "@/lib/brand";
 import { useLandingMotion } from "@/hooks/use-landing-motion";
 import LandingSectionHeader from "@/components/landing/LandingSectionHeader";
 import LandingAmbientOrb from "@/components/landing/LandingAmbientOrb";
+import LandingInteractiveCard from "@/components/landing/LandingInteractiveCard";
 import { buildCommunityHighlights, usePlatformMetrics } from "@/hooks/usePlatformMetrics";
 import { useCommunityEvents } from "@/hooks/useCMSContent";
 
@@ -77,15 +78,7 @@ const CommunitySection = () => {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16 max-w-4xl mx-auto">
           {communityStats.map((stat, i) => (
-            <motion.div
-              key={stat.label}
-              custom={i}
-              variants={variants.cardReveal}
-              initial="hidden"
-              whileInView="visible"
-              viewport={viewport}
-              whileHover={hoverLift}
-            >
+            <LandingInteractiveCard key={stat.label} index={i}>
               <Card className="border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-[0_10px_40px_-15px_hsl(var(--primary)/0.15)] group overflow-hidden relative">
                 <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
                 <CardContent className="p-5 text-center relative z-10">
@@ -107,7 +100,7 @@ const CommunitySection = () => {
                   <p className="text-[10px] text-muted-foreground mt-1 leading-snug">{stat.description}</p>
                 </CardContent>
               </Card>
-            </motion.div>
+            </LandingInteractiveCard>
           ))}
         </div>
 
@@ -124,14 +117,9 @@ const CommunitySection = () => {
             </motion.h3>
             <div className="space-y-4 mb-8">
               {benefits.map((b, i) => (
-                <motion.div
+                <LandingInteractiveCard
                   key={i}
-                  custom={i}
-                  variants={variants.cardReveal}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={viewport}
-                  whileHover={hoverLift}
+                  index={i}
                   className="flex items-start gap-4 glass-subtle rounded-xl p-4 group cursor-default"
                 >
                   <div className={`w-10 h-10 ${b.bg} rounded-xl flex items-center justify-center shrink-0`}>
@@ -142,7 +130,7 @@ const CommunitySection = () => {
                     <p className="text-xs text-muted-foreground">{b.desc}</p>
                   </div>
                   <ArrowUpRight className="h-4 w-4 text-muted-foreground/0 group-hover:text-muted-foreground shrink-0 transition-all mt-1" />
-                </motion.div>
+                </LandingInteractiveCard>
               ))}
             </div>
             <div className="flex gap-3">

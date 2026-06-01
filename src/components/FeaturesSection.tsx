@@ -6,6 +6,7 @@ import { LANDING_COPY } from "@/lib/brand";
 import { useLandingMotion } from "@/hooks/use-landing-motion";
 import LandingSectionHeader from "@/components/landing/LandingSectionHeader";
 import LandingAmbientOrb from "@/components/landing/LandingAmbientOrb";
+import LandingInteractiveCard from "@/components/landing/LandingInteractiveCard";
 import LandingStagger from "@/components/landing/LandingStagger";
 
 const cardVariants = {
@@ -146,14 +147,9 @@ const FeaturesSection = () => {
         {/* Bento Grid - responsive with no overlap on mobile */}
         <LandingStagger className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 max-w-5xl mx-auto px-1">
           {features.map((feature, index) => (
-            <motion.div
+            <LandingInteractiveCard
               key={index}
-              custom={index}
-              variants={variants.cardReveal}
-              initial="hidden"
-              whileInView="visible"
-              viewport={viewport}
-              whileHover={hoverLift}
+              index={index}
               role="button"
               tabIndex={0}
               onClick={() => feature.href && navigate(feature.href)}
@@ -202,7 +198,7 @@ const FeaturesSection = () => {
                   {feature.description}
                 </motion.p>
               </div>
-            </motion.div>
+            </LandingInteractiveCard>
           ))}
         </LandingStagger>
 
@@ -213,20 +209,16 @@ const FeaturesSection = () => {
             { value: "HITL", label: "Human-in-the-Loop", sub: "Approve agent actions", subColor: "text-success" },
             { value: "Opt-in", label: "On-Device AI", sub: "Privacy when you need it", subColor: "text-warning" },
           ].map((stat, i) => (
-            <motion.div
+            <LandingInteractiveCard
               key={i}
-              custom={i}
+              index={i}
               variants={statVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              whileHover={hoverLift}
               className="text-center glass-subtle rounded-xl p-5 cursor-default"
             >
               <div className="text-2xl md:text-3xl font-bold gradient-text mb-1">{stat.value}</div>
               <div className="text-sm text-muted-foreground">{stat.label}</div>
               <div className={`text-xs ${stat.subColor} mt-1 font-medium`}>{stat.sub}</div>
-            </motion.div>
+            </LandingInteractiveCard>
           ))}
         </LandingStagger>
 

@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { useLandingMotion } from "@/hooks/use-landing-motion";
 import LandingAmbientOrb from "@/components/landing/LandingAmbientOrb";
+import LandingInteractiveCard from "@/components/landing/LandingInteractiveCard";
+import LandingMagneticButton from "@/components/landing/LandingMagneticButton";
 
 const BrandManifestoSection = () => {
   const navigate = useNavigate();
@@ -70,14 +72,9 @@ const BrandManifestoSection = () => {
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-10 sm:mb-12">
           {BRAND_PILLARS.map((pillar, i) => (
-            <motion.div
+            <LandingInteractiveCard
               key={pillar.title}
-              custom={i}
-              variants={variants.cardReveal}
-              initial="hidden"
-              whileInView="visible"
-              viewport={viewport}
-              whileHover={hoverLift}
+              index={i}
               className="glass-subtle rounded-2xl p-4 sm:p-5 border border-border/50 hover:border-primary/30 transition-colors"
             >
               <span className="text-2xl mb-3 block" aria-hidden>
@@ -85,7 +82,7 @@ const BrandManifestoSection = () => {
               </span>
               <h3 className="font-semibold mb-2">{pillar.title}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">{pillar.description}</p>
-            </motion.div>
+            </LandingInteractiveCard>
           ))}
         </div>
 
@@ -100,10 +97,12 @@ const BrandManifestoSection = () => {
           <Sparkles className="h-8 w-8 text-primary mx-auto mb-4" />
           <p className="text-lg sm:text-xl md:text-2xl font-semibold mb-2">{BRAND.tagline}</p>
           <p className="text-muted-foreground mb-6 max-w-lg mx-auto text-sm sm:text-base">{BRAND.shortPitch}</p>
-          <Button size="lg" className="btn-glow rounded-xl w-full sm:w-auto" onClick={() => navigate("/chatbot")}>
-            Enter the workspace
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </Button>
+          <LandingMagneticButton className="inline-block w-full sm:w-auto">
+            <Button size="lg" className="btn-glow rounded-xl w-full sm:w-auto" onClick={() => navigate("/chatbot")}>
+              Enter the workspace
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+          </LandingMagneticButton>
         </motion.div>
       </div>
     </section>

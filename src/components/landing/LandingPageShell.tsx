@@ -12,7 +12,6 @@ const LandingPageShell = ({ children }: LandingPageShellProps) => {
   const { scrollYProgress } = useScroll();
   const { reduced, isMobile } = useLandingMotion();
   const scaleX = useSpring(scrollYProgress, { stiffness: 120, damping: 28, restDelta: 0.001 });
-  const showAmbient = !reduced && !isMobile;
 
   return (
     <div className="landing-page relative overflow-x-hidden">
@@ -23,16 +22,17 @@ const LandingPageShell = ({ children }: LandingPageShellProps) => {
           aria-hidden
         />
       )}
-      {showAmbient ? (
+      {!reduced ? (
         <motion.div
           className="landing-page-ambient pointer-events-none fixed inset-0 z-0"
           aria-hidden
-          animate={{ opacity: [0.35, 0.55, 0.35] }}
-          transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
+          animate={{ opacity: isMobile ? [0.28, 0.42, 0.28] : [0.35, 0.55, 0.35] }}
+          transition={{ duration: isMobile ? 18 : 14, repeat: Infinity, ease: "easeInOut" }}
         />
       ) : (
         <div className="landing-page-ambient-static pointer-events-none fixed inset-0 z-0 opacity-40" aria-hidden />
       )}
+      <div className="landing-page-grain pointer-events-none fixed inset-0 z-0" aria-hidden />
       <div className="relative z-[1]">{children}</div>
     </div>
   );

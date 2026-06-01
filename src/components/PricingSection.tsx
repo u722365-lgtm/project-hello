@@ -19,6 +19,7 @@ import { LANDING_COPY } from "@/lib/brand";
 import { useLandingMotion } from "@/hooks/use-landing-motion";
 import LandingSectionHeader from "@/components/landing/LandingSectionHeader";
 import LandingAmbientOrb from "@/components/landing/LandingAmbientOrb";
+import LandingInteractiveCard from "@/components/landing/LandingInteractiveCard";
 
 const cardVariants = {
   hidden: { opacity: 0, y: 50, scale: 0.95 },
@@ -140,15 +141,7 @@ const PricingSection = () => {
         {/* Pricing Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 max-w-6xl mx-auto" style={{ perspective: "1200px" }}>
           {plans.map((plan, index) => (
-            <motion.div
-              key={index}
-              custom={index}
-              variants={variants.cardReveal}
-              initial="hidden"
-              whileInView="visible"
-              viewport={viewport}
-              whileHover={hoverLift}
-            >
+            <LandingInteractiveCard key={index} index={index} className="h-full">
               <Card className={`relative h-full border-border/50 hover:border-primary/30 transition-all duration-500 hover:shadow-[0_20px_60px_-15px_hsl(var(--primary)/0.15)] overflow-hidden ${
                 plan.highlight ? 'ring-2 ring-primary/50 lg:scale-105' : ''
               }`}>
@@ -236,7 +229,7 @@ const PricingSection = () => {
                   </Button>
                 </CardContent>
               </Card>
-            </motion.div>
+            </LandingInteractiveCard>
           ))}
         </div>
 
@@ -259,15 +252,7 @@ const PricingSection = () => {
               { emoji: "🔍", title: "Document Review", desc: "Analysis & risk assessment", price: "$10-$75" },
               { emoji: "🌍", title: "Workflow Report", desc: "Multi-jurisdictional guidance", price: "$50-$200" },
             ].map((item, i) => (
-              <motion.div
-                key={i}
-                custom={i}
-                variants={variants.cardReveal}
-                initial="hidden"
-                whileInView="visible"
-                viewport={viewport}
-                whileHover={hoverLift}
-              >
+              <LandingInteractiveCard key={i} index={i}>
                 <Card className="border-border/50 hover:border-primary/20 transition-all hover:shadow-[0_10px_40px_-15px_hsl(var(--primary)/0.1)]">
                   <CardContent className="pt-6 text-center">
                     <div className="text-2xl mb-2">{item.emoji}</div>
@@ -279,7 +264,7 @@ const PricingSection = () => {
                     </Button>
                   </CardContent>
                 </Card>
-              </motion.div>
+              </LandingInteractiveCard>
             ))}
           </div>
         </div>

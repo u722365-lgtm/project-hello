@@ -6,6 +6,7 @@ import { SEOHead } from "@/components/SEOHead";
 import { PAGE_SEO } from "@/lib/seo";
 import LandingPageShell from "@/components/landing/LandingPageShell";
 import LandingSectionReveal from "@/components/landing/LandingSectionReveal";
+import LandingSectionFallback from "@/components/landing/LandingSectionFallback";
 import { LandingMotionProvider } from "@/components/landing/LandingMotionProvider";
 import { PlatformMetricsProvider } from "@/contexts/PlatformMetricsContext";
 
@@ -18,10 +19,6 @@ const CommunitySection = lazy(() => import("@/components/CommunitySection"));
 const FAQSection = lazy(() => import("@/components/FAQSection"));
 const Footer = lazy(() => import("@/components/Footer"));
 
-const SectionFallback = () => (
-  <div className="py-16 sm:py-20 min-h-[120px]" aria-hidden />
-);
-
 const Index = () => {
   return (
     <>
@@ -33,43 +30,43 @@ const Index = () => {
               <CouponBanner />
               <Navigation landingAnimated />
               <HeroSection />
-              <Suspense fallback={<SectionFallback />}>
-                <LandingSectionReveal>
+              <Suspense fallback={<LandingSectionFallback />}>
+                <LandingSectionReveal preset="fadeUp">
                   <BrandManifestoSection />
                 </LandingSectionReveal>
               </Suspense>
-              <Suspense fallback={<SectionFallback />}>
-                <LandingSectionReveal>
+              <Suspense fallback={<LandingSectionFallback />}>
+                <LandingSectionReveal preset="slideLeft">
                   <CompetitiveComparison />
                 </LandingSectionReveal>
               </Suspense>
-              <Suspense fallback={<SectionFallback />}>
-                <LandingSectionReveal>
+              <Suspense fallback={<LandingSectionFallback />}>
+                <LandingSectionReveal preset="section">
                   <FeaturesSection />
                 </LandingSectionReveal>
               </Suspense>
-              <Suspense fallback={<SectionFallback />}>
-                <LandingSectionReveal>
+              <Suspense fallback={<LandingSectionFallback />}>
+                <LandingSectionReveal preset="scale">
                   <PricingSection />
                 </LandingSectionReveal>
               </Suspense>
-              <Suspense fallback={<SectionFallback />}>
-                <LandingSectionReveal>
+              <Suspense fallback={<LandingSectionFallback />}>
+                <LandingSectionReveal preset="slideRight">
                   <TestimonialsSection />
                 </LandingSectionReveal>
               </Suspense>
-              <Suspense fallback={<SectionFallback />}>
-                <LandingSectionReveal>
+              <Suspense fallback={<LandingSectionFallback />}>
+                <LandingSectionReveal preset="pop">
                   <CommunitySection />
                 </LandingSectionReveal>
               </Suspense>
-              <Suspense fallback={<SectionFallback />}>
-                <LandingSectionReveal>
+              <Suspense fallback={<LandingSectionFallback />}>
+                <LandingSectionReveal preset="fadeUp">
                   <FAQSection />
                 </LandingSectionReveal>
               </Suspense>
-              <Suspense fallback={<SectionFallback />}>
-                <LandingSectionReveal>
+              <Suspense fallback={<LandingSectionFallback />}>
+                <LandingSectionReveal preset="slideDown">
                   <Footer />
                 </LandingSectionReveal>
               </Suspense>

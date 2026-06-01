@@ -34,15 +34,25 @@ const LandingSectionHeader = ({
           <span className="text-xs sm:text-sm text-muted-foreground font-medium">{badge}</span>
         </motion.div>
       )}
-      <motion.h2
+      <motion.div
         initial="hidden"
         whileInView="visible"
         viewport={viewport}
         variants={variants.fadeSlideUp}
-        className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-5 md:mb-6 tracking-tight leading-tight px-1"
+        className="relative inline-block max-w-full mb-5 md:mb-6 px-1"
       >
-        {title}
-      </motion.h2>
+        <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight">
+          {title}
+        </h2>
+        <motion.span
+          className="landing-section-underline block h-[3px] w-full max-w-[12rem] mx-auto mt-4 rounded-full"
+          initial={{ scaleX: 0, opacity: 0 }}
+          whileInView={{ scaleX: 1, opacity: 1 }}
+          viewport={viewport}
+          transition={{ delay: 0.15, duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
+          aria-hidden
+        />
+      </motion.div>
       {subtitle && (
         <motion.p
           initial="hidden"

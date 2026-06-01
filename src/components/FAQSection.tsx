@@ -4,6 +4,7 @@ import { useMemo, useRef } from "react";
 import { LANDING_COPY } from "@/lib/brand";
 import { useLandingMotion } from "@/hooks/use-landing-motion";
 import LandingAmbientOrb from "@/components/landing/LandingAmbientOrb";
+import LandingMagneticButton from "@/components/landing/LandingMagneticButton";
 import { useFAQItems } from "@/hooks/useCMSContent";
 import {
   Accordion,
@@ -112,20 +113,20 @@ const FAQSection = () => {
                 We aim to reply within one business day. Premium and Elite plans get priority queue handling.
               </p>
               <div className="flex flex-col gap-2">
-                <motion.div whileHover={hoverLift} whileTap={{ scale: 0.98 }}>
+                <LandingMagneticButton>
                   <Button size="sm" className="btn-glow justify-start gap-2 w-full" asChild>
                     <a href="mailto:shadowtalk68@gmail.com">
                       <Mail className="h-4 w-4" />
                       Email Support
                     </a>
                   </Button>
-                </motion.div>
-                <motion.div whileHover={hoverLift} whileTap={{ scale: 0.98 }}>
+                </LandingMagneticButton>
+                <LandingMagneticButton>
                   <Button variant="outline" size="sm" className="justify-start gap-2 w-full">
                     <MessageCircle className="h-4 w-4" />
                     Live Chat
                   </Button>
-                </motion.div>
+                </LandingMagneticButton>
               </div>
             </motion.div>
           </div>
@@ -152,6 +153,7 @@ const FAQSection = () => {
                   initial="hidden"
                   whileInView="visible"
                   viewport={viewport}
+                  whileHover={hoverLift}
                 >
                   <AccordionItem
                     value={`item-${index}`}

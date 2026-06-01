@@ -9,6 +9,7 @@ import { usePlatformMetrics } from "@/hooks/usePlatformMetrics";
 import { formatTractionDaily, formatTractionUsers } from "@/lib/formatMetrics";
 import { useLandingMotion } from "@/hooks/use-landing-motion";
 import LandingAmbientOrb from "@/components/landing/LandingAmbientOrb";
+import LandingMagneticButton from "@/components/landing/LandingMagneticButton";
 import RotatingHookText from "@/components/landing/RotatingHookText";
 import { StealthKillSwitch } from "@/components/StealthKillSwitch";
 import { useStealthKillSwitch } from "@/hooks/useStealthKillSwitch";
@@ -136,7 +137,7 @@ const HeroSection = () => {
             variants={variants.fadeSlideUp}
             className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 mb-10 sm:mb-14 w-full max-w-md sm:max-w-none mx-auto"
           >
-            <motion.div whileHover={hoverLift} whileTap={{ scale: 0.97 }} className="w-full sm:w-auto">
+            <LandingMagneticButton className="w-full sm:w-auto">
               <Button
                 size="lg"
                 className="btn-glow text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 group rounded-xl w-full sm:w-auto"
@@ -146,8 +147,8 @@ const HeroSection = () => {
                 Enter ShadowTalk — Free
                 <ArrowRight className="ml-2 sm:ml-3 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Button>
-            </motion.div>
-            <motion.div whileHover={hoverLift} whileTap={{ scale: 0.97 }} className="w-full sm:w-auto">
+            </LandingMagneticButton>
+            <LandingMagneticButton className="w-full sm:w-auto">
               <Button
                 variant="outline"
                 size="lg"
@@ -159,7 +160,7 @@ const HeroSection = () => {
                 <Zap className="mr-2 sm:mr-3 h-5 w-5" />
                 See what ships
               </Button>
-            </motion.div>
+            </LandingMagneticButton>
           </motion.div>
 
           <motion.div

@@ -103,6 +103,27 @@ export function hoverLift(profile: LandingMotionProfile) {
   };
 }
 
+export function tapScale(profile: LandingMotionProfile) {
+  if (profile.reduced) return {};
+  return { scale: profile.mobile ? 0.98 : 0.97 };
+}
+
+export function tiltStrength(profile: LandingMotionProfile): number {
+  if (profile.reduced || profile.mobile) return 0;
+  return 10;
+}
+
+export function magneticStrength(profile: LandingMotionProfile): number {
+  if (profile.reduced || profile.mobile) return 0;
+  return 14;
+}
+
+export const LANDING_SPRING = {
+  gentle: { type: "spring" as const, stiffness: 280, damping: 26 },
+  snappy: { type: "spring" as const, stiffness: 400, damping: 22 },
+  tilt: { stiffness: 260, damping: 24 },
+} as const;
+
 export function floatingOrbTransition(profile: LandingMotionProfile, duration = 6): Transition {
   if (profile.reduced) return { duration: 0 };
   return {
