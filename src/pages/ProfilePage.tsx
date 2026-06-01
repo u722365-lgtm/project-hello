@@ -8,14 +8,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import {
   User, Bell, Shield, Save, Loader2, CreditCard, ExternalLink, Crown,
   Lock, KeyRound, LogOut, Trash2, Mail, Eye, EyeOff, CheckCircle2,
   AlertTriangle, Activity, Settings, Link2, Bot,
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { SettingsAmbientBackground } from "@/components/settings/SettingsAmbientBackground";
+import { SettingsProgressBar } from "@/components/settings/SettingsProgressBar";
+import { ProfileNav, type ProfileNavTab } from "@/components/profile/ProfileNav";
+import { ProfileLoading } from "@/components/profile/ProfileLoading";
+import { useSettingsMotion } from "@/hooks/useSettingsMotion";
+import { useProfileSectionNav } from "@/hooks/useProfileSectionNav";
+import type { ProfileTabId } from "@/lib/profileTypes";
 import ReferralProgram from "@/components/ReferralProgram";
 import { PLAN_DETAILS } from "@/lib/stripe";
 import { MissionValueDashboard } from "@/components/MissionValueDashboard";
@@ -74,6 +80,19 @@ const PROFILE_TABS = new Set([
   "preferences",
   "billing",
 ]);
+
+const PROFILE_TAB_SECTIONS: readonly ProfileNavTab[] = [
+  { id: "profile", label: "Profile", icon: User, desc: "Name, bio, avatar" },
+  { id: "activity", label: "Activity", icon: Activity, desc: "Conversation history" },
+  { id: "notifications", label: "Notifications", shortLabel: "Alerts", icon: Bell, desc: "Email & push" },
+  { id: "security", label: "Security", icon: Shield, desc: "2FA, password, vault" },
+  { id: "linked", label: "Linked accounts", shortLabel: "Linked", icon: Link2, desc: "Google, GitHub, Slack" },
+  { id: "ai", label: "AI", icon: Bot, desc: "Models & instructions" },
+  { id: "preferences", label: "Preferences", shortLabel: "Prefs", icon: Settings, desc: "Appearance & UI" },
+  { id: "billing", label: "Billing", icon: CreditCard, desc: "Plan & credits" },
+];
+
+const PROFILE_TAB_IDS = PROFILE_TAB_SECTIONS.map((t) => t.id);
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -302,20 +321,35 @@ const ProfilePage = () => {
     }
   };
 
+  const { sectionPanel, staggerItem, shouldAnimateAmbient } = useSettingsMotion();
+
+  const currentTab = (() => {
+    const tab = searchParams.get("tab") || "profile";
+    return PROFILE_TABS.has(tab) ? (tab as ProfileTabId) : "profile";
+  })();
+
+  const tabMeta = PROFILE_TAB_SECTIONS.find((t) => t.id === currentTab) ?? PROFILE_TAB_SECTIONS[0];
+
+  const selectTab = useCallback(
+    (id: string) => setSearchParams({ tab: id }, { replace: true }),
+    [setSearchParams],
+  );
+
+  const { direction, progress } = useProfileSectionNav(PROFILE_TAB_IDS, currentTab, selectTab);
+
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <ProfileLoading />;
   }
 
-  const tabMotion = { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.3 } };
-
   return (
-    <div className="min-h-screen bg-background">
-      <div className="mb-6"><AdminPanelLink /></div>
-            <ProfileHeader
+    <div className="min-h-screen relative settings-scroll-smooth">
+      <SettingsAmbientBackground enabled={shouldAnimateAmbient} />
+
+      <div className="container mx-auto px-4 pt-4 max-w-6xl">
+        <AdminPanelLink />
+      </div>
+
+      <ProfileHeader
         displayName={displayName}
         email={user?.email || ""}
         avatarUrl={avatarUrl}
@@ -325,78 +359,60 @@ const ProfilePage = () => {
         onSignOut={handleSignOut}
       />
 
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Credits Dashboard */}
-        {!creditsLoading && balance && (
-          <motion.div {...tabMotion} className="mb-6">
-            <MissionValueDashboard transactions={transactions} balance={balance.balance} />
-          </motion.div>
-        )}
-        {!creditsLoading && balance && balance.balance <= 0 && (
-          <motion.div {...tabMotion} className="mb-6">
-            <CreditEmptyPrompt transactions={transactions} />
-          </motion.div>
-        )}
+      <div className="container mx-auto px-4 py-6 sm:py-8 max-w-6xl">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+          <aside className="lg:w-[280px] shrink-0">
+            <div className="lg:rounded-2xl lg:border lg:border-border/50 lg:glass-strong lg:p-4 lg:shadow-elevated">
+              <ProfileNav tabs={PROFILE_TAB_SECTIONS} activeId={currentTab} onSelect={selectTab} />
+            </div>
+          </aside>
 
-        {/* Tabs */}
-        <Tabs
-          value={(() => {
-            const tab = searchParams.get("tab") || "profile";
-            return PROFILE_TABS.has(tab) ? tab : "profile";
-          })()}
-          onValueChange={(tab) => setSearchParams({ tab }, { replace: true })}
-          className="space-y-6"
-        >
-          <TabsList className="inline-flex w-full max-w-3xl mx-auto h-auto flex-wrap justify-center gap-1 bg-muted/50 backdrop-blur-sm p-1">
-            <TabsTrigger value="profile" className="gap-1 text-xs shrink-0">
-              <User className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Profile</span>
-            </TabsTrigger>
-            <TabsTrigger value="activity" className="gap-1 text-xs shrink-0">
-              <Activity className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Activity</span>
-            </TabsTrigger>
-            <TabsTrigger value="notifications" className="gap-1 text-xs shrink-0">
-              <Bell className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Alerts</span>
-            </TabsTrigger>
-            <TabsTrigger value="security" className="gap-1 text-xs shrink-0">
-              <Shield className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Security</span>
-            </TabsTrigger>
-            <TabsTrigger value="linked" className="gap-1 text-xs shrink-0">
-              <Link2 className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Linked</span>
-            </TabsTrigger>
-            <TabsTrigger value="ai" className="gap-1 text-xs shrink-0">
-              <Bot className="h-3.5 w-3.5" /> <span className="hidden sm:inline">AI</span>
-            </TabsTrigger>
-            <TabsTrigger value="preferences" className="gap-1 text-xs shrink-0">
-              <Settings className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Prefs</span>
-            </TabsTrigger>
-            <TabsTrigger value="billing" className="gap-1 text-xs shrink-0">
-              <CreditCard className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Billing</span>
-            </TabsTrigger>
-          </TabsList>
+          <main className="flex-1 min-w-0 pb-20">
+            <div className="rounded-2xl border border-border/40 bg-card/35 backdrop-blur-md p-4 sm:p-6 lg:p-8 shadow-card settings-panel-shine">
+              <SettingsProgressBar
+                progress={progress}
+                sectionLabel={tabMeta.label}
+                title="Your account"
+              />
 
-          {/* ===== PROFILE TAB ===== */}
-          <TabsContent value="profile">
-            <ProfileTab
-              userId={user!.id}
-              displayName={displayName}
-              setDisplayName={setDisplayName}
-              email={user?.email || ""}
-              bio={bio}
-              setBio={setBio}
-              avatarUrl={avatarUrl}
-              setAvatarUrl={setAvatarUrl}
-              createdAt={profile?.created_at}
-            />
-          </TabsContent>
+              {!creditsLoading && balance && (
+                <motion.div variants={staggerItem} initial="hidden" animate="visible" className="mb-6">
+                  <MissionValueDashboard transactions={transactions} balance={balance.balance} />
+                </motion.div>
+              )}
+              {!creditsLoading && balance && balance.balance <= 0 && (
+                <motion.div variants={staggerItem} initial="hidden" animate="visible" className="mb-6">
+                  <CreditEmptyPrompt transactions={transactions} />
+                </motion.div>
+              )}
 
-          {/* ===== ACTIVITY TAB ===== */}
-          <TabsContent value="activity">
-            {user && <ActivityTab userId={user.id} />}
-          </TabsContent>
+              <AnimatePresence mode="wait" custom={direction}>
+                <motion.div
+                  key={currentTab}
+                  custom={direction}
+                  variants={sectionPanel}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                >
+                  {currentTab === "profile" && (
+                    <ProfileTab
+                      userId={user!.id}
+                      displayName={displayName}
+                      setDisplayName={setDisplayName}
+                      email={user?.email || ""}
+                      bio={bio}
+                      setBio={setBio}
+                      avatarUrl={avatarUrl}
+                      setAvatarUrl={setAvatarUrl}
+                      createdAt={profile?.created_at}
+                    />
+                  )}
 
-          {/* ===== NOTIFICATIONS TAB ===== */}
-          <TabsContent value="notifications">
-            <motion.div {...tabMotion}>
+                  {currentTab === "activity" && user && <ActivityTab userId={user.id} />}
+
+                  {currentTab === "notifications" && (
+            <motion.div variants={staggerItem} initial="hidden" animate="visible">
               <Card className="glass border-border/50">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -430,11 +446,10 @@ const ProfilePage = () => {
                 </CardContent>
               </Card>
             </motion.div>
-          </TabsContent>
+                  )}
 
-          {/* ===== SECURITY TAB ===== */}
-          <TabsContent value="security">
-            <motion.div {...tabMotion} className="space-y-6">
+                  {currentTab === "security" && (
+            <motion.div className="space-y-6">
               <Card className="glass border-border/50">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -495,26 +510,18 @@ const ProfilePage = () => {
                 </CardContent>
               </Card>
             </motion.div>
-          </TabsContent>
+                  )}
 
-          {/* ===== LINKED ACCOUNTS TAB ===== */}
-          <TabsContent value="linked">
-            {user && <LinkedAccountsTab userId={user.id} email={user.email || ""} />}
-          </TabsContent>
+                  {currentTab === "linked" && user && (
+                    <LinkedAccountsTab userId={user.id} email={user.email || ""} />
+                  )}
 
-          {/* ===== AI TAB ===== */}
-          <TabsContent value="ai">
-            <AiSettingsTab />
-          </TabsContent>
+                  {currentTab === "ai" && <AiSettingsTab />}
 
-          {/* ===== PREFERENCES TAB ===== */}
-          <TabsContent value="preferences">
-            <PreferencesTab />
-          </TabsContent>
+                  {currentTab === "preferences" && <PreferencesTab />}
 
-          {/* ===== BILLING TAB ===== */}
-          <TabsContent value="billing">
-            <motion.div {...tabMotion} className="space-y-6">
+                  {currentTab === "billing" && (
+            <motion.div className="space-y-6">
               <Card className={`glass border-border/50 ${subscribed ? "ring-2 ring-primary/30" : ""}`}>
                 <CardHeader>
                   <div className="flex items-center justify-between">
@@ -573,9 +580,22 @@ const ProfilePage = () => {
 
               <ReferralProgram />
             </motion.div>
-          </TabsContent>
-        </Tabs>
-      </main>
+                  )}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </main>
+        </div>
+      </div>
+
+      <footer className="fixed bottom-0 inset-x-0 z-40 border-t border-border/30 bg-background/85 backdrop-blur-2xl py-2.5 pointer-events-none">
+        <p className="text-center text-[11px] text-muted-foreground tracking-wide">
+          <kbd className="font-mono px-1.5 py-0.5 rounded border border-border/50 bg-muted/30">↑↓</kbd>{" "}
+          browse tabs ·{" "}
+          <kbd className="font-mono px-1.5 py-0.5 rounded border border-border/50 bg-muted/30">1–8</kbd>{" "}
+          jump
+        </p>
+      </footer>
 
       {/* Password Change Dialog */}
       <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>

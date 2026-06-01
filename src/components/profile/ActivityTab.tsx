@@ -5,10 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Activity, MessageSquare, Zap, Brain, Clock, ExternalLink } from "lucide-react";
-import { motion } from "framer-motion";
 import { format, formatDistanceToNow } from "date-fns";
-
-const tabMotion = { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.3 } };
+import { SettingsStagger } from "@/components/settings/SettingsStagger";
 
 interface ActivityTabProps {
   userId: string;
@@ -74,7 +72,7 @@ export const ActivityTab = ({ userId }: ActivityTabProps) => {
   };
 
   return (
-    <motion.div {...tabMotion} className="space-y-6">
+    <SettingsStagger className="space-y-6">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
           { label: "Conversations", value: stats.totalConversations, icon: MessageSquare, color: "text-blue-400" },
@@ -158,6 +156,6 @@ export const ActivityTab = ({ userId }: ActivityTabProps) => {
           )}
         </CardContent>
       </Card>
-    </motion.div>
+    </SettingsStagger>
   );
 };

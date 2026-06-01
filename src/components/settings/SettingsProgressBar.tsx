@@ -4,15 +4,20 @@ import { useSettingsMotion } from "@/hooks/useSettingsMotion";
 interface SettingsProgressBarProps {
   progress: number;
   sectionLabel: string;
+  title?: string;
 }
 
-export function SettingsProgressBar({ progress, sectionLabel }: SettingsProgressBarProps) {
+export function SettingsProgressBar({
+  progress,
+  sectionLabel,
+  title = "Workspace setup",
+}: SettingsProgressBarProps) {
   const { springSnappy, reduced } = useSettingsMotion();
 
   return (
     <div className="mb-5 space-y-2">
       <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-        <span className="font-medium tracking-wide uppercase opacity-80">Workspace setup</span>
+        <span className="font-medium tracking-wide uppercase opacity-80">{title}</span>
         <span>{sectionLabel}</span>
       </div>
       <div className="h-1 rounded-full bg-muted/50 overflow-hidden">

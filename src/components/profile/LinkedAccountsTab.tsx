@@ -30,7 +30,7 @@ import {
 } from "@/lib/authIdentities";
 import { WhatsAppConnect } from "@/components/chat/WhatsAppConnect";
 
-const tabMotion = { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.3 } };
+import { SettingsStagger } from "@/components/settings/SettingsStagger";
 
 interface LinkedAccountsTabProps {
   userId: string;
@@ -173,7 +173,7 @@ export const LinkedAccountsTab = ({ userId, email }: LinkedAccountsTabProps) => 
   }
 
   return (
-    <motion.div {...tabMotion} className="space-y-6">
+    <SettingsStagger className="space-y-6">
       <Card className="glass border-border/50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -303,7 +303,7 @@ export const LinkedAccountsTab = ({ userId, email }: LinkedAccountsTabProps) => 
           </p>
         </CardContent>
       </Card>
-    </motion.div>
+    </SettingsStagger>
   );
 };
 

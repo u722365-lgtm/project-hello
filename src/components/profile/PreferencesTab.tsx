@@ -3,7 +3,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Settings, Globe, Palette, Monitor, Moon, Sun, Volume2 } from "lucide-react";
-import { motion } from "framer-motion";
 import { useTheme } from "next-themes";
 import { DesktopAppSettings } from "@/components/desktop/DesktopAppSettings";
 import { AutoImproveInsights } from "@/components/autoImprove/AutoImproveInsights";
@@ -17,7 +16,7 @@ import {
   setUiLanguage,
 } from "@/lib/profilePreferences";
 
-const tabMotion = { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.3 } };
+import { SettingsStagger } from "@/components/settings/SettingsStagger";
 
 export const PreferencesTab = () => {
   const { theme, setTheme } = useTheme();
@@ -31,7 +30,7 @@ export const PreferencesTab = () => {
   }, [compactMode]);
 
   return (
-    <motion.div {...tabMotion} className="space-y-6">
+    <SettingsStagger className="space-y-6">
       <AutoImproveInsights />
 
       <Card className="glass border-border/50">
@@ -173,6 +172,6 @@ export const PreferencesTab = () => {
       </Card>
 
       <DesktopAppSettings />
-    </motion.div>
+    </SettingsStagger>
   );
 };

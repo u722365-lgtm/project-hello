@@ -10,8 +10,8 @@ import { User, Camera, Calendar, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { uploadProfileAvatar } from "@/lib/avatarUpload";
-
-const tabMotion = { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.3 } };
+import { SettingsStagger, SettingsStaggerItem } from "@/components/settings/SettingsStagger";
+import { useSettingsMotion } from "@/hooks/useSettingsMotion";
 
 interface ProfileTabProps {
   userId: string;
@@ -55,9 +55,13 @@ export const ProfileTab = ({
 
   const shortId = `${userId.slice(0, 8)}…${userId.slice(-4)}`;
 
+  const { spring, reduced } = useSettingsMotion();
+
   return (
-    <motion.div {...tabMotion} className="space-y-6">
-      <Card className="glass border-border/50">
+    <SettingsStagger className="space-y-6">
+      <SettingsStaggerItem>
+      <motion.div whileHover={reduced ? undefined : { y: -2 }} transition={spring}>
+      <Card className="glass border-border/50 card-glass">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <User className="h-5 w-5 text-primary" /> Profile Information
@@ -172,6 +176,8 @@ export const ProfileTab = ({
           </div>
         </CardContent>
       </Card>
-    </motion.div>
+      </motion.div>
+      </SettingsStaggerItem>
+    </SettingsStagger>
   );
 };
