@@ -17,6 +17,9 @@ import { useBlogPosts } from "@/hooks/useCMSContent";
 import { format } from "date-fns";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import SEOHead from "@/components/SEOHead";
+import { PAGE_SEO } from "@/lib/seo";
+
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30, filter: "blur(6px)" },
