@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Bot, Bell, Download, Menu, Smartphone, X } from "lucide-react";
+import { Bot, Bell, Download, Menu, Shield, Smartphone, X } from "lucide-react";
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -9,15 +9,17 @@ import { useLandingMotion } from "@/hooks/use-landing-motion";
 import { FeedbackForm } from "@/components/FeedbackForm";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 /**
- * Landing page header — logo plus essential actions only.
+ * Unique landing header: floating neural dock with gradient ring + action rail.
+ * Same theme tokens; only essential controls.
  */
 const LandingNavigation = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { user } = useAuth();
-  const { variants, profile, hoverLift } = useLandingMotion();
+  const { variants, profile, hoverLift, orbTransition } = useLandingMotion();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<{
@@ -28,7 +30,7 @@ const LandingNavigation = () => {
   const [showIOSGuide, setShowIOSGuide] = useState(false);
 
   const { scrollY } = useScroll();
-  useMotionValueEvent(scrollY, "change", (y) => setScrolled(y > 8));
+  useMotionValueEvent(scrollY, "change", (y) => setScrolled(y > 16));
 
   useEffect(() => {
     const standalone =
@@ -82,129 +84,176 @@ const LandingNavigation = () => {
     }
   };
 
-  const actionButtonClass =
-    "h-9 text-muted-foreground hover:text-foreground border-border/50 hover:border-primary/30 hover:bg-muted/30";
-
-  const desktopActions = (
-    <>
-      <motion.div whileHover={profile.reduced ? undefined : hoverLift}>
-        <Button variant="ghost" size="sm" onClick={goPricing} className={actionButtonClass}>
-          {t("nav.pricing")}
-        </Button>
-      </motion.div>
-
-      {!isInstalled && (
-        <motion.div whileHover={profile.reduced ? undefined : hoverLift}>
-          <Button variant="outline" size="sm" onClick={handleInstallClick} className={`gap-1.5 ${actionButtonClass}`}>
-            <Download className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Install</span>
-          </Button>
-        </motion.div>
-      )}
-
-      {user ? (
-        <NotificationBell />
-      ) : (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-9 w-9 relative"
-          onClick={handleNotificationClick}
-          aria-label="Notifications"
-        >
-          <Bell className="h-4 w-4" />
-        </Button>
-      )}
-
-      <FeedbackForm />
-
-      <motion.div whileHover={profile.reduced ? undefined : hoverLift}>
-        <Button variant="outline" size="sm" onClick={() => navigate("/auth")} className={actionButtonClass}>
-          {t("nav.login")}
-        </Button>
-      </motion.div>
-    </>
-  );
-
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
   return (
     <>
       <motion.header
-        className={`landing-nav fixed inset-x-0 top-0 z-50 ${scrolled ? "landing-nav--scrolled" : ""}`}
+        className={cn("landing-nav-dock-wrap fixed inset-x-0 top-0 z-50 px-3 sm:px-4 pt-3", scrolled && "landing-nav-dock-wrap--scrolled")}
         initial="hidden"
         animate="visible"
         variants={variants.slideDown}
       >
-        <div className="landing-nav-bar mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6 sm:h-16">
-          <motion.button
-            type="button"
-            onClick={() => navigate("/")}
-            className="flex shrink-0 items-center gap-2"
-            whileHover={profile.reduced ? undefined : { opacity: 0.9 }}
-            whileTap={profile.reduced ? undefined : { scale: 0.98 }}
-          >
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-              <Bot className="h-4 w-4 text-primary" />
-            </span>
-            <span className="text-sm font-semibold tracking-tight gradient-text sm:text-base">ShadowTalk</span>
-          </motion.button>
+        <div className="landing-nav-dock-ring mx-auto max-w-4xl">
+          <div className="landing-nav-dock">
+            <div className="landing-nav-dock-grid" aria-hidden />
 
-          <div className="hidden md:flex items-center gap-1.5 shrink-0">{desktopActions}</div>
+            {/* Brand */}
+            <motion.button
+              type="button"
+              onClick={() => navigate("/")}
+              className="landing-nav-brand flex shrink-0 items-center gap-2.5"
+              whileHover={profile.reduced ? undefined : hoverLift}
+              whileTap={profile.reduced ? undefined : { scale: 0.98 }}
+            >
+              <span className="landing-nav-logo-orbit relative flex h-9 w-9 items-center justify-center">
+                <span className="landing-nav-logo-ring" aria-hidden />
+                <span className="relative z-[1] flex h-8 w-8 items-center justify-center rounded-lg bg-primary/15 border border-primary/25">
+                  <Bot className="h-4 w-4 text-primary" />
+                </span>
+                <motion.span
+                  className="absolute -top-0.5 -right-0.5 z-[2] h-2 w-2 rounded-full bg-success"
+                  animate={profile.reduced ? undefined : { scale: [1, 1.3, 1], opacity: [1, 0.7, 1] }}
+                  transition={orbTransition(2.5)}
+                  aria-hidden
+                />
+              </span>
+              <span className="hidden sm:flex flex-col items-start leading-none">
+                <span className="text-sm font-semibold gradient-text tracking-tight">ShadowTalk</span>
+                <span className="text-[10px] text-muted-foreground font-medium mt-0.5 tracking-wide">Agentic AI</span>
+              </span>
+            </motion.button>
 
-          <motion.button
-            type="button"
-            className="md:hidden flex h-9 w-9 items-center justify-center rounded-lg hover:bg-muted/50"
-            onClick={() => setMenuOpen((o) => !o)}
-            aria-label={menuOpen ? "Close menu" : "Open menu"}
-            whileTap={{ scale: 0.94 }}
-          >
-            {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </motion.button>
+            <span className="landing-nav-dock-divider hidden sm:block" aria-hidden />
+
+            {/* Pricing — featured chip */}
+            <motion.button
+              type="button"
+              onClick={goPricing}
+              className="landing-nav-pricing hidden sm:inline-flex items-center gap-1.5"
+              whileHover={profile.reduced ? undefined : { scale: 1.03 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Shield className="h-3.5 w-3.5 text-primary" />
+              <span>{t("nav.pricing")}</span>
+            </motion.button>
+
+            <div className="flex-1 min-w-2" />
+
+            {/* Desktop action rail */}
+            <div className="landing-nav-rail hidden md:flex items-stretch">
+              {!isInstalled && (
+                <motion.button
+                  type="button"
+                  onClick={handleInstallClick}
+                  className="landing-nav-rail-item gap-1.5"
+                  whileHover={profile.reduced ? undefined : { backgroundColor: "hsl(var(--muted) / 0.35)" }}
+                >
+                  <Download className="h-3.5 w-3.5 text-primary" />
+                  <span>Install</span>
+                </motion.button>
+              )}
+
+              <span className="landing-nav-rail-sep" aria-hidden />
+
+              <div className="landing-nav-rail-item landing-nav-rail-item--icon">
+                {user ? (
+                  <NotificationBell className="h-9 w-9" iconClassName="h-4 w-4" />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleNotificationClick}
+                    className="flex h-9 w-9 items-center justify-center rounded-md"
+                    aria-label="Notifications"
+                  >
+                    <Bell className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" />
+                  </button>
+                )}
+              </div>
+
+              <span className="landing-nav-rail-sep" aria-hidden />
+
+              <div className="landing-nav-rail-item landing-nav-rail-feedback">
+                <FeedbackForm />
+              </div>
+
+              <span className="landing-nav-rail-sep" aria-hidden />
+
+              <motion.button
+                type="button"
+                onClick={() => navigate("/auth")}
+                className="landing-nav-rail-item landing-nav-rail-login"
+                whileHover={profile.reduced ? undefined : hoverLift}
+              >
+                {t("nav.login")}
+              </motion.button>
+            </div>
+
+            {/* Mobile menu */}
+            <motion.button
+              type="button"
+              className="md:hidden flex h-9 w-9 items-center justify-center rounded-lg border border-border/50 bg-muted/20"
+              onClick={() => setMenuOpen((o) => !o)}
+              aria-label={menuOpen ? "Close menu" : "Open menu"}
+              whileTap={{ scale: 0.94 }}
+            >
+              {menuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+            </motion.button>
+          </div>
+
+          <div className="landing-nav-beam" aria-hidden />
         </div>
       </motion.header>
 
+      {/* Mobile panel */}
       <AnimatePresence>
         {menuOpen && (
           <>
             <motion.div
-              className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden"
+              className="fixed inset-0 z-40 bg-black/55 backdrop-blur-sm md:hidden"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMenuOpen(false)}
             />
             <motion.div
-              className="fixed inset-x-0 top-14 z-50 border-b border-border/50 bg-background/95 backdrop-blur-xl md:hidden p-4 space-y-2"
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
+              className="landing-nav-mobile-panel fixed left-3 right-3 z-50 md:hidden top-[4.25rem]"
+              initial={{ opacity: 0, y: -12, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.98 }}
+              transition={{ type: "spring", stiffness: 380, damping: 30 }}
             >
-              <Button variant="ghost" className="w-full justify-start" onClick={goPricing}>
-                {t("nav.pricing")}
-              </Button>
-              {!isInstalled && (
-                <Button variant="outline" className="w-full justify-start gap-2" onClick={handleInstallClick}>
-                  <Download className="h-4 w-4" />
-                  Install app
-                </Button>
-              )}
-              {user ? (
-                <div className="flex justify-start px-1">
-                  <NotificationBell />
+              <div className="landing-nav-dock-ring">
+                <div className="landing-nav-mobile-inner p-3 space-y-1">
+                  <button type="button" className="landing-nav-mobile-row" onClick={goPricing}>
+                    <Shield className="h-4 w-4 text-primary" />
+                    {t("nav.pricing")}
+                  </button>
+                  {!isInstalled && (
+                    <button type="button" className="landing-nav-mobile-row" onClick={handleInstallClick}>
+                      <Download className="h-4 w-4 text-primary" />
+                      Install app
+                    </button>
+                  )}
+                  <button type="button" className="landing-nav-mobile-row" onClick={handleNotificationClick}>
+                    <Bell className="h-4 w-4 text-primary" />
+                    Notifications
+                  </button>
+                  <div className="px-2 py-1">
+                    <FeedbackForm />
+                  </div>
+                  <button
+                    type="button"
+                    className="landing-nav-mobile-row landing-nav-mobile-login w-full mt-1"
+                    onClick={() => {
+                      navigate("/auth");
+                      setMenuOpen(false);
+                    }}
+                  >
+                    {t("nav.login")}
+                  </button>
                 </div>
-              ) : (
-                <Button variant="ghost" className="w-full justify-start gap-2" onClick={handleNotificationClick}>
-                  <Bell className="h-4 w-4" />
-                  Notifications
-                </Button>
-              )}
-              <div className="px-1">
-                <FeedbackForm />
               </div>
-              <Button variant="outline" className="w-full" onClick={() => { navigate("/auth"); setMenuOpen(false); }}>
-                {t("nav.login")}
-              </Button>
             </motion.div>
           </>
         )}

@@ -956,48 +956,275 @@
     }
   }
 
-  /* Landing page header only (home route) */
-  .landing-nav {
-    background: hsl(var(--background) / 0.65);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid hsl(var(--border) / 0.35);
-    transition:
-      background 0.3s ease,
-      border-color 0.3s ease,
-      box-shadow 0.3s ease;
+  /* Landing header — neural dock (unique layout, same theme) */
+  .landing-nav-dock-wrap {
+    pointer-events: none;
+    transition: padding-top 0.35s ease;
   }
 
-  .landing-nav--scrolled {
+  .landing-nav-dock-wrap--scrolled {
+    padding-top: 0.5rem;
+  }
+
+  .landing-nav-dock-ring {
+    position: relative;
+    padding: 1px;
+    border-radius: 1.25rem;
+    background: linear-gradient(
+      120deg,
+      hsl(var(--primary) / 0.55),
+      hsl(var(--secondary) / 0.35),
+      hsl(var(--accent) / 0.45),
+      hsl(var(--primary) / 0.55)
+    );
+    background-size: 220% 220%;
+    animation: landing-nav-ring-shift 8s ease-in-out infinite;
+    box-shadow:
+      0 0 0 1px hsl(var(--border) / 0.25),
+      0 12px 40px -16px hsl(var(--primary) / 0.25);
+    pointer-events: auto;
+    transition: box-shadow 0.35s ease, border-radius 0.35s ease;
+  }
+
+  .landing-nav-dock-wrap--scrolled .landing-nav-dock-ring {
+    border-radius: 1rem;
+    box-shadow:
+      0 0 0 1px hsl(var(--border) / 0.4),
+      0 16px 48px -12px hsl(var(--primary) / 0.35);
+  }
+
+  @keyframes landing-nav-ring-shift {
+    0%,
+    100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  .landing-nav-dock {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 3.25rem;
+    padding: 0.35rem 0.5rem 0.35rem 0.65rem;
+    border-radius: calc(1.25rem - 1px);
+    background: hsl(var(--background) / 0.82);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    overflow: hidden;
+  }
+
+  .landing-nav-dock-wrap--scrolled .landing-nav-dock {
+    min-height: 3rem;
     background: hsl(var(--background) / 0.92);
-    border-bottom-color: hsl(var(--border) / 0.55);
-    box-shadow: 0 4px 24px -8px hsl(0 0% 0% / 0.35);
   }
 
-  .landing-nav-bar {
-    position: relative;
-  }
-
-  .landing-nav-link {
-    position: relative;
-  }
-
-  .landing-nav-link::after {
-    content: "";
+  .landing-nav-dock-grid {
     position: absolute;
-    left: 1rem;
-    right: 1rem;
-    bottom: 0.35rem;
-    height: 1px;
-    background: hsl(var(--primary));
-    transform: scaleX(0);
-    transform-origin: center;
-    transition: transform 0.25s ease;
-    opacity: 0.85;
+    inset: 0;
+    opacity: 0.12;
+    background-image:
+      linear-gradient(hsl(var(--border) / 0.35) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--border) / 0.35) 1px, transparent 1px);
+    background-size: 20px 20px;
+    mask-image: linear-gradient(90deg, transparent, black 15%, black 85%, transparent);
+    pointer-events: none;
   }
 
-  .landing-nav-link:hover::after {
-    transform: scaleX(1);
+  .landing-nav-logo-ring {
+    position: absolute;
+    inset: -3px;
+    border-radius: 9999px;
+    border: 1px solid hsl(var(--primary) / 0.35);
+    animation: landing-nav-orbit 4s linear infinite;
+  }
+
+  @keyframes landing-nav-orbit {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .landing-nav-dock-divider {
+    width: 1px;
+    height: 1.5rem;
+    background: linear-gradient(
+      180deg,
+      transparent,
+      hsl(var(--border) / 0.8),
+      transparent
+    );
+    margin: 0 0.15rem;
+  }
+
+  .landing-nav-pricing {
+    padding: 0.4rem 0.85rem;
+    border-radius: 9999px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: hsl(var(--foreground) / 0.9);
+    background: linear-gradient(
+      135deg,
+      hsl(var(--primary) / 0.12),
+      hsl(var(--secondary) / 0.08)
+    );
+    border: 1px solid hsl(var(--primary) / 0.22);
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+  .landing-nav-pricing:hover {
+    border-color: hsl(var(--primary) / 0.45);
+    box-shadow: 0 0 20px -6px hsl(var(--primary) / 0.45);
+  }
+
+  .landing-nav-rail {
+    border-radius: 0.75rem;
+    border: 1px solid hsl(var(--border) / 0.45);
+    background: hsl(var(--muted) / 0.18);
+    overflow: hidden;
+  }
+
+  .landing-nav-rail-item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0.75rem;
+    min-height: 2.25rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    transition:
+      color 0.2s ease,
+      background 0.2s ease;
+  }
+
+  .landing-nav-rail-item:hover {
+    color: hsl(var(--foreground));
+  }
+
+  .landing-nav-rail-item--icon {
+    padding: 0 0.25rem;
+  }
+
+  .landing-nav-rail-login {
+    color: hsl(var(--foreground));
+    background: linear-gradient(
+      135deg,
+      hsl(var(--primary) / 0.18),
+      hsl(var(--accent) / 0.1)
+    );
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .landing-nav-rail-sep {
+    width: 1px;
+    align-self: stretch;
+    background: hsl(var(--border) / 0.5);
+  }
+
+  .landing-nav-rail-feedback button {
+    height: 2.25rem;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    color: hsl(var(--muted-foreground));
+    font-size: 0.8125rem;
+    font-weight: 500;
+    padding: 0 0.65rem;
+  }
+
+  .landing-nav-rail-feedback button:hover {
+    background: hsl(var(--muted) / 0.35);
+    color: hsl(var(--foreground));
+  }
+
+  .landing-nav-beam {
+    position: absolute;
+    left: 12%;
+    right: 12%;
+    bottom: 0;
+    height: 2px;
+    border-radius: 9999px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(var(--primary)),
+      hsl(var(--secondary)),
+      hsl(var(--accent)),
+      transparent
+    );
+    opacity: 0.65;
+    animation: landing-nav-beam 3.5s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  @keyframes landing-nav-beam {
+    0%,
+    100% {
+      opacity: 0.35;
+      transform: scaleX(0.65);
+    }
+    50% {
+      opacity: 0.85;
+      transform: scaleX(1);
+    }
+  }
+
+  .landing-nav-mobile-panel .landing-nav-dock-ring {
+    border-radius: 1rem;
+  }
+
+  .landing-nav-mobile-inner {
+    border-radius: calc(1rem - 1px);
+    background: hsl(var(--background) / 0.95);
+    backdrop-filter: blur(16px);
+  }
+
+  .landing-nav-mobile-row {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.65rem 0.75rem;
+    border-radius: 0.65rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    text-align: left;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+
+  .landing-nav-mobile-row:hover {
+    background: hsl(var(--muted) / 0.35);
+    color: hsl(var(--foreground));
+  }
+
+  .landing-nav-mobile-login {
+    justify-content: center;
+    color: hsl(var(--foreground));
+    background: linear-gradient(
+      135deg,
+      hsl(var(--primary) / 0.2),
+      hsl(var(--accent) / 0.12)
+    );
+    border: 1px solid hsl(var(--primary) / 0.25);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .landing-nav-dock-ring,
+    .landing-nav-logo-ring,
+    .landing-nav-beam {
+      animation: none;
+    }
   }
 
   .landing-interactive-card {
