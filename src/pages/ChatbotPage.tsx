@@ -37,6 +37,9 @@ import { ChatLoadingScreen } from "@/components/chat/ChatLoadingScreen";
 import { ChatEmptyState } from "@/components/chat/ChatEmptyState";
 import { ChatMainPanel } from "@/components/chat/ChatMainPanel";
 import { SETTINGS_SPRING } from "@/lib/settingsMotion";
+import { useChatSidebarCollapse } from "@/hooks/useChatSidebarCollapse";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { ChatMobileNavDrawer } from "@/components/chat/ChatMobileNavDrawer";
 import { useShadowMemoryContext } from "@/contexts/ShadowMemoryContext";
 import { useIntelligenceHub } from "@/hooks/useIntelligenceHub";
 import { useGemmaOffline } from "@/hooks/useGemmaOffline";
@@ -148,6 +151,11 @@ const ChatbotPage = () => {
   const [byokDialogOpen, setByokDialogOpen] = useState(false);
   const [pendingByokProvider, setPendingByokProvider] = useState<AIProvider | null>(null);
   const [showSidebar, setShowSidebar] = useState(false);
+  const [showMobileNav, setShowMobileNav] = useState(false);
+  const { collapsed: sidebarCollapsed, toggle: toggleSidebar, width: sidebarWidth } =
+    useChatSidebarCollapse();
+  const isMobile = useIsMobile();
+  const historyPanelLeft = isMobile ? 0 : sidebarWidth;
   const [isListening, setIsListening] = useState(false);
   const { isSpeaking, speakingMessageId, speakMessage } = useChatSpeech();
   const [selectedFile, setSelectedFile] = useState<{ type: 'image' | 'file'; data: string; name: string; mimeType: string } | null>(null);
@@ -1150,6 +1158,8 @@ const ChatbotPage = () => {
           userDisplayName={userDisplayName}
           onNewChat={handleNewChat}
           onOpenHistory={() => setShowSidebar(true)}
+          collapsed={sidebarCollapsed}
+          onToggleCollapse={toggleSidebar}
         />
         <ChatIconRail
           userInitials={userInitials}
@@ -1157,6 +1167,15 @@ const ChatbotPage = () => {
           onOpenHistory={() => setShowSidebar(true)}
           onOpenTools={() => setToolsMenuOpen(true)}
           onOpenSettings={() => navigate("/settings")}
+          onOpenNav={() => setShowMobileNav(true)}
+        />
+        <ChatMobileNavDrawer
+          open={showMobileNav}
+          onClose={() => setShowMobileNav(false)}
+          userInitials={userInitials}
+          userDisplayName={userDisplayName}
+          onNewChat={handleNewChat}
+          onOpenHistory={() => setShowSidebar(true)}
         />
         <AnimatePresence>
           {showSidebar && (
@@ -1168,7 +1187,8 @@ const ChatbotPage = () => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2 }}
-                className="fixed inset-0 z-40 bg-background/75 backdrop-blur-md md:left-[248px]"
+                className="fixed top-0 right-0 bottom-0 z-40 bg-background/75 backdrop-blur-md"
+                style={{ left: historyPanelLeft }}
                 onClick={() => setShowSidebar(false)}
               />
               <motion.div
@@ -1176,7 +1196,8 @@ const ChatbotPage = () => {
                 animate={{ x: 0, opacity: 1 }}
                 exit={{ x: -320, opacity: 0 }}
                 transition={SETTINGS_SPRING}
-                className="fixed left-0 top-0 bottom-0 z-50 md:left-[248px] shadow-elevated"
+                className="fixed top-0 bottom-0 z-50 shadow-elevated"
+                style={{ left: historyPanelLeft }}
               >
                 <ConversationSidebar
                   conversations={conversations}
@@ -1194,7 +1215,7 @@ const ChatbotPage = () => {
                   onClearCurrent={handleClearCurrentChat}
                   onOpenSettings={() => {
                     setShowSidebar(false);
-                    navigate("/profile");
+                    navigate("/settings");
                   }}
                   onOpenWorkspace={() => {
                     setShowSidebar(false);

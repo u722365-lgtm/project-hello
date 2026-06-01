@@ -1,17 +1,11 @@
-import { NavLink, useNavigate, useLocation } from "react-router-dom";
-import { motion, LayoutGroup } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
-  MessageSquare,
   MessageSquarePlus,
-  Brain,
-  Network,
-  FileText,
-  Radio,
-  Workflow,
-  Code,
-  Plug,
-  Settings,
   History,
+  PanelLeftClose,
+  PanelLeftOpen,
+  ChevronRight,
 } from "lucide-react";
 import { ShadowTalkLogo } from "@/components/brand/ShadowTalkLogo";
 import { Switch } from "@/components/ui/switch";
@@ -21,24 +15,30 @@ import { getShadowModeEnabled, setShadowModeEnabled } from "@/lib/shadowMode";
 import { InstalledAgentsPanel } from "@/components/marketplace/InstalledAgentsPanel";
 import { useSettingsMotion } from "@/hooks/useSettingsMotion";
 import { settingsHapticTick } from "@/lib/settingsFeedback";
-
-const NAV = [
-  { label: "Chat", icon: MessageSquare, to: "/chatbot", end: true },
-  { label: "Intelligence", icon: Brain, to: "/missioncontrol" },
-  { label: "Knowledge", icon: Network, to: "/knowledge" },
-  { label: "Documents", icon: FileText, to: "/workspace" },
-  { label: "Code IDE", icon: Code, to: "/ide" },
-  { label: "Signals", icon: Radio, to: "/analytics" },
-  { label: "Automations", icon: Workflow, to: "/workspace" },
-  { label: "Integrations", icon: Plug, to: "/developers" },
-  { label: "Settings", icon: Settings, to: "/settings" },
-] as const;
+import { SETTINGS_SPRING } from "@/lib/settingsMotion";
+import {
+  CHAT_SIDEBAR_WIDTH_COLLAPSED,
+  CHAT_SIDEBAR_WIDTH_EXPANDED,
+} from "@/lib/chatSidebarNav";
+import { ChatSidebarNavList } from "@/components/chat/ChatSidebarNavList";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface ChatShadowSidebarProps {
   userInitials: string;
   userDisplayName: string;
   onNewChat: () => void;
   onOpenHistory?: () => void;
+  collapsed?: boolean;
+  onToggleCollapse?: () => void;
+  /** Drawer on mobile — always expanded width, visible on small screens */
+  mobileDrawer?: boolean;
+  forceExpanded?: boolean;
+  onNavigate?: () => void;
 }
 
 export function ChatShadowSidebar({
@@ -46,139 +46,222 @@ export function ChatShadowSidebar({
   userDisplayName,
   onNewChat,
   onOpenHistory,
+  collapsed = false,
+  onToggleCollapse,
+  mobileDrawer = false,
+  forceExpanded = false,
+  onNavigate,
 }: ChatShadowSidebarProps) {
   const navigate = useNavigate();
-  const location = useLocation();
   const [shadowMode, setShadowMode] = useState(() => getShadowModeEnabled());
-  const { navSpring, spring } = useSettingsMotion();
+  const { spring, staggerItem } = useSettingsMotion();
+
+  const isCollapsed = forceExpanded ? false : collapsed;
+  const width = isCollapsed ? CHAT_SIDEBAR_WIDTH_COLLAPSED : CHAT_SIDEBAR_WIDTH_EXPANDED;
 
   useEffect(() => {
     setShadowModeEnabled(shadowMode);
   }, [shadowMode]);
 
-  return (
-    <aside className="hidden md:flex w-[248px] shrink-0 flex-col border-r border-sidebar-border/80 bg-sidebar/95 backdrop-blur-xl relative z-30">
+  const actionBtn = (opts: {
+    icon: React.ReactNode;
+    label: string;
+    onClick: () => void;
+    primary?: boolean;
+  }) => {
+    const btn = (
       <motion.button
         type="button"
-        onClick={() => navigate("/")}
-        whileHover={{ scale: 1.01 }}
-        whileTap={{ scale: 0.98 }}
+        onClick={() => {
+          settingsHapticTick();
+          opts.onClick();
+        }}
+        whileHover={{ x: isCollapsed ? 0 : 5, scale: isCollapsed ? 1.06 : 1 }}
+        whileTap={{ scale: 0.96 }}
         transition={spring}
-        className="flex items-center gap-3 px-5 pt-6 pb-6 text-left w-full hover:opacity-90 transition-opacity"
+        className={cn(
+          "relative flex items-center rounded-xl text-[13px] font-medium transition-colors",
+          isCollapsed ? "justify-center h-11 w-11 mx-auto" : "gap-3 w-full px-3 py-2.5",
+          opts.primary
+            ? "bg-primary/15 border border-primary/30 text-sidebar-foreground hover:bg-primary/22"
+            : "text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/50",
+        )}
       >
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-card/80 ring-1 ring-primary/20 shadow-[0_0_20px_hsl(var(--primary)/0.12)]">
-          <ShadowTalkLogo size={40} variant="icon" ambient={false} animated={false} />
-        </div>
-        <div>
-          <p className="text-sm font-semibold text-sidebar-foreground tracking-tight">ShadowTalk AI</p>
-          <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-primary/80">
-            Sovereign Intelligence
-          </p>
-        </div>
+        {opts.icon}
+        {!isCollapsed && <span className="flex-1 text-left">{opts.label}</span>}
       </motion.button>
+    );
 
-      <div className="px-3 pb-3 space-y-1">
-        <motion.button
-          type="button"
-          onClick={() => {
-            settingsHapticTick();
-            onNewChat();
-          }}
-          whileHover={{ x: 4 }}
-          whileTap={{ scale: 0.98 }}
-          transition={spring}
-          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium text-sidebar-foreground bg-primary/15 border border-primary/25 hover:bg-primary/20 transition-colors"
-        >
-          <MessageSquarePlus className="h-4 w-4 text-primary shrink-0" />
-          New chat
-        </motion.button>
-        {onOpenHistory && (
+    if (isCollapsed) {
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>{btn}</TooltipTrigger>
+          <TooltipContent side="right">{opts.label}</TooltipContent>
+        </Tooltip>
+      );
+    }
+    return btn;
+  };
+
+  return (
+    <TooltipProvider delayDuration={200}>
+      <motion.aside
+        animate={{ width }}
+        transition={SETTINGS_SPRING}
+        className={cn(
+          "shrink-0 flex flex-col border-r border-sidebar-border/80 relative z-30 overflow-hidden",
+          "bg-gradient-to-b from-sidebar/98 via-sidebar/95 to-background/90 backdrop-blur-2xl",
+          mobileDrawer ? "flex h-full" : "hidden md:flex h-screen",
+        )}
+        style={{ width }}
+      >
+        <div className="absolute inset-y-0 right-0 w-px bg-gradient-to-b from-transparent via-primary/35 to-transparent pointer-events-none" />
+
+        {/* Brand */}
+        <div className={cn("relative shrink-0", isCollapsed ? "px-2 pt-5 pb-3" : "px-4 pt-5 pb-4")}>
           <motion.button
             type="button"
             onClick={() => {
               settingsHapticTick();
-              onOpenHistory();
+              navigate("/");
+              onNavigate?.();
             }}
-            whileHover={{ x: 4 }}
             whileTap={{ scale: 0.98 }}
             transition={spring}
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
+            className={cn(
+              "flex items-center text-left w-full rounded-xl hover:bg-sidebar-accent/30 transition-colors",
+              isCollapsed ? "justify-center p-2" : "gap-3 p-2",
+            )}
           >
-            <History className="h-4 w-4 shrink-0" />
-            Chat history
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-card/80 ring-1 ring-primary/25 shadow-[0_0_24px_hsl(var(--primary)/0.15)]">
+              <ShadowTalkLogo size={36} variant="icon" ambient={false} animated={!isCollapsed} />
+            </div>
+            {!isCollapsed && (
+              <motion.div
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={spring}
+                className="min-w-0"
+              >
+                <p className="text-sm font-semibold text-sidebar-foreground tracking-tight truncate">
+                  ShadowTalk AI
+                </p>
+                <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-primary/75">
+                  Sovereign
+                </p>
+              </motion.div>
+            )}
           </motion.button>
-        )}
-      </div>
 
-      <div className="px-3 pb-2 border-b border-sidebar-border/60">
-        <InstalledAgentsPanel compact />
-      </div>
-
-      <LayoutGroup id="chat-sidebar-nav">
-        <nav className="flex-1 px-3 py-2 space-y-0.5 overflow-y-auto min-h-0">
-          {NAV.map((item) => {
-            const { label, icon: Icon, to } = item;
-            const end = "end" in item && item.end;
-            const active = end
-              ? location.pathname === to
-              : location.pathname.startsWith(to);
-
-            return (
-              <NavLink key={label} to={to} end={end} className="block relative">
-                <motion.span
-                  className={cn(
-                    "relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-colors",
-                    active
-                      ? "text-sidebar-foreground"
-                      : "text-muted-foreground hover:text-sidebar-foreground",
-                  )}
-                  whileHover={active ? undefined : { x: 4 }}
+          {onToggleCollapse && !mobileDrawer && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <motion.button
+                  type="button"
+                  onClick={() => {
+                    settingsHapticTick();
+                    onToggleCollapse();
+                  }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.94 }}
                   transition={spring}
+                  className={cn(
+                    "absolute flex h-7 w-7 items-center justify-center rounded-lg",
+                    "border border-border/50 bg-background/80 text-muted-foreground hover:text-primary",
+                    isCollapsed ? "right-1 top-4" : "right-3 top-5",
+                  )}
+                  aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
                 >
-                  {active && (
-                    <motion.span
-                      layoutId="chat-sidebar-active"
-                      className="absolute inset-0 rounded-xl bg-sidebar-accent border border-primary/20 shadow-[inset_0_1px_0_hsl(var(--primary)/0.15)]"
-                      transition={navSpring}
-                    />
+                  {isCollapsed ? (
+                    <PanelLeftOpen className="h-3.5 w-3.5" />
+                  ) : (
+                    <PanelLeftClose className="h-3.5 w-3.5" />
                   )}
-                  <Icon className="relative z-10 h-4 w-4 shrink-0" />
-                  <span className="relative z-10 flex-1">{label}</span>
-                  {active && (
-                    <span className="relative z-10 h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_8px_hsl(var(--primary)/0.9)]" />
-                  )}
-                </motion.span>
-              </NavLink>
-            );
-          })}
-        </nav>
-      </LayoutGroup>
-
-      <div className="px-5 py-4 border-t border-sidebar-border space-y-4">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-medium text-muted-foreground">Shadow Mode</span>
-          <Switch
-            checked={shadowMode}
-            onCheckedChange={setShadowMode}
-            className="data-[state=checked]:bg-primary"
-          />
+                </motion.button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                {isCollapsed ? "Expand" : "Collapse"}
+              </TooltipContent>
+            </Tooltip>
+          )}
         </div>
-        <motion.button
-          type="button"
-          onClick={() => navigate("/profile")}
-          whileHover={{ scale: 1.01 }}
-          transition={spring}
-          className="flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left hover:bg-sidebar-accent/40 transition-colors"
+
+        {/* Quick actions */}
+        <motion.div
+          variants={staggerItem}
+          initial="hidden"
+          animate="visible"
+          className={cn("shrink-0 space-y-1", isCollapsed ? "px-2 pb-2" : "px-3 pb-3")}
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted text-xs font-bold text-foreground ring-1 ring-primary/25">
-            {userInitials}
+          {actionBtn({
+            icon: <MessageSquarePlus className="h-4 w-4 text-primary shrink-0" />,
+            label: "New chat",
+            onClick: onNewChat,
+            primary: true,
+          })}
+          {onOpenHistory &&
+            actionBtn({
+              icon: <History className="h-4 w-4 shrink-0" />,
+              label: "Chat history",
+              onClick: onOpenHistory,
+            })}
+        </motion.div>
+
+        {!isCollapsed && (
+          <div className="px-3 pb-2 border-b border-sidebar-border/50 shrink-0">
+            <InstalledAgentsPanel compact />
           </div>
-          <div className="min-w-0">
-            <p className="text-sm font-medium text-sidebar-foreground truncate">{userDisplayName}</p>
-            <p className="text-[11px] text-muted-foreground">View profile</p>
-          </div>
-        </motion.button>
-      </div>
-    </aside>
+        )}
+
+        <ChatSidebarNavList collapsed={isCollapsed} onItemClick={onNavigate} />
+
+        {/* Footer */}
+        <div
+          className={cn(
+            "shrink-0 border-t border-sidebar-border/60 space-y-3",
+            isCollapsed ? "px-2 py-3" : "px-4 py-4",
+          )}
+        >
+          {!isCollapsed ? (
+            <div className="flex items-center justify-between rounded-xl bg-muted/20 px-3 py-2 border border-border/40">
+              <span className="text-xs font-medium text-muted-foreground">Shadow Mode</span>
+              <Switch
+                checked={shadowMode}
+                onCheckedChange={setShadowMode}
+                className="data-[state=checked]:bg-primary"
+              />
+            </div>
+          ) : null}
+
+          <motion.button
+            type="button"
+            onClick={() => {
+              settingsHapticTick();
+              navigate("/profile");
+              onNavigate?.();
+            }}
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.98 }}
+            transition={spring}
+            className={cn(
+              "flex w-full items-center rounded-xl hover:bg-sidebar-accent/50 transition-colors",
+              isCollapsed ? "justify-center p-2" : "gap-3 px-2 py-2",
+            )}
+          >
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-xs font-bold text-primary ring-1 ring-primary/30">
+              {userInitials}
+            </div>
+            {!isCollapsed && (
+              <div className="min-w-0 flex-1 text-left">
+                <p className="text-sm font-medium truncate">{userDisplayName}</p>
+                <p className="text-[11px] text-muted-foreground flex items-center gap-0.5">
+                  Profile <ChevronRight className="h-3 w-3" />
+                </p>
+              </div>
+            )}
+          </motion.button>
+        </div>
+      </motion.aside>
+    </TooltipProvider>
   );
 }

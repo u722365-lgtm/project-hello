@@ -10,12 +10,14 @@ import {
   ArchiveRestore,
   Settings2,
   ArrowLeft,
+  X,
+  Sparkles,
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,6 +30,9 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
+import { useSettingsMotion } from "@/hooks/useSettingsMotion";
+import { SETTINGS_SPRING } from "@/lib/settingsMotion";
+import { settingsHapticTick } from "@/lib/settingsFeedback";
 
 interface Conversation {
   id: string;
@@ -65,10 +70,13 @@ export const ConversationSidebar = ({
   onClearCurrent,
   onOpenSettings,
   onOpenWorkspace,
+  onClose,
 }: ConversationSidebarProps) => {
   const [search, setSearch] = useState("");
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [showArchivedView, setShowArchivedView] = useState(false);
+  const [searchFocused, setSearchFocused] = useState(false);
+  const { spring, staggerItem, staggerList } = useSettingsMotion();
 
   const activeConversations = conversations.filter((c) => !isArchived(c));
   const archivedConversations = conversations.filter((c) => isArchived(c));
@@ -101,189 +109,224 @@ export const ConversationSidebar = ({
   const groupOrder = ["Today", "Yesterday", "Last 7 days", "Last 30 days", "Earlier"];
 
   return (
-    <div className="w-[280px] shrink-0 glass-strong border-r border-border/50 flex flex-col max-md:absolute max-md:left-0 max-md:top-0 max-md:h-full max-md:z-50 max-md:shadow-2xl h-full">
-      <div className="p-4 space-y-2 border-b border-border/40">
-        {showArchivedView ? (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowArchivedView(false)}
-            className="w-full h-9 rounded-full justify-start gap-2 text-[13px] text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft className="h-4 w-4" /> Back to chats
-          </Button>
-        ) : (
-          <Button
-            onClick={onCreateNew}
-            className="w-full h-10 rounded-full bg-muted hover:bg-muted/80 text-foreground border border-border/50 shadow-sm transition-all duration-300 text-[14px] font-medium gap-2.5 justify-center"
-          >
-            <Plus className="h-4 w-4 text-primary" /> New chat
-          </Button>
-        )}
-        {!showArchivedView && onClearCurrent && currentConversationId && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClearCurrent}
-            className="w-full h-9 rounded-full text-[12px] text-muted-foreground hover:text-foreground"
-          >
-            <Trash className="h-3.5 w-3.5 mr-2" /> Clear this chat
-          </Button>
-        )}
+    <motion.div
+      initial={{ opacity: 0.9 }}
+      animate={{ opacity: 1 }}
+      transition={SETTINGS_SPRING}
+      className="w-[min(100vw,300px)] sm:w-[300px] shrink-0 flex flex-col h-full glass-strong border-r border-border/50 shadow-elevated"
+    >
+      <div className="relative shrink-0 p-4 border-b border-border/40 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/5 pointer-events-none" />
+        <div className="relative flex items-start justify-between gap-2">
+          <div>
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <h2 className="text-base font-semibold tracking-tight">
+                {showArchivedView ? "Archived" : "Chat history"}
+              </h2>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {activeConversations.length} active
+              {archivedConversations.length > 0 && ` · ${archivedConversations.length} archived`}
+            </p>
+          </div>
+          {onClose && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+              className="h-9 w-9 rounded-xl shrink-0"
+              aria-label="Close history"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+
+        <div className="relative mt-4 space-y-2">
+          {showArchivedView ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowArchivedView(false)}
+              className="w-full h-9 rounded-xl justify-start gap-2 text-sm"
+            >
+              <ArrowLeft className="h-4 w-4" /> Back to chats
+            </Button>
+          ) : (
+            <motion.div whileTap={{ scale: 0.98 }} transition={spring}>
+              <Button
+                onClick={() => {
+                  settingsHapticTick();
+                  onCreateNew();
+                }}
+                className="w-full h-10 rounded-xl btn-glow gap-2 font-medium"
+              >
+                <Plus className="h-4 w-4" /> New chat
+              </Button>
+            </motion.div>
+          )}
+          {!showArchivedView && onClearCurrent && currentConversationId && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClearCurrent}
+              className="w-full h-8 rounded-lg text-xs text-muted-foreground"
+            >
+              <Trash className="h-3.5 w-3.5 mr-2" /> Clear this chat
+            </Button>
+          )}
+        </div>
       </div>
 
-      <ScrollArea className="flex-1 px-3">
-        <div className="pb-4 space-y-8">
-          {showArchivedView ? (
-            <div className="px-3 py-2">
-              <span className="text-[11px] font-bold text-muted-foreground/50 tracking-widest uppercase">
-                Archived chats
-              </span>
-              {archivedConversations.length === 0 && (
-                <p className="text-[13px] text-muted-foreground/60 mt-4 leading-relaxed">
-                  No archived chats yet. Hover a conversation and use the archive icon to move it here.
-                </p>
-              )}
-            </div>
-          ) : (
-            <div className="space-y-1">
-              <div className="px-3 py-1 mb-2 flex items-center justify-between">
-                <span className="text-[11px] font-bold text-muted-foreground/50 tracking-widest uppercase">
-                  Notebooks
-                </span>
-                <BookOpen className="h-3 w-3 text-muted-foreground/30" />
-              </div>
+      <ScrollArea className="flex-1 px-2">
+        <motion.div variants={staggerList} initial="hidden" animate="visible" className="pb-4 space-y-6 pt-2">
+          {!showArchivedView && onOpenWorkspace && (
+            <motion.div variants={staggerItem} className="px-2">
               <button
                 type="button"
-                onClick={onOpenWorkspace}
-                className="w-full px-3 py-2 rounded-full bg-primary/10 border border-primary/20 flex items-center gap-3 cursor-pointer hover:bg-primary/15 transition-all text-left"
+                onClick={() => {
+                  settingsHapticTick();
+                  onOpenWorkspace();
+                }}
+                className="w-full flex items-center gap-3 rounded-xl px-3 py-3 text-left border border-primary/25 bg-primary/10 hover:bg-primary/15 transition-colors"
               >
-                <Layers className="h-4 w-4 text-primary" />
-                <span className="text-[13px] font-medium text-foreground/90">Project Workspace</span>
+                <Layers className="h-4 w-4 text-primary shrink-0" />
+                <span className="text-sm font-medium">Project workspace</span>
+                <BookOpen className="h-3.5 w-3.5 ml-auto text-muted-foreground" />
               </button>
-            </div>
+            </motion.div>
           )}
 
-          <div className="space-y-6">
-            {filtered.length === 0 && !showArchivedView && activeConversations.length === 0 && (
-              <p className="px-3 text-[13px] text-muted-foreground/60">No conversations yet.</p>
-            )}
+          {filtered.length === 0 && (
+            <motion.p variants={staggerItem} className="px-4 text-sm text-muted-foreground text-center py-8">
+              {showArchivedView ? "No archived chats." : "No conversations yet — start a new chat."}
+            </motion.p>
+          )}
+
+          <LayoutGroup id="conversation-list">
             {groupOrder.map((group) => {
               const items = grouped[group];
-              if (!items || items.length === 0) return null;
+              if (!items?.length) return null;
               return (
-                <div key={group} className="space-y-1">
-                  <div className="px-3 py-1 mb-1">
-                    <span className="text-[11px] font-bold text-muted-foreground/40 tracking-widest uppercase">
-                      {group}
-                    </span>
-                  </div>
-                  <AnimatePresence initial={false}>
-                    <div className="space-y-0.5">
-                      {items.map((conv, i) => {
-                        const isActive = currentConversationId === conv.id;
-                        const isHovered = hoveredId === conv.id;
-                        const archived = isArchived(conv);
-                        return (
-                          <motion.div
-                            key={conv.id}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: i * 0.01, duration: 0.2 }}
-                            className="relative"
-                            onMouseEnter={() => setHoveredId(conv.id)}
-                            onMouseLeave={() => setHoveredId(null)}
+                <motion.div key={group} variants={staggerItem} className="space-y-1">
+                  <p className="px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/50">
+                    {group}
+                  </p>
+                  <div className="space-y-0.5">
+                    {items.map((conv) => {
+                      const isActive = currentConversationId === conv.id;
+                      const isHovered = hoveredId === conv.id;
+                      const archived = isArchived(conv);
+                      return (
+                        <motion.div
+                          key={conv.id}
+                          layout
+                          onMouseEnter={() => setHoveredId(conv.id)}
+                          onMouseLeave={() => setHoveredId(null)}
+                          className="relative"
+                        >
+                          <motion.button
+                            type="button"
+                            onClick={() => {
+                              settingsHapticTick();
+                              onSelect(conv.id);
+                            }}
+                            whileTap={{ scale: 0.98 }}
+                            transition={spring}
+                            className={cn(
+                              "relative w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors",
+                              isActive
+                                ? "text-foreground"
+                                : "text-muted-foreground hover:text-foreground",
+                            )}
                           >
-                            <div
-                              className={cn(
-                                "relative flex items-center gap-3 px-3 py-2.5 rounded-full cursor-pointer transition-all duration-200",
-                                isActive
-                                  ? "bg-muted text-foreground"
-                                  : "hover:bg-muted/20 text-foreground/70",
-                              )}
-                              onClick={() => onSelect(conv.id)}
-                            >
-                              <MessageSquare
-                                className={cn(
-                                  "h-4 w-4 shrink-0",
-                                  isActive ? "text-primary" : "opacity-40",
-                                )}
+                            {isActive && (
+                              <motion.span
+                                layoutId="conversation-active-pill"
+                                className="absolute inset-0 rounded-xl bg-primary/12 border border-primary/25"
+                                transition={spring}
                               />
-                              <div className="flex-1 min-w-0">
-                                <span
-                                  className={cn(
-                                    "text-[13.5px] leading-snug truncate block",
-                                    isActive ? "font-medium" : "font-normal",
-                                  )}
+                            )}
+                            <MessageSquare
+                              className={cn(
+                                "relative z-10 h-4 w-4 shrink-0",
+                                isActive ? "text-primary" : "opacity-50",
+                              )}
+                            />
+                            <span
+                              className={cn(
+                                "relative z-10 flex-1 text-[13px] truncate",
+                                isActive && "font-medium",
+                              )}
+                            >
+                              {conv.title || "Untitled chat"}
+                            </span>
+                            <AnimatePresence>
+                              {(isHovered || isActive) && (
+                                <motion.div
+                                  initial={{ opacity: 0, scale: 0.85 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  exit={{ opacity: 0, scale: 0.85 }}
+                                  transition={{ duration: 0.15 }}
+                                  className="relative z-10 flex items-center gap-0.5"
                                 >
-                                  {conv.title}
-                                </span>
-                              </div>
-                              <AnimatePresence>
-                                {(isHovered || isActive) && (
-                                  <motion.div
-                                    initial={{ opacity: 0, scale: 0.9 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 0.9 }}
-                                    transition={{ duration: 0.1 }}
-                                    className="flex items-center gap-0.5"
-                                  >
-                                    {archived ? (
-                                      <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-7 w-7 rounded-full hover:bg-muted/40"
-                                        title="Restore chat"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          onUnarchive(conv.id);
-                                        }}
-                                      >
-                                        <ArchiveRestore className="h-3.5 w-3.5 opacity-60 hover:opacity-100 hover:text-primary" />
-                                      </Button>
-                                    ) : (
-                                      <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-7 w-7 rounded-full hover:bg-muted/40"
-                                        title="Archive chat"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          onArchive(conv.id);
-                                        }}
-                                      >
-                                        <Archive className="h-3.5 w-3.5 opacity-60 hover:opacity-100" />
-                                      </Button>
-                                    )}
+                                  {archived ? (
                                     <Button
                                       variant="ghost"
                                       size="icon"
-                                      className="h-7 w-7 rounded-full hover:bg-muted/40"
-                                      title="Delete chat"
+                                      className="h-7 w-7 rounded-lg"
+                                      title="Restore"
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        onDelete(conv.id);
+                                        onUnarchive(conv.id);
                                       }}
                                     >
-                                      <Trash2 className="h-3.5 w-3.5 opacity-40 hover:opacity-100 hover:text-destructive" />
+                                      <ArchiveRestore className="h-3.5 w-3.5" />
                                     </Button>
-                                  </motion.div>
-                                )}
-                              </AnimatePresence>
-                            </div>
-                          </motion.div>
-                        );
-                      })}
-                    </div>
-                  </AnimatePresence>
-                </div>
+                                  ) : (
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-7 w-7 rounded-lg"
+                                      title="Archive"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        onArchive(conv.id);
+                                      }}
+                                    >
+                                      <Archive className="h-3.5 w-3.5" />
+                                    </Button>
+                                  )}
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7 rounded-lg hover:text-destructive"
+                                    title="Delete"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      onDelete(conv.id);
+                                    }}
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </Button>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </motion.button>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
               );
             })}
-          </div>
-        </div>
+          </LayoutGroup>
+        </motion.div>
       </ScrollArea>
 
-      <div className="p-4 border-t border-border/40 space-y-4">
+      <div className="shrink-0 p-4 border-t border-border/40 space-y-3 bg-background/40">
         <div className="grid grid-cols-2 gap-2">
           <Button
             type="button"
@@ -294,40 +337,49 @@ export const ConversationSidebar = ({
               setShowArchivedView(true);
             }}
             className={cn(
-              "h-9 rounded-xl gap-2 justify-start px-3 text-[12px] hover:text-foreground hover:bg-muted/50",
-              showArchivedView
-                ? "bg-muted text-foreground"
-                : "text-muted-foreground/60",
+              "h-9 rounded-xl text-xs justify-start",
+              showArchivedView && "bg-primary/10 text-foreground",
             )}
           >
-            <Archive className="h-3.5 w-3.5" /> Archived
+            <Archive className="h-3.5 w-3.5 mr-1" />
+            Archived
             {archivedConversations.length > 0 && (
-              <span className="ml-auto text-[10px] tabular-nums text-muted-foreground">
-                {archivedConversations.length}
-              </span>
+              <span className="ml-auto tabular-nums opacity-70">{archivedConversations.length}</span>
             )}
           </Button>
           <Button
             type="button"
             variant="ghost"
             size="sm"
-            onClick={onOpenSettings}
-            className="h-9 rounded-xl gap-2 justify-start px-3 text-[12px] text-muted-foreground/60 hover:text-foreground hover:bg-muted/50"
+            onClick={() => {
+              settingsHapticTick();
+              onOpenSettings();
+            }}
+            className="h-9 rounded-xl text-xs justify-start"
           >
-            <Settings2 className="h-3.5 w-3.5" /> Settings
+            <Settings2 className="h-3.5 w-3.5 mr-1" /> Settings
           </Button>
         </div>
 
         {conversations.length > 2 && (
-          <div className="relative">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/30" />
+          <motion.div
+            animate={
+              searchFocused
+                ? { boxShadow: "0 0 0 2px hsl(var(--primary) / 0.25)" }
+                : { boxShadow: "0 0 0 0px transparent" }
+            }
+            className="relative rounded-xl"
+          >
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder={showArchivedView ? "Search archived" : "Search chat history"}
-              className="h-9 pl-10 text-[12.5px] rounded-full bg-muted/20 border-transparent focus:bg-muted/30 focus:border-transparent transition-all duration-300 placeholder:text-muted-foreground/30"
+              onFocus={() => setSearchFocused(true)}
+              onBlur={() => setSearchFocused(false)}
+              placeholder={showArchivedView ? "Search archived…" : "Search chats…"}
+              className="h-10 pl-9 rounded-xl bg-muted/30 border-border/50 text-sm"
             />
-          </div>
+          </motion.div>
         )}
 
         {!showArchivedView && conversations.length > 0 && (
@@ -336,33 +388,31 @@ export const ConversationSidebar = ({
               <Button
                 variant="ghost"
                 size="sm"
-                className="w-full h-9 rounded-xl text-[11px] font-bold uppercase tracking-widest text-muted-foreground/30 hover:text-destructive hover:bg-destructive/5 transition-all"
+                className="w-full h-9 rounded-xl text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10"
               >
                 Clear all chats
               </Button>
             </AlertDialogTrigger>
-            <AlertDialogContent className="bg-card border-border rounded-2xl">
+            <AlertDialogContent className="glass-strong border-border rounded-2xl">
               <AlertDialogHeader>
-                <AlertDialogTitle className="text-xl">Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription className="text-muted-foreground">
-                  This will permanently delete all your conversation history. This action cannot be undone.
+                <AlertDialogTitle>Delete all chats?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This permanently removes every conversation. This cannot be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel className="rounded-xl border-border hover:bg-muted/50">
-                  Cancel
-                </AlertDialogCancel>
+                <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
                 <AlertDialogAction
                   onClick={onClearAll}
-                  className="rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  className="rounded-xl bg-destructive text-destructive-foreground"
                 >
-                  Delete All
+                  Delete all
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 };
