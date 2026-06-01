@@ -5,19 +5,13 @@ import { motion } from "framer-motion";
 export type ShadowTalkLogoProps = {
   size?: number;
   className?: string;
-  /** Subtle outer glow (hero only) */
   ambient?: boolean;
   animated?: boolean;
-  /** icon = squircle app mark; mark = emblem only (sidebar) */
   variant?: "icon" | "mark";
 };
 
 /**
- * ShadowTalk sovereign mark — professional app-icon style (ChatGPT / Gemini tier).
- *
- * - Rounded squircle frame (product icon)
- * - Layered “S” ribbon = Shadow (depth layers) + flow (Talk / intelligence)
- * - Eclipse dot = neural core
+ * Approved ShadowTalk mark — 3D gradient S-ribbons + sovereign eye core.
  */
 export function ShadowTalkLogo({
   size = 88,
@@ -28,7 +22,9 @@ export function ShadowTalkLogo({
 }: ShadowTalkLogoProps) {
   const id = useId().replace(/:/g, "");
   const grad = `${id}-grad`;
-  const gradSoft = `${id}-grad-soft`;
+  const gradRibbon = `${id}-ribbon`;
+  const gradDark = `${id}-dark`;
+  const pupilGlow = `${id}-pupil`;
   const ambientId = `${id}-ambient`;
   const glow = `${id}-glow`;
 
@@ -46,106 +42,120 @@ export function ShadowTalkLogo({
       aria-label="ShadowTalk"
     >
       <defs>
-        <linearGradient id={grad} x1="18" y1="14" x2="82" y2="86" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#2dd4bf" />
-          <stop offset="38%" stopColor="#38bdf8" />
-          <stop offset="68%" stopColor="#6366f1" />
-          <stop offset="100%" stopColor="#a78bfa" />
+        <linearGradient id={grad} x1="8" y1="8" x2="92" y2="92" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#22d3ee" />
+          <stop offset="35%" stopColor="#3b82f6" />
+          <stop offset="70%" stopColor="#6366f1" />
+          <stop offset="100%" stopColor="#a855f7" />
         </linearGradient>
-        <linearGradient id={gradSoft} x1="50" y1="20" x2="50" y2="80" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.55" />
-          <stop offset="100%" stopColor="#6366f1" stopOpacity="0.15" />
+        <linearGradient id={gradRibbon} x1="20" y1="18" x2="80" y2="82" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#67e8f9" />
+          <stop offset="40%" stopColor="#60a5fa" />
+          <stop offset="75%" stopColor="#818cf8" />
+          <stop offset="100%" stopColor="#c084fc" />
         </linearGradient>
-        <radialGradient id={ambientId} cx="50%" cy="45%" r="50%">
-          <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.35" />
-          <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
+        <linearGradient id={gradDark} x1="30" y1="30" x2="70" y2="70">
+          <stop offset="0%" stopColor="#312e81" />
+          <stop offset="100%" stopColor="#1e1b4b" />
+        </linearGradient>
+        <radialGradient id={pupilGlow} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#e9d5ff" />
+          <stop offset="35%" stopColor="#a855f7" />
+          <stop offset="100%" stopColor="#4c1d95" stopOpacity="0" />
         </radialGradient>
-        <filter id={glow} x="-25%" y="-25%" width="150%" height="150%">
-          <feDropShadow dx="0" dy="2" stdDeviation="4" floodColor="#6366f1" floodOpacity="0.45" />
+        <radialGradient id={ambientId} cx="50%" cy="42%" r="55%">
+          <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.25" />
+          <stop offset="100%" stopColor="#7c3aed" stopOpacity="0" />
+        </radialGradient>
+        <filter id={glow} x="-30%" y="-30%" width="160%" height="160%">
+          <feDropShadow dx="0" dy="3" stdDeviation="5" floodColor="#6366f1" floodOpacity="0.5" />
+        </filter>
+        <filter id={`${id}-pupil-blur`} x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="1.2" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
         </filter>
       </defs>
 
       {ambient && squircle && (
-        <circle cx="50" cy="50" r="46" fill={`url(#${ambientId})`} opacity={0.5} />
+        <circle cx="50" cy="50" r="48" fill={`url(#${ambientId})`} />
       )}
 
       {squircle && (
         <>
+          <rect x="5" y="5" width="90" height="90" rx="22" fill="#030712" />
           <rect
-            x="6"
-            y="6"
-            width="88"
-            height="88"
-            rx="22"
-            fill="#070b14"
-          />
-          <rect
-            x="6"
-            y="6"
-            width="88"
-            height="88"
-            rx="22"
-            fill={`url(#${gradSoft})`}
-            opacity={0.35}
-          />
-          <rect
-            x="6.5"
-            y="6.5"
-            width="87"
-            height="87"
+            x="5.5"
+            y="5.5"
+            width="89"
+            height="89"
             rx="21"
             stroke={`url(#${grad})`}
-            strokeWidth="1"
-            opacity={0.45}
+            strokeWidth="1.25"
+            opacity={0.85}
           />
         </>
       )}
 
       <g filter={squircle ? `url(#${glow})` : undefined}>
-        {/* Depth layer — shadow */}
+        {/* Back ribbon — depth / shadow layer */}
         <path
-          d="M72 26C46 20 26 36 28 50c2 10 14 16 28 12 10-3 14-10 8-16-8-8-26-4-26 12 0 18 20 30 46 26 20-3 30-16 24-26"
-          stroke="#1e1b4b"
-          strokeWidth={squircle ? 7.5 : 6.5}
+          d="M74 24C48 18 24 34 26 50c2 12 16 18 32 14 12-2 16-8 10-14-10-10-28-6-28 10 0 20 22 32 48 28 22-4 32-18 26-28"
+          stroke={`url(#${gradDark})`}
+          strokeWidth="11"
           strokeLinecap="round"
           strokeLinejoin="round"
           fill="none"
-          transform="translate(2.8, 3.2)"
-          opacity={0.9}
-        />
-        <path
-          d="M72 26C46 20 26 36 28 50c2 10 14 16 28 12 10-3 14-10 8-16-8-8-26-4-26 12 0 18 20 30 46 26 20-3 30-16 24-26"
-          stroke="#312e81"
-          strokeWidth={squircle ? 6 : 5}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          fill="none"
-          transform="translate(1.4, 1.6)"
-          opacity={0.75}
+          transform="translate(3, 3.5)"
+          opacity={0.95}
         />
 
-        {/* Primary ribbon — brand gradient */}
+        {/* Mid ribbon — indigo bridge */}
         <path
-          d="M72 26C46 20 26 36 28 50c2 10 14 16 28 12 10-3 14-10 8-16-8-8-26-4-26 12 0 18 20 30 46 26 20-3 30-16 24-26"
-          stroke={`url(#${grad})`}
-          strokeWidth={squircle ? 5.5 : 4.5}
+          d="M74 24C48 18 24 34 26 50c2 12 16 18 32 14 12-2 16-8 10-14-10-10-28-6-28 10 0 20 22 32 48 28 22-4 32-18 26-28"
+          stroke="#4338ca"
+          strokeWidth="8.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          fill="none"
+          transform="translate(1.5, 1.8)"
+          opacity={0.55}
+        />
+
+        {/* Front ribbon — luminous gradient (approved 3D S) */}
+        <path
+          d="M74 24C48 18 24 34 26 50c2 12 16 18 32 14 12-2 16-8 10-14-10-10-28-6-28 10 0 20 22 32 48 28 22-4 32-18 26-28"
+          stroke={`url(#${gradRibbon})`}
+          strokeWidth="7"
           strokeLinecap="round"
           strokeLinejoin="round"
           fill="none"
         />
 
-        {/* Eclipse core — shadow ∩ light (sovereign intelligence) */}
-        <circle cx="50" cy="50" r="9" fill="#070b14" />
-        <circle cx="50" cy="50" r="9" stroke={`url(#${grad})`} strokeWidth="1.25" opacity={0.7} />
-        <circle cx="50" cy="50" r="4" fill={`url(#${grad})`} />
+        {/* Highlight edge — glass sheen */}
         <path
-          d="M50 41a9 9 0 0 1 0 18"
-          stroke={`url(#${grad})`}
-          strokeWidth="2"
+          d="M68 28C52 24 36 34 36 48c0 8 8 12 18 10"
+          stroke="white"
+          strokeWidth="1.5"
           strokeLinecap="round"
           fill="none"
-          opacity={0.85}
+          opacity={0.22}
         />
+
+        {/* Sovereign eye — pupil */}
+        <circle cx="50" cy="50" r="12" fill="#050508" />
+        <circle cx="50" cy="50" r="12" stroke={`url(#${grad})`} strokeWidth="0.75" opacity={0.35} />
+        <circle cx="50" cy="50" r="7" fill={`url(#${pupilGlow})`} opacity={0.5} />
+        <circle
+          cx="50"
+          cy="50"
+          r="3.2"
+          fill="#c084fc"
+          filter={`url(#${id}-pupil-blur)`}
+        />
+        <circle cx="51" cy="49" r="1" fill="white" opacity={0.9} />
       </g>
     </svg>
   );
@@ -157,11 +167,11 @@ export function ShadowTalkLogo({
   return (
     <motion.div
       className="inline-flex items-center justify-center shrink-0"
-      initial={{ opacity: 0, scale: 0.96 }}
-      animate={{ opacity: 1, scale: [1, 1.02, 1] }}
+      initial={{ opacity: 0, scale: 0.94 }}
+      animate={{ opacity: 1, scale: [1, 1.025, 1] }}
       transition={{
-        opacity: { duration: 0.35 },
-        scale: { duration: 4, repeat: Infinity, ease: "easeInOut" },
+        opacity: { duration: 0.4 },
+        scale: { duration: 5, repeat: Infinity, ease: "easeInOut" },
       }}
     >
       {svg}
