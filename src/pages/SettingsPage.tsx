@@ -21,7 +21,6 @@ import { SettingsSearch } from "@/components/settings/SettingsSearch";
 import { SettingsHero } from "@/components/settings/SettingsHero";
 import { SettingsBreadcrumb } from "@/components/settings/SettingsBreadcrumb";
 import { SettingsProgressBar } from "@/components/settings/SettingsProgressBar";
-import { SettingsDock } from "@/components/settings/SettingsDock";
 import { SettingsLoading } from "@/components/settings/SettingsLoading";
 import { useSettingsMotion } from "@/hooks/useSettingsMotion";
 import { useSettingsSectionNav } from "@/hooks/useSettingsSectionNav";
@@ -175,7 +174,7 @@ export default function SettingsPage() {
               </div>
             </aside>
 
-            <main ref={mainRef} className="flex-1 min-w-0 pb-28 lg:pb-32 scroll-mt-24">
+            <main ref={mainRef} className="flex-1 min-w-0 pb-20 scroll-mt-24">
               <motion.div
                 layout
                 className="rounded-2xl border border-border/40 bg-card/40 backdrop-blur-md p-4 sm:p-6 lg:p-8 shadow-card settings-panel-shine overflow-hidden"
@@ -231,9 +230,7 @@ export default function SettingsPage() {
         </div>
       </LayoutGroup>
 
-      <SettingsDock sections={SECTIONS} activeId={section} onSelect={selectSection} />
-
-      <footer className="fixed bottom-0 inset-x-0 z-40 border-t border-border/30 bg-background/85 backdrop-blur-2xl py-2.5 lg:pb-14 pointer-events-none">
+      <footer className="fixed bottom-0 inset-x-0 z-40 border-t border-border/30 bg-background/85 backdrop-blur-2xl py-2.5 pointer-events-none">
         <p className="text-center text-[11px] text-muted-foreground tracking-wide">
           <kbd className="font-mono px-1.5 py-0.5 rounded border border-border/50 bg-muted/30">⌘K</kbd>{" "}
           search ·{" "}
