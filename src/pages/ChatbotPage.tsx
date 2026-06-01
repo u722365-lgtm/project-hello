@@ -33,7 +33,6 @@ import { useGeoLocation } from "@/hooks/useGeoLocation";
 import { useGuestUsage, GUEST_LIMITS } from "@/hooks/useGuestUsage";
 import { useToolOrchestrator } from "@/hooks/useToolOrchestrator";
 import { ChatAmbientBackground } from "@/components/chat/ChatAmbientBackground";
-import { ChatLoadingScreen } from "@/components/chat/ChatLoadingScreen";
 import { ChatEmptyState } from "@/components/chat/ChatEmptyState";
 import { ChatMainPanel } from "@/components/chat/ChatMainPanel";
 import { SETTINGS_SPRING } from "@/lib/settingsMotion";
@@ -113,7 +112,7 @@ function displayStoredText(raw: string): string {
 const ChatbotPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user, userPlan, signOut, checkSubscription, isOffline, loading: authLoading } = useAuth();
+  const { user, userPlan, signOut, checkSubscription, isOffline } = useAuth();
   const { toast } = useToast();
   
   // Hooks
@@ -313,8 +312,6 @@ const ChatbotPage = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
-
-  const offlineSession = getOfflineSession();
 
   const conversationIsArchived = (conv: Conversation) =>
     isConversationArchived(conv.id, conv.archived_at, guestArchivedIds);
@@ -1002,14 +999,6 @@ const ChatbotPage = () => {
       setIsLoading(false);
     }
   };
-
-  if (authLoading) {
-    return <ChatLoadingScreen />;
-  }
-
-  if (!user && !offlineSession && !isOffline) {
-    return <ChatLoadingScreen />;
-  }
 
   const isEmptyChat = messages.filter((m) => m.id !== "welcome").length === 0;
   const hasActiveChat = messages.some((m) => m.id !== "welcome");

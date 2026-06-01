@@ -14,6 +14,7 @@ import { AutoImproveProvider } from "@/contexts/AutoImproveContext";
 import { StealthKillSwitchProvider } from "@/contexts/StealthKillSwitchContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import BootScreen from "@/components/BootScreen";
+import { shouldSkipBootScreen } from "@/lib/skipBootScreen";
 import CommandPalette from "@/components/CommandPalette";
 import { createContext, useContext } from "react";
 
@@ -203,8 +204,9 @@ const AnimatedRoutes = () => {
 };
 
 const App = () => {
-  const [showBootScreen, setShowBootScreen] = useState(true);
-  const [hasBooted, setHasBooted] = useState(false);
+  const skipBoot = shouldSkipBootScreen();
+  const [showBootScreen, setShowBootScreen] = useState(() => !skipBoot);
+  const [hasBooted, setHasBooted] = useState(() => skipBoot);
   const [cmdOpen, setCmdOpen] = useState(false);
   const [deferredChrome, setDeferredChrome] = useState(false);
 
@@ -213,7 +215,7 @@ const App = () => {
     import("@/lib/profilePreferences").then(({ initProfileUiPreferences }) => initProfileUiPreferences());
 
     const hasSeenBoot = sessionStorage.getItem('shadowtalk-booted');
-    if (hasSeenBoot) {
+    if (hasSeenBoot || shouldSkipBootScreen()) {
       setShowBootScreen(false);
       setHasBooted(true);
     }
