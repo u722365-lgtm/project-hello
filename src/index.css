@@ -532,16 +532,83 @@
   }
 
   .shadowtalk-chat-input-shell {
-    @apply relative w-full max-w-[720px] mt-10 rounded-2xl glass-subtle border border-border/40 p-[1px];
-    box-shadow: 0 8px 40px hsl(var(--primary) / 0.1), 0 0 0 1px hsl(var(--border) / 0.5);
+    @apply relative w-full max-w-[720px];
+  }
+
+  .shadowtalk-chat-input-shell--empty {
+    @apply mt-10;
   }
 
   .shadowtalk-chat-input-inner {
-    @apply rounded-[15px] bg-card/50 border border-border/25;
+    @apply w-full;
   }
 
   .shadowtalk-chat-input-dock {
     @apply w-full max-w-[720px] mx-auto px-4 pb-6 pt-2;
+  }
+
+  /* ShadowTalk Composer — single pill input (approved) */
+  .shadowtalk-composer {
+    @apply relative flex items-center gap-2 min-h-[56px] w-full rounded-full border border-[#2a3548] bg-[#141a24] px-2 py-1.5 transition-all duration-200;
+    box-shadow: 0 4px 24px rgb(0 0 0 / 0.35);
+  }
+
+  .shadowtalk-composer::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: 9999px;
+    padding: 1px;
+    background: linear-gradient(135deg, rgb(34 211 238 / 0), rgb(99 102 241 / 0));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .shadowtalk-composer:focus-within {
+    border-color: rgb(99 102 241 / 0.45);
+    box-shadow:
+      0 4px 28px rgb(0 0 0 / 0.4),
+      0 0 0 1px rgb(34 211 238 / 0.12),
+      0 0 20px rgb(99 102 241 / 0.15);
+  }
+
+  .shadowtalk-composer:focus-within::before {
+    opacity: 1;
+    background: linear-gradient(135deg, rgb(34 211 238 / 0.65), rgb(99 102 241 / 0.85), rgb(168 85 247 / 0.55));
+  }
+
+  .shadowtalk-composer__attach {
+    @apply h-9 w-9 shrink-0 rounded-full border border-[#2a3548] bg-[#0d121c] text-muted-foreground hover:text-foreground hover:bg-[#1a2233] transition-colors;
+  }
+
+  .shadowtalk-composer__send {
+    @apply h-9 w-9 shrink-0 rounded-full text-white transition-all duration-200;
+    background: linear-gradient(135deg, #22d3ee 0%, #6366f1 55%, #a855f7 100%);
+    box-shadow: 0 2px 12px rgb(99 102 241 / 0.45);
+  }
+
+  .shadowtalk-composer__send:hover:not(:disabled) {
+    filter: brightness(1.08);
+    transform: scale(1.04);
+  }
+
+  .shadowtalk-composer__send:disabled {
+    @apply opacity-25 cursor-not-allowed;
+    box-shadow: none;
+    background: #2a3548;
+  }
+
+  .shadowtalk-composer__mic {
+    @apply h-9 w-9 shrink-0 rounded-full border border-[#2a3548] bg-transparent text-muted-foreground hover:text-foreground hover:bg-[#1a2233];
+  }
+
+  .shadowtalk-composer__hint {
+    @apply text-[11px] text-muted-foreground/45 text-center mt-2.5 select-none;
   }
 
   /* ===== Shadow Pulse — black shell + moving rainbow edges ===== */

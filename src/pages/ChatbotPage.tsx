@@ -1095,7 +1095,7 @@ const ChatbotPage = () => {
     chatMode,
     onModeChange: setChatMode,
     personality,
-    layout: "gemini" as const,
+    layout: "composer" as const,
     aiProvider,
     onProviderChange: handleProviderChange,
     hasKeyForProvider,
@@ -1246,10 +1246,8 @@ const ChatbotPage = () => {
                       {aiConfig.preferredProvider} API connected
                     </p>
                   )}
-                  <div className="shadowtalk-chat-input-shell w-full">
-                    <div className="shadowtalk-chat-input-inner">
-                      <ChatInput {...chatInputProps} isEmptyState />
-                    </div>
+                  <div className="shadowtalk-chat-input-shell shadowtalk-chat-input-shell--empty w-full">
+                    <ChatInput {...chatInputProps} isEmptyState />
                   </div>
                 </motion.div>
               ) : (
@@ -1300,9 +1298,7 @@ const ChatbotPage = () => {
           {!isEmptyChat && (
             <div className="shadowtalk-chat-input-dock">
               <div className="shadowtalk-chat-input-shell w-full">
-                <div className="shadowtalk-chat-input-inner">
-                  <ChatInput {...chatInputProps} />
-                </div>
+                <ChatInput {...chatInputProps} />
               </div>
             </div>
           )}

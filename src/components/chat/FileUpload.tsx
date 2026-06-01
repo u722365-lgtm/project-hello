@@ -9,7 +9,7 @@ interface FileUploadProps {
   selectedFile: { type: 'image' | 'file'; data: string; name: string; mimeType: string } | null;
   onClear: () => void;
   disabled?: boolean;
-  variant?: "default" | "gemini";
+  variant?: "default" | "gemini" | "composer";
 }
 
 export const FileUpload = ({ onFileSelect, selectedFile, onClear, disabled, variant = "default" }: FileUploadProps) => {
@@ -128,6 +128,17 @@ export const FileUpload = ({ onFileSelect, selectedFile, onClear, disabled, vari
             <X className="h-3 w-3" />
           </Button>
         </div>
+      ) : variant === "composer" ? (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={disabled || isProcessing}
+          className="shadowtalk-composer__attach"
+          aria-label="Attach file"
+        >
+          {isProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+        </Button>
       ) : variant === "gemini" ? (
         <div className="flex items-center gap-0.5">
           {isDesktop && (
