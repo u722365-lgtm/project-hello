@@ -956,26 +956,48 @@
     }
   }
 
-  /* Landing header — minimal marketing nav */
+  /* Landing page header only (home route) */
   .landing-nav {
-    pointer-events: none;
+    background: hsl(var(--background) / 0.65);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid hsl(var(--border) / 0.35);
+    transition:
+      background 0.3s ease,
+      border-color 0.3s ease,
+      box-shadow 0.3s ease;
   }
 
-  .landing-nav-inner {
-    pointer-events: auto;
-    background: hsl(var(--background) / 0.72);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+  .landing-nav--scrolled {
+    background: hsl(var(--background) / 0.92);
+    border-bottom-color: hsl(var(--border) / 0.55);
+    box-shadow: 0 4px 24px -8px hsl(0 0% 0% / 0.35);
   }
 
-  .landing-nav--scrolled .landing-nav-inner {
-    background: hsl(var(--background) / 0.88);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+  .landing-nav-bar {
+    position: relative;
   }
 
-  .landing-nav-link-line {
-    box-shadow: 0 0 8px hsl(var(--primary) / 0.45);
+  .landing-nav-link {
+    position: relative;
+  }
+
+  .landing-nav-link::after {
+    content: "";
+    position: absolute;
+    left: 1rem;
+    right: 1rem;
+    bottom: 0.35rem;
+    height: 1px;
+    background: hsl(var(--primary));
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform 0.25s ease;
+    opacity: 0.85;
+  }
+
+  .landing-nav-link:hover::after {
+    transform: scaleX(1);
   }
 
   .landing-interactive-card {
