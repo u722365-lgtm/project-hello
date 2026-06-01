@@ -10,9 +10,9 @@ import {
   Code,
   Plug,
   Settings,
-  Sparkles,
   History,
 } from "lucide-react";
+import { ShadowTalkLogo } from "@/components/brand/ShadowTalkLogo";
 import { Switch } from "@/components/ui/switch";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
@@ -58,8 +58,8 @@ export function ChatShadowSidebar({
         onClick={() => navigate("/")}
         className="flex items-center gap-3 px-5 pt-6 pb-8 text-left w-full hover:opacity-90 transition-opacity"
       >
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-secondary shadow-[0_0_20px_hsl(var(--primary)/0.35)]">
-          <Sparkles className="h-5 w-5 text-primary-foreground" />
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-card/80 ring-1 ring-border/50">
+          <ShadowTalkLogo size={36} ambient={false} animated={false} />
         </div>
         <div>
           <p className="text-sm font-semibold text-sidebar-foreground tracking-tight">ShadowTalk AI</p>
