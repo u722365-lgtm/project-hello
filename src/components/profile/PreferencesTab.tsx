@@ -9,6 +9,7 @@ import { useTheme } from "next-themes";
 import { OfflineAISettings } from "./OfflineAISettings";
 import { DesktopAppSettings } from "@/components/desktop/DesktopAppSettings";
 import { AutoImproveInsights } from "@/components/autoImprove/AutoImproveInsights";
+import { ShadowTalkModelPanel } from "@/components/profile/ShadowTalkModelPanel";
 import { isLearningEnabled, setLearningEnabled } from "@/lib/autoImprove/learningConsent";
 
 const tabMotion = { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.3 } };
@@ -23,6 +24,7 @@ export const PreferencesTab = () => {
   return (
     <motion.div {...tabMotion} className="space-y-6">
       <AutoImproveInsights />
+      <ShadowTalkModelPanel />
 
       <Card className="glass border-border/50">
         <CardHeader>

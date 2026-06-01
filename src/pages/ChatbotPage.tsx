@@ -76,6 +76,7 @@ import { useSubscriptionNudge } from "@/hooks/useSubscriptionNudge";
 import { getDailyMessageCount, incrementDailyMessageCount } from "@/lib/dailyMessageCounter";
 import { openProjectInIde, saveIdePayload } from "@/lib/idePayloadStorage";
 import { detectAppBuilderIntent, generateAppProject } from "@/lib/appBuilder";
+import { useShadowTalkModel } from "@/hooks/useShadowTalkModel";
 // Types
 interface Message { 
   id: string; 
@@ -115,6 +116,7 @@ const ChatbotPage = () => {
   const { getOfflineSession } = useOfflineAuth();
   const toolOrchestrator = useToolOrchestrator();
   const gemmaOffline = useGemmaOffline();
+  const sovereignModel = useShadowTalkModel();
   const { getAgentById, agents: marketplaceAgents, loading: marketplaceCatalogLoading } = useMarketplace();
   const [activeMarketplaceAgent, setActiveMarketplaceAgentState] = useState<MarketplaceAgent | null>(null);
   const marketplaceRuntimeRef = useRef<MarketplaceAgentRuntime | null>(null);
@@ -621,19 +623,31 @@ const ChatbotPage = () => {
     async (
       chatMessages: Array<{ role: string; content: string }>,
       conversationId: string,
-    ) => {
+    ): Promise<string | undefined> => {
       abortControllerRef.current?.abort();
       const controller = new AbortController();
       abortControllerRef.current = controller;
 
-      const augmented = prependAgentSystemPrompt(chatMessages, marketplaceRuntimeRef.current);
+      let augmented = prependAgentSystemPrompt(chatMessages, marketplaceRuntimeRef.current);
+      const lastUser =
+        [...chatMessages].reverse().find((m) => m.role === "user")?.content?.trim() ?? "";
+
+      if (aiProvider === "shadowtalk" && sovereignModel.enabled && lastUser) {
+        const learned = await sovereignModel.getLearnedSystemPrompt(lastUser);
+        if (learned) {
+          augmented = [{ role: "system", content: learned }, ...augmented];
+        }
+      }
+
       const routerMessages: RouterMessage[] = augmented.map((m) => ({
         role: m.role as RouterMessage["role"],
         content: m.content,
       }));
 
       const route = decideRoute(routerMessages, navigator.onLine);
-      if (route.target === "local") {
+      const useLocal =
+        route.target === "local" || (aiProvider === "shadowtalk" && isAnyLocalModelReady());
+      if (useLocal) {
         if (!isAnyLocalModelReady()) {
           prewarmFastestLocalPath();
         }
@@ -672,7 +686,7 @@ const ChatbotPage = () => {
           if (user) {
             await saveMessage(offline.content, "assistant", conversationId);
           }
-          return;
+          return assistantContent || offline.content;
         }
 
         if (isAnyLocalModelReady()) {
@@ -681,7 +695,7 @@ const ChatbotPage = () => {
             if (content && user) {
               await saveMessage(content, "assistant", conversationId);
             }
-            return;
+            return assistantContent || content;
           } catch (e) {
             console.warn("[Chat] Local turbo path failed, using cloud:", e);
           }
@@ -767,8 +781,9 @@ const ChatbotPage = () => {
       if (assistantContent && user) {
         await saveMessage(assistantContent, "assistant", conversationId);
       }
+      return assistantContent || undefined;
     },
-    [aiProvider, aiConfig, keys, chatMode, personality, user, gemmaOffline.chatLocal],
+    [aiProvider, aiConfig, keys, chatMode, personality, user, gemmaOffline.chatLocal, sovereignModel],
   );
 
   const handleStopGeneration = () => {
@@ -958,7 +973,10 @@ const ChatbotPage = () => {
     }
 
     try {
-      await runChatCompletion(chatMessages, conversationId);
+      const assistantReply = await runChatCompletion(chatMessages, conversationId);
+      if (aiProvider === "shadowtalk" && sovereignModel.enabled) {
+        void sovereignModel.learnFromTurn(msgContent, assistantReply);
+      }
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") return;
       const msg = err instanceof Error ? err.message : "Error connecting to chat service.";

@@ -23,7 +23,7 @@ export function toUiProvider(server: AiProviderId): AIProvider | null {
 }
 
 export function isByokProvider(provider: AIProvider): boolean {
-  return provider !== "lovable";
+  return provider !== "lovable" && provider !== "shadowtalk";
 }
 
 export function hasStoredKeyForProvider(
@@ -31,7 +31,7 @@ export function hasStoredKeyForProvider(
   keys: UserProviderKeyRow[],
   localConfig: CustomAiKeysConfig = loadCustomAiConfig(),
 ): boolean {
-  if (provider === "lovable") return true;
+  if (provider === "lovable" || provider === "shadowtalk") return true;
 
   const serverId = toServerProvider(provider);
   if (
@@ -82,6 +82,9 @@ export function buildChatProviderPayload(
   aiConfig: { useCustomKey: boolean; preferredProvider: AiProviderId | null },
   keys: UserProviderKeyRow[],
 ): Record<string, unknown> {
+  if (uiProvider === "shadowtalk") {
+    return { shadowtalkSovereignModel: true };
+  }
   if (uiProvider === "lovable") return {};
 
   const serverId = toServerProvider(uiProvider);

@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 
-export type AIProvider = "lovable" | "gemini" | "openrouter" | "kimi";
+export type AIProvider = "lovable" | "shadowtalk" | "gemini" | "openrouter" | "kimi";
 
 interface ProviderSelectorProps {
   provider: AIProvider;
@@ -25,6 +25,12 @@ const providers = [
     label: "ShadowTalk Pro",
     description: "Default premium AI model",
     icon: <Sparkles className="h-4 w-4 text-violet-400" />,
+  },
+  {
+    value: "shadowtalk" as const,
+    label: "ShadowTalk Model",
+    description: "On-device model — learns from you (unsupervised)",
+    icon: <Sparkles className="h-4 w-4 text-cyan-400" />,
   },
   {
     value: "gemini" as const,
@@ -56,6 +62,7 @@ export const ProviderSelector = ({
   const currentProvider = providers.find((p) => p.value === provider) || providers[0];
   const shortLabels: Record<AIProvider, string> = {
     lovable: "Pro",
+    shadowtalk: "Sovereign",
     gemini: "Gemini",
     openrouter: "OpenRouter",
     kimi: "Kimi",
