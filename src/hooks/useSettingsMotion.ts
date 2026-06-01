@@ -35,7 +35,6 @@ export function useSettingsMotion() {
     headerReveal: headerRevealVariants(profile),
     loadingPulse: loadingPulseVariants(profile),
     heroCollapse: heroCollapseVariants(profile),
-    dockItem: dockItemVariants(profile),
     searchResult: searchResultVariants(profile),
     navSpring: navItemSpring(),
     shouldAnimateAmbient: !reduced,
