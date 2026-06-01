@@ -139,16 +139,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const restored = await restoreOrCreateSession();
       if (!mounted) return;
       applySession(restored);
+      if (mounted) {
+        setLoading(false);
+        initDone.current = true;
+      }
       if (restored?.user) {
-        await Promise.all([checkSubscription(), checkAndAssignAdminRole()]);
+        void Promise.all([checkSubscription(), checkAndAssignAdminRole()]);
       } else {
         setUserPlan('free');
         setSubscribed(false);
         setSubscriptionEnd(null);
-      }
-      if (mounted) {
-        setLoading(false);
-        initDone.current = true;
       }
     };
 
