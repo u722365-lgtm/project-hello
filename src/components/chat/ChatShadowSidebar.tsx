@@ -98,7 +98,7 @@ export function ChatShadowSidebar({
           const end = "end" in item && item.end;
           return (
             <NavLink
-              key={to}
+              key={label}
               to={to}
               end={end}
               className={({ isActive }) =>

@@ -76,6 +76,19 @@ vi.mock('@/hooks/useOfflineChatHistory', () => ({
   }),
 }));
 
+vi.mock('@/hooks/useShadowTalkModel', () => ({
+  useShadowTalkModel: () => ({
+    enabled: false,
+    state: null,
+    training: false,
+    refresh: vi.fn().mockResolvedValue(null),
+    learnFromTurn: vi.fn().mockResolvedValue(undefined),
+    getLearnedSystemPrompt: vi.fn().mockResolvedValue(''),
+    trainNow: vi.fn().mockResolvedValue(null),
+    resetModel: vi.fn().mockResolvedValue(undefined),
+  }),
+}));
+
 vi.mock('@/components/AuthProvider', () => ({
   useAuth: () => ({
     user: { id: 'test-user', email: 'test@example.com', user_metadata: {} },

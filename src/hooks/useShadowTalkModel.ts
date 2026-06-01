@@ -16,9 +16,14 @@ export function useShadowTalkModel() {
   const trainQueued = useRef(false);
 
   const refresh = useCallback(async () => {
-    const s = await loadModelState();
-    setState(s);
-    return s;
+    try {
+      const s = await loadModelState();
+      setState(s);
+      return s;
+    } catch (e) {
+      console.warn("[ShadowTalkModel] load failed:", e);
+      return null;
+    }
   }, []);
 
   useEffect(() => {
