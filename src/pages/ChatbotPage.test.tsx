@@ -97,6 +97,10 @@ vi.mock('@/components/AuthProvider', () => ({
     checkSubscription: vi.fn(),
     loading: false,
     isOffline: false,
+    isAnonymous: false,
+    session: null,
+    subscribed: false,
+    subscriptionEnd: null,
   }),
   AuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));

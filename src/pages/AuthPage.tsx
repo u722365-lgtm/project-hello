@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import shadowRobotImg from "@/assets/shadow-robot.png";
+import { clearExplicitSignOut, consumeReturnPath, isAnonymousUser } from "@/lib/persistentAuth";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
 // Rate limiter
@@ -107,8 +108,10 @@ const AuthPage = () => {
       const offlineSession = getOfflineSession();
       if (offlineSession) { navigate('/chatbot'); return; }
       if (!isOffline) {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) navigate('/chatbot');
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user && !isAnonymousUser(session)) {
+          navigate(consumeReturnPath());
+        }
       }
     };
     checkUser();
@@ -201,20 +204,22 @@ const AuthPage = () => {
         const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password: cleanPassword });
         if (error) throw error;
         if (data.user) await saveCredentialsForOffline(cleanEmail, cleanPassword, data.user.id);
+        clearExplicitSignOut();
         toast({ title: "Success", description: "Logged in successfully!" });
         setLoading(false);
         await playWelcomeVoice(cleanEmail);
-        navigate('/chatbot');
+        navigate(consumeReturnPath());
       } else {
         const { data, error } = await supabase.auth.signUp({ email: cleanEmail, password: cleanPassword, options: { emailRedirectTo: `${window.location.origin}/` } });
         if (error) throw error;
         if (data.user && data.session) {
           await saveCredentialsForOffline(cleanEmail, cleanPassword, data.user.id);
           startSilentTierAInstall();
+          clearExplicitSignOut();
           toast({ title: "Success", description: "Account created! Offline AI installs in the background." });
           setLoading(false);
           await playWelcomeVoice(cleanEmail);
-          navigate('/chatbot');
+          navigate(consumeReturnPath());
         } else {
           toast({ title: "Success", description: "Check your email to confirm!" });
         }

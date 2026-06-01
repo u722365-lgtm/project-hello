@@ -1,7 +1,13 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { logClientError } from '@/lib/logging';
+import {
+  clearExplicitSignOut,
+  isAnonymousUser,
+  markExplicitSignOut,
+  refreshSessionIfNeeded,
+  restoreOrCreateSession,
+} from '@/lib/persistentAuth';
 
 type UserPlan = 'free' | 'pro' | 'premium' | 'lifetime' | 'elite' | 'enterprise';
 
@@ -10,6 +16,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   isOffline: boolean;
+  isAnonymous: boolean;
   userPlan: UserPlan;
   subscribed: boolean;
   subscriptionEnd: string | null;
@@ -37,6 +44,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isOffline, setIsOffline] = useState(
     typeof navigator !== 'undefined' ? !navigator.onLine : false,
   );
+  const initDone = useRef(false);
 
   useEffect(() => {
     const onOnline = () => setIsOffline(false);
@@ -49,7 +57,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  // Stripe product IDs mapped to plan names
   const PRODUCT_PLANS: Record<string, UserPlan> = {
     'prod_TZocSSpPddFCH1': 'pro',
     'prod_TbiuwlUUg3F17C': 'premium',
@@ -57,28 +64,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     'prod_TbivJcOChrAcvq': 'enterprise',
   };
 
-  // Special emails that get all features free
   const SPECIAL_ACCESS_EMAILS = ['j3451500@gmail.com', 'almadadali00@gmail.com'];
 
-  const checkSubscription = async () => {
-    if (!session?.user) {
+  const applySession = useCallback((next: Session | null) => {
+    setSession(next);
+    setUser(next?.user ?? null);
+  }, []);
+
+  const checkSubscription = useCallback(async () => {
+    const { data: { session: current } } = await supabase.auth.getSession();
+    if (!current?.user) {
       setSubscribed(false);
       setUserPlan('free');
       setSubscriptionEnd(null);
       return;
     }
 
-    // Special access emails get elite for free
-    if (SPECIAL_ACCESS_EMAILS.some(e => e.toLowerCase() === session.user.email?.toLowerCase())) {
+    if (SPECIAL_ACCESS_EMAILS.some(e => e.toLowerCase() === current.user.email?.toLowerCase())) {
       setSubscribed(true);
       setUserPlan('elite');
       setSubscriptionEnd(null);
       return;
     }
 
+    if (isAnonymousUser(current)) {
+      setSubscribed(false);
+      setUserPlan('free');
+      setSubscriptionEnd(null);
+      return;
+    }
+
     try {
       const { data, error } = await supabase.functions.invoke('check-subscription');
-      
+
       if (error) {
         console.error('Subscription check error:', error);
         setSubscribed(false);
@@ -101,71 +119,103 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSubscribed(false);
       setUserPlan('free');
     }
-  };
+  }, []);
 
-  const checkAndAssignAdminRole = async () => {
-    if (!session) return;
-    
+  const checkAndAssignAdminRole = useCallback(async () => {
+    const { data: { session: current } } = await supabase.auth.getSession();
+    if (!current || isAnonymousUser(current)) return;
+
     try {
       await supabase.functions.invoke('assign-admin-role');
     } catch (error) {
       console.error('Error checking admin role:', error);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
+    let mounted = true;
 
-        if (session?.user) {
-          setTimeout(() => {
-            checkSubscription();
-            checkAndAssignAdminRole();
-          }, 100);
-        } else {
+    const bootstrap = async () => {
+      const restored = await restoreOrCreateSession();
+      if (!mounted) return;
+      applySession(restored);
+      if (restored?.user) {
+        await Promise.all([checkSubscription(), checkAndAssignAdminRole()]);
+      } else {
+        setUserPlan('free');
+        setSubscribed(false);
+        setSubscriptionEnd(null);
+      }
+      if (mounted) {
+        setLoading(false);
+        initDone.current = true;
+      }
+    };
+
+    void bootstrap();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, nextSession) => {
+        if (!mounted) return;
+
+        if (event === 'SIGNED_OUT') {
+          applySession(null);
           setUserPlan('free');
           setSubscribed(false);
           setSubscriptionEnd(null);
+          setLoading(false);
+          return;
         }
 
-        setLoading(false);
-      }
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
+          applySession(nextSession);
+          if (nextSession?.user) {
+            clearExplicitSignOut();
+            setTimeout(() => {
+              void checkSubscription();
+              void checkAndAssignAdminRole();
+            }, 50);
+          }
+        } else {
+          applySession(nextSession);
+        }
+
+        if (initDone.current) {
+          setLoading(false);
+        }
+      },
     );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-
-      if (session?.user) {
-        setTimeout(() => {
-          checkSubscription();
-          checkAndAssignAdminRole();
-        }, 100);
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') {
+        void refreshSessionIfNeeded();
       }
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', onVisible);
 
-      setLoading(false);
-    });
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', onVisible);
+    };
+  }, [applySession, checkSubscription, checkAndAssignAdminRole]);
 
-    return () => subscription.unsubscribe();
-  }, []);
-
-  // Refresh subscription status periodically
   useEffect(() => {
     if (!session) return;
-    
+
     const interval = setInterval(() => {
-      checkSubscription();
-    }, 60000); // Check every minute
+      void checkSubscription();
+    }, 60000);
 
     return () => clearInterval(interval);
-  }, [session]);
+  }, [session, checkSubscription]);
 
   const signOut = async () => {
+    markExplicitSignOut();
     await supabase.auth.signOut();
-    setUser(null);
-    setSession(null);
+    applySession(null);
     setUserPlan('free');
     setSubscribed(false);
     setSubscriptionEnd(null);
@@ -176,6 +226,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     session,
     loading,
     isOffline,
+    isAnonymous: isAnonymousUser(session),
     userPlan,
     subscribed,
     subscriptionEnd,

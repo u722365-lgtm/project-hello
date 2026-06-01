@@ -307,16 +307,6 @@ const ChatbotPage = () => {
       loadConversations();
       checkSubscription();
       if (isElite) requestPermission();
-    } else if (!user && !offlineSession && !isOffline) {
-      const guestConvId = 'guest-' + Date.now();
-      setCurrentConversationId(guestConvId);
-      setMessages([{ 
-        id: 'welcome', 
-        type: 'ai', 
-        content: `👋 Welcome to ShadowTalk AI! Your neural workspace is ready for guest access.`, 
-        timestamp: new Date() 
-      }]);
-      setConversations([{ id: guestConvId, title: 'Guest Conversation', created_at: new Date().toISOString() }]);
     }
   }, [user]);
 
@@ -325,12 +315,6 @@ const ChatbotPage = () => {
   }, [messages]);
 
   const offlineSession = getOfflineSession();
-
-  useEffect(() => {
-    if (!authLoading && !user && !offlineSession && !isOffline) {
-      navigate("/auth");
-    }
-  }, [authLoading, user, offlineSession, isOffline, navigate]);
 
   const conversationIsArchived = (conv: Conversation) =>
     isConversationArchived(conv.id, conv.archived_at, guestArchivedIds);
@@ -1024,7 +1008,7 @@ const ChatbotPage = () => {
   }
 
   if (!user && !offlineSession && !isOffline) {
-    return null;
+    return <ChatLoadingScreen />;
   }
 
   const isEmptyChat = messages.filter((m) => m.id !== "welcome").length === 0;

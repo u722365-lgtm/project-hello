@@ -90,6 +90,8 @@ const JourneyTracker = lazy(() => import("./components/JourneyTracker").then(m =
 const VoiceCommandSystem = lazy(() => import("./components/VoiceCommandSystem"));
 const OnboardingFlow = lazy(() => import("./components/OnboardingFlow"));
 import { useReferralCapture } from "./hooks/useReferralTracking";
+import PersistedAuthRedirect from "@/components/PersistedAuthRedirect";
+import WorkspacePathRemember from "@/components/WorkspacePathRemember";
 // ElevenLabs Agent ID is now configured via the backend secret ELEVENLABS_AGENT_ID
 
  // Configure React Query with production-ready settings
@@ -273,6 +275,8 @@ const App = () => {
               <Toaster />
               <Sonner />
                <BrowserRouter>
+                 <PersistedAuthRedirect />
+                 <WorkspacePathRemember />
                  <AnimatedRoutes />
                  <CommandPalette open={cmdOpen} onOpenChange={setCmdOpen} />
                   {deferredChrome && (
