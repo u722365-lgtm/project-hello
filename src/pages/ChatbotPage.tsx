@@ -74,7 +74,8 @@ import { ChatUpgradeNudge } from "@/components/monetization/ChatUpgradeNudge";
 import { UpgradePrompt } from "@/components/monetization/UpgradePrompt";
 import { useSubscriptionNudge } from "@/hooks/useSubscriptionNudge";
 import { getDailyMessageCount, incrementDailyMessageCount } from "@/lib/dailyMessageCounter";
-import { saveIdePayload } from "@/lib/idePayloadStorage";
+import { openProjectInIde, saveIdePayload } from "@/lib/idePayloadStorage";
+import { detectAppBuilderIntent, generateAppProject } from "@/lib/appBuilder";
 // Types
 interface Message { 
   id: string; 
@@ -83,6 +84,7 @@ interface Message {
   timestamp: Date;
   attachment?: { type: 'image' | 'file'; data: string; name: string; mimeType: string };
   imageUrl?: string;
+  toolExecution?: { tool: string; status: string; result?: string };
 }
 type Conversation = {
   id: string;
@@ -868,6 +870,92 @@ const ChatbotPage = () => {
         content: m.content,
       }));
     chatMessages.push({ role: "user", content: msgContent });
+
+    const toolDetection = toolOrchestrator.detectTool(msgContent);
+    const appIntent =
+      detectAppBuilderIntent(msgContent) ??
+      (toolDetection.tool === "app_builder"
+        ? {
+            platform: (toolDetection.params?.platform === "mobile" ? "mobile" : "web") as
+              | "web"
+              | "mobile",
+            confidence: toolDetection.confidence,
+          }
+        : null);
+
+    if (appIntent && appIntent.confidence >= 50) {
+      const platform = appIntent.platform;
+      const statusId = crypto.randomUUID();
+      const platformLabel = platform === "mobile" ? "mobile" : "web";
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: statusId,
+          type: "ai",
+          content: `Building your **${platformLabel} app** in the Code IDE — generating HTML, CSS, and JavaScript…`,
+          timestamp: new Date(),
+          toolExecution: { tool: "app_builder", status: "running" },
+        },
+      ]);
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const project = await generateAppProject({
+          prompt: msgContent,
+          platform,
+          accessToken: session?.access_token,
+          personality,
+          mode: "code",
+          providerPayload: buildChatProviderPayload(aiProvider, aiConfig, keys),
+        });
+
+        openProjectInIde(
+          {
+            title: project.title,
+            platform: project.platform,
+            files: project.files,
+          },
+          { openPreview: true },
+        );
+
+        const summary =
+          `**${project.title}** is ready in the Code IDE (${project.files.length} files).\n\n` +
+          `${project.description || `A ${platformLabel} app based on your request.`}\n\n` +
+          `Use **Preview** to run it live` +
+          (platform === "mobile" ? " — switch to the **Mobile** viewport (375px) for the best view." : ".") +
+          `\n\nAsk me to add features, new screens, or connect a backend anytime.`;
+
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === statusId
+              ? {
+                  ...m,
+                  content: summary,
+                  toolExecution: { tool: "app_builder", status: "complete", result: project.title },
+                }
+              : m,
+          ),
+        );
+        if (user) await saveMessage(summary, "assistant", conversationId);
+      } catch (err) {
+        const errMsg = err instanceof Error ? err.message : "App generation failed.";
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === statusId
+              ? {
+                  ...m,
+                  content: `Could not generate the app: ${errMsg}. Try again or open the IDE to start from a template.`,
+                  toolExecution: { tool: "app_builder", status: "error" },
+                }
+              : m,
+          ),
+        );
+        toast({ title: "App builder failed", description: errMsg, variant: "destructive" });
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
 
     try {
       await runChatCompletion(chatMessages, conversationId);
