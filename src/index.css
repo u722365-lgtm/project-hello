@@ -496,6 +496,15 @@
     background: hsl(var(--background));
   }
 
+  .shadowtalk-chat-shell .shadowtalk-chat-glow {
+    animation: chat-glow-breathe 10s ease-in-out infinite;
+  }
+
+  @keyframes chat-glow-breathe {
+    0%, 100% { opacity: 0.85; transform: translateX(-50%) scale(1); }
+    50% { opacity: 1; transform: translateX(-50%) scale(1.04); }
+  }
+
   .shadowtalk-chat-shell::before {
     content: "";
     position: fixed;
@@ -557,6 +566,24 @@
 
   .shadowtalk-chat-input-dock {
     @apply w-full max-w-[720px] mx-auto px-4 pb-6 pt-2;
+    background: linear-gradient(to top, hsl(var(--background) / 0.95), transparent);
+  }
+
+  .shadowtalk-composer {
+    transition: border-color 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .shadowtalk-composer.group:hover:not(:focus-within) {
+    border-color: rgb(99 102 241 / 0.28);
+    box-shadow: 0 6px 28px rgb(0 0 0 / 0.38), 0 0 16px rgb(99 102 241 / 0.08);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .shadowtalk-chat-shell .shadowtalk-chat-glow {
+      animation: none;
+    }
   }
 
   /* ShadowTalk Composer — single pill input (approved) */

@@ -1,6 +1,8 @@
+import { motion } from "framer-motion";
 import { MessageSquarePlus, History, Eraser, Trash2, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useSettingsMotion } from "@/hooks/useSettingsMotion";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,11 +42,15 @@ export function ChatToolbar({
   className = "",
 }: ChatToolbarProps) {
   const navigate = useNavigate();
+  const { headerReveal } = useSettingsMotion();
 
   return (
     <TooltipProvider delayDuration={300}>
-      <div
-        className={`flex items-center gap-1 px-4 md:px-6 py-1.5 border-b border-border/40 glass-subtle shrink-0 ${className}`}
+      <motion.div
+        variants={headerReveal}
+        initial="hidden"
+        animate="visible"
+        className={`flex items-center gap-1 px-4 md:px-6 py-2 border-b border-border/40 glass-subtle shrink-0 ${className}`}
       >
         <div className="mr-auto flex items-center">
           <HardwareTurboBadge />
@@ -56,7 +62,7 @@ export function ChatToolbar({
               variant="ghost"
               size="sm"
               onClick={() => navigate("/settings")}
-              className="h-8 gap-1.5 rounded-full text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              className="h-8 gap-1.5 rounded-full text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-primary/10 hover:border-primary/20 border border-transparent"
             >
               <Settings className="h-4 w-4" />
               <span className="hidden sm:inline">Settings</span>
@@ -153,7 +159,7 @@ export function ChatToolbar({
             </AlertDialogContent>
           </AlertDialog>
         )}
-      </div>
+      </motion.div>
     </TooltipProvider>
   );
 }

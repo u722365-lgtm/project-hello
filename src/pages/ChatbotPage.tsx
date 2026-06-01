@@ -10,7 +10,6 @@ import { ChatHeader } from "@/components/chat/ChatHeader";
 import { ChatToolbar } from "@/components/chat/ChatToolbar";
 import { ChatIconRail } from "@/components/chat/ChatIconRail";
 import { ChatShadowSidebar } from "@/components/chat/ChatShadowSidebar";
-import { ShadowTalkOrb } from "@/components/chat/ShadowTalkOrb";
 import { ChatInput } from "@/components/chat/ChatInput";
 import { ChatMessages } from "@/components/chat/ChatMessages";
 import { ConversationSidebar } from "@/components/chat/ConversationSidebar";
@@ -33,7 +32,11 @@ import { useOfflineChatHistory } from "@/hooks/useOfflineChatHistory";
 import { useGeoLocation } from "@/hooks/useGeoLocation";
 import { useGuestUsage, GUEST_LIMITS } from "@/hooks/useGuestUsage";
 import { useToolOrchestrator } from "@/hooks/useToolOrchestrator";
-import { Loader2 } from "lucide-react";
+import { ChatAmbientBackground } from "@/components/chat/ChatAmbientBackground";
+import { ChatLoadingScreen } from "@/components/chat/ChatLoadingScreen";
+import { ChatEmptyState } from "@/components/chat/ChatEmptyState";
+import { ChatMainPanel } from "@/components/chat/ChatMainPanel";
+import { SETTINGS_SPRING } from "@/lib/settingsMotion";
 import { useShadowMemoryContext } from "@/contexts/ShadowMemoryContext";
 import { useIntelligenceHub } from "@/hooks/useIntelligenceHub";
 import { useGemmaOffline } from "@/hooks/useGemmaOffline";
@@ -1009,11 +1012,7 @@ const ChatbotPage = () => {
   };
 
   if (authLoading) {
-    return (
-      <div className="min-h-screen neural-bg flex items-center justify-center">
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
-      </div>
-    );
+    return <ChatLoadingScreen />;
   }
 
   if (!user && !offlineSession && !isOffline) {
@@ -1138,12 +1137,13 @@ const ChatbotPage = () => {
   };
 
   return (
-    <div className="shadowtalk-chat-shell min-h-screen neural-bg">
-      <div className="shadowtalk-chat-glow" aria-hidden />
+    <div className="shadowtalk-chat-shell min-h-screen neural-bg settings-scroll-smooth">
+      <ChatAmbientBackground />
       <motion.div
         className="shadowtalk-chat-main flex h-screen w-full relative overflow-hidden"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={SETTINGS_SPRING}
       >
         <ChatShadowSidebar
           userInitials={userInitials}
@@ -1156,7 +1156,7 @@ const ChatbotPage = () => {
           onNewChat={handleNewChat}
           onOpenHistory={() => setShowSidebar(true)}
           onOpenTools={() => setToolsMenuOpen(true)}
-          onOpenSettings={() => navigate("/profile")}
+          onOpenSettings={() => navigate("/settings")}
         />
         <AnimatePresence>
           {showSidebar && (
@@ -1167,14 +1167,16 @@ const ChatbotPage = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-40 bg-background/70 backdrop-blur-sm md:left-[240px]"
+                transition={{ duration: 0.2 }}
+                className="fixed inset-0 z-40 bg-background/75 backdrop-blur-md md:left-[248px]"
                 onClick={() => setShowSidebar(false)}
               />
               <motion.div
-                initial={{ x: -280 }}
-                animate={{ x: 0 }}
-                exit={{ x: -280 }}
-                className="fixed left-0 top-0 bottom-0 z-50 md:left-[240px]"
+                initial={{ x: -320, opacity: 0.6 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: -320, opacity: 0 }}
+                transition={SETTINGS_SPRING}
+                className="fixed left-0 top-0 bottom-0 z-50 md:left-[248px] shadow-elevated"
               >
                 <ConversationSidebar
                   conversations={conversations}
@@ -1204,8 +1206,15 @@ const ChatbotPage = () => {
             </>
           )}
         </AnimatePresence>
-        <div className="flex-1 flex flex-col min-w-0 bg-background/40 backdrop-blur-[2px]">
-          <p className="shadowtalk-chat-top-label hidden md:block">ShadowTalk AI</p>
+        <ChatMainPanel>
+          <motion.p
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, ...SETTINGS_SPRING }}
+            className="shadowtalk-chat-top-label hidden md:block"
+          >
+            ShadowTalk AI
+          </motion.p>
           <ChatToolbar
             hasActiveChat={hasActiveChat}
             conversationCount={conversations.length}
@@ -1268,26 +1277,33 @@ const ChatbotPage = () => {
               {isEmptyChat ? (
                 <motion.div
                   key="home"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="shadowtalk-chat-empty"
+                  initial={{ opacity: 0, scale: 0.98, filter: "blur(6px)" }}
+                  animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                  exit={{ opacity: 0, scale: 0.99, filter: "blur(4px)" }}
+                  transition={SETTINGS_SPRING}
+                  className="flex-1 flex flex-col justify-center"
                 >
-                  <ShadowTalkOrb />
-                  <h1 className="shadowtalk-chat-greeting">
-                    Hello, <span className="gradient-text">{userDisplayName}</span>
-                  </h1>
-                  <p className="shadowtalk-chat-tagline">Think AI. Think ShadowTalk.</p>
-                  {hasVerifiedKey && aiConfig.useCustomKey && (
-                    <p className="text-[10px] text-muted-foreground/60 mt-2 tracking-wide">
-                      {aiConfig.preferredProvider} API connected
-                    </p>
-                  )}
-                  <div className="shadowtalk-chat-input-shell shadowtalk-chat-input-shell--empty w-full">
+                  <ChatEmptyState
+                    userDisplayName={userDisplayName}
+                    onSelectPrompt={setMessage}
+                    apiConnectedLabel={
+                      hasVerifiedKey && aiConfig.useCustomKey
+                        ? `${aiConfig.preferredProvider} API connected`
+                        : null
+                    }
+                  >
                     <ChatInput {...chatInputProps} isEmptyState />
-                  </div>
+                  </ChatEmptyState>
                 </motion.div>
               ) : (
-                <div className="h-full flex flex-col overflow-hidden">
+                <motion.div
+                  key="thread"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 8 }}
+                  transition={SETTINGS_SPRING}
+                  className="h-full flex flex-col overflow-hidden"
+                >
                   {activeMarketplaceAgent && marketplaceRuntimeRef.current && (
                     <MarketplaceAgentBanner
                       agentName={activeMarketplaceAgent.name}
@@ -1327,18 +1343,23 @@ const ChatbotPage = () => {
                     messagesEndRef={messagesEndRef}
                     layout="gemini"
                   />
-                </div>
+                </motion.div>
               )}
             </AnimatePresence>
           </div>
           {!isEmptyChat && (
-            <div className="shadowtalk-chat-input-dock">
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={SETTINGS_SPRING}
+              className="shadowtalk-chat-input-dock"
+            >
               <div className="shadowtalk-chat-input-shell w-full">
                 <ChatInput {...chatInputProps} />
               </div>
-            </div>
+            </motion.div>
           )}
-        </div>
+        </ChatMainPanel>
       {showImageGenerator && <ImageGenerator onClose={() => setShowImageGenerator(false)} onImageGenerated={(url) => setMessages(prev => [...prev, { id: crypto.randomUUID(), type: 'ai', content: '🎨 Generated image', timestamp: new Date(), imageUrl: url }])} />}
       {showDeepResearch && <DeepResearchPanel isOpen={showDeepResearch} onClose={() => setShowDeepResearch(false)} onInsertToChat={(c) => setMessages(prev => [...prev, { id: crypto.randomUUID(), type: 'ai', content: c, timestamp: new Date() }])} />}
       {showOfflineTools && (
