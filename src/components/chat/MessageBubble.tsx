@@ -12,6 +12,8 @@ import { useToast } from '@/hooks/use-toast';
 import { DocumentArtifact, detectDocumentArtifact } from './DocumentArtifact';
 import { ToolExecutionCard } from './ToolExecutionCard';
 import { ToolType } from '@/hooks/useToolOrchestrator';
+import { getChatShowTimestamps } from '@/lib/profilePreferences';
+import { format } from 'date-fns';
 
 const extractUrls = (text: string): string[] => {
   const urlRegex = /https?:\/\/[^\s<>"{}|\\^`\[\]]+/gi;
@@ -364,6 +366,12 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
             </div>
           );
         })()}
+
+        {getChatShowTimestamps() && !isWelcome && message.timestamp && (
+          <p className="text-[10px] text-muted-foreground/50 mt-1 px-1">
+            {format(message.timestamp, "MMM d, h:mm a")}
+          </p>
+        )}
 
         {/* Actions */}
         {!isWelcome && (

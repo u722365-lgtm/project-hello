@@ -1,86 +1,71 @@
-import { useState } from "react";
 import { Bell, Mail, Shield, Newspaper } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
-import {
-  getNotifProductUpdates,
-  setNotifProductUpdates,
-  getNotifSecurityAlerts,
-  setNotifSecurityAlerts,
-  getNotifWeeklyDigest,
-  setNotifWeeklyDigest,
-} from "@/lib/profilePreferences";
+import type { ExtendedNotificationPrefs } from "@/lib/profileNotificationSettings";
 
 interface NotificationsExtrasProps {
   notificationEmail: boolean;
-  setNotificationEmail: (v: boolean) => void;
+  onNotificationEmailChange: (v: boolean) => void;
   notificationPush: boolean;
-  setNotificationPush: (v: boolean) => void;
+  onNotificationPushChange: (v: boolean) => void;
   notificationMentions: boolean;
-  setNotificationMentions: (v: boolean) => void;
+  onNotificationMentionsChange: (v: boolean) => void;
+  extended: ExtendedNotificationPrefs;
+  onExtendedChange: (patch: Partial<ExtendedNotificationPrefs>) => void;
+  disabled?: boolean;
 }
 
 export function NotificationsExtras({
   notificationEmail,
-  setNotificationEmail,
+  onNotificationEmailChange,
   notificationPush,
-  setNotificationPush,
+  onNotificationPushChange,
   notificationMentions,
-  setNotificationMentions,
+  onNotificationMentionsChange,
+  extended,
+  onExtendedChange,
+  disabled,
 }: NotificationsExtrasProps) {
-  const [productUpdates, setProductUpdates] = useState(() => getNotifProductUpdates());
-  const [securityAlerts, setSecurityAlerts] = useState(() => getNotifSecurityAlerts());
-  const [weeklyDigest, setWeeklyDigest] = useState(() => getNotifWeeklyDigest());
-
   const rows = [
     {
       label: "Email Notifications",
       desc: "Receive email updates about your conversations",
       value: notificationEmail,
-      onChange: setNotificationEmail,
+      onChange: onNotificationEmailChange,
       icon: Mail,
     },
     {
       label: "Push Notifications",
-      desc: "Get push notifications on your device",
+      desc: "Browser push when enabled in this device",
       value: notificationPush,
-      onChange: setNotificationPush,
+      onChange: onNotificationPushChange,
       icon: Bell,
     },
     {
       label: "Mention Notifications",
       desc: "Get notified when someone mentions you",
       value: notificationMentions,
-      onChange: setNotificationMentions,
+      onChange: onNotificationMentionsChange,
       icon: Bell,
     },
     {
       label: "Product updates",
       desc: "New features, changelog highlights, and release notes",
-      value: productUpdates,
-      onChange: (v: boolean) => {
-        setProductUpdates(v);
-        setNotifProductUpdates(v);
-      },
+      value: extended.productUpdates,
+      onChange: (v: boolean) => onExtendedChange({ productUpdates: v }),
       icon: Newspaper,
     },
     {
       label: "Security alerts",
       desc: "Sign-in from new devices and account security events",
-      value: securityAlerts,
-      onChange: (v: boolean) => {
-        setSecurityAlerts(v);
-        setNotifSecurityAlerts(v);
-      },
+      value: extended.securityAlerts,
+      onChange: (v: boolean) => onExtendedChange({ securityAlerts: v }),
       icon: Shield,
     },
     {
       label: "Weekly digest",
       desc: "Summary of your activity and credits usage",
-      value: weeklyDigest,
-      onChange: (v: boolean) => {
-        setWeeklyDigest(v);
-        setNotifWeeklyDigest(v);
-      },
+      value: extended.weeklyDigest,
+      onChange: (v: boolean) => onExtendedChange({ weeklyDigest: v }),
       icon: Mail,
     },
   ];
@@ -101,7 +86,7 @@ export function NotificationsExtras({
               <p className="text-xs text-muted-foreground">{item.desc}</p>
             </div>
           </div>
-          <Switch checked={item.value} onCheckedChange={item.onChange} />
+          <Switch checked={item.value} onCheckedChange={item.onChange} disabled={disabled} />
         </div>
       ))}
     </div>

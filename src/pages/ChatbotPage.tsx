@@ -220,6 +220,13 @@ const ChatbotPage = () => {
     }
   }, [searchParams]);
 
+  useEffect(() => {
+    const convId = searchParams.get("conversation");
+    if (convId) {
+      void loadConversation(convId);
+    }
+  }, [searchParams]);
+
   const activateMarketplaceAgent = useCallback((agent: MarketplaceAgent) => {
     const runtime = resolveAgentRuntime(agent);
     if (!runtime) return;

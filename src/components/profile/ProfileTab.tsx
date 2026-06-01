@@ -1,15 +1,20 @@
+import { useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { User, Camera, Calendar, MapPin } from "lucide-react";
+import { User, Camera, Calendar, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { useToast } from "@/hooks/use-toast";
+import { uploadProfileAvatar } from "@/lib/avatarUpload";
 
 const tabMotion = { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.3 } };
 
 interface ProfileTabProps {
+  userId: string;
   displayName: string;
   setDisplayName: (v: string) => void;
   email: string;
@@ -21,8 +26,35 @@ interface ProfileTabProps {
 }
 
 export const ProfileTab = ({
-  displayName, setDisplayName, email, bio, setBio, avatarUrl, setAvatarUrl, createdAt
+  userId,
+  displayName,
+  setDisplayName,
+  email,
+  bio,
+  setBio,
+  avatarUrl,
+  setAvatarUrl,
+  createdAt,
 }: ProfileTabProps) => {
+  const { toast } = useToast();
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const onPickAvatar = async (file: File | undefined) => {
+    if (!file) return;
+    setUploading(true);
+    const result = await uploadProfileAvatar(userId, file);
+    setUploading(false);
+    if ("error" in result) {
+      toast({ title: "Upload failed", description: result.error, variant: "destructive" });
+      return;
+    }
+    setAvatarUrl(result.publicUrl);
+    toast({ title: "Photo updated", description: "Your profile picture was saved." });
+  };
+
+  const shortId = `${userId.slice(0, 8)}…${userId.slice(-4)}`;
+
   return (
     <motion.div {...tabMotion} className="space-y-6">
       <Card className="glass border-border/50">
@@ -30,12 +62,16 @@ export const ProfileTab = ({
           <CardTitle className="flex items-center gap-2">
             <User className="h-5 w-5 text-primary" /> Profile Information
           </CardTitle>
-          <CardDescription>Your public-facing identity across the platform</CardDescription>
+          <CardDescription>Your identity across ShadowTalk — saved when you click Save in the header</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Avatar */}
           <div className="flex items-center gap-6">
-            <div className="relative group">
+            <button
+              type="button"
+              className="relative group shrink-0"
+              onClick={() => fileRef.current?.click()}
+              disabled={uploading}
+            >
               <Avatar className="h-24 w-24 ring-2 ring-border group-hover:ring-primary/50 transition-all">
                 <AvatarImage src={avatarUrl} />
                 <AvatarFallback className="text-2xl bg-primary/20 text-primary">
@@ -43,12 +79,31 @@ export const ProfileTab = ({
                 </AvatarFallback>
               </Avatar>
               <div className="absolute -bottom-1 -right-1 p-1.5 bg-primary rounded-full shadow-lg">
-                <Camera className="h-3 w-3 text-primary-foreground" />
+                {uploading ? (
+                  <Loader2 className="h-3 w-3 text-primary-foreground animate-spin" />
+                ) : (
+                  <Camera className="h-3 w-3 text-primary-foreground" />
+                )}
               </div>
-            </div>
+            </button>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              className="hidden"
+              onChange={(e) => void onPickAvatar(e.target.files?.[0])}
+            />
             <div className="flex-1 space-y-2">
-              <Label className="text-xs text-muted-foreground">Avatar URL</Label>
-              <Input value={avatarUrl} onChange={(e) => setAvatarUrl(e.target.value)} placeholder="https://example.com/avatar.jpg" className="bg-muted/30 border-border/50" />
+              <Label className="text-xs text-muted-foreground">Profile photo</Label>
+              <p className="text-xs text-muted-foreground">
+                Click the avatar to upload (max 5 MB). Or paste an image URL below.
+              </p>
+              <Input
+                value={avatarUrl}
+                onChange={(e) => setAvatarUrl(e.target.value)}
+                placeholder="https://… or upload via camera button"
+                className="bg-muted/30 border-border/50"
+              />
             </div>
           </div>
 
@@ -57,7 +112,13 @@ export const ProfileTab = ({
           <div className="grid gap-5 sm:grid-cols-2">
             <div className="space-y-2">
               <Label>Display Name</Label>
-              <Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Your display name" maxLength={50} className="bg-muted/30 border-border/50" />
+              <Input
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="Your display name"
+                maxLength={50}
+                className="bg-muted/30 border-border/50"
+              />
             </div>
             <div className="space-y-2">
               <Label>Email</Label>
@@ -70,12 +131,18 @@ export const ProfileTab = ({
               <Label>Bio</Label>
               <span className="text-xs text-muted-foreground">{bio.length}/500</span>
             </div>
-            <Textarea value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Tell others a bit about yourself..." rows={4} maxLength={500} className="bg-muted/30 border-border/50 resize-none" />
+            <Textarea
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              placeholder="Tell others a bit about yourself..."
+              rows={4}
+              maxLength={500}
+              className="bg-muted/30 border-border/50 resize-none"
+            />
           </div>
         </CardContent>
       </Card>
 
-      {/* Account Details Card */}
       <Card className="glass border-border/50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
@@ -86,11 +153,17 @@ export const ProfileTab = ({
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             <div className="p-3 rounded-xl bg-muted/30 border border-border/30">
               <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Member Since</p>
-              <p className="text-sm font-semibold">{createdAt ? new Date(createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'N/A'}</p>
+              <p className="text-sm font-semibold">
+                {createdAt
+                  ? new Date(createdAt).toLocaleDateString("en-US", { month: "short", year: "numeric" })
+                  : "—"}
+              </p>
             </div>
             <div className="p-3 rounded-xl bg-muted/30 border border-border/30">
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Account ID</p>
-              <p className="text-sm font-mono font-semibold truncate">{email.split('@')[0]}</p>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">User ID</p>
+              <p className="text-sm font-mono font-semibold truncate" title={userId}>
+                {shortId}
+              </p>
             </div>
             <div className="p-3 rounded-xl bg-muted/30 border border-border/30">
               <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Status</p>

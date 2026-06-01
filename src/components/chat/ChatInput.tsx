@@ -13,6 +13,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { getChatEnterToSend } from "@/lib/profilePreferences";
 
 interface ChatInputProps {
   message: string;
@@ -60,7 +61,7 @@ export const ChatInput = ({
   isEmptyState = false,
 }: ChatInputProps) => {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey && getChatEnterToSend()) {
       e.preventDefault();
       onSend();
       return;

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
@@ -37,6 +37,21 @@ import {
   Dialog, DialogContent, DialogDescription, DialogFooter,
   DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
+import type { Json } from "@/integrations/supabase/types";
+import {
+  DEFAULT_EXTENDED_NOTIF,
+  NOTIFICATION_PREFS_KEY,
+  parseExtendedNotif,
+  type ExtendedNotificationPrefs,
+} from "@/lib/profileNotificationSettings";
+import {
+  getNotifProductUpdates,
+  getNotifSecurityAlerts,
+  getNotifWeeklyDigest,
+  setNotifProductUpdates,
+  setNotifSecurityAlerts,
+  setNotifWeeklyDigest,
+} from "@/lib/profilePreferences";
 
 interface Profile {
   id: string;
@@ -76,6 +91,9 @@ const ProfilePage = () => {
   const [notificationEmail, setNotificationEmail] = useState(true);
   const [notificationPush, setNotificationPush] = useState(true);
   const [notificationMentions, setNotificationMentions] = useState(true);
+  const [extendedNotif, setExtendedNotif] = useState<ExtendedNotificationPrefs>(DEFAULT_EXTENDED_NOTIF);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const notifSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Password change
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
@@ -93,19 +111,34 @@ const ProfilePage = () => {
 
   useEffect(() => {
     if (!user) { navigate("/auth"); return; }
-    loadProfile();
+    void loadProfile();
   }, [user]);
+
+  useEffect(() => {
+    const oauth = searchParams.get("oauth");
+    if (oauth === "success") {
+      toast({ title: "Account linked", description: "Your integration was connected successfully." });
+      setSearchParams({ tab: "linked" }, { replace: true });
+    }
+  }, [searchParams, setSearchParams, toast]);
 
   const loadProfile = async () => {
     if (!user) return;
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .maybeSingle();
+    const [profileRes, settingsRes] = await Promise.all([
+      supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
+      supabase
+        .from("user_settings")
+        .select("setting_value")
+        .eq("user_id", user.id)
+        .eq("setting_key", NOTIFICATION_PREFS_KEY)
+        .maybeSingle(),
+    ]);
 
-    if (error && error.code !== "PGRST116") console.error("Error loading profile:", error);
+    if (profileRes.error && profileRes.error.code !== "PGRST116") {
+      console.error("Error loading profile:", profileRes.error);
+    }
 
+    const data = profileRes.data;
     if (data) {
       setProfile(data);
       setDisplayName(data.display_name || "");
@@ -119,28 +152,88 @@ const ProfilePage = () => {
       setDisplayName(defaultName);
       await supabase.from("profiles").insert({ id: user.id, display_name: defaultName });
     }
+
+    const ext = parseExtendedNotif(settingsRes.data?.setting_value);
+    setExtendedNotif(ext);
+    setNotifProductUpdates(ext.productUpdates);
+    setNotifSecurityAlerts(ext.securityAlerts);
+    setNotifWeeklyDigest(ext.weeklyDigest);
+
     setIsLoading(false);
   };
+
+  const persistProfile = useCallback(
+    async (opts?: { silent?: boolean }) => {
+      if (!user) return false;
+      const { error } = await supabase.from("profiles").upsert({
+        id: user.id,
+        display_name: displayName,
+        bio,
+        avatar_url: avatarUrl,
+        notification_email: notificationEmail,
+        notification_push: notificationPush,
+        notification_mentions: notificationMentions,
+        updated_at: new Date().toISOString(),
+      });
+      if (error) {
+        if (!opts?.silent) {
+          toast({ title: "Error", description: "Failed to save profile", variant: "destructive" });
+        }
+        return false;
+      }
+      return true;
+    },
+    [user, displayName, bio, avatarUrl, notificationEmail, notificationPush, notificationMentions, toast],
+  );
+
+  const persistExtendedNotif = useCallback(
+    async (next: ExtendedNotificationPrefs) => {
+      if (!user) return;
+      setNotifProductUpdates(next.productUpdates);
+      setNotifSecurityAlerts(next.securityAlerts);
+      setNotifWeeklyDigest(next.weeklyDigest);
+      await supabase.from("user_settings").upsert(
+        {
+          user_id: user.id,
+          setting_key: NOTIFICATION_PREFS_KEY,
+          setting_value: next as unknown as Json,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id,setting_key" },
+      );
+    },
+    [user],
+  );
+
+  const scheduleNotificationSave = useCallback(() => {
+    if (notifSaveTimer.current) clearTimeout(notifSaveTimer.current);
+    notifSaveTimer.current = setTimeout(async () => {
+      const ok = await persistProfile({ silent: true });
+      if (ok) {
+        toast({ title: "Notification preferences saved" });
+      }
+    }, 600);
+  }, [persistProfile, toast]);
 
   const saveProfile = async () => {
     if (!user) return;
     setIsSaving(true);
-    const { error } = await supabase.from("profiles").upsert({
-      id: user.id,
-      display_name: displayName,
-      bio,
-      avatar_url: avatarUrl,
-      notification_email: notificationEmail,
-      notification_push: notificationPush,
-      notification_mentions: notificationMentions,
-      updated_at: new Date().toISOString(),
-    });
-    toast(
-      error
-        ? { title: "Error", description: "Failed to save profile", variant: "destructive" as const }
-        : { title: "Profile saved", description: "Your changes have been saved successfully" }
-    );
+    const ok = await persistProfile();
+    if (ok) {
+      await persistExtendedNotif(extendedNotif);
+      toast({ title: "Profile saved", description: "Your changes have been saved successfully" });
+    }
     setIsSaving(false);
+  };
+
+  const handleExtendedNotifChange = (patch: Partial<ExtendedNotificationPrefs>) => {
+    setExtendedNotif((prev) => {
+      const next = { ...prev, ...patch };
+      void persistExtendedNotif(next).then(() => {
+        toast({ title: "Preference saved" });
+      });
+      return next;
+    });
   };
 
   const handleManageSubscription = async () => {
@@ -183,6 +276,30 @@ const ProfilePage = () => {
   const handleSignOut = async () => {
     await signOut();
     navigate("/");
+  };
+
+  const handleDeleteAccount = async () => {
+    setIsDeletingAccount(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("delete-account", {
+        body: { confirm: "DELETE" },
+      });
+      if (error) throw new Error(error.message);
+      if (data?.error) throw new Error(data.error);
+      toast({ title: "Account deleted", description: "Your account and data have been removed." });
+      await signOut();
+      navigate("/");
+    } catch (err) {
+      toast({
+        title: "Deletion failed",
+        description: err instanceof Error ? err.message : "Could not delete account",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeletingAccount(false);
+      setShowDeleteDialog(false);
+      setDeleteConfirm("");
+    }
   };
 
   if (isLoading) {
@@ -260,6 +377,7 @@ const ProfilePage = () => {
           {/* ===== PROFILE TAB ===== */}
           <TabsContent value="profile">
             <ProfileTab
+              userId={user!.id}
               displayName={displayName}
               setDisplayName={setDisplayName}
               email={user?.email || ""}
@@ -289,12 +407,26 @@ const ProfilePage = () => {
                 <CardContent>
                   <NotificationsExtras
                     notificationEmail={notificationEmail}
-                    setNotificationEmail={setNotificationEmail}
+                    onNotificationEmailChange={(v) => {
+                      setNotificationEmail(v);
+                      scheduleNotificationSave();
+                    }}
                     notificationPush={notificationPush}
-                    setNotificationPush={setNotificationPush}
+                    onNotificationPushChange={(v) => {
+                      setNotificationPush(v);
+                      scheduleNotificationSave();
+                    }}
                     notificationMentions={notificationMentions}
-                    setNotificationMentions={setNotificationMentions}
+                    onNotificationMentionsChange={(v) => {
+                      setNotificationMentions(v);
+                      scheduleNotificationSave();
+                    }}
+                    extended={extendedNotif}
+                    onExtendedChange={handleExtendedNotifChange}
                   />
+                  <p className="text-xs text-muted-foreground pt-3 border-t border-border/40 mt-2">
+                    Changes save automatically. Profile fields still use the Save button in the header.
+                  </p>
                 </CardContent>
               </Card>
             </motion.div>
@@ -504,10 +636,12 @@ const ProfilePage = () => {
           <Input value={deleteConfirm} onChange={(e) => setDeleteConfirm(e.target.value)} placeholder='Type "DELETE"' className="bg-muted/30 font-mono" />
           <DialogFooter>
             <Button variant="ghost" onClick={() => setShowDeleteDialog(false)}>Cancel</Button>
-            <Button variant="destructive" disabled={deleteConfirm !== "DELETE"} onClick={() => {
-              toast({ title: "Contact Support", description: "Account deletion requires contacting support for data safety." });
-              setShowDeleteDialog(false);
-            }}>
+            <Button
+              variant="destructive"
+              disabled={deleteConfirm !== "DELETE" || isDeletingAccount}
+              onClick={() => void handleDeleteAccount()}
+            >
+              {isDeletingAccount ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
               Delete Forever
             </Button>
           </DialogFooter>
