@@ -16,7 +16,7 @@ interface ProviderSelectorProps {
   /** When false, BYOK rows show “Add key” instead of Active */
   hasKeyForProvider?: (provider: AIProvider) => boolean;
   disabled?: boolean;
-  variant?: "header" | "inline";
+  variant?: "header" | "inline" | "chip";
 }
 
 const providers = [
@@ -69,17 +69,25 @@ export const ProviderSelector = ({
           variant="ghost" 
           size="sm" 
           className={
-            variant === "inline"
-              ? "gap-1.5 h-9 px-2.5 rounded-full bg-transparent hover:bg-muted/20 text-sm font-medium text-muted-foreground hover:text-foreground focus-visible:ring-0"
-              : "gap-1 h-9 px-2 bg-transparent hover:bg-muted/15 border-none shadow-none text-base md:text-[17px] font-semibold text-foreground/80 hover:text-foreground focus-visible:ring-0 focus-visible:ring-offset-0 rounded-xl"
+            variant === "chip"
+              ? "gap-1 h-8 px-2.5 rounded-full border border-[#2a3548] bg-[#0d121c] text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-[#1a2233] focus-visible:ring-0"
+              : variant === "inline"
+                ? "gap-1.5 h-9 px-2.5 rounded-full bg-transparent hover:bg-muted/20 text-sm font-medium text-muted-foreground hover:text-foreground focus-visible:ring-0"
+                : "gap-1 h-9 px-2 bg-transparent hover:bg-muted/15 border-none shadow-none text-base md:text-[17px] font-semibold text-foreground/80 hover:text-foreground focus-visible:ring-0 focus-visible:ring-offset-0 rounded-xl"
           }
           disabled={disabled}
         >
-          {variant === "inline" && (
-            <span className="h-2 w-2 rounded-full bg-primary shrink-0" aria-hidden />
+          {(variant === "inline" || variant === "chip") && (
+            <span className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" aria-hidden />
           )}
-          <span>{variant === "inline" ? shortLabel : currentProvider.value === "lovable" ? "ShadowTalk Pro" : "ShadowTalk API"}</span>
-          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground/60" />
+          <span>
+            {variant === "inline" || variant === "chip"
+              ? shortLabel
+              : currentProvider.value === "lovable"
+                ? "ShadowTalk Pro"
+                : "ShadowTalk API"}
+          </span>
+          <ChevronDown className={`text-muted-foreground/60 ${variant === "chip" ? "h-3 w-3" : "h-3.5 w-3.5"}`} />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-64 p-1.5 bg-[#1e1f20]/95 backdrop-blur-2xl border border-border/10 rounded-2xl shadow-2xl">

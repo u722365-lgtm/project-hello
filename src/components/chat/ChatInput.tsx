@@ -5,6 +5,7 @@ import { FileUpload } from "@/components/chat/FileUpload";
 import { ModeSelector, ChatMode } from "@/components/chat/ModeSelector";
 import { SearchHistory } from "@/components/chat/SearchHistory";
 import { ProviderSelector, AIProvider } from "@/components/chat/ProviderSelector";
+import { HardwareTurboBadge } from "@/components/chat/HardwareTurboBadge";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Tooltip,
@@ -24,12 +25,12 @@ interface ChatInputProps {
   onToggleVoice: () => void;
   onOpenImageGenerator: () => void;
   onStopGeneration: () => void;
-  selectedFile: { type: 'image' | 'file'; data: string; name: string; mimeType: string } | null;
-  onFileSelect: (file: { type: 'image' | 'file'; data: string; name: string; mimeType: string } | null) => void;
+  selectedFile: { type: "image" | "file"; data: string; name: string; mimeType: string } | null;
+  onFileSelect: (file: { type: "image" | "file"; data: string; name: string; mimeType: string } | null) => void;
   chatMode: ChatMode;
   onModeChange: (mode: ChatMode) => void;
   personality: string;
-  layout?: "default" | "gemini" | "shadow-pulse";
+  layout?: "default" | "gemini" | "shadow-pulse" | "composer";
   aiProvider?: AIProvider;
   onProviderChange?: (provider: AIProvider) => void;
   hasKeyForProvider?: (provider: AIProvider) => boolean;
@@ -62,65 +63,174 @@ export const ChatInput = ({
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       onSend();
+      return;
     }
+    onKeyPress(e);
   };
 
   const isShadowPulse = layout === "shadow-pulse";
-  const isGemini = layout === "gemini" || isShadowPulse;
+  const isComposer = layout === "composer" || layout === "gemini" || isShadowPulse;
+  const canSend = Boolean(message.trim() || selectedFile);
+
+  const voiceBanner = (
+    <AnimatePresence>
+      {(isListening || isSpeaking) && (
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.9, x: "-50%" }}
+          animate={{ opacity: 1, y: 0, scale: 1, x: "-50%" }}
+          exit={{ opacity: 0, y: 20, scale: 0.9, x: "-50%" }}
+          className={`fixed left-1/2 z-50 ${isEmptyState ? "bottom-44" : "bottom-36"}`}
+        >
+          <div className="bg-card/95 backdrop-blur-2xl border border-border/50 rounded-full px-5 py-2.5 flex items-center gap-4 shadow-2xl ring-1 ring-border/30">
+            <div className="flex gap-1.5 items-center h-4">
+              {[...Array(5)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  animate={{ height: isListening ? [8, 16, 8] : [4, 10, 4] }}
+                  transition={{
+                    duration: isListening ? 0.6 : 1.2,
+                    repeat: Infinity,
+                    delay: i * 0.1,
+                    ease: "easeInOut",
+                  }}
+                  className="w-1 bg-primary rounded-full"
+                />
+              ))}
+            </div>
+            <span className="text-[13px] font-medium text-foreground tracking-tight">
+              {isListening ? "Listening..." : "ShadowTalk is speaking"}
+            </span>
+            {isSpeaking && <Volume2 className="h-3.5 w-3.5 text-primary animate-pulse" />}
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+
+  if (isComposer && !isShadowPulse) {
+    return (
+      <div className="relative w-full">
+        {voiceBanner}
+        <div className={isEmptyState ? "w-full" : "w-full px-0 py-0"}>
+          {selectedFile && (
+            <div className="mb-2 px-3">
+              <FileUpload
+                onFileSelect={onFileSelect}
+                selectedFile={selectedFile}
+                onClear={() => onFileSelect(null)}
+                disabled={isLoading}
+                variant="gemini"
+              />
+            </div>
+          )}
+
+          <div className="shadowtalk-composer group">
+            {!selectedFile && (
+              <FileUpload
+                onFileSelect={onFileSelect}
+                selectedFile={selectedFile}
+                onClear={() => onFileSelect(null)}
+                disabled={isLoading}
+                variant="composer"
+              />
+            )}
+
+            <Textarea
+              value={message}
+              onChange={(e) => onMessageChange(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={isListening ? "Listening..." : "Ask ShadowTalk"}
+              className="flex-1 min-h-[40px] max-h-[200px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 py-2.5 px-2 text-[15px] placeholder:text-muted-foreground/50 leading-relaxed overflow-y-auto custom-scrollbar"
+              disabled={isLoading}
+              rows={1}
+            />
+
+            <div className="flex items-center gap-1.5 shrink-0 pr-0.5">
+              <div className="flex items-center gap-1 max-w-[140px] sm:max-w-none overflow-hidden">
+                <HardwareTurboBadge />
+                {onProviderChange && (
+                  <ProviderSelector
+                    provider={aiProvider}
+                    onProviderChange={onProviderChange}
+                    hasKeyForProvider={hasKeyForProvider}
+                    disabled={isLoading}
+                    variant="chip"
+                  />
+                )}
+              </div>
+
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    {isLoading ? (
+                      <Button
+                        onClick={onStopGeneration}
+                        size="icon"
+                        variant="ghost"
+                        className="shadowtalk-composer__mic text-destructive hover:bg-destructive/10"
+                      >
+                        <Square className="h-4 w-4 fill-current" />
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={onToggleVoice}
+                        variant="ghost"
+                        size="icon"
+                        className={`shadowtalk-composer__mic ${
+                          isListening ? "bg-primary text-primary-foreground border-primary" : ""
+                        }`}
+                        disabled={isLoading}
+                      >
+                        {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                      </Button>
+                    )}
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="text-xs">
+                    {isLoading ? "Stop" : "Voice"}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              <Button
+                onClick={onSend}
+                size="icon"
+                className="shadowtalk-composer__send"
+                disabled={!canSend || isLoading}
+                aria-label="Send message"
+              >
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+
+          <p className="shadowtalk-composer__hint">
+            Enter to send · Shift+Enter for new line
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
       className={`relative ${
-        isShadowPulse ? "bg-transparent" : isGemini ? "border-t-0 bg-transparent" : "border-t border-transparent bg-transparent"
+        isShadowPulse ? "bg-transparent" : isComposer ? "border-t-0 bg-transparent" : "border-t border-transparent bg-transparent"
       }`}
     >
-      <AnimatePresence>
-        {(isListening || isSpeaking) && (
-          <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.9, x: "-50%" }}
-            animate={{ opacity: 1, y: 0, scale: 1, x: "-50%" }}
-            exit={{ opacity: 0, y: 20, scale: 0.9, x: "-50%" }}
-            className={`fixed left-1/2 z-50 ${isEmptyState ? "bottom-44" : "bottom-36"}`}
-          >
-            <div className="bg-card/95 backdrop-blur-2xl border border-border/50 rounded-full px-5 py-2.5 flex items-center gap-4 shadow-2xl ring-1 ring-border/30">
-              <div className="flex gap-1.5 items-center h-4">
-                {[...Array(5)].map((_, i) => (
-                  <motion.div
-                    key={i}
-                    animate={{
-                      height: isListening ? [8, 16, 8] : [4, 10, 4],
-                    }}
-                    transition={{
-                      duration: isListening ? 0.6 : 1.2,
-                      repeat: Infinity,
-                      delay: i * 0.1,
-                      ease: "easeInOut",
-                    }}
-                    className="w-1 bg-primary rounded-full"
-                  />
-                ))}
-              </div>
-              <span className="text-[13px] font-medium text-foreground tracking-tight">
-                {isListening ? "Listening..." : "ShadowTalk is speaking"}
-              </span>
-              {isSpeaking && <Volume2 className="h-3.5 w-3.5 text-primary animate-pulse" />}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {voiceBanner}
 
       <div
         className={`mx-auto relative ${
           isShadowPulse
             ? "max-w-full px-2 py-0"
-            : isGemini
+            : isComposer
               ? isEmptyState
                 ? "max-w-[720px] px-4 py-0"
                 : "max-w-[720px] px-4 py-4 md:py-5"
               : "max-w-3xl px-4 py-4 md:py-6"
         }`}
       >
-        {!isGemini && !isShadowPulse && !isEmptyState && (
+        {!isComposer && !isShadowPulse && !isEmptyState && (
           <div className="flex items-center gap-2 mb-3 px-1">
             <ModeSelector
               mode={chatMode}
@@ -143,7 +253,7 @@ export const ChatInput = ({
         )}
 
         <div className="relative group">
-          {!isGemini && !isShadowPulse && (
+          {!isComposer && !isShadowPulse && (
             <div className="absolute -inset-[1px] rounded-[32px] bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10 opacity-0 group-focus-within:opacity-100 blur-md transition-opacity duration-700" />
           )}
 
@@ -151,30 +261,19 @@ export const ChatInput = ({
             className={
               isShadowPulse
                 ? "relative flex items-center gap-2 bg-transparent rounded-[18px] px-2 py-1"
-                : isGemini
+                : isComposer
                   ? "relative flex items-center gap-1 bg-[#2f2f2f] hover:bg-[#383838] focus-within:bg-[#383838] rounded-[26px] border border-[#404040] px-3 py-2 shadow-none transition-colors duration-200"
                   : "relative flex items-end gap-2 bg-[#1e1f20]/60 backdrop-blur-2xl rounded-[30px] border border-white/10 p-2.5 px-4 shadow-2xl transition-all duration-500 group-focus-within:bg-[#1e1f20]/80 group-focus-within:border-white/20 ring-1 ring-white/5"
             }
           >
-            <div className={`flex items-center shrink-0 ${isGemini ? "" : "pb-1"}`}>
-              {isGemini ? (
-                <div className="relative">
-                  <FileUpload
-                    onFileSelect={onFileSelect}
-                    selectedFile={selectedFile}
-                    onClear={() => onFileSelect(null)}
-                    disabled={isLoading}
-                    variant="gemini"
-                  />
-                </div>
-              ) : (
-                <FileUpload
-                  onFileSelect={onFileSelect}
-                  selectedFile={selectedFile}
-                  onClear={() => onFileSelect(null)}
-                  disabled={isLoading}
-                />
-              )}
+            <div className={`flex items-center shrink-0 ${isComposer ? "" : "pb-1"}`}>
+              <FileUpload
+                onFileSelect={onFileSelect}
+                selectedFile={selectedFile}
+                onClear={() => onFileSelect(null)}
+                disabled={isLoading}
+                variant={isComposer ? "gemini" : "default"}
+              />
             </div>
 
             <Textarea
@@ -186,12 +285,12 @@ export const ChatInput = ({
                   ? "Listening..."
                   : isShadowPulse
                     ? "Ask anything..."
-                    : isGemini
+                    : isComposer
                       ? "Ask ShadowTalk"
                       : "Type, talk, or share..."
               }
               className={
-                isGemini
+                isComposer
                   ? "flex-1 min-h-[44px] max-h-[200px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 py-3 px-1 text-[15px] placeholder:text-muted-foreground/50 leading-relaxed overflow-y-auto custom-scrollbar"
                   : "flex-1 min-h-[46px] max-h-[220px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 py-3.5 px-2 text-[15.5px] placeholder:text-muted-foreground/30 leading-relaxed overflow-y-auto custom-scrollbar"
               }
@@ -199,8 +298,8 @@ export const ChatInput = ({
               rows={1}
             />
 
-            <div className={`flex items-center gap-0.5 shrink-0 ${isGemini ? "" : "pb-1"}`}>
-              {isGemini && onProviderChange && (
+            <div className={`flex items-center gap-0.5 shrink-0 ${isComposer ? "" : "pb-1"}`}>
+              {isComposer && onProviderChange && (
                 <ProviderSelector
                   provider={aiProvider}
                   onProviderChange={onProviderChange}
@@ -244,54 +343,41 @@ export const ChatInput = ({
                 </Tooltip>
               </TooltipProvider>
 
-              {isGemini ? (
-                (message.trim() || selectedFile) && !isLoading && (
+              {isComposer ? (
+                (message.trim() || selectedFile) &&
+                !isLoading && (
                   <Button
                     onClick={onSend}
                     size="icon"
-                    className={
-                      isShadowPulse
-                        ? "h-9 w-9 rounded-full bg-cyan-500 text-black hover:bg-cyan-400 shadow-[0_0_16px_rgba(34,211,238,0.45)]"
-                        : "h-9 w-9 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-all disabled:opacity-40"
-                    }
+                    className="h-9 w-9 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-all disabled:opacity-40"
                     disabled={!message.trim() && !selectedFile}
                   >
                     <Send className="h-4 w-4" />
                   </Button>
                 )
+              ) : isLoading ? (
+                <Button
+                  onClick={onStopGeneration}
+                  size="icon"
+                  className="h-9 w-9 rounded-full bg-destructive/80 hover:bg-destructive text-white shadow-lg shadow-destructive/20"
+                >
+                  <Square className="h-3.5 w-3.5 fill-current" />
+                </Button>
               ) : (
-                <>
-                  {isLoading ? (
-                    <Button
-                      onClick={onStopGeneration}
-                      size="icon"
-                      className="h-9 w-9 rounded-full bg-destructive/80 hover:bg-destructive text-white shadow-lg shadow-destructive/20"
-                    >
-                      <Square className="h-3.5 w-3.5 fill-current" />
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={onSend}
-                      size="icon"
-                      className="h-9 w-9 rounded-full bg-white text-black hover:bg-white/90 shadow-lg transition-all duration-300 disabled:opacity-10 disabled:bg-white/5 disabled:text-white/20 hover:scale-105 active:scale-95"
-                      disabled={!message.trim() && !selectedFile}
-                    >
-                      <Send className="h-4 w-4" />
-                    </Button>
-                  )}
-                </>
+                <Button
+                  onClick={onSend}
+                  size="icon"
+                  className="h-9 w-9 rounded-full bg-white text-black hover:bg-white/90 shadow-lg transition-all duration-300 disabled:opacity-10 disabled:bg-white/5 disabled:text-white/20 hover:scale-105 active:scale-95"
+                  disabled={!message.trim() && !selectedFile}
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
               )}
             </div>
           </div>
         </div>
 
-        {isGemini && isEmptyState && (
-          <p className="text-[11px] text-muted-foreground/40 text-center mt-3 select-none">
-            Press Enter to send · Shift+Enter for new line
-          </p>
-        )}
-
-        {!isGemini && !isShadowPulse && (
+        {!isComposer && !isShadowPulse && (
           <p className="text-[10px] text-muted-foreground/25 font-medium text-center mt-4 select-none tracking-widest uppercase">
             ShadowTalk Neural OS • Enterprise Grade Privacy
           </p>
