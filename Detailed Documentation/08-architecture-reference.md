@@ -1,110 +1,150 @@
 # Architecture reference
 
-## Top-level application structure
+## Top-level structure
 
 ```
 /workspace
 ├── src/
-│   ├── pages/           # Route-level screens (Chatbot, IDE, Marketplace, …)
-│   ├── components/      # UI (chat/, ui/, monetization/, …)
-│   ├── hooks/           # React hooks (marketplace, tools, offline, …)
-│   ├── lib/             # Business logic (appBuilder, marketplace, offline, …)
-│   └── integrations/    # Supabase client
+│   ├── pages/              # Route screens
+│   ├── components/         # UI (chat/, landing/, pricing/, ui/, …)
+│   ├── hooks/              # React hooks
+│   ├── lib/                # Business logic (offline, marketplace, auth, …)
+│   ├── contexts/           # React contexts
+│   └── integrations/       # Supabase client
 ├── supabase/
-│   ├── functions/       # Edge functions (chat, web-search, …)
-│   └── migrations/      # SQL schema + seeds
-└── Detailed Documentation/   # This folder
+│   ├── functions/          # Edge functions
+│   └── migrations/         # SQL
+├── Detailed Documentation/ # Engineering docs
+├── DOCUMENTATION.md        # Master doc index
+└── public/llms.txt         # LLM crawler summary
 ```
 
-## Primary routes
+---
+
+## Primary routes (2026)
 
 | Path | Page | Notes |
 |------|------|-------|
-| `/` | Landing | Marketing, metrics, stealth |
-| `/chatbot` | ChatbotPage | Main AI chat; `?agent=` for marketplace |
-| `/ide` | IdePage | PersonalIDE |
-| `/marketplace` | MarketplacePage | Agents catalog + library |
-| `/workspace` | WorkspacePage | Productivity hub |
-| `/presentations` | PresentationBuilderPage | Slides generation |
+| `/` | Redirect | → `/chatbot` |
+| `/chatbot` | `ChatbotPage` | **Default product**; `?agent=`, `?conversation=`, `?q=` |
+| `/home` | `Index` | Marketing landing |
+| `/pricing` | `PricingPage` | Standalone pricing UX |
+| `/ide` | `IdePage` | PersonalIDE, session payload |
+| `/marketplace` | `MarketplacePage` | Agents |
+| `/missioncontrol` | `MissionControlPage` | Autonomous missions |
+| `/auth` | `AuthPage` | Sign-in; redirect if already authenticated |
+
+**Full list:** [11-complete-route-reference.md](./11-complete-route-reference.md)
+
+---
+
+## Auth & session
+
+```mermaid
+flowchart LR
+  A[App mount] --> B[AuthProvider.bootstrap]
+  B --> C[restoreOrCreateSession]
+  C --> D{session?}
+  D -->|yes| E[applySession]
+  D -->|no + not signed out| F[signInAnonymously]
+  D -->|signed out flag| G[null session]
+  E --> H[loading false]
+  F --> E
+  H --> I[ChatbotPage renders]
+  I --> J[checkSubscription async]
+```
+
+| Module | Role |
+|--------|------|
+| `persistentAuth.ts` | Session restore, anonymous login, sign-out flag |
+| `AuthProvider.tsx` | React context |
+| `skipBootScreen.ts` | Skip `BootScreen` on `/`, `/chatbot` |
+| `PersistedAuthRedirect.tsx` | Auth page guard |
+
+---
 
 ## Data stores
 
 | Store | Technology | Examples |
 |-------|------------|----------|
 | Auth & DB | Supabase | `conversations`, `messages`, `user_installed_agents` |
-| Session | `sessionStorage` | IDE payload, active marketplace agent |
-| Local | `localStorage` | Hardware profile, daily message count, offline prefs |
+| Session | `sessionStorage` | IDE payload, boot flag `shadowtalk-booted` |
+| Local | `localStorage` | Hardware profile, auth storage key, sign-out flag |
 
-## Chat completion flow (simplified)
+---
+
+## Chat completion flow
 
 ```mermaid
 flowchart TD
   A[User sends message] --> B{App Builder intent?}
-  B -->|Yes| C[generateAppProject]
-  C --> D[openProjectInIde]
-  B -->|No| E[decideRoute hardware]
-  E -->|local| F[runLocalChat / offline]
-  E -->|cloud| G[POST /functions/v1/chat SSE]
-  F -->|fail| G
+  B -->|Yes| C[generateAppProject → IDE]
+  B -->|No| D[decideRoute]
+  D -->|local| E[runLocalChat / offline]
+  D -->|cloud| F[POST /functions/v1/chat SSE]
+  E -->|fail| F
 ```
+
+**UI:** `ChatInput` (composer layout) → `ChatbotPage.handleSendMessage` → `runChatCompletion`.
+
+---
 
 ## Marketplace agent flow
 
 ```mermaid
 flowchart LR
-  M[Marketplace Run] --> I[Install if needed]
-  I --> C["/chatbot?agent=id"]
+  M[Run agent] --> C["/chatbot?agent=id"]
   C --> R[resolveAgentConfig]
   R --> P[prependAgentSystemPrompt]
   P --> G[Chat completion]
 ```
+
+---
 
 ## Key environment variables
 
 | Variable | Purpose |
 |----------|---------|
 | `VITE_SUPABASE_URL` | API + functions base |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | Anon key for client |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Anon client key |
+
+---
 
 ## Edge functions (chat ecosystem)
 
 | Function | Role |
 |----------|------|
 | `chat` | Main LLM streaming |
-| `web-search` | Live search tool |
+| `web-search` | Search tool |
 | `generate-presentation` | Slides |
 | `document-ai` | Documents |
-| `shadow-agent-tools` | Agentic automations |
-| `firecrawl-scrape` | Browser/scrape tool |
+| `shadow-agent-tools` | Agentic tools |
+| `check-subscription` | Plan verification |
+| `notify-app-update` | Release broadcasts |
+
+---
 
 ## Testing
 
-- **Runner:** Vitest  
-- **Patterns:** `*.test.ts` next to modules (`appBuilder`, `marketplace`, `hardwareIntelligence`, `webgpuRuntime`)
-
-Run all:
-
 ```bash
 npm test
-```
-
-Run subset:
-
-```bash
 npx vitest run src/lib/appBuilder
 npx vitest run src/lib/marketplace
+npx vitest run src/lib/hardwareIntelligence
 ```
 
-## Branch naming convention (cloud agents)
+---
+
+## Branch naming (cloud agents)
 
 ```
 cursor/<descriptive-name>-7adb
 ```
 
-Examples: `cursor/app-builder-7adb`, `cursor/marketplace-functional-7adb`.
+---
 
-## Extension points (future)
+## Related docs
 
-- Native mobile export (Capacitor/React Native) from App Builder projects.
-- Marketplace user-published agents with admin review.
-- Deeper WebGPU model catalog on turbo tier only.
+- [10-ux-auth-and-navigation.md](./10-ux-auth-and-navigation.md)
+- [03-hardware-turbo-routing.md](./03-hardware-turbo-routing.md)
+- [06-personal-ide-and-chat.md](./06-personal-ide-and-chat.md)

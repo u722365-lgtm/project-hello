@@ -1,4 +1,28 @@
-# ShadowTalk Foundation Release
+# ShadowTalk Release Notes
+
+## Latest (main — June 2026)
+
+| Area | What shipped |
+|------|----------------|
+| **Navigation** | `/` → `/chatbot`; marketing at `/home` |
+| **Auth** | Persistent session + anonymous auto sign-in (`persistentAuth.ts`) |
+| **Entry UX** | No boot screen on chat paths; chat shell renders during auth |
+| **Composer** | Turbo badge removed from UI; send button aligned inside pill |
+| **Docs** | [DOCUMENTATION.md](./DOCUMENTATION.md), docs 10–11, updated README & llms.txt |
+| **Pricing** | Dedicated `/pricing` page |
+
+**Smoke test (chat):**
+
+- [ ] Open `/` → lands on `/chatbot` without boot or “Warming up…” splash
+- [ ] Session persists after refresh
+- [ ] Provider chip + send inside composer pill
+- [ ] `/home` shows marketing nav only (no coupon bar regression)
+
+See [Detailed Documentation/10-ux-auth-and-navigation.md](./Detailed%20Documentation/10-ux-auth-and-navigation.md).
+
+---
+
+## Foundation release
 
 Unified release merging PRs **#12–#15** plus agentic loop hardening.
 

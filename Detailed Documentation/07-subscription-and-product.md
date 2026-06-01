@@ -28,11 +28,23 @@ Chat and App Builder honor BYOK via `buildChatProviderPayload(aiProvider, aiConf
 
 | Work | Files / notes |
 |------|----------------|
-| Dark theme restore | Marketing site brand colors |
-| Landing animations | `src/lib/landingMotion.ts`, Framer Motion on sections |
+| **Workspace-first routing** | `/` → `/chatbot`; marketing at `/home` |
+| **LandingNavigation** | `src/components/landing/LandingNavigation.tsx` — Pricing, Install, Notifications, Feedback, Login |
+| Landing animations | `src/lib/landingMotion.ts`, interactive cards, section reveals |
+| **Pricing page** | `/pricing` — `PricingPage.tsx`, `src/components/pricing/*` |
 | Live metrics (not mock) | `platformMetricsShared.ts`, Supabase-backed counts |
 | Stealth mode | Countdown, network guard, kill switch storage |
-| About page inspire | Content and motion updates |
+| Coupon banner | Removed from home (layout/runtime fix) |
+
+## Auth & entry (main)
+
+| Work | Files |
+|------|--------|
+| Persistent session | `persistentAuth.ts`, `AuthProvider.tsx` |
+| Skip auth redirect when signed in | `PersistedAuthRedirect.tsx` |
+| No chat boot / loading splash | `skipBootScreen.ts`, `ChatbotPage.tsx` |
+
+See [10-ux-auth-and-navigation.md](./10-ux-auth-and-navigation.md).
 
 ## Chat quality of life
 

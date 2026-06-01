@@ -10,9 +10,11 @@
 
 ## How routing works
 
-1. `decideRoute()` in `hybridRouter.ts` picks **local** vs **cloud**.
+1. `decideRoute()` in `hybridRouter.ts` picks **local** vs **cloud** using `hardwareIntelligence` scores.
 2. `runLocalChat()` uses **Gemma if loaded**, else **SmolLM**.
 3. `ChatbotPage` calls local inference when route is `local`; otherwise cloud SSE.
+
+**UI note:** Routing is automatic. The chat composer no longer shows a “Turbo” hardware badge — tier/path details are in **Settings → Offline AI** and engineering docs ([Detailed Documentation/03-hardware-turbo-routing.md](./Detailed%20Documentation/03-hardware-turbo-routing.md)).
 
 ## User flows
 

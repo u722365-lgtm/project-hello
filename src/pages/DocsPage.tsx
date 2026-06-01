@@ -136,10 +136,10 @@ const DocsPage = () => {
   ];
 
   const quickStartSteps = [
-    { step: 1, title: "Create an Account", description: "Sign up with email. No credit card required for the free tier.", icon: Users },
-    { step: 2, title: "Start Chatting", description: "Open the chatbot and start typing. AI responds in real-time with streaming.", icon: MessageSquare },
-    { step: 3, title: "Explore Tools", description: "Try Cyber Command Center, ShadowBrowser, voice input, and mission control.", icon: Zap },
-    { step: 4, title: "Upgrade for More", description: "Unlock image generation, collaborative rooms, stealth vault, and API access.", icon: Crown },
+    { step: 1, title: "Open the Workspace", description: "Visit shadowtalk-ai.com — you land on /chatbot instantly. A session starts automatically (link an email anytime from Profile).", icon: MessageSquare },
+    { step: 2, title: "Start Chatting", description: "Type in the composer pill, pick a provider (Sovereign or your BYOK key), and press Send or Enter.", icon: Zap },
+    { step: 3, title: "Explore Tools", description: "Use the tools menu, Mission Control, ShadowBrowser, voice, deep research, and the IDE from chat.", icon: Compass },
+    { step: 4, title: "Upgrade for More", description: "Visit /pricing for Pro, Premium, or Elite — unlimited messages, images, vault, offline, and API access.", icon: Crown },
   ];
 
   const apiEndpoints = [
@@ -250,7 +250,9 @@ const DocsPage = () => {
             <TabsContent value="getting-started" className="space-y-8">
               <DocSection title="Quick Start Guide">
                 <p className="text-muted-foreground mb-6">
-                  Get up and running with ShadowTalk AI in just a few minutes.
+                  Get up and running with ShadowTalk AI in just a few minutes. The app opens at{" "}
+                  <strong className="text-foreground">/chatbot</strong> — no boot screen on the workspace.
+                  Marketing and feature tours live at <strong className="text-foreground">/home</strong>.
                 </p>
                 <div className="grid gap-5 md:grid-cols-2">
                   {quickStartSteps.map((item, i) => (
@@ -315,9 +317,9 @@ const DocsPage = () => {
                 </p>
                 <div className="grid gap-5 md:grid-cols-3">
                   {[
-                    { icon: Monitor, title: "Desktop (Chrome)", steps: ["Visit shadowtalk-ai.com", "Click the install icon in the address bar", "Click \"Install\" in the prompt", "Launch from your desktop"] },
-                    { icon: Smartphone, title: "iOS (Safari)", steps: ["Open Safari and visit shadowtalk-ai.com", "Tap the Share button", "Scroll down and tap \"Add to Home Screen\"", "Tap \"Add\" to confirm"] },
-                    { icon: Smartphone, title: "Android (Chrome)", steps: ["Open Chrome and visit shadowtalk-ai.com", "Tap the banner or menu (three dots)", "Select \"Install App\"", "Confirm installation"] },
+                    { icon: Monitor, title: "Desktop (Chrome)", steps: ["Visit shadowtalk-ai.com/chatbot", "Click the install icon in the address bar", "Click \"Install\" in the prompt", "Launch from your desktop — opens to the workspace"] },
+                    { icon: Smartphone, title: "iOS (Safari)", steps: ["Open Safari and visit shadowtalk-ai.com/chatbot", "Tap the Share button", "Scroll down and tap \"Add to Home Screen\"", "Tap \"Add\" to confirm"] },
+                    { icon: Smartphone, title: "Android (Chrome)", steps: ["Open Chrome and visit shadowtalk-ai.com/chatbot", "Tap the banner or menu (three dots)", "Select \"Install App\"", "Confirm installation"] },
                   ].map((platform, idx) => (
                     <motion.div key={idx} custom={idx} variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
                       <Card className="card-glass h-full overflow-hidden">

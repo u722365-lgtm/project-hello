@@ -1,43 +1,65 @@
 # ShadowTalk AI
 
-> ShadowTalk AI is a privacy-first agentic AI workspace. It runs autonomous multi-step missions, ships 30+ specialized tools (chat, code, voice, vision, deep research, image generation, security audit), and supports fully offline on-device models via WebGPU.
+> ShadowTalk AI is a privacy-first agentic AI workspace. Open the site at /chatbot for the main product. Marketing lives at /home. It runs autonomous missions, 30+ tools (chat, code, voice, vision, research, security), BYOK providers, and optional on-device models via WebGPU.
 
-## Pages
+## Entry & navigation
 
-- [Home](/): Overview of ShadowTalk AI, the agentic workspace.
-- [Chatbot](/chatbot): Conversational AI with 10+ specialized modes, voice, vision, and tool use.
-- [Mission Control](/missioncontrol): Launch and monitor autonomous multi-step AI missions.
-- [Deep Research](/research): SERP-grounded multi-step research with cited synthesis.
-- [Strategy Agent](/strategy): AI business intelligence, market and competitor analysis.
-- [Workspace](/workspace): Collaborative AI workspace for teams and projects.
-- [Creative Studio](/studio): AI media editor for images, documents, and creative output.
-- [Presentation Builder](/presentations): Auto-generate slides and decks from a prompt.
-- [Code IDE](/ide): In-browser Monaco IDE with AI-assisted coding and live preview.
-- [Knowledge Graph](/knowledge): Visual force-directed graph of saved entities and notes.
-- [Marketplace](/marketplace): Browse and install specialized AI agents and plugins.
-- [Cyber Command](/cyber): Cybersecurity operations center with 8 integrated modules.
-- [Security Audit](/security-audit): Hyper-Security Contextual Auditor for code and URLs.
-- [Privacy Score](/privacy-score): Score and improve your digital privacy posture.
-- [Transparency](/transparency): How ShadowTalk handles data, processing, and encryption.
-- [Pricing](/pricing): Plans — Free, Pro, Premium, and Elite tiers.
-- [Lifetime Deal](/lifetime-deal): One-time payment for lifetime Elite access.
-- [Blog](/blog): Product updates, tutorials, and AI research notes.
-- [Changelog](/changelog): Release notes and shipped features.
-- [Docs](/docs): How to use ShadowTalk AI effectively.
-- [Developers](/developers): SDKs, webhooks, and developer resources.
-- [API](/api): API management, keys, and integration docs.
-- [FAQ](/faq): Common questions about features, pricing, and privacy.
-- [Help Center](/help): Guides, tutorials, and troubleshooting.
-- [About](/about): Company, mission, and team.
-- [Careers](/careers): Open roles at ShadowTalk AI.
-- [Press](/press): Press resources and media kit.
-- [Contact](/contact): Get in touch with the team.
-- [Status](/status): System status and uptime.
+- [/](/): Redirects to /chatbot (workspace).
+- [/chatbot](/chatbot): Primary AI workspace — chat, tools, missions, marketplace agents.
+- [/home](/home): Marketing landing — features, pricing section, neural dock navigation.
+- [/auth](/auth): Sign in or link account (session persists; anonymous auto-sign-in unless user signed out).
 
-## Legal
+## Core product
 
-- [Privacy Policy](/privacy): How we collect, use, and protect data.
-- [Terms of Service](/terms): Rules and guidelines for using ShadowTalk AI.
-- [Cookie Policy](/cookies): How we use cookies and tracking.
-- [GDPR](/gdpr): GDPR compliance and your data rights.
+- [Mission Control](/missioncontrol): Autonomous multi-step AI missions with approval gates.
+- [Deep Research](/research): Multi-step research (also from chat tools).
+- [Strategy Agent](/strategy): Business intelligence and analysis.
+- [Workspace](/workspace): Team and business context.
+- [Creative Studio](/studio): AI media and document creative tools.
+- [Presentation Builder](/presentations): Slide decks from prompts.
+- [Code IDE](/ide): Monaco IDE, multi-file projects, live preview, App Builder output.
+- [Knowledge Graph](/knowledge): Entity and relationship graph.
+- [Marketplace](/marketplace): Installable specialist AI agents.
+
+## Privacy & security
+
+- [Cyber Command](/cyber): Security operations modules.
+- [Security Audit](/security-audit): Code and URL security analysis.
+- [Stealth Vault](/vault): Encrypted sensitive storage.
+- [Privacy Score](/privacy-score): Privacy posture scoring.
+- [Transparency](/transparency): Data handling and encryption practices.
 - [Trust](/trust): Security and compliance posture.
+- [Sovereign Data](/sovereign-data): Data sovereignty controls.
+
+## Account & billing
+
+- [Pricing](/pricing): Free, Pro, Premium, Elite plans.
+- [Billing](/billing): Subscription management.
+- [Lifetime Deal](/lifetime-deal): One-time Elite access.
+- [Settings](/settings): Preferences, offline AI, API keys.
+- [Profile](/profile): User profile and BYOK.
+
+## Developers
+
+- [Developers](/developers): SDKs and integrations.
+- [API](/api): API keys and management.
+- [Docs](/docs): End-user documentation.
+
+## Support & legal
+
+- [Help Center](/help): Guides and troubleshooting.
+- [FAQ](/faq): Common questions.
+- [Changelog](/changelog): Release notes.
+- [Contact](/contact): Contact the team.
+- [Status](/status): Uptime and incidents.
+- [Privacy Policy](/privacy): Privacy policy.
+- [Terms of Service](/terms): Terms of use.
+- [Cookie Policy](/cookies): Cookie usage.
+- [GDPR](/gdpr): GDPR information.
+
+## Technical notes for crawlers
+
+- Default user flow: workspace-first at /chatbot, no marketing boot screen on chat entry.
+- Hardware-aware routing selects local WebGPU/WASM vs cloud automatically (no “Turbo” UI badge in composer).
+- Offline: SmolLM (Tier A) and optional Gemma (Tier B); see product docs and /settings.
+- Repository documentation: https://github.com/zain836/shadowtalk-ai-903ca615 (DOCUMENTATION.md, Detailed Documentation/)

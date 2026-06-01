@@ -36,10 +36,12 @@ Work was split into:
 
 ## How to verify
 
-1. Cold load `/` and `/chatbot` with DevTools **Performance** tab.
-2. Confirm **Time to first contentful paint** improves vs `main` before #48.
+1. Cold load `/` (redirects to `/chatbot`) with DevTools **Performance** tab.
+2. Confirm **no global BootScreen** on chat entry (`skipBootScreen.ts`) and **no ChatLoadingScreen** full-page gate.
 3. Confirm chat input is focusable before marketplace catalog or heavy panels finish loading.
 4. In Application → Local Storage, confirm `shadowtalk_hardware_profile_v1` appears after a short delay (not before first interaction).
+
+See also [10-ux-auth-and-navigation.md](./10-ux-auth-and-navigation.md) for boot/auth UX.
 
 ## Known limits
 

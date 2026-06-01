@@ -63,6 +63,7 @@ Also calls `prewarmFastestLocalPath()` and `warmHardwareProfile()` during sessio
 
 - Users on good laptops/desktops get **lower latency** and more privacy (local).
 - Users on weak phones still get **reliable** cloud responses.
+- **UI (June 2026):** The `HardwareTurboBadge` (“Turbo” chip) was **removed** from the chat composer and toolbar. Routing is automatic and silent; tier info remains available in Profile → Offline AI and debug tooling — not in the input bar.
 
 ## Related docs
 

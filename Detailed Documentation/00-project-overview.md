@@ -2,69 +2,78 @@
 
 ## What is ShadowTalk?
 
-ShadowTalk is an AI-powered web application that combines:
+ShadowTalk is an **agentic AI workspace** — not a thin chat wrapper. It combines:
 
-- **Chat** — Multi-personality assistant with tools (search, research, images, code, missions, and more).
-- **Workspace & IDE** — Personal multi-file code editor with live HTML preview and mobile viewport.
-- **Marketplace** — Catalog of specialist agents users can install and run.
-- **Offline / local paths** — Optional on-device models (Gemma, SmolLM) with WebGPU when hardware allows.
-- **Monetization** — Free tier limits, Premium/Elite plans, and bring-your-own-key (BYOK) providers.
+- **Chat** (`/chatbot`) — Multi-personality assistant, 30+ tools, voice, images, deep research, missions.
+- **Workspace & IDE** — Personal multi-file editor with live preview; App Builder from natural language.
+- **Marketplace** — Installable specialist agents with real runtime configs.
+- **Offline / local** — SmolLM, Gemma, WebGPU when hardware allows; hybrid router to cloud.
+- **Monetization** — Free tier limits, Premium/Elite, BYOK (Gemini / OpenRouter / Kimi).
+- **Privacy & ops** — Vault, cyber command, compliance surfaces, admin panel.
 
-Stack: **React**, **TypeScript**, **Vite**, **Supabase** (auth, DB, edge functions), **PWA**.
+**Stack:** React, TypeScript, Vite, Supabase (auth, DB, edge functions), PWA, optional Electron desktop.
+
+**Default entry:** `/` redirects to **`/chatbot`**. Marketing at **`/home`**.
 
 ---
 
-## Goals of this improvement initiative
-
-Users reported and we targeted:
+## Goals of the improvement initiative
 
 | Goal | Outcome |
 |------|---------|
-| App feels slow on open | Startup performance pass (metrics, lazy landing, deferred chrome) |
-| “Fastest chatbot” on good hardware | WebGPU runtime + hardware intelligence + hybrid router |
-| Marketplace feels fake | Real install registry **and** runnable agent configs in chat/IDE |
-| “Build me an app” only gives snippets | App Builder: full multi-file projects in IDE |
+| App feels slow on open | Startup deferral; skip boot on chat; non-blocking auth |
+| Fastest chat on good hardware | WebGPU + hardware intelligence + hybrid router |
+| Marketplace feels fake | Runnable agents in chat/IDE |
+| “Build me an app” only snippets | App Builder → multi-file IDE |
+| Users bounce on auth | Persistent / anonymous session (Gemini-style) |
+| Cluttered marketing | Dedicated landing nav; `/pricing` page |
 
 ---
 
 ## Timeline (high level)
 
-Work landed in a series of focused pull requests on branch names like `cursor/<feature>-7adb`:
+| Order | PR / theme | Focus |
+|-------|------------|--------|
+| Earlier | #46 | Personal IDE on `/ide` |
+| Earlier | #47 | Subscription psychology, upgrade nudges |
+| 1 | #48 | Startup performance |
+| 2 | #49 | WebGPU local inference |
+| 3 | #50 | Hardware-aware routing |
+| 4 | #51 | Marketplace runnable |
+| 5 | #52 | App Builder |
+| Main | — | `/` → chatbot, persistent auth, skip boot, pricing UX, remove Turbo UI badge |
 
-| Order | PR | Branch (typical) | Theme |
-|-------|-----|------------------|--------|
-| Earlier | #46 | `cursor/wire-personal-ide-7adb` | Personal IDE on `/ide`, chat → IDE payload |
-| Earlier | #47 | `cursor/subscription-psychology-7adb` | Premium-focused conversion UX |
-| 1 | #48 | `cursor/fix-startup-performance-7adb` | Startup lag |
-| 2 | #49 | `cursor/webgpu-acceleration-7adb` | WebGPU for local inference |
-| 3 | #50 | `cursor/hardware-turbo-routing-7adb` | Hardware-aware chat routing |
-| 4 | #51 | `cursor/marketplace-functional-7adb` | Runnable marketplace |
-| 5 | #52 | `cursor/app-builder-7adb` | Web + mobile app builder |
-
-Additional parallel work on `main` includes: live landing metrics, stealth mode, BYOK prompts, dark theme restore, chat archive, and security migrations.
+See [09-pull-requests-index.md](./09-pull-requests-index.md) and [10-ux-auth-and-navigation.md](./10-ux-auth-and-navigation.md).
 
 ---
 
-## What “done” means for each pillar
+## What “done” means per pillar
 
-### Performance
-- First paint and time-to-interactive improved by not blocking the main thread on non-critical UI and model warmup.
+### Performance & entry
+- Chat-first routing; no blocking boot on `/chatbot`.
+- Auth does not wait for subscription API before rendering workspace.
 
 ### Speed (chat)
-- Device is probed once (cached): CPU cores/RAM, WebGPU adapter.
-- `decideRoute()` in the hybrid router sends messages to **local WebGPU**, **local WASM**, or **cloud** as appropriate.
+- Device probed once (cached): CPU, RAM, WebGPU.
+- `decideRoute()` → local WebGPU, WASM, or cloud SSE.
 
 ### Marketplace
-- Each catalog agent has a **runtime config** (system prompt, starters, optional IDE script).
-- **Run** → chat with injected specialist behavior; **Script** agents → IDE with template.
+- Agents have runtime config (prompt, starters, IDE script).
+- **Run** → `/chatbot?agent=id` with injected behavior.
 
 ### App Builder
-- Natural language like “build a mobile app for fitness” triggers generation of `index.html`, `style.css`, `app.js`, `README.md` and opens the IDE with preview.
+- “Build a fitness app” → `index.html`, CSS, JS, README → IDE preview.
+
+### Product UX
+- Landing at `/home` with `LandingNavigation`.
+- Full pricing at `/pricing`.
+- Composer: provider chip, voice, send inside pill (no Turbo badge).
 
 ---
 
-## Audience for this documentation
+## Audience
 
-- **Engineers** — Use [08-architecture-reference.md](./08-architecture-reference.md) and per-feature docs for file paths and flows.
-- **QA** — Use “How to verify” sections in each feature doc.
-- **Product** — Use this overview and [09-pull-requests-index.md](./09-pull-requests-index.md) for release notes.
+- **Engineers** — [08-architecture-reference.md](./08-architecture-reference.md), [11-complete-route-reference.md](./11-complete-route-reference.md)
+- **QA** — “How to verify” in each feature doc + [10-ux-auth-and-navigation.md](./10-ux-auth-and-navigation.md)
+- **Product** — This overview + [09-pull-requests-index.md](./09-pull-requests-index.md)
+- **End users** — [/docs](https://www.shadowtalk-ai.com/docs) and [DOCUMENTATION.md](../DOCUMENTATION.md)
