@@ -1,0 +1,29 @@
+<svg width="512" height="512" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="st" x1="8" y1="8" x2="92" y2="92">
+      <stop offset="0%" stop-color="#22d3ee"/>
+      <stop offset="35%" stop-color="#3b82f6"/>
+      <stop offset="70%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#a855f7"/>
+    </linearGradient>
+    <linearGradient id="ribbon" x1="20" y1="18" x2="80" y2="82">
+      <stop offset="0%" stop-color="#67e8f9"/>
+      <stop offset="40%" stop-color="#60a5fa"/>
+      <stop offset="75%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#c084fc"/>
+    </linearGradient>
+    <radialGradient id="pupil" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#e9d5ff"/>
+      <stop offset="35%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#4c1d95" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect x="5" y="5" width="90" height="90" rx="22" fill="#030712"/>
+  <rect x="5.5" y="5.5" width="89" height="89" rx="21" stroke="url(#st)" stroke-width="1.25" opacity="0.85"/>
+  <path d="M77 27.5C51 21.5 27 37.5 29 53.5c2 12 16 18 32 14 12-2 16-8 10-14-10-10-28-6-28 10 0 20 22 32 48 28 22-4 32-18 26-28" stroke="#1e1b4b" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" fill="none" transform="translate(3,3.5)"/>
+  <path d="M74 24C48 18 24 34 26 50c2 12 16 18 32 14 12-2 16-8 10-14-10-10-28-6-28 10 0 20 22 32 48 28 22-4 32-18 26-28" stroke="url(#ribbon)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <circle cx="50" cy="50" r="12" fill="#050508"/>
+  <circle cx="50" cy="50" r="7" fill="url(#pupil)" opacity="0.5"/>
+  <circle cx="50" cy="50" r="3.2" fill="#c084fc"/>
+  <circle cx="51" cy="49" r="1" fill="white" opacity="0.9"/>
+</svg>
