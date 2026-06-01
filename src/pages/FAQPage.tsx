@@ -12,6 +12,9 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { useFAQItems } from "@/hooks/useCMSContent";
+import SEOHead from "@/components/SEOHead";
+import { PAGE_SEO, getFAQSchema } from "@/lib/seo";
+
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30, filter: "blur(6px)" },
