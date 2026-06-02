@@ -1761,10 +1761,42 @@ When a user asks you to write, create, draft, or generate any document (email, a
         });
       }
       if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "AI credits exhausted. Please add more credits." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        // === AUTO-BYOK FALLBACK ===
+        // Platform credits exhausted. If the user has any verified stored API key,
+        // silently switch to it and stream the answer. Only when there's no key do we
+        // surface a structured error so the client can prompt the user to add one.
+        if (!customAi && authUserId && serviceRoleKey) {
+          try {
+            const admin = createClient(supabaseUrl, serviceRoleKey);
+            const userKey = await fetchUserProviderKey(admin, authUserId);
+            if (userKey) {
+              console.log(`[CHAT] Platform credits exhausted — auto-failover to BYOK (${userKey.provider})`);
+              const byokResponse = await streamWithUserKey(
+                userKey.provider,
+                userKey.apiKey,
+                systemPrompt,
+                trimmedMessages,
+              );
+              return new Response(byokResponse.body, {
+                status: byokResponse.status,
+                headers: { ...corsHeaders, ...Object.fromEntries(byokResponse.headers.entries()) },
+              });
+            }
+          } catch (failoverErr) {
+            console.error("[CHAT] BYOK auto-failover failed:", failoverErr);
+          }
+        }
+        return new Response(
+          JSON.stringify({
+            error: "Platform AI credits are exhausted. Add your own API key to keep chatting — it takes ~2 minutes and uses your provider's free tier.",
+            code: "PLATFORM_CREDITS_EXHAUSTED",
+            needsByok: true,
+          }),
+          {
+            status: 402,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
       }
       if (response.status === 503) {
         return new Response(JSON.stringify({ error: "AI service temporarily unavailable. Please try again in a moment." }), {
