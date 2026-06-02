@@ -15,6 +15,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import BootScreen from "@/components/BootScreen";
 import CommandPalette from "@/components/CommandPalette";
 import { createContext, useContext } from "react";
+import { BackToHomeButton } from "@/components/BackToHomeButton";
 
 export const CommandPaletteContext = createContext<{ open: () => void }>({ open: () => {} });
  // Critical path pages - loaded immediately
@@ -260,6 +261,7 @@ const App = () => {
               <Sonner />
                <BrowserRouter>
                  <AnimatedRoutes />
+                 <BackToHomeButton />
                  <CommandPalette open={cmdOpen} onOpenChange={setCmdOpen} />
                   <Suspense fallback={null}>
                     <OnboardingFlow />
