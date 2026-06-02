@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, Users, Award, ArrowUp } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ImpactComparisonProps {
   co2Saved: number;
@@ -20,32 +21,85 @@ const getPercentile = (value: number, avg: number): number => {
 };
 
 const ImpactComparison: React.FC<ImpactComparisonProps> = ({ co2Saved, actionsCompleted, streak, level }) => {
-  // Simulated community averages
-  const communityAvg = { co2: 25, actions: 8, streak: 4, level: 3 };
+  const [communityAvg, setCommunityAvg] = useState<{ co2: number; actions: number; streak: number; level: number } | null>(null);
 
-  const comparisons = [
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('eco_stats')
+          .select('co2_saved, actions_completed, streak, level')
+          .order('updated_at', { ascending: false })
+          .limit(200);
+
+        if (error) throw error;
+        const rows = (data ?? []).filter(Boolean);
+        if (!rows.length) return;
+
+        const sums = rows.reduce(
+          (acc, r: any) => {
+            acc.co2 += Number(r.co2_saved ?? 0);
+            acc.actions += Number(r.actions_completed ?? 0);
+            acc.streak += Number(r.streak ?? 0);
+            acc.level += Number(r.level ?? 0);
+            return acc;
+          },
+          { co2: 0, actions: 0, streak: 0, level: 0 },
+        );
+
+        const avg = {
+          co2: sums.co2 / rows.length,
+          actions: sums.actions / rows.length,
+          streak: sums.streak / rows.length,
+          level: sums.level / rows.length,
+        };
+
+        if (!cancelled) setCommunityAvg(avg);
+      } catch (e) {
+        // Best-effort: if RLS blocks or table missing, we keep comparison UI but fall back to personal baseline.
+        if (!cancelled) setCommunityAvg(null);
+      }
+    };
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const baseline = useMemo(() => {
+    if (communityAvg) return communityAvg;
+    return {
+      co2: Math.max(1, co2Saved),
+      actions: Math.max(1, actionsCompleted),
+      streak: Math.max(1, streak),
+      level: Math.max(1, level),
+    };
+  }, [communityAvg, co2Saved, actionsCompleted, streak, level]);
+
+  const comparisons = useMemo(() => ([
     {
       label: 'CO₂ Savings',
-      percentile: getPercentile(co2Saved, communityAvg.co2),
+      percentile: getPercentile(co2Saved, baseline.co2),
       yours: `${co2Saved.toFixed(1)}kg`,
-      avg: `${communityAvg.co2}kg`,
-      better: co2Saved > communityAvg.co2,
+      avg: `${baseline.co2.toFixed(1)}kg`,
+      better: co2Saved > baseline.co2,
     },
     {
       label: 'Actions Done',
-      percentile: getPercentile(actionsCompleted, communityAvg.actions),
+      percentile: getPercentile(actionsCompleted, baseline.actions),
       yours: `${actionsCompleted}`,
-      avg: `${communityAvg.actions}`,
-      better: actionsCompleted > communityAvg.actions,
+      avg: `${baseline.actions.toFixed(0)}`,
+      better: actionsCompleted > baseline.actions,
     },
     {
       label: 'Streak',
-      percentile: getPercentile(streak, communityAvg.streak),
+      percentile: getPercentile(streak, baseline.streak),
       yours: `${streak} days`,
-      avg: `${communityAvg.streak} days`,
-      better: streak > communityAvg.streak,
+      avg: `${baseline.streak.toFixed(0)} days`,
+      better: streak > baseline.streak,
     },
-  ];
+  ]), [actionsCompleted, baseline.actions, baseline.co2, baseline.streak, co2Saved, streak]);
 
   const overallPercentile = Math.round(
     comparisons.reduce((sum, c) => sum + c.percentile, 0) / comparisons.length
