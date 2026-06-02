@@ -39,6 +39,14 @@ async function getUser(req: Request) {
   return data.user;
 }
 
+function isMissingTable(err: unknown): boolean {
+  if (!err || typeof err !== "object") return false;
+  const anyErr = err as { code?: string; message?: string; details?: string; hint?: string };
+  if (anyErr.code === "42P01") return true; // undefined_table
+  const msg = `${anyErr.message ?? ""} ${anyErr.details ?? ""} ${anyErr.hint ?? ""}`.toLowerCase();
+  return msg.includes("user_provider_keys") && (msg.includes("does not exist") || msg.includes("undefined_table"));
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -88,7 +96,16 @@ serve(async (req) => {
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        // Production may not have the migration applied yet; don't hard-fail the UI.
+        if (isMissingTable(error)) {
+          return new Response(JSON.stringify({ keys: [], warning: "BYOK table missing (migration not applied)" }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 200,
+          });
+        }
+        throw error;
+      }
 
       return new Response(JSON.stringify({ keys: data ?? [] }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -250,7 +267,15 @@ serve(async (req) => {
         .eq("user_id", user.id)
         .eq("provider", provider);
 
-      if (error) throw error;
+      if (error) {
+        if (isMissingTable(error)) {
+          return new Response(JSON.stringify({ success: true, warning: "BYOK table missing (migration not applied)" }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 200,
+          });
+        }
+        throw error;
+      }
 
       const { data: remaining } = await userClient
         .from("user_provider_keys")
