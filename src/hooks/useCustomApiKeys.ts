@@ -17,7 +17,12 @@ export interface UserProviderKeyRow {
   updated_at: string;
 }
 
+const BYOK_EDGE_ENABLED = import.meta.env.VITE_ENABLE_BYOK_EDGE === "1";
+
 async function invokeKeys<T>(action: string, body?: Record<string, unknown>): Promise<T> {
+  if (!BYOK_EDGE_ENABLED) {
+    throw new Error("BYOK key management is not enabled in this deployment");
+  }
   const { data: session } = await supabase.auth.getSession();
   const token = session.session?.access_token;
   if (!token) throw new Error("Sign in required");
@@ -74,8 +79,12 @@ export function useCustomApiKeys() {
     }
     setIsLoading(true);
     try {
-      const { keys: rows } = await invokeKeys<{ keys: UserProviderKeyRow[] }>("list");
-      setKeys(rows);
+      if (!BYOK_EDGE_ENABLED) {
+        setKeys([]);
+      } else {
+        const { keys: rows } = await invokeKeys<{ keys: UserProviderKeyRow[] }>("list");
+        setKeys(rows);
+      }
       await loadAiConfig();
     } catch (e) {
       console.error("[useCustomApiKeys] load failed", e);
@@ -90,6 +99,14 @@ export function useCustomApiKeys() {
 
   const verifyKey = useCallback(
     async (provider: AiProviderId, apiKey: string) => {
+      if (!BYOK_EDGE_ENABLED) {
+        toast({
+          title: "BYOK unavailable",
+          description: "API key management is not enabled on this deployment yet.",
+          variant: "destructive",
+        });
+        return false;
+      }
       setIsVerifying(true);
       try {
         const result = await invokeKeys<{ success: boolean; message?: string; error?: string }>(
@@ -122,6 +139,14 @@ export function useCustomApiKeys() {
 
   const saveKey = useCallback(
     async (provider: AiProviderId, apiKey: string, label?: string, setAsDefault = true) => {
+      if (!BYOK_EDGE_ENABLED) {
+        toast({
+          title: "BYOK unavailable",
+          description: "API key management is not enabled on this deployment yet.",
+          variant: "destructive",
+        });
+        return false;
+      }
       setIsSaving(true);
       try {
         const result = await invokeKeys<{
@@ -173,6 +198,14 @@ export function useCustomApiKeys() {
 
   const removeKey = useCallback(
     async (provider: AiProviderId) => {
+      if (!BYOK_EDGE_ENABLED) {
+        toast({
+          title: "BYOK unavailable",
+          description: "API key management is not enabled on this deployment yet.",
+          variant: "destructive",
+        });
+        return;
+      }
       try {
         await invokeKeys("delete", { provider });
         toast({ title: "API key removed" });
@@ -215,6 +248,14 @@ export function useCustomApiKeys() {
 
   const setDefault = useCallback(
     async (provider: AiProviderId) => {
+      if (!BYOK_EDGE_ENABLED) {
+        toast({
+          title: "BYOK unavailable",
+          description: "API key management is not enabled on this deployment yet.",
+          variant: "destructive",
+        });
+        return;
+      }
       try {
         await invokeKeys("set-default", { provider });
         setAiConfig((c) => ({ ...c, preferredProvider: provider, useCustomKey: true }));
