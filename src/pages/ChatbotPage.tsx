@@ -730,11 +730,23 @@ const ChatbotPage = () => {
 
       if (!resp.ok) {
         let detail = "Chat request failed";
+        let needsByok = false;
         try {
           const errJson = await resp.json();
           detail = typeof errJson.error === "string" ? errJson.error : detail;
+          needsByok = errJson?.needsByok === true || errJson?.code === "PLATFORM_CREDITS_EXHAUSTED";
         } catch {
           detail = (await resp.text().catch(() => "")) || detail;
+        }
+        // Platform credits exhausted AND no stored BYOK key on the server.
+        // Open the BYOK dialog so the user can paste their own API key and continue.
+        if (resp.status === 402 && needsByok) {
+          setPendingByokProvider("openrouter");
+          setByokDialogOpen(true);
+          toast({
+            title: "Add your API key to keep chatting",
+            description: "Platform credits are exhausted. Paste your own provider key — takes ~2 minutes and uses your free tier.",
+          });
         }
         throw new Error(detail);
       }
