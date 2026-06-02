@@ -17,6 +17,14 @@ const logStep = (step: string, details?: unknown) => {
   console.log(`[ASSIGN-ADMIN-ROLE] ${step}${detailsStr}`);
 };
 
+function isMissingTable(err: unknown): boolean {
+  if (!err || typeof err !== "object") return false;
+  const anyErr = err as { code?: string; message?: string; details?: string; hint?: string };
+  if (anyErr.code === "42P01") return true; // undefined_table
+  const msg = `${anyErr.message ?? ""} ${anyErr.details ?? ""} ${anyErr.hint ?? ""}`.toLowerCase();
+  return msg.includes("user_roles") && (msg.includes("does not exist") || msg.includes("undefined_table"));
+}
+
 serve(async (req) => {
   const origin = req.headers.get("origin");
   if (req.method === "OPTIONS") {
@@ -50,7 +58,17 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    const auth = await requireAuth(req, corsHeaders);
+    let auth: Awaited<ReturnType<typeof requireAuth>>;
+    try {
+      auth = await requireAuth(req, corsHeaders);
+    } catch (e) {
+      // Auth helper should not take down the app if misconfigured.
+      logStep("Auth helper failed", { message: e instanceof Error ? e.message : String(e) });
+      return new Response(JSON.stringify({ isAdmin: false, message: "Admin role check unavailable" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
     if (!auth.authenticated) return auth.response;
 
     const { userId, email } = auth;
@@ -80,6 +98,12 @@ serve(async (req) => {
       .maybeSingle();
 
     if (roleError) {
+      if (isMissingTable(roleError)) {
+        return new Response(JSON.stringify({ isAdmin: false, message: "Admin roles not configured" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
       throw new Error(`Error checking existing role: ${roleError.message}`);
     }
 
@@ -97,6 +121,12 @@ serve(async (req) => {
       .insert({ user_id: userId, role: "admin" });
 
     if (insertError) {
+      if (isMissingTable(insertError)) {
+        return new Response(JSON.stringify({ isAdmin: false, message: "Admin roles not configured" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
       throw new Error(`Error assigning admin role: ${insertError.message}`);
     }
 
@@ -108,9 +138,10 @@ serve(async (req) => {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logStep("ERROR", { message: errorMessage });
-    return new Response(JSON.stringify({ error: "Request failed. Please try again." }), {
+    // Do not surface a 500 to the frontend for this convenience function.
+    return new Response(JSON.stringify({ isAdmin: false, error: "Admin role check failed" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
+      status: 200,
     });
   }
 });
