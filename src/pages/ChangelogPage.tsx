@@ -24,6 +24,8 @@ import {
   type ChangelogChangeType,
   type ProductChangelogEntry,
 } from "@/content/productChangelog";
+import { FloatingOrbs } from "@/components/motion/FloatingOrbs";
+import { SpotlightCard } from "@/components/motion/SpotlightCard";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30, filter: "blur(6px)" },
@@ -121,6 +123,7 @@ const ChangelogPage = () => {
         whileInView="visible"
         viewport={{ once: true }}
       >
+        <SpotlightCard className="h-full">
         <Card className="card-glass relative overflow-hidden group">
           <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
           <div className="absolute left-[19px] top-7 w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_12px_hsl(var(--primary)/0.6)] hidden md:block transform -translate-x-1/2 z-10" />
@@ -170,14 +173,17 @@ const ChangelogPage = () => {
               >
                 <CardContent className="md:ml-10 pt-0 relative z-10 space-y-2">
                   {entry.changes.map((change, ci) => (
-                    <div
+                    <motion.div
                       key={ci}
                       className="flex items-start gap-2 p-2.5 rounded-xl hover:bg-muted/30 transition-colors text-sm"
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.05 + ci * 0.03, duration: 0.2 }}
                     >
                       <span className="mt-0.5 shrink-0">{getChangeIcon(change.type)}</span>
                       <span className="flex-1 text-foreground/90">{change.text}</span>
                       {getChangeBadge(change.type)}
-                    </div>
+                    </motion.div>
                   ))}
                   {entry.tags && entry.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1 pt-2">
@@ -193,6 +199,7 @@ const ChangelogPage = () => {
             )}
           </AnimatePresence>
         </Card>
+        </SpotlightCard>
       </motion.div>
     );
   };
@@ -200,8 +207,8 @@ const ChangelogPage = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-1/4 left-1/3 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[180px]" />
-        <div className="absolute bottom-1/3 right-1/4 w-[400px] h-[400px] bg-secondary/5 rounded-full blur-[150px]" />
+        <FloatingOrbs className="absolute inset-0" />
+        <div className="absolute inset-0 bg-grid opacity-[0.10]" />
       </div>
 
       <header className="border-b border-border/50 glass-strong sticky top-0 z-50">
@@ -217,7 +224,7 @@ const ChangelogPage = () => {
       </header>
 
       <section className="pt-12 pb-8 px-4 relative overflow-hidden">
-        <div className="absolute inset-0 bg-grid opacity-15" />
+        <div className="absolute inset-0 bg-grid opacity-[0.12]" />
         <div className="container mx-auto max-w-4xl relative z-10">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
             <Badge variant="outline" className="mb-4 glass-subtle border-primary/20">
@@ -256,6 +263,7 @@ const ChangelogPage = () => {
           viewport={{ once: true }}
           className="mt-16"
         >
+          <SpotlightCard>
           <div className="glass-subtle rounded-2xl p-10 text-center relative overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
             <Sparkles className="h-8 w-8 text-primary mx-auto mb-3" />
@@ -272,6 +280,7 @@ const ChangelogPage = () => {
               </Button>
             </div>
           </div>
+          </SpotlightCard>
         </motion.div>
       </main>
     </div>

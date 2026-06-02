@@ -46,6 +46,8 @@ const QUICK_START_ICONS = [MessageSquare, Zap, LayoutDashboard, Crown] as const;
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { motion } from "framer-motion";
+import { FloatingOrbs } from "@/components/motion/FloatingOrbs";
+import { SpotlightCard } from "@/components/motion/SpotlightCard";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30, filter: "blur(6px)" },
@@ -56,26 +58,52 @@ const fadeUp = {
 };
 
 const DocSection = ({ title, children }: { title: string; children: React.ReactNode }) => (
-  <section className="mb-12">
+  <motion.section
+    className="mb-12"
+    initial={{ opacity: 0, y: 10, filter: "blur(6px)" }}
+    whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+    viewport={{ once: true, margin: "-80px" }}
+    transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+  >
     <h2 className="text-2xl font-bold mb-5 tracking-tight gradient-text">{title}</h2>
     {children}
-  </section>
+  </motion.section>
 );
 
-const DocCard = ({ icon: Icon, title, description, badge }: { icon: any; title: string; description: string; badge?: string }) => (
-  <Card className="card-glass h-full group overflow-hidden">
-    <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-    <CardHeader className="relative z-10">
-      <div className="flex items-start justify-between">
-        <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-2 group-hover:bg-primary/20 transition-colors">
-          <Icon className="h-5 w-5 text-primary" />
+const DocCard = ({
+  icon: Icon,
+  title,
+  description,
+  badge,
+}: {
+  icon: any;
+  title: string;
+  description: string;
+  badge?: string;
+}) => (
+  <SpotlightCard className="h-full">
+    <Card className="card-glass h-full group overflow-hidden">
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/25 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+      <CardHeader className="relative z-10">
+        <div className="flex items-start justify-between">
+          <motion.div
+            className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-2 group-hover:bg-primary/20 transition-colors"
+            whileHover={{ rotate: 6, scale: 1.03 }}
+            transition={{ type: "spring", stiffness: 260, damping: 18 }}
+          >
+            <Icon className="h-5 w-5 text-primary" />
+          </motion.div>
+          {badge && (
+            <Badge variant="outline" className="glass-subtle border-primary/20 text-xs">
+              {badge}
+            </Badge>
+          )}
         </div>
-        {badge && <Badge variant="outline" className="glass-subtle border-primary/20 text-xs">{badge}</Badge>}
-      </div>
-      <CardTitle className="text-lg group-hover:text-primary transition-colors">{title}</CardTitle>
-      <CardDescription>{description}</CardDescription>
-    </CardHeader>
-  </Card>
+        <CardTitle className="text-lg group-hover:text-primary transition-colors">{title}</CardTitle>
+        <CardDescription>{description}</CardDescription>
+      </CardHeader>
+    </Card>
+  </SpotlightCard>
 );
 
 const CodeExample = ({ title, code, language = "bash" }: { title: string; code: string; language?: string }) => (
@@ -239,14 +267,14 @@ const DocsPage = () => {
       
       {/* Background Effects */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[180px]" />
-        <div className="absolute bottom-1/3 right-1/3 w-[500px] h-[500px] bg-secondary/5 rounded-full blur-[150px]" />
+        <FloatingOrbs className="absolute inset-0" />
+        <div className="absolute inset-0 bg-grid opacity-[0.10]" />
       </div>
       
       <main className="pt-20 relative z-10">
         {/* Hero Section */}
         <section className="py-16 px-4 border-b border-border/30 relative overflow-hidden">
-          <div className="absolute inset-0 bg-grid opacity-15" />
+          <div className="absolute inset-0 bg-grid opacity-[0.12]" />
           <div className="max-w-4xl mx-auto text-center relative z-10">
             <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }}>
               <Badge variant="outline" className="mb-4 glass-subtle border-primary/20">
@@ -272,11 +300,16 @@ const DocsPage = () => {
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
               <div className="max-w-md mx-auto relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <motion.div
+                  className="absolute -inset-[2px] rounded-xl bg-gradient-to-r from-primary/20 via-secondary/20 to-accent/20 blur-md opacity-0"
+                  animate={searchQuery ? { opacity: 1 } : { opacity: 0 }}
+                  transition={{ duration: 0.25 }}
+                />
                 <Input
                   value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search documentation..."
-                  className="pl-10 rounded-xl glass-subtle border-border/30 focus:border-primary/50"
+                  className="relative pl-10 rounded-xl glass-subtle border-border/30 focus:border-primary/50"
                 />
               </div>
             </motion.div>
@@ -327,9 +360,16 @@ const DocsPage = () => {
                   {quickStartSteps.map((item, i) => {
                     const StepIcon = QUICK_START_ICONS[i] ?? MessageSquare;
                     return (
-                    <motion.div key={item.step} custom={i} variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}
+                    <motion.div
+                      key={item.step}
+                      custom={i}
+                      variants={fadeUp}
+                      initial="hidden"
+                      whileInView="visible"
+                      viewport={{ once: true }}
                       whileHover={{ y: -4, transition: { type: "spring", stiffness: 400 } }}
                     >
+                      <SpotlightCard className="h-full">
                       <Card className="card-glass h-full group overflow-hidden">
                         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                         <CardHeader className="relative z-10">
@@ -345,6 +385,7 @@ const DocsPage = () => {
                           <CardDescription className="mt-2">{item.description}</CardDescription>
                         </CardHeader>
                       </Card>
+                      </SpotlightCard>
                     </motion.div>
                   );})}
                 </div>
@@ -353,7 +394,8 @@ const DocsPage = () => {
               <DocSection title="URLs & navigation">
                 <div className="grid gap-4 md:grid-cols-2">
                   {docRoutes.map((row) => (
-                    <Card key={row.path} className="card-glass">
+                    <SpotlightCard key={row.path} className="h-full">
+                    <Card className="card-glass">
                       <CardHeader className="pb-2">
                         <CardTitle className="text-base font-mono text-primary">{row.path}</CardTitle>
                         <CardDescription className="font-medium text-foreground">{row.label}</CardDescription>
@@ -365,6 +407,7 @@ const DocsPage = () => {
                         </Button>
                       </CardContent>
                     </Card>
+                    </SpotlightCard>
                   ))}
                 </div>
               </DocSection>
@@ -376,6 +419,7 @@ const DocsPage = () => {
                     { icon: Smartphone, title: "Mobile", items: ["iOS 14+ (Safari), Android 8+ (Chrome)", "PWA installation supported", "4G/5G or WiFi connection", "Microphone for voice features"] },
                   ].map((platform, idx) => (
                     <motion.div key={idx} custom={idx} variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+                      <SpotlightCard className="h-full">
                       <Card className="card-glass h-full overflow-hidden">
                         <CardHeader className="relative z-10">
                           <div className="flex items-center gap-2">
@@ -396,6 +440,7 @@ const DocsPage = () => {
                           </ul>
                         </CardContent>
                       </Card>
+                      </SpotlightCard>
                     </motion.div>
                   ))}
                 </div>
@@ -412,6 +457,7 @@ const DocsPage = () => {
                     { icon: Smartphone, title: "Android (Chrome)", steps: ["Open Chrome and visit shadowtalk-ai.com/chatbot", "Tap the banner or menu (three dots)", "Select \"Install App\"", "Confirm installation"] },
                   ].map((platform, idx) => (
                     <motion.div key={idx} custom={idx} variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+                      <SpotlightCard className="h-full">
                       <Card className="card-glass h-full overflow-hidden">
                         <CardHeader className="relative z-10">
                           <CardTitle className="text-lg flex items-center gap-2">
@@ -430,6 +476,7 @@ const DocsPage = () => {
                           </ol>
                         </CardContent>
                       </Card>
+                      </SpotlightCard>
                     </motion.div>
                   ))}
                 </div>
@@ -454,6 +501,7 @@ const DocsPage = () => {
                 <div className="grid gap-5 md:grid-cols-2">
                   {workspaceGuide.map((section, idx) => (
                     <motion.div key={section.title} custom={idx} variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+                      <SpotlightCard className="h-full">
                       <Card className="card-glass h-full overflow-hidden">
                         <CardHeader className="relative z-10">
                           <CardTitle className="text-lg flex items-center gap-2">
@@ -472,12 +520,14 @@ const DocsPage = () => {
                           </ul>
                         </CardContent>
                       </Card>
+                      </SpotlightCard>
                     </motion.div>
                   ))}
                 </div>
               </DocSection>
 
               <DocSection title="Composer controls">
+                <SpotlightCard>
                 <Card className="card-glass">
                   <CardContent className="pt-6 space-y-3 text-sm text-muted-foreground">
                     <p><strong className="text-foreground">+ Attach</strong> — images or files before sending.</p>
@@ -487,6 +537,7 @@ const DocsPage = () => {
                     <p className="text-xs pt-2">Hardware speed routing is automatic — there is no Turbo toggle in the UI.</p>
                   </CardContent>
                 </Card>
+                </SpotlightCard>
               </DocSection>
 
               <div className="flex flex-wrap gap-3">
@@ -518,20 +569,25 @@ const DocsPage = () => {
                 <p className="text-muted-foreground mb-6">Choose from four distinct AI personalities.</p>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                   {[
-                    { title: "Friendly 😊", description: "Warm, approachable, and conversational." },
-                    { title: "Professional 💼", description: "Formal, precise, and business-oriented." },
-                    { title: "Creative 🎨", description: "Imaginative, playful, and expressive." },
-                    { title: "Sarcastic 😏", description: "Witty, humorous, and playfully sarcastic." },
+                    { title: "Friendly", description: "Warm, approachable, and conversational.", badge: "Default" },
+                    { title: "Professional", description: "Formal, precise, and business-oriented.", badge: "Work" },
+                    { title: "Creative", description: "Imaginative, playful, and expressive.", badge: "Writing" },
+                    { title: "Sarcastic", description: "Witty, humorous, and playfully sarcastic.", badge: "Spicy" },
                   ].map((p, i) => (
                     <motion.div key={i} custom={i} variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}
                       whileHover={{ y: -4, transition: { type: "spring", stiffness: 400 } }}
                     >
+                      <SpotlightCard className="h-full">
                       <Card className="card-glass h-full group overflow-hidden">
                         <CardHeader className="relative z-10">
-                          <CardTitle className="text-lg group-hover:text-primary transition-colors">{p.title}</CardTitle>
+                          <div className="flex items-center justify-between gap-3">
+                            <CardTitle className="text-lg group-hover:text-primary transition-colors">{p.title}</CardTitle>
+                            <Badge variant="outline" className="glass-subtle border-primary/20 text-[10px]">{p.badge}</Badge>
+                          </div>
                           <CardDescription>{p.description}</CardDescription>
                         </CardHeader>
                       </Card>
+                      </SpotlightCard>
                     </motion.div>
                   ))}
                 </div>
@@ -570,6 +626,7 @@ const DocsPage = () => {
                     { icon: Eye, title: "Browse Together Mode", items: ["AI automatically analyzes pages you visit", "Get key insights and summaries", "Ask questions about any webpage", "Related content suggestions", "Quick actions: Summarize, Key Points, Find Similar"] },
                   ].map((section, idx) => (
                     <motion.div key={idx} custom={idx} variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+                      <SpotlightCard className="h-full">
                       <Card className="card-glass h-full overflow-hidden">
                         <CardHeader className="relative z-10">
                           <div className="flex items-center gap-2">
@@ -590,6 +647,7 @@ const DocsPage = () => {
                           </ul>
                         </CardContent>
                       </Card>
+                      </SpotlightCard>
                     </motion.div>
                   ))}
                 </div>
@@ -603,6 +661,7 @@ const DocsPage = () => {
                     { icon: TrendingUp, title: "Trigger Examples", items: ["Idle detection — AI suggests actions when you pause", "Deep scroll — contextual tips as you explore content", "Cognitive load estimation — simplifies when overwhelmed", "Return visitor — personalized welcome based on history"] },
                   ].map((section, idx) => (
                     <motion.div key={idx} custom={idx} variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+                      <SpotlightCard className="h-full">
                       <Card className="card-glass h-full overflow-hidden">
                         <CardHeader className="relative z-10">
                           <div className="flex items-center gap-2">
@@ -623,6 +682,7 @@ const DocsPage = () => {
                           </ul>
                         </CardContent>
                       </Card>
+                      </SpotlightCard>
                     </motion.div>
                   ))}
                 </div>
@@ -766,6 +826,7 @@ const DocsPage = () => {
                     { icon: WifiOff, title: "Offline Mode (Elite)", color: "text-secondary", items: ["Full offline login with cached credentials", "In-browser AI (WebLLM) for responses", "Cached conversations available", "Auto-sync when back online", "PWA installation required"] },
                   ].map((section, idx) => (
                     <motion.div key={idx} custom={idx} variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+                      <SpotlightCard className="h-full">
                       <Card className="card-glass h-full overflow-hidden">
                         <CardHeader className="relative z-10">
                           <div className="flex items-center gap-2">
@@ -786,12 +847,14 @@ const DocsPage = () => {
                           </ul>
                         </CardContent>
                       </Card>
+                      </SpotlightCard>
                     </motion.div>
                   ))}
                 </div>
               </DocSection>
 
               <motion.div initial={{ opacity: 0, y: 30, scale: 0.95 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: true }}>
+                <SpotlightCard>
                 <div className="glass-subtle rounded-2xl p-10 text-center relative overflow-hidden">
                   <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
                   <div className="p-3 rounded-2xl bg-primary/10 border border-primary/20 w-fit mx-auto mb-4">
@@ -808,6 +871,7 @@ const DocsPage = () => {
                     </Button>
                   </div>
                 </div>
+                </SpotlightCard>
               </motion.div>
             </TabsContent>
 
