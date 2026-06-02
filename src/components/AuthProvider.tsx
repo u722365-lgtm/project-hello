@@ -122,16 +122,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const checkAndAssignAdminRole = useCallback(async () => {
-    const { data: { session: current } } = await supabase.auth.getSession();
-    if (!current || isAnonymousUser(current)) return;
-
-    try {
-      await supabase.functions.invoke('assign-admin-role');
-    } catch (error) {
-      // Never block or crash the app on this convenience call.
-      // Some environments may not have the service role key configured for this function.
-      console.warn('assign-admin-role unavailable:', error);
-    }
+    // Important: some deploy environments (Lovable/Supabase) may not have this edge function
+    // deployed/configured yet. Calling it can cause noisy runtime overlays even if caught.
+    // Admin role assignment should be handled via Supabase migrations/policies or manual admin tooling.
+    return;
   }, []);
 
   useEffect(() => {
