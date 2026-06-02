@@ -7,6 +7,40 @@ export interface APIError {
   retryable: boolean;
 }
 
+/**
+ * Thrown when the chat edge function reports the platform AI gateway is out
+ * of credits AND the user has no stored BYOK key the server could auto-swap
+ * to. The UI catches this and opens the BYOK key dialog so the user can add
+ * their own key and continue without losing their conversation.
+ */
+export class CreditsExhaustedError extends Error {
+  readonly code = "PLATFORM_CREDITS_EXHAUSTED" as const;
+  readonly needsByok = true as const;
+  constructor(message = "Platform AI credits are exhausted. Add your own API key to continue.") {
+    super(message);
+    this.name = "CreditsExhaustedError";
+  }
+}
+
+/** Parse a 402 chat response and return a CreditsExhaustedError when applicable. */
+export async function detectCreditsExhausted(
+  response: Response,
+): Promise<CreditsExhaustedError | null> {
+  if (response.status !== 402) return null;
+  try {
+    const clone = response.clone();
+    const data = await clone.json();
+    if (data?.needsByok === true || data?.code === "PLATFORM_CREDITS_EXHAUSTED") {
+      return new CreditsExhaustedError(
+        typeof data.error === "string" ? data.error : data.message,
+      );
+    }
+  } catch {
+    /* fall through */
+  }
+  return new CreditsExhaustedError();
+}
+
 export const API_ERROR_MESSAGES: Record<number, string> = {
   400: 'Invalid request. Please check your input and try again.',
   401: 'Your session has expired. Please sign in again.',
