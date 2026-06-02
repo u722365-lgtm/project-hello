@@ -45,6 +45,16 @@ serve(async (req) => {
   }
 
   try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+    if (!supabaseUrl || !anonKey) {
+      return new Response(JSON.stringify({ error: "Server configuration missing" }), {
+        status: 503,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const user = await getUser(req);
     if (!user) {
       return new Response(JSON.stringify({ error: "Authentication required" }), {
@@ -60,16 +70,19 @@ serve(async (req) => {
       });
     }
 
-    const admin = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-    );
+    // Prefer service role for write operations, but gracefully degrade for reads and deletes.
+    // RLS allows users to SELECT/DELETE their own metadata rows.
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const userClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const admin = serviceKey ? createClient(supabaseUrl, serviceKey) : null;
 
     const url = new URL(req.url);
     const action = url.searchParams.get("action") || "list";
 
     if (req.method === "GET" || action === "list") {
-      const { data, error } = await admin
+      const { data, error } = await userClient
         .from("user_provider_keys")
         .select("id, provider, label, key_prefix, verified_at, is_active, is_default, created_at, updated_at")
         .eq("user_id", user.id)
@@ -99,6 +112,15 @@ serve(async (req) => {
     }
 
     if (action === "save") {
+      if (!admin) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: "BYOK save is not configured on the server yet",
+          }),
+          { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
       const { provider, apiKey, label, setAsDefault } = body;
       if (!isValidProvider(provider) || typeof apiKey !== "string") {
         return new Response(JSON.stringify({ success: false, error: "Invalid request" }), {
@@ -172,6 +194,15 @@ serve(async (req) => {
     }
 
     if (action === "set-default") {
+      if (!admin) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: "BYOK updates are not configured on the server yet",
+          }),
+          { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
       const { provider } = body;
       if (!isValidProvider(provider)) {
         return new Response(JSON.stringify({ success: false, error: "Invalid provider" }), {
@@ -213,7 +244,7 @@ serve(async (req) => {
         });
       }
 
-      const { error } = await admin
+      const { error } = await userClient
         .from("user_provider_keys")
         .delete()
         .eq("user_id", user.id)
@@ -221,24 +252,26 @@ serve(async (req) => {
 
       if (error) throw error;
 
-      const { data: remaining } = await admin
+      const { data: remaining } = await userClient
         .from("user_provider_keys")
         .select("provider, is_default")
         .eq("user_id", user.id)
         .eq("is_active", true);
 
       const nextDefault = remaining?.find((k) => k.is_default) || remaining?.[0];
-      await admin.from("user_settings").upsert(
-        {
-          user_id: user.id,
-          setting_key: "ai_config",
-          setting_value: nextDefault
-            ? { preferredProvider: nextDefault.provider, useCustomKey: true }
-            : { preferredProvider: null, useCustomKey: false },
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "user_id,setting_key" },
-      );
+      if (admin) {
+        await admin.from("user_settings").upsert(
+          {
+            user_id: user.id,
+            setting_key: "ai_config",
+            setting_value: nextDefault
+              ? { preferredProvider: nextDefault.provider, useCustomKey: true }
+              : { preferredProvider: null, useCustomKey: false },
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id,setting_key" },
+        );
+      }
 
       return new Response(JSON.stringify({ success: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },

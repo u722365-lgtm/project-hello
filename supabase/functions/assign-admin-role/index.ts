@@ -27,11 +27,25 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const supabaseClient = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-    { auth: { persistSession: false } }
-  );
+  const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+
+  // If the service role key is not configured, never hard-fail the client.
+  // This function is a convenience (auto-assign admin for a small allowlist),
+  // and the app should continue working without it.
+  if (!supabaseUrl || !serviceKey) {
+    return new Response(
+      JSON.stringify({
+        isAdmin: false,
+        message: "Admin role assignment not configured",
+      }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
+    );
+  }
+
+  const supabaseClient = createClient(supabaseUrl, serviceKey, {
+    auth: { persistSession: false },
+  });
 
   try {
     logStep("Function started");

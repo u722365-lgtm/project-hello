@@ -128,7 +128,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       await supabase.functions.invoke('assign-admin-role');
     } catch (error) {
-      console.error('Error checking admin role:', error);
+      // Never block or crash the app on this convenience call.
+      // Some environments may not have the service role key configured for this function.
+      console.warn('assign-admin-role unavailable:', error);
     }
   }, []);
 
