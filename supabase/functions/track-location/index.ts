@@ -14,10 +14,23 @@ serve(async (req) => {
 
   try {
     const auth = await requireAuth(req, corsHeaders);
+    // If auth fails, return the auth response (typically 401) but never crash the function.
     if (!auth.authenticated) return auth.response;
     
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+
+    // Fail-safe: if not configured, acknowledge and exit without throwing.
+    if (!supabaseUrl || !supabaseServiceKey) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          warning: "Location tracking not configured (missing Supabase env).",
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
+      );
+    }
+
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const body = await req.json();
@@ -37,17 +50,43 @@ serve(async (req) => {
       || "unknown";
 
     // Check existing session
-    const { data: existing } = await supabase
+    const { data: existing, error: existingError } = await supabase
       .from("user_locations")
       .select("id")
       .eq("session_id", sessionId)
-      .single();
+      .maybeSingle();
+
+    if (existingError) {
+      // Graceful degradation if migration not applied yet.
+      const code = (existingError as { code?: string }).code;
+      const msg = (existingError as { message?: string }).message ?? String(existingError);
+      if (code === "42P01" || msg.includes('relation "user_locations" does not exist')) {
+        return new Response(
+          JSON.stringify({ success: false, warning: "Location tracking table not configured (migration pending)." }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
+        );
+      }
+      // Log but do not crash the app.
+      console.error("Lookup error:", existingError);
+    }
 
     if (existing) {
-      await supabase
+      const { error: updateError } = await supabase
         .from("user_locations")
         .update({ last_seen_at: new Date().toISOString() })
         .eq("session_id", sessionId);
+
+      if (updateError) {
+        const code = (updateError as { code?: string }).code;
+        const msg = (updateError as { message?: string }).message ?? String(updateError);
+        if (code === "42P01" || msg.includes('relation "user_locations" does not exist')) {
+          return new Response(
+            JSON.stringify({ success: false, warning: "Location tracking table not configured (migration pending)." }),
+            { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
+          );
+        }
+        console.error("Update error:", updateError);
+      }
 
       return new Response(
         JSON.stringify({ success: true, message: "Location updated" }),
@@ -59,7 +98,10 @@ serve(async (req) => {
     let geoData = { country: "Unknown", countryCode: "XX", region: "", city: "", lat: 0, lon: 0, timezone: "UTC", isp: "" };
 
     try {
-      const geoResponse = await fetch(`http://ip-api.com/json/${clientIP}?fields=status,country,countryCode,region,city,lat,lon,timezone,isp`);
+      // Use https to avoid mixed-content / transport restrictions in some environments.
+      const geoResponse = await fetch(
+        `https://ip-api.com/json/${encodeURIComponent(clientIP)}?fields=status,country,countryCode,region,city,lat,lon,timezone,isp`,
+      );
       if (geoResponse.ok) {
         const data = await geoResponse.json();
         if (data.status === "success") {
@@ -96,8 +138,19 @@ serve(async (req) => {
       });
 
     if (insertError) {
+      const code = (insertError as { code?: string }).code;
+      const msg = (insertError as { message?: string }).message ?? String(insertError);
+      if (code === "42P01" || msg.includes('relation "user_locations" does not exist')) {
+        return new Response(
+          JSON.stringify({ success: false, warning: "Location tracking table not configured (migration pending)." }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
+        );
+      }
       console.error("Insert error:", insertError);
-      throw insertError;
+      return new Response(JSON.stringify({ success: false, error: "Location tracking failed" }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     return new Response(
@@ -110,8 +163,9 @@ serve(async (req) => {
   } catch (error) {
     console.error("Error tracking location:", error);
     return new Response(
-      JSON.stringify({ error: "Location tracking failed" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({ success: false, error: "Location tracking failed" }),
+      // Never 500: avoid blank-screen runtime overlays in the client on misconfigured backends.
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });
