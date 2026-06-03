@@ -16,13 +16,10 @@ serve(async (req) => {
   }
 
   try {
-    const { user_id, memories, recent_topics } = await req.json();
-
-    if (!user_id) {
-      return new Response(JSON.stringify({ error: 'user_id required' }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
+    const auth = await requireAuth(req, corsHeaders);
+    if (!auth.authenticated) return auth.response;
+    const user_id = auth.userId;
+    const { memories, recent_topics } = await req.json();
 
     // Build context from user's memories and recent activity
     const memoryContext = (memories || []).slice(0, 10).map((m: any) => m.content).join('; ');

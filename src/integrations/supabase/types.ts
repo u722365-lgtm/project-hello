@@ -98,6 +98,13 @@ export type Database = {
             referencedRelation: "sponsor_partners"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "affiliate_clicks_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "sponsor_partners_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       ai_memories: {
@@ -3499,7 +3506,51 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      sponsor_partners_public: {
+        Row: {
+          affiliate_url: string | null
+          category: string | null
+          created_at: string | null
+          description: string | null
+          id: string | null
+          is_active: boolean | null
+          keywords: string[] | null
+          logo_url: string | null
+          name: string | null
+          priority: number | null
+          updated_at: string | null
+          website_url: string | null
+        }
+        Insert: {
+          affiliate_url?: string | null
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          keywords?: string[] | null
+          logo_url?: string | null
+          name?: string | null
+          priority?: number | null
+          updated_at?: string | null
+          website_url?: string | null
+        }
+        Update: {
+          affiliate_url?: string | null
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          keywords?: string[] | null
+          logo_url?: string | null
+          name?: string | null
+          priority?: number | null
+          updated_at?: string | null
+          website_url?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {

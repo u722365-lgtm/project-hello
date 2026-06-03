@@ -34,6 +34,20 @@ serve(async (req) => {
     });
   }
 
+  // Simple in-memory IP rate limit: 5 messages / 10 minutes
+  const ip = (req.headers.get("x-forwarded-for") || "unknown").split(",")[0].trim();
+  // @ts-ignore – module-scoped cache
+  const RL: Map<string, number[]> = (globalThis as any).__contactRL ??= new Map();
+  const now = Date.now();
+  const recent = (RL.get(ip) || []).filter((t) => now - t < 10 * 60 * 1000);
+  if (recent.length >= 5) {
+    return new Response(JSON.stringify({ error: "Too many requests. Try again later." }), {
+      status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+  recent.push(now);
+  RL.set(ip, recent);
+
   try {
     const resendKey = getResendApiKey();
     if (!resendKey) {
