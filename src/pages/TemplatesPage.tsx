@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { LayoutGrid, Search, Sparkles, Wand2 } from "lucide-react";
 import Navigation from "@/components/Navigation";
