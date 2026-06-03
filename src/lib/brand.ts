@@ -8,25 +8,26 @@ export const BRAND = {
   fullName: "ShadowTalk AI",
   domain: "shadowtalk-ai.com",
   founder: "Zain",
-  /** Memorable mnemonic — use consistently */
+  /** Memorable mnemonic — same words as tagline; use everywhere */
   mnemonic: "Think AI. Think ShadowTalk.",
-  tagline: "The agentic AI workspace that finishes your work.",
+  /** Primary brand line — landing hero, manifesto, chat empty state, SEO */
+  tagline: "Think AI. Think ShadowTalk.",
   shortPitch:
-    "Plan it. Run it. Ship it. One workspace for agents, 30+ tools, and privacy when stakes are high.",
+    "The agentic workspace that ships your work — missions, 30+ tools, and deliverables in one place.",
   manifesto:
     "AI should execute — not just chat. ShadowTalk turns goals into missions, chains tools, and keeps you in control at every step.",
-  /** Landing hero — bold, memorable, still honest about what we ship */
-  heroHeadline: ["Stop Chatting.", "Start Shipping."],
+  /** Landing hero — tagline as headline for maximum recall */
+  heroHeadline: ["Think AI.", "Think ShadowTalk."],
   heroSubtitle:
-    "ShadowTalk is the agentic workspace: Mission Control, 30+ tools, multi-step agents, and deliverables you can hand off — free to try, no card required.",
-  heroBadge: "Free to try · Honest limits · Proof in our docs",
+    "The workspace that ships what other AIs only suggest — agents, tools, and finished work under one roof.",
+  heroBadge: "Free to try · No card · One name you'll remember",
 } as const;
 
 /** Section headlines & subcopy for the home page */
 export const LANDING_COPY = {
   manifesto: {
-    kicker: BRAND.mnemonic,
-    title: ["Generic chat is cheap.", "Execution is ShadowTalk."],
+    kicker: "One line. One workspace.",
+    title: ["You will forget", "most AI names."],
     body: "One workspace runs research, code, vault, voice, and autonomous missions — so you stop copying outputs between five tabs. Try it free; verify features in our docs and changelog.",
     traction: "Join builders who replaced “another chat tab” with a workspace that ships.",
   },
@@ -107,13 +108,13 @@ export const BRAND_PILLARS = [
 
 /** Rotating hero / chat hooks — memorable, specific */
 export const BRAND_HOOKS = [
-  "Try chat free — see agents and tools in one workspace.",
-  "Mission Control runs multi-step work while you stay in the loop.",
-  "30+ tools from one prompt — research, code, vault, voice.",
-  "ChatGPT talks. ShadowTalk ships deliverables.",
-  "Premium matches ChatGPT Plus pricing — with more execution built in.",
-  "Proof in /changelog and /docs — not marketing fluff.",
   "Think AI. Think ShadowTalk.",
+  "Chat suggests. ShadowTalk ships.",
+  "One workspace. Thirty tools. Zero tab marathon.",
+  "Mission Control finishes the work you started in chat.",
+  "Try it free — remember the name when generic AI fades.",
+  "Premium power without the $200 ChatGPT Pro tax.",
+  "Proof in /changelog — not marketing wallpaper.",
 ] as const;
 
 export const CHAT_WELCOME_LINES = [

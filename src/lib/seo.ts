@@ -114,8 +114,8 @@ export function generateMetaTags(meta: PageMeta): Record<string, string> {
  // Page-specific SEO configurations
 export const PAGE_SEO: Record<string, PageMeta> = {
   home: {
-    title: 'ShadowTalk AI — Agentic AI Workspace That Ships Your Work',
-    description: 'Try ShadowTalk free: Mission Control, 30+ tools, multi-step agents, vault & BYOK. Honest limits, transparent pricing, proof in docs and changelog.',
+    title: 'Think AI. Think ShadowTalk. — Agentic AI Workspace',
+    description: 'Think AI. Think ShadowTalk. The agentic workspace that ships your work — Mission Control, 30+ tools, multi-step agents. Try free, no card required.',
     keywords: ['ShadowTalk', 'agentic AI', 'AI agents', 'AI workspace', 'Mission Control', 'AI automation', 'GPT alternative', 'privacy AI'],
     canonical: 'https://www.shadowtalk-ai.com/home',
   },

@@ -1,6 +1,6 @@
 # ShadowTalk AI
 
-> ShadowTalk AI is a privacy-first agentic AI workspace. Open the site at /chatbot for the main product. Marketing lives at /home. It runs autonomous missions, 30+ tools (chat, code, voice, vision, research, security), BYOK providers, and optional on-device models via WebGPU.
+> Think AI. Think ShadowTalk. ShadowTalk AI is a privacy-first agentic AI workspace. Open the site at /chatbot for the main product. Marketing lives at /home. It runs autonomous missions, 30+ tools (chat, code, voice, vision, research, security), BYOK providers, and optional on-device models via WebGPU.
 
 ## Entry & navigation
 

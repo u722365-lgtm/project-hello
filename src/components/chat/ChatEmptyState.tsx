@@ -4,6 +4,7 @@ import { ShadowTalkOrb } from "@/components/chat/ShadowTalkOrb";
 import { useSettingsMotion } from "@/hooks/useSettingsMotion";
 import { settingsHapticTick } from "@/lib/settingsFeedback";
 import { cn } from "@/lib/utils";
+import { BRAND } from "@/lib/brand";
 
 const QUICK_PROMPTS = [
   { label: "Brainstorm ideas", prompt: "Help me brainstorm creative ideas for ", icon: Sparkles },
@@ -43,7 +44,7 @@ export function ChatEmptyState({
         Hello, <span className="gradient-text">{userDisplayName}</span>
       </motion.h1>
       <motion.p variants={staggerItem} className="shadowtalk-chat-tagline">
-        Think AI. Think ShadowTalk.
+        {BRAND.tagline}
       </motion.p>
 
       {apiConnectedLabel && (
