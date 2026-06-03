@@ -65,9 +65,10 @@ Or use `npm run desktop:make` for installs without auto-update.
 
 ### "Failed to fetch" in desktop chat
 
-1. **`.env` before build** — Copy `env.example` → `.env` with real `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`, then rebuild the installer.
-2. **Sign in** — Open the browser once at https://www.shadowtalk-ai.com/auth or sign in inside the app.
-3. **Deploy CORS fix** — Desktop uses `shadowtalk://`; Supabase edge functions must allow that origin (`supabase functions deploy` after pulling latest `cors.ts`).
+1. **Rebuild from latest `main`** — Electron rewrites Supabase CORS headers for `shadowtalk://` (works even before you deploy edge functions).
+2. **Sign in** — Use **Settings** in the app or https://www.shadowtalk-ai.com/auth with the same account.
+3. **Optional server deploy** — `supabase functions deploy chat` (updates `cors.ts` on Supabase; recommended for all clients).
+4. **Custom Supabase project** — Copy `env.example` → `.env` with your URL/anon key, then `npm run desktop:make`.
 
 ## Configuration
 

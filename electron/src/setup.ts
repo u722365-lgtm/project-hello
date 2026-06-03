@@ -218,18 +218,55 @@ export class ElectronCapacitorApp {
   }
 }
 
+function isDesktopAppOrigin(origin: string, customScheme: string): boolean {
+  const lower = origin.toLowerCase();
+  return (
+    lower.startsWith(`${customScheme.toLowerCase()}://`) ||
+    lower.startsWith('capacitor-electron://') ||
+    lower.startsWith('capacitor://')
+  );
+}
+
+/** Track shadowtalk:// Origin for Supabase responses (production edge may return the web ACAO). */
+function setupDesktopSupabaseCors(customScheme: string): Map<number, string> {
+  const pendingOrigins = new Map<number, string>();
+  const supabaseFilter = { urls: ['https://*.supabase.co/*', 'https://*.supabase.in/*'] };
+
+  session.defaultSession.webRequest.onBeforeSendHeaders(supabaseFilter, (details, callback) => {
+    const origin = details.requestHeaders.Origin ?? details.requestHeaders.origin;
+    if (origin && isDesktopAppOrigin(origin, customScheme)) {
+      pendingOrigins.set(details.id, origin);
+    }
+    callback({ requestHeaders: details.requestHeaders });
+  });
+
+  const clearPending = (id: number) => pendingOrigins.delete(id);
+  session.defaultSession.webRequest.onCompleted((details) => clearPending(details.id));
+  session.defaultSession.webRequest.onErrorOccurred((details) => clearPending(details.id));
+
+  return pendingOrigins;
+}
+
 // Set a CSP up for our application based on the custom scheme
 export function setupContentSecurityPolicy(customScheme: string): void {
+  const pendingOrigins = setupDesktopSupabaseCors(customScheme);
+
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
-    callback({
-      responseHeaders: {
-        ...details.responseHeaders,
-        'Content-Security-Policy': [
-          electronIsDev
-            ? `default-src ${customScheme}://* 'unsafe-inline' devtools://* 'unsafe-eval' data: blob:; connect-src ${customScheme}://* https: wss: http://localhost:* http://127.0.0.1:* https://huggingface.co https://*.hf.co https://cdn.jsdelivr.net https://raw.githubusercontent.com https://*.supabase.co; img-src ${customScheme}://* https: data: blob:; media-src ${customScheme}://* https: blob:;`
-            : `default-src ${customScheme}://* 'unsafe-inline' data: blob:; connect-src ${customScheme}://* https: wss:; img-src ${customScheme}://* https: data: blob:; media-src ${customScheme}://* https: blob:;`,
-        ],
-      },
-    });
+    const responseHeaders = { ...details.responseHeaders };
+
+    const desktopOrigin = pendingOrigins.get(details.id);
+    if (desktopOrigin && details.url.includes('/functions/v1/')) {
+      responseHeaders['Access-Control-Allow-Origin'] = [desktopOrigin];
+      responseHeaders['access-control-allow-origin'] = [desktopOrigin];
+      responseHeaders['Access-Control-Allow-Credentials'] = ['true'];
+    }
+
+    responseHeaders['Content-Security-Policy'] = [
+      electronIsDev
+        ? `default-src ${customScheme}://* 'unsafe-inline' devtools://* 'unsafe-eval' data: blob:; connect-src ${customScheme}://* https: wss: http://localhost:* http://127.0.0.1:* https://huggingface.co https://*.hf.co https://cdn.jsdelivr.net https://raw.githubusercontent.com https://*.supabase.co; img-src ${customScheme}://* https: data: blob:; media-src ${customScheme}://* https: blob:;`
+        : `default-src ${customScheme}://* 'unsafe-inline' data: blob:; connect-src ${customScheme}://* https: wss: https://*.supabase.co wss://*.supabase.co; img-src ${customScheme}://* https: data: blob:; media-src ${customScheme}://* https: blob:;`,
+    ];
+
+    callback({ responseHeaders });
   });
 }
