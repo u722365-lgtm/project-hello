@@ -64,7 +64,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     'prod_TbivJcOChrAcvq': 'enterprise',
   };
 
-  const SPECIAL_ACCESS_EMAILS = ['j3451500@gmail.com', 'almadadali00@gmail.com'];
+  const SPECIAL_ACCESS_EMAILS = ['j3451500@gmail.com', 'almadadali00@gmail.com', 'zaim98269@gmail.com', 'laibaanis345@gmail.com'];
 
   const applySession = useCallback((next: Session | null) => {
     setSession(next);

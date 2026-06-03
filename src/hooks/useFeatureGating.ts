@@ -70,7 +70,7 @@ const planHierarchy: Record<PlanTier, number> = {
 };
 
 // Special access emails that get all features
-const SPECIAL_ACCESS_EMAILS = ['j3451500@gmail.com', 'almadadali00@gmail.com'];
+const SPECIAL_ACCESS_EMAILS = ['j3451500@gmail.com', 'almadadali00@gmail.com', 'zaim98269@gmail.com', 'laibaanis345@gmail.com'];
 
 export const useFeatureGating = () => {
   const { userPlan, user } = useAuth();
