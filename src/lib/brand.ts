@@ -28,8 +28,8 @@ export const LANDING_COPY = {
   manifesto: {
     kicker: "One line. One workspace.",
     title: ["You will forget", "most AI names."],
-    body: "One workspace runs research, code, vault, voice, and autonomous missions — so you stop copying outputs between five tabs. Try it free; verify features in our docs and changelog.",
-    traction: "Join builders who replaced “another chat tab” with a workspace that ships.",
+    body: "Not this one. Think AI. Think ShadowTalk. — then ship research, code, vault, voice, and autonomous missions without the five-tab copy-paste grind.",
+    traction: "Join builders who made the name stick and the work leave the chat window.",
   },
   comparison: {
     badge: "Feature-for-feature, honest",

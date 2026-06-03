@@ -537,7 +537,7 @@
   }
 
   .shadowtalk-chat-top-label {
-    @apply text-[10px] font-semibold uppercase tracking-[0.35em] text-muted-foreground/55 text-center py-3 shrink-0;
+    @apply text-xs sm:text-sm font-semibold tracking-wide gradient-text text-center py-3 shrink-0;
   }
 
   .shadowtalk-chat-empty {

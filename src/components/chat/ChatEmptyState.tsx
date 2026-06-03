@@ -43,8 +43,8 @@ export function ChatEmptyState({
       <motion.h1 variants={staggerItem} className="shadowtalk-chat-greeting">
         Hello, <span className="gradient-text">{userDisplayName}</span>
       </motion.h1>
-      <motion.p variants={staggerItem} className="shadowtalk-chat-tagline">
-        {BRAND.tagline}
+      <motion.p variants={staggerItem} className="shadowtalk-chat-tagline text-base sm:text-lg font-semibold tracking-tight">
+        <span className="gradient-text">{BRAND.tagline}</span>
       </motion.p>
 
       {apiConnectedLabel && (

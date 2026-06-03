@@ -10,6 +10,7 @@ import { FeedbackForm } from "@/components/FeedbackForm";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { BRAND } from "@/lib/brand";
 
 /**
  * Unique landing header: floating neural dock with gradient ring + action rail.
@@ -120,7 +121,9 @@ const LandingNavigation = () => {
               </span>
               <span className="hidden sm:flex flex-col items-start leading-none">
                 <span className="text-sm font-semibold gradient-text tracking-tight">ShadowTalk</span>
-                <span className="text-[10px] text-muted-foreground font-medium mt-0.5 tracking-wide">Agentic AI</span>
+                <span className="text-[10px] text-muted-foreground font-medium mt-0.5 tracking-wide max-w-[140px] truncate">
+                  {BRAND.tagline}
+                </span>
               </span>
             </motion.button>
 

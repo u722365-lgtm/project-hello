@@ -83,6 +83,9 @@ import { getDailyMessageCount, incrementDailyMessageCount } from "@/lib/dailyMes
 import { openProjectInIde, saveIdePayload } from "@/lib/idePayloadStorage";
 import { detectAppBuilderIntent, generateAppProject } from "@/lib/appBuilder";
 import { useShadowTalkModel } from "@/hooks/useShadowTalkModel";
+import { SEOHead } from "@/components/SEOHead";
+import { PAGE_SEO } from "@/lib/seo";
+import { BRAND } from "@/lib/brand";
 import { useChatSettings } from "@/hooks/useChatSettings";
 // Types
 interface Message { 
@@ -1132,6 +1135,7 @@ const ChatbotPage = () => {
 
   return (
     <div className="shadowtalk-chat-shell min-h-screen neural-bg settings-scroll-smooth">
+      <SEOHead meta={PAGE_SEO.chatbot} />
       <ChatAmbientBackground />
       <motion.div
         className="shadowtalk-chat-main flex h-screen w-full relative overflow-hidden"
@@ -1220,7 +1224,7 @@ const ChatbotPage = () => {
             transition={{ delay: 0.1, ...SETTINGS_SPRING }}
             className="shadowtalk-chat-top-label hidden md:block"
           >
-            ShadowTalk AI
+            {BRAND.tagline}
           </motion.p>
           <ChatToolbar
             hasActiveChat={hasActiveChat}
