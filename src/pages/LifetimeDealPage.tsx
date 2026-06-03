@@ -42,14 +42,19 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/components/AuthProvider";
 import { LIFETIME_DEAL } from "@/lib/monetization";
+import { getLifetimeSlotsDisplay } from "@/lib/ethicalGrowth";
 import Navigation from "@/components/Navigation";
+
+const showUrgencyBanner = import.meta.env.VITE_LIFETIME_URGENCY_BANNER === "1";
+const showCountdown = import.meta.env.VITE_LIFETIME_COUNTDOWN === "1";
 
 const LifetimeDealPage = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
-  const [showUrgency, setShowUrgency] = useState(true);
+  const [showUrgency, setShowUrgency] = useState(showUrgencyBanner);
+  const lifetimeSlots = getLifetimeSlotsDisplay();
 
   // Countdown timer
   useEffect(() => {
@@ -107,15 +112,17 @@ const LifetimeDealPage = () => {
   );
   const whatsappLink = `https://wa.me/923211798561?text=${whatsappMessage}`;
 
-  const slotsProgress = ((LIFETIME_DEAL.slotsTotal - LIFETIME_DEAL.slotsRemaining) / LIFETIME_DEAL.slotsTotal) * 100;
+  const slotsProgress = lifetimeSlots
+    ? ((lifetimeSlots.total - lifetimeSlots.remaining) / lifetimeSlots.total) * 100
+    : 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
       <Navigation />
 
-      {/* Urgency Banner */}
+      {/* Optional urgency banner — set VITE_LIFETIME_URGENCY_BANNER=1 to show */}
       <AnimatePresence>
-        {showUrgency && (
+        {showUrgencyBanner && showUrgency && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
@@ -125,15 +132,21 @@ const LifetimeDealPage = () => {
             <div className="container mx-auto px-4 py-3 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Timer className="w-5 h-5 animate-pulse" />
-                <span className="font-bold">⚡ TONIGHT ONLY: $99 Lifetime Deal</span>
-                <span className="hidden sm:inline">•</span>
-                <span className="hidden sm:inline font-mono">
-                  {String(timeLeft.hours).padStart(2, "0")}:{String(timeLeft.minutes).padStart(2, "0")}:
-                  {String(timeLeft.seconds).padStart(2, "0")}
-                </span>
-                <Badge variant="secondary" className="bg-white/20 text-white border-0">
-                  {LIFETIME_DEAL.slotsRemaining} spots left
-                </Badge>
+                <span className="font-bold">$99 Lifetime Deal</span>
+                {showCountdown && (
+                  <>
+                    <span className="hidden sm:inline">•</span>
+                    <span className="hidden sm:inline font-mono">
+                      {String(timeLeft.hours).padStart(2, "0")}:{String(timeLeft.minutes).padStart(2, "0")}:
+                      {String(timeLeft.seconds).padStart(2, "0")}
+                    </span>
+                  </>
+                )}
+                {lifetimeSlots && (
+                  <Badge variant="secondary" className="bg-white/20 text-white border-0">
+                    {lifetimeSlots.remaining} spots left
+                  </Badge>
+                )}
               </div>
               <button onClick={() => setShowUrgency(false)} className="p-1 hover:bg-white/20 rounded">
                 <X className="w-4 h-4" />
@@ -181,7 +194,7 @@ const LifetimeDealPage = () => {
             className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 mb-6"
           >
             <Sparkles className="w-5 h-5 text-amber-500" />
-            <span className="font-bold text-amber-500">🔥 LIMITED TIME OFFER • FIRST 100 USERS ONLY</span>
+            <span className="font-bold text-amber-500">One-time lifetime offer</span>
             <Sparkles className="w-5 h-5 text-amber-500" />
           </motion.div>
 
@@ -204,19 +217,20 @@ const LifetimeDealPage = () => {
             No subscriptions. No renewals.
           </p>
 
-          {/* Scarcity Counter */}
-          <div className="max-w-md mx-auto mb-8">
-            <div className="flex justify-between text-sm mb-2">
-              <span className="text-muted-foreground">Spots claimed</span>
-              <span className="font-bold text-destructive">
-                {LIFETIME_DEAL.slotsTotal - LIFETIME_DEAL.slotsRemaining} / {LIFETIME_DEAL.slotsTotal}
-              </span>
+          {lifetimeSlots && (
+            <div className="max-w-md mx-auto mb-8">
+              <div className="flex justify-between text-sm mb-2">
+                <span className="text-muted-foreground">Spots claimed</span>
+                <span className="font-bold text-destructive">
+                  {lifetimeSlots.total - lifetimeSlots.remaining} / {lifetimeSlots.total}
+                </span>
+              </div>
+              <Progress value={slotsProgress} className="h-3 bg-muted" />
+              <p className="text-sm text-amber-500 mt-2 font-medium">
+                {lifetimeSlots.remaining} spots remaining at this price (live count)
+              </p>
             </div>
-            <Progress value={slotsProgress} className="h-3 bg-muted" />
-            <p className="text-sm text-amber-500 mt-2 font-medium">
-              ⚠️ Only {LIFETIME_DEAL.slotsRemaining} spots remaining at this price!
-            </p>
-          </div>
+          )}
         </motion.div>
 
         {/* Main Content Grid */}
@@ -449,9 +463,16 @@ const LifetimeDealPage = () => {
           className="mt-12 text-center"
         >
           <Card className="max-w-xl mx-auto border-2 border-primary bg-gradient-to-br from-primary/10 to-purple-500/10 p-8">
-            <h3 className="text-2xl font-bold mb-4">Don't Miss This!</h3>
+            <h3 className="text-2xl font-bold mb-4">Lifetime access at $99</h3>
             <p className="text-muted-foreground mb-6">
-              {LIFETIME_DEAL.slotsRemaining} spots left at $99. After that, it's $999 or $39.99/month.
+              One payment for Elite-tier features. Compare monthly plans on{" "}
+              <a href="/pricing" className="text-primary hover:underline">
+                pricing
+              </a>{" "}
+              if you prefer subscriptions.
+              {lifetimeSlots
+                ? ` ${lifetimeSlots.remaining} founding spots remain at this price.`
+                : ""}
             </p>
             <Button
               asChild

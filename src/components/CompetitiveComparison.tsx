@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import { LANDING_COPY } from "@/lib/brand";
+import { COMPARISON_DISCLAIMER } from "@/lib/ethicalGrowth";
 import { useLandingMotion } from "@/hooks/use-landing-motion";
 import LandingSectionHeader from "@/components/landing/LandingSectionHeader";
 import LandingInteractiveCard from "@/components/landing/LandingInteractiveCard";
@@ -293,6 +294,10 @@ const CompetitiveComparison = () => {
             </Card>
           </motion.div>
         </motion.div>
+
+        <p className="mt-10 text-center text-xs text-muted-foreground max-w-2xl mx-auto px-4">
+          {COMPARISON_DISCLAIMER}
+        </p>
       </div>
     </section>
   );

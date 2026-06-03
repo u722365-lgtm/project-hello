@@ -141,8 +141,8 @@ export const LIFETIME_DEAL = {
   originalPrice: 999,
   currency: 'USD',
   pkrPrice: 27500,
+  /** Used only when VITE_LIFETIME_SLOTS_* env vars are set — see getLifetimeSlotsDisplay() */
   slotsTotal: 100,
-  slotsRemaining: 73, // Update this as sales come in
   deadline: new Date('2026-01-30T23:59:59').toISOString(),
   features: [
     { icon: '🧠', title: 'Unlimited AI Chat', description: 'No message limits, forever' },

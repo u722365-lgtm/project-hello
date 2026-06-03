@@ -42,16 +42,17 @@ export function getPlanPsychology(planId: MonthlyPlanId) {
   };
 }
 
+/** @deprecated Prefer getHonestLimitSubline from @/lib/ethicalGrowth */
 export function getLossAversionMessage(used: number, limit: number, unit = "messages"): string {
   const remaining = Math.max(0, limit - used);
   if (remaining === 0) {
-    return `You've hit today's ${limit} free ${unit}. Upgrade to keep your flow — waiting resets at midnight.`;
+    return `You've used today's ${limit} free ${unit}. Limits reset at midnight — upgrade for unlimited or continue tomorrow.`;
   }
   if (remaining <= 5) {
-    return `Only ${remaining} free ${unit} left today. Premium members never pause mid-thought.`;
+    return `${remaining} free ${unit} left today on the Free plan. See /pricing for unlimited access.`;
   }
   const pct = Math.round((used / limit) * 100);
-  return `You're at ${pct}% of today's free ${unit}. Power users upgrade before they hit the wall.`;
+  return `${pct}% of today's free ${unit} used (${used}/${limit}).`;
 }
 
 export function getEndowmentMessage(conversationCount: number): string {

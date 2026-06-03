@@ -16,6 +16,7 @@ const PricingSection = lazy(() => import("@/components/PricingSection"));
 const TestimonialsSection = lazy(() => import("@/components/TestimonialsSection"));
 const CommunitySection = lazy(() => import("@/components/CommunitySection"));
 const FAQSection = lazy(() => import("@/components/FAQSection"));
+const CommunityBuildingBlock = lazy(() => import("@/components/growth/CommunityBuildingBlock"));
 const Footer = lazy(() => import("@/components/Footer"));
 
 const Index = () => {
@@ -56,6 +57,11 @@ const Index = () => {
               <Suspense fallback={<LandingSectionFallback />}>
                 <LandingSectionReveal preset="pop">
                   <CommunitySection />
+                </LandingSectionReveal>
+              </Suspense>
+              <Suspense fallback={<LandingSectionFallback />}>
+                <LandingSectionReveal preset="fadeUp">
+                  <CommunityBuildingBlock />
                 </LandingSectionReveal>
               </Suspense>
               <Suspense fallback={<LandingSectionFallback />}>

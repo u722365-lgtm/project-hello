@@ -7,6 +7,9 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { useProactiveAI } from "@/hooks/useProactiveAI";
+import { useProactiveOptIn } from "@/hooks/useProactiveOptIn";
+import ProactiveOptInPrompt from "@/components/growth/ProactiveOptInPrompt";
+import { getProactiveTypeLabel, PROACTIVE_ETHICS } from "@/lib/ethicalGrowth";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -25,38 +28,20 @@ const MOOD_COLORS: Record<string, string> = {
   neutral: "border-border",
 };
 
-const TYPE_LABELS: Record<string, { label: string; icon: React.ReactNode }> = {
-  mood: { label: "Reading you", icon: <Brain className="h-3.5 w-3.5" /> },
-  prediction: { label: "Predicting", icon: <Zap className="h-3.5 w-3.5" /> },
-  narration: { label: "Observing", icon: <Sparkles className="h-3.5 w-3.5" /> },
-  temporal: { label: "Time-aware", icon: <Sparkles className="h-3.5 w-3.5" /> },
-  returning: { label: "I remember you", icon: <Brain className="h-3.5 w-3.5" /> },
-  greeting: { label: "Welcome", icon: <Sparkles className="h-3.5 w-3.5" /> },
-  nudge: { label: "Checking in", icon: <Sparkles className="h-3.5 w-3.5" /> },
-  'exit-intent': { label: "Wait!", icon: <Zap className="h-3.5 w-3.5" /> },
-  phantom: { label: "Reading your mind", icon: <Brain className="h-3.5 w-3.5" /> },
-  copy: { label: "Noticed that", icon: <Sparkles className="h-3.5 w-3.5" /> },
-  battery: { label: "Device aware", icon: <Zap className="h-3.5 w-3.5" /> },
-  connection: { label: "Network aware", icon: <Zap className="h-3.5 w-3.5" /> },
-  'tab-rivalry': { label: "Welcome back", icon: <Brain className="h-3.5 w-3.5" /> },
-  hesitation: { label: "Deep interest", icon: <Sparkles className="h-3.5 w-3.5" /> },
-  device: { label: "Device tuned", icon: <Zap className="h-3.5 w-3.5" /> },
-  'ambient-light': { label: "Environment", icon: <Sparkles className="h-3.5 w-3.5" /> },
-  confidence: { label: "Sensing doubt", icon: <Brain className="h-3.5 w-3.5" /> },
-  'cursor-orbit': { label: "Watching you", icon: <Brain className="h-3.5 w-3.5" /> },
-  'déjà-vu': { label: "Pattern found", icon: <Zap className="h-3.5 w-3.5" /> },
-  'micro-gesture': { label: "Reading intent", icon: <Brain className="h-3.5 w-3.5" /> },
-  breathing: { label: "Biometric sense", icon: <Brain className="h-3.5 w-3.5" /> },
-  'touch-pressure': { label: "Feeling you", icon: <Brain className="h-3.5 w-3.5" /> },
-  chronobio: { label: "Your rhythm", icon: <Zap className="h-3.5 w-3.5" /> },
-  'decision-fatigue': { label: "Brain overload", icon: <Brain className="h-3.5 w-3.5" /> },
-  'visual-attention': { label: "Eye tracking", icon: <Brain className="h-3.5 w-3.5" /> },
-  'digital-twin': { label: "Predicting you", icon: <Zap className="h-3.5 w-3.5" /> },
-  subconscious: { label: "Subconscious", icon: <Brain className="h-3.5 w-3.5" /> },
-  'cognitive-load': { label: "Brain capacity", icon: <Brain className="h-3.5 w-3.5" /> },
-  linguistic: { label: "Language match", icon: <Sparkles className="h-3.5 w-3.5" /> },
-  fomo: { label: "FOMO detected", icon: <Zap className="h-3.5 w-3.5" /> },
+const TYPE_ICONS: Record<string, React.ReactNode> = {
+  greeting: <Sparkles className="h-3.5 w-3.5" />,
+  returning: <Sparkles className="h-3.5 w-3.5" />,
+  nudge: <Sparkles className="h-3.5 w-3.5" />,
 };
+
+function getTypeBadge(type: string) {
+  return {
+    label: getProactiveTypeLabel(type),
+    icon: TYPE_ICONS[type] ?? <Sparkles className="h-3.5 w-3.5" />,
+  };
+}
+
+const PROMPT_DISMISSED_KEY = "shadowtalk-proactive-prompt-dismissed";
 
 const CustomerSupportWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -68,7 +53,25 @@ const CustomerSupportWidget = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
-  const { currentMessage, isVisible, detectedMood, dismiss, recordInteraction } = useProactiveAI(isOpen);
+  const { currentMessage, isVisible, detectedMood, dismiss, recordInteraction, optedIn, loaded } =
+    useProactiveAI(isOpen);
+  const { enable, disable } = useProactiveOptIn();
+  const [promptDismissed, setPromptDismissed] = useState(() => {
+    try {
+      return localStorage.getItem(PROMPT_DISMISSED_KEY) === "1";
+    } catch {
+      return false;
+    }
+  });
+
+  const dismissOptInPrompt = useCallback(() => {
+    setPromptDismissed(true);
+    try {
+      localStorage.setItem(PROMPT_DISMISSED_KEY, "1");
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -184,14 +187,26 @@ Product context: ShadowTalk AI offers Free, Pro ($19/mo), Premium ($49/mo), and 
   };
 
   const moodBorderClass = MOOD_COLORS[detectedMood] || MOOD_COLORS.neutral;
-  const typeInfo = currentMessage ? TYPE_LABELS[currentMessage.type] || TYPE_LABELS.greeting : null;
+  const typeInfo = currentMessage ? getTypeBadge(currentMessage.type) : null;
+  const showOptInPrompt = loaded && !optedIn && !promptDismissed;
 
   if (!isOpen) {
     return (
       <div className="fixed bottom-6 right-6 z-40 hidden sm:flex flex-col items-end gap-3">
+        <AnimatePresence>
+          {showOptInPrompt && (
+            <ProactiveOptInPrompt
+              onEnable={() => {
+                enable();
+                dismissOptInPrompt();
+              }}
+              onDismiss={dismissOptInPrompt}
+            />
+          )}
+        </AnimatePresence>
         {/* Proactive Message Bubble */}
         <AnimatePresence>
-          {currentMessage && isVisible && (
+          {optedIn && currentMessage && isVisible && (
             <motion.div
               initial={{ opacity: 0, y: 30, scale: 0.85, rotateX: -10 }}
               animate={{ opacity: 1, y: 0, scale: 1, rotateX: 0 }}
@@ -203,8 +218,10 @@ Product context: ShadowTalk AI offers Free, Pro ($19/mo), Premium ($49/mo), and 
               <div className={`relative bg-card/95 backdrop-blur-xl border-2 rounded-2xl rounded-br-md p-4 shadow-2xl transition-colors ${moodBorderClass}`}>
                 {/* Dismiss */}
                 <button
+                  type="button"
                   onClick={(e) => { e.stopPropagation(); dismiss(); }}
                   className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-muted border border-border flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  aria-label="Dismiss suggestion"
                 >
                   <X className="h-3 w-3 text-muted-foreground" />
                 </button>
@@ -272,7 +289,7 @@ Product context: ShadowTalk AI offers Free, Pro ($19/mo), Premium ($49/mo), and 
           )}
 
           {/* Notification sparkle */}
-          {currentMessage && isVisible && (
+          {optedIn && currentMessage && isVisible && (
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1, rotate: [0, 15, -15, 0] }}
@@ -302,17 +319,25 @@ Product context: ShadowTalk AI offers Free, Pro ($19/mo), Premium ($49/mo), and 
             <div>
               <h3 className="font-semibold text-sm flex items-center gap-1.5">
                 AI Assistant
-                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/15 text-primary font-bold uppercase tracking-wider">Proactive</span>
+                {optedIn && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/15 text-primary font-bold uppercase tracking-wider">
+                    {PROACTIVE_ETHICS.label}
+                  </span>
+                )}
               </h3>
-              <p className="text-xs text-muted-foreground flex items-center gap-1">
-                <Brain className="h-3 w-3 text-primary" />
-                {detectedMood !== 'neutral' ? `Sensing: ${detectedMood}` : 'Always thinking ahead'}
-              </p>
+              <p className="text-xs text-muted-foreground">Support chat — suggestions are optional</p>
             </div>
           </div>
-          <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
-            <X className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-1">
+            {optedIn && (
+              <Button variant="ghost" size="sm" className="text-xs h-8" onClick={disable}>
+                {PROACTIVE_ETHICS.disable}
+              </Button>
+            )}
+            <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
         {/* Messages */}

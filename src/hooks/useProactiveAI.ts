@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
+import { useProactiveOptIn } from '@/hooks/useProactiveOptIn';
+import { PROACTIVE_ETHICS } from '@/lib/ethicalGrowth';
 
 // ─── Types ─────────────────────────────────────────────
 
@@ -208,9 +210,11 @@ function detectMood(signals: BehaviorSignals): UserMood {
 
 export function useProactiveAI(isChatOpen: boolean) {
   const location = useLocation();
+  const { optedIn, loaded } = useProactiveOptIn();
   const [currentMessage, setCurrentMessage] = useState<ProactiveMessage | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [detectedMood, setDetectedMood] = useState<UserMood>('neutral');
+  const sessionShownRef = useRef(0);
 
   const memoryRef = useRef(getVisitorMemory());
   const sessionRef = useRef(getSessionState());
@@ -260,32 +264,31 @@ export function useProactiveAI(isChatOpen: boolean) {
       setTimeout(() => {
         setCurrentMessage(null);
         isShowingRef.current = false;
-        // Ultra-fast re-engagement: only 1.5s gap between messages
-        setTimeout(() => processQueue(), 1500);
+        setTimeout(() => processQueue(), 12_000);
       }, 400);
     }, 8000); // Show each message for 8s instead of 12s
   }, [isChatOpen]);
 
   const enqueueMessage = useCallback((msg: Omit<ProactiveMessage, 'id'>) => {
-    if (isChatOpen) return;
+    if (!optedIn || isChatOpen) return;
+    if (sessionShownRef.current >= PROACTIVE_ETHICS.maxPerSession) return;
     const session = sessionRef.current;
     const typeCount = session.shownMessages.filter(m => m.startsWith(msg.type)).length;
-    // Allow up to 5 messages per type for ultra-proactive behavior
-    if (typeCount >= 5) return;
+    if (typeCount >= 2) return;
     const id = `${msg.type}-${Date.now()}`;
     session.shownMessages.push(id);
     saveSessionState(session);
+    sessionShownRef.current += 1;
     messageQueueRef.current.push({ ...msg, id });
     processQueue();
-  }, [isChatOpen, processQueue]);
+  }, [isChatOpen, processQueue, optedIn]);
 
   const dismiss = useCallback(() => {
     setIsVisible(false);
     setTimeout(() => {
       setCurrentMessage(null);
       isShowingRef.current = false;
-      // Quick re-engage after dismiss
-      setTimeout(() => processQueue(), 1000);
+      setTimeout(() => processQueue(), 30_000);
     }, 300);
   }, [processQueue]);
 
@@ -1230,6 +1233,19 @@ export function useProactiveAI(isChatOpen: boolean) {
     }
   }, [location.pathname, enqueueAIMessage]);
 
+  if (!loaded || !optedIn) {
+    return {
+      currentMessage: null,
+      isVisible: false,
+      detectedMood: 'neutral' as UserMood,
+      dismiss,
+      recordInteraction,
+      visitorMemory: memoryRef.current,
+      optedIn: false,
+      loaded,
+    };
+  }
+
   return {
     currentMessage,
     isVisible,
@@ -1237,5 +1253,7 @@ export function useProactiveAI(isChatOpen: boolean) {
     dismiss,
     recordInteraction,
     visitorMemory: memoryRef.current,
+    optedIn: true,
+    loaded,
   };
 }

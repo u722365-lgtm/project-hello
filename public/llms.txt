@@ -57,6 +57,15 @@
 - [Cookie Policy](/cookies): Cookie usage.
 - [GDPR](/gdpr): GDPR information.
 
+## Ethical growth & transparency
+
+- First visit: workspace at /chatbot opens without a boot screen; hero on /home shows honest free vs paid limits and links to changelog, status, docs, trust, and transparency.
+- Pricing: cancellation, refunds, and data handling are stated on /pricing before upgrade (see PricingTransparencyBlock).
+- Proactive suggestions: opt-in only, labeled "Optional suggestion", dismissible, rate-limited per session (support widget).
+- Referrals: personal links only — no contact spam; rewards described on /referral.
+- Comparisons: /competitive and landing tables cite real features with a disclaimer to verify competitor pricing.
+- Community metrics: real workspace data when available; no fabricated testimonials on the landing page.
+
 ## Technical notes for crawlers
 
 - Default user flow: workspace-first at /chatbot, no marketing boot screen on chat entry.
