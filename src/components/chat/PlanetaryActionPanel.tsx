@@ -93,6 +93,22 @@ interface PlanetaryActionPanelProps {
   isLoading: boolean;
 }
 
+const OPEN_METEO_URL = 'https://api.open-meteo.com/v1/forecast';
+
+function weatherLabelFromCode(code: number): string {
+  // https://open-meteo.com/en/docs#weathervariables
+  if (code === 0) return 'clear';
+  if (code === 1 || code === 2) return 'partly_cloudy';
+  if (code === 3) return 'cloudy';
+  if (code === 45 || code === 48) return 'fog';
+  if ([51, 53, 55, 56, 57].includes(code)) return 'drizzle';
+  if ([61, 63, 65, 66, 67].includes(code)) return 'rain';
+  if ([71, 73, 75, 77, 85, 86].includes(code)) return 'snow';
+  if ([80, 81, 82].includes(code)) return 'showers';
+  if ([95, 96, 99].includes(code)) return 'thunderstorm';
+  return 'mixed';
+}
+
 const PlanetaryActionPanel: React.FC<PlanetaryActionPanelProps> = ({
   onGetActions,
   isLoading
@@ -157,12 +173,31 @@ const PlanetaryActionPanel: React.FC<PlanetaryActionPanelProps> = ({
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           try {
-            // In production, you'd use a geocoding API
-            setDetectedLocation('Your Location');
-            // Simulate weather data
-            setWeatherData({ temp: 12, condition: 'partly_cloudy' });
-            // Simulate grid data
-            setLocalGrid({ renewable: 65, peak: false });
+            const { latitude, longitude } = position.coords;
+            setDetectedLocation(`${latitude.toFixed(2)}, ${longitude.toFixed(2)}`);
+
+            // Weather: use Open-Meteo (no API key required).
+            try {
+              const url = new URL(OPEN_METEO_URL);
+              url.searchParams.set('latitude', String(latitude));
+              url.searchParams.set('longitude', String(longitude));
+              url.searchParams.set('current', 'temperature_2m,weather_code');
+              const res = await fetch(url.toString());
+              if (res.ok) {
+                const json: any = await res.json();
+                const temp = Number(json?.current?.temperature_2m);
+                const code = Number(json?.current?.weather_code);
+                if (Number.isFinite(temp) && Number.isFinite(code)) {
+                  setWeatherData({ temp, condition: weatherLabelFromCode(code) });
+                }
+              }
+            } catch {
+              // Best-effort; leave weatherData null.
+            }
+
+            // Grid carbon intensity / renewable share requires a provider key.
+            // Keep null unless you wire in a real API (ElectricityMaps, WattTime, etc.).
+            setLocalGrid(null);
           } catch (e) {
             console.error('Location detection failed:', e);
           }
