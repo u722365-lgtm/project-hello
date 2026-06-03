@@ -1037,6 +1037,55 @@
     }
   }
 
+  /* ===== Site-wide motion (all routes) ===== */
+  .site-page {
+    scroll-behavior: smooth;
+  }
+
+  .st-reveal {
+    opacity: 0;
+    transform: translateY(22px);
+    transition:
+      opacity 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+      transform 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transition-delay: var(--st-reveal-delay, 0s);
+  }
+
+  .st-reveal.st-reveal--visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .st-interactive-surface {
+    transition:
+      transform 0.35s cubic-bezier(0.23, 1, 0.32, 1),
+      box-shadow 0.35s ease,
+      border-color 0.35s ease;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .st-interactive-surface:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-elevated);
+      border-color: hsl(var(--primary) / 0.25);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .site-page {
+      scroll-behavior: auto;
+    }
+    .site-scroll-progress,
+    .st-reveal {
+      opacity: 1 !important;
+      transform: none !important;
+      transition: none !important;
+    }
+    .st-interactive-surface:hover {
+      transform: none;
+    }
+  }
+
   /* ===== Settings page polish ===== */
   .settings-scroll-smooth {
     scroll-behavior: smooth;
