@@ -50,11 +50,18 @@ const DESKTOP_FEATURES = [
   },
 ];
 
+const GITHUB_RELEASES_URL =
+  "https://github.com/zain836/shadowtalk-ai-903ca615/releases/latest";
+
 const BUILD_STEPS = [
   "npm install",
-  "npm run build",
+  "npm run desktop:install",
   "npm run desktop:make",
 ];
+
+function openReleasePage() {
+  window.open(GITHUB_RELEASES_URL, "_blank", "noopener,noreferrer");
+}
 
 const DownloadPage = () => {
   const navigate = useNavigate();
@@ -92,45 +99,70 @@ const DownloadPage = () => {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid md:grid-cols-3 gap-4 mb-12">
-            <Card className="border-border/60">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Monitor className="h-4 w-4 text-primary" />
-                  Windows
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm text-muted-foreground">
-                Build produces an <code className="text-xs">.exe</code> installer via{" "}
-                <code className="text-xs">npm run desktop:make</code>. Publish installers from
-                GitHub Releases for one-click download.
-              </CardContent>
-            </Card>
-            <Card className="border-border/60">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Apple className="h-4 w-4 text-primary" />
-                  macOS
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm text-muted-foreground">
-                Build produces a <code className="text-xs">.dmg</code>. Users may need to allow the
-                app in Privacy &amp; Security on first launch.
-              </CardContent>
-            </Card>
-            <Card className="border-border/60">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Terminal className="h-4 w-4 text-primary" />
-                  Linux
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm text-muted-foreground">
-                AppImage / deb targets can be added in{" "}
-                <code className="text-xs">electron-builder.config.json</code>.
-              </CardContent>
-            </Card>
-          </div>
+          <>
+            <div className="flex flex-col sm:flex-row justify-center gap-3 mb-8">
+              <Button className="btn-glow gap-2" onClick={openReleasePage}>
+                <Download className="h-4 w-4" />
+                Download from GitHub Releases
+              </Button>
+              <Button variant="outline" onClick={() => navigate("/chatbot")}>
+                Use browser app
+              </Button>
+            </div>
+            <div className="grid md:grid-cols-3 gap-4 mb-12">
+              <Card className="border-border/60">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Monitor className="h-4 w-4 text-primary" />
+                    Windows
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3 text-sm text-muted-foreground">
+                  <p>
+                    <code className="text-xs">.exe</code> installer (NSIS). Pick the Windows asset on
+                    the releases page.
+                  </p>
+                  <Button size="sm" variant="secondary" className="w-full" onClick={openReleasePage}>
+                    Get Windows build
+                  </Button>
+                </CardContent>
+              </Card>
+              <Card className="border-border/60">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Apple className="h-4 w-4 text-primary" />
+                    macOS
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3 text-sm text-muted-foreground">
+                  <p>
+                    <code className="text-xs">.dmg</code> disk image. You may need to allow the app in
+                    Privacy &amp; Security on first launch.
+                  </p>
+                  <Button size="sm" variant="secondary" className="w-full" onClick={openReleasePage}>
+                    Get macOS build
+                  </Button>
+                </CardContent>
+              </Card>
+              <Card className="border-border/60">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Terminal className="h-4 w-4 text-primary" />
+                    Linux
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3 text-sm text-muted-foreground">
+                  <p>
+                    <code className="text-xs">AppImage</code> from releases, or build locally with{" "}
+                    <code className="text-xs">npm run desktop:make</code>.
+                  </p>
+                  <Button size="sm" variant="secondary" className="w-full" onClick={openReleasePage}>
+                    Get Linux build
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </>
         )}
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">

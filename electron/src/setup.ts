@@ -6,7 +6,7 @@ import {
 } from '@capacitor-community/electron';
 import chokidar from 'chokidar';
 import type { MenuItemConstructorOptions } from 'electron';
-import { app, BrowserWindow, Menu, MenuItem, nativeImage, Tray, session } from 'electron';
+import { app, BrowserWindow, Menu, MenuItem, nativeImage, shell, Tray, session } from 'electron';
 import electronIsDev from 'electron-is-dev';
 import electronServe from 'electron-serve';
 import windowStateKeeper from 'electron-window-state';
@@ -102,8 +102,8 @@ export class ElectronCapacitorApp {
       join(app.getAppPath(), 'assets', process.platform === 'win32' ? 'appIcon.ico' : 'appIcon.png')
     );
     this.mainWindowState = windowStateKeeper({
-      defaultWidth: 1000,
-      defaultHeight: 800,
+      defaultWidth: 1280,
+      defaultHeight: 860,
     });
     // Setup preload script path and construct our main window.
     const preloadPath = join(app.getAppPath(), 'build', 'src', 'preload.js');
@@ -184,10 +184,12 @@ export class ElectronCapacitorApp {
     // Security
     this.MainWindow.webContents.setWindowOpenHandler((details) => {
       if (!details.url.includes(this.customScheme)) {
+        if (details.url.startsWith('http://') || details.url.startsWith('https://')) {
+          void shell.openExternal(details.url);
+        }
         return { action: 'deny' };
-      } else {
-        return { action: 'allow' };
       }
+      return { action: 'allow' };
     });
     this.MainWindow.webContents.on('will-navigate', (event, _newURL) => {
       if (!this.MainWindow.webContents.getURL().includes(this.customScheme)) {

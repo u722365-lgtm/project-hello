@@ -17,11 +17,13 @@ import {
   Briefcase, Lock, Cookie, Scale, Wallet, FlaskConical,
   Database, Ghost, Key, BarChart,   Layers,
   LayoutGrid,
+  Monitor,
 } from "lucide-react";
 
 const pages = [
   { name: "Chatbot", href: "/chatbot", icon: MessageSquare, desc: "AI chat assistant" },
   { name: "Pricing", href: "/pricing", icon: Shield, desc: "Plans & pricing" },
+  { name: "ShadowTalk Desktop", href: "/download", icon: Monitor, desc: "Download desktop app — Windows, macOS, Linux" },
   { name: "UI Templates", href: "/templates", icon: LayoutGrid, desc: "100 presets + custom theme designer" },
   { name: "Custom theme designer", href: "/templates?tab=custom", icon: LayoutGrid, desc: "Design your own palette and apply site-wide" },
   { name: "Strategy Agent", href: "/strategy", icon: Brain, desc: "AI strategy advisor" },

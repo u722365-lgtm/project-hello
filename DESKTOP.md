@@ -16,8 +16,14 @@ ShadowTalk ships as installable desktop software via **Capacitor + Electron** (`
 
 ```bash
 npm install
-npm run build
-npm run desktop:make
+npm run desktop:install   # electron/ dependencies
+npm run desktop:make      # build web app + package installers
+```
+
+Verify compile without launching a window:
+
+```bash
+npm run desktop:verify
 ```
 
 Installers are written to `electron/dist/` (Windows `.exe`, macOS `.dmg`, Linux AppImage when enabled).

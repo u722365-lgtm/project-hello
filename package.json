@@ -11,9 +11,11 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest --run",
+    "desktop:install": "cd electron && npm install",
     "desktop:build": "npm run build && npx cap copy electron",
-    "desktop:start": "npm run desktop:build && cd electron && npm run electron:start",
-    "desktop:make": "npm run desktop:build && cd electron && npm run electron:make"
+    "desktop:verify": "npm run desktop:install && npm run desktop:build && cd electron && npm run build",
+    "desktop:start": "npm run desktop:install && npm run desktop:build && cd electron && npm run electron:start",
+    "desktop:make": "npm run desktop:install && npm run desktop:build && cd electron && npm run electron:make"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.73.0",

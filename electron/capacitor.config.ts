@@ -1,6 +1,6 @@
-import type { CapacitorConfig } from '@capacitor/cli';
+import type { CapacitorElectronConfig } from '@capacitor-community/electron';
 
-const config: CapacitorConfig = {
+const config: CapacitorElectronConfig = {
   appId: 'com.shadowtalk.ai',
   appName: 'ShadowTalk AI',
   webDir: 'app',

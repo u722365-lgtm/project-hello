@@ -6,6 +6,7 @@ import electronIsDev from 'electron-is-dev';
 import unhandled from 'electron-unhandled';
 import { autoUpdater } from 'electron-updater';
 
+import { registerDesktopIpc } from './desktopIpc';
 import { ElectronCapacitorApp, setupContentSecurityPolicy, setupReloadWatcher } from './setup';
 
 // Graceful handling of unhandled errors.
@@ -39,6 +40,9 @@ if (electronIsDev) {
   setupReloadWatcher(myCapacitorApp);
 }
 
+// ShadowTalk native APIs (file dialogs, notifications, auto-launch, etc.)
+registerDesktopIpc();
+
 // Run Application
 (async () => {
   // Wait for electron app to be ready.
@@ -69,4 +73,4 @@ app.on('activate', async function () {
   }
 });
 
-// Place all ipc or other electron api calls and custom functionality under this line
+// Desktop IPC registered via registerDesktopIpc() above
