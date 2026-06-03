@@ -58,7 +58,16 @@ interface BehaviorSignals {
 
 const STORAGE_KEY = 'shadowtalk-visitor-memory';
 const SESSION_KEY = 'shadowtalk-proactive-session';
-const PROACTIVE_AI_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/proactive-ai`;
+/** Off by default — prevents blank-screen overlays when edge/LOVABLE key is not configured. */
+function isProactiveAIEnabled(): boolean {
+  return import.meta.env.VITE_ENABLE_PROACTIVE_AI === "1";
+}
+
+function getProactiveAIUrl(): string | null {
+  const base = import.meta.env.VITE_SUPABASE_URL;
+  if (!base) return null;
+  return `${base}/functions/v1/proactive-ai`;
+}
 
 // ─── AI Message Generator ──────────────────────────────
 // Calls the proactive-ai edge function for genuine, contextual messages.
@@ -81,6 +90,11 @@ async function generateAIMessage(context: {
   scrollPercent?: number;
   extraContext?: string;
 }): Promise<string | null> {
+  if (!isProactiveAIEnabled()) return null;
+
+  const proactiveUrl = getProactiveAIUrl();
+  if (!proactiveUrl) return null;
+
   const cacheKey = `${context.triggerType}-${context.currentPage}-${context.mood || ''}`;
   const cached = aiMessageCache.get(cacheKey);
   if (cached && Date.now() - cached.timestamp < AI_CACHE_TTL) {
@@ -95,13 +109,18 @@ async function generateAIMessage(context: {
   }
 
   try {
+    const { supabase } = await import("@/integrations/supabase/client");
+    const { data: { session } } = await supabase.auth.getSession();
+    const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? "";
+    const token = session?.access_token ?? anonKey;
+
     lastApiCallTimestamp = now;
-    const resp = await fetch(PROACTIVE_AI_URL, {
-      method: 'POST',
+    const resp = await fetch(proactiveUrl, {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        "Content-Type": "application/json",
+        apikey: anonKey,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(context),
     });
@@ -109,15 +128,19 @@ async function generateAIMessage(context: {
       consecutiveRateLimits++;
       return null;
     }
-    if (!resp.ok) return null;
+    if (!resp.ok) {
+      console.warn("[useProactiveAI] non-ok response", resp.status);
+      return null;
+    }
     consecutiveRateLimits = 0;
-    const data = await resp.json();
-    const message = data.message;
+    const data = await resp.json().catch(() => ({}));
+    const message = typeof data.message === "string" ? data.message : "";
     if (message) {
       aiMessageCache.set(cacheKey, { message, timestamp: Date.now() });
     }
     return message || null;
-  } catch {
+  } catch (err) {
+    console.warn("[useProactiveAI] fetch failed (non-blocking):", err);
     return null;
   }
 }

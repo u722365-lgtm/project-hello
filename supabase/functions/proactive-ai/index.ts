@@ -1,35 +1,44 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsOptions } from "../_shared/cors.ts";
-import { requireAuth } from "../_shared/auth.ts";
-import { checkRateLimit } from "../_shared/rate-limit.ts";
 
+const emptyOk = (corsHeaders: Record<string, string>, warning?: string) =>
+  new Response(
+    JSON.stringify({ message: "", success: true, ...(warning ? { warning } : {}) }),
+    { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+  );
 
 serve(async (req) => {
   const origin = req.headers.get("origin");
+
   if (req.method === "OPTIONS") {
     return handleCorsOptions(origin);
   }
-  const corsHeaders = getCorsHeaders(origin);
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  const auth = await requireAuth(req, corsHeaders);
-  if (!auth.authenticated) return auth.response;
+  const corsHeaders = getCorsHeaders(origin);
 
   try {
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+    let body: Record<string, unknown> = {};
+    try {
+      body = (await req.json()) as Record<string, unknown>;
+    } catch {
+      return emptyOk(corsHeaders, "Invalid request body");
+    }
 
-    const {
-      triggerType,
-      currentPage,
-      mood,
-      timeOfDay,
-      visitCount,
-      pagesVisited,
-      scrollPercent,
-      extraContext,
-    } = await req.json();
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) {
+      console.warn("[proactive-ai] LOVABLE_API_KEY not configured");
+      return emptyOk(corsHeaders, "Proactive AI not configured");
+    }
+
+    const triggerType = String(body.triggerType ?? "nudge");
+    const currentPage = String(body.currentPage ?? "/");
+    const mood = body.mood != null ? String(body.mood) : "neutral";
+    const visitCount = typeof body.visitCount === "number" ? body.visitCount : 1;
+    const pagesVisited = Array.isArray(body.pagesVisited)
+      ? body.pagesVisited.map(String)
+      : [];
+    const scrollPercent = typeof body.scrollPercent === "number" ? body.scrollPercent : undefined;
+    const extraContext = body.extraContext != null ? String(body.extraContext) : "";
 
     const hour = new Date().getHours();
     const timeLabel =
@@ -58,10 +67,10 @@ Rules:
     const userPrompt = `Generate a proactive message for this context:
 - Trigger: ${triggerType}
 - Current page: ${currentPage}
-- User mood: ${mood || "neutral"}
+- User mood: ${mood}
 - Time: ${timeLabel} (${hour}:00)
-- Visit #${visitCount || 1}
-- Pages visited this session: ${(pagesVisited || []).join(", ") || "none yet"}
+- Visit #${visitCount}
+- Pages visited this session: ${pagesVisited.join(", ") || "none yet"}
 - Scroll depth: ${scrollPercent ?? "unknown"}%
 ${extraContext ? `- Extra context: ${extraContext}` : ""}
 
@@ -85,28 +94,20 @@ Return ONLY the message text, nothing else.`;
     });
 
     if (!response.ok) {
-      // Soft-fail: proactive nudges are non-essential. Log server-side and
-      // return an empty 200 so the client never surfaces a runtime error.
       const text = await response.text().catch(() => "");
       console.warn("[proactive-ai] gateway non-ok", response.status, text.slice(0, 200));
-      return new Response(JSON.stringify({ message: "" }), {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return emptyOk(corsHeaders);
     }
 
     const data = await response.json();
     const message = data.choices?.[0]?.message?.content?.trim() || "";
 
-    return new Response(JSON.stringify({ message }), {
+    return new Response(JSON.stringify({ message, success: true }), {
+      status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
     console.error("proactive-ai error:", e);
-    // Soft-fail: never surface as runtime error to the client.
-    return new Response(JSON.stringify({ message: "" }), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return emptyOk(corsHeaders);
   }
 });
