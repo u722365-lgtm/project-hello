@@ -63,6 +63,12 @@ npm run desktop:make:publish
 
 Or use `npm run desktop:make` for installs without auto-update.
 
+### "Failed to fetch" in desktop chat
+
+1. **`.env` before build** — Copy `env.example` → `.env` with real `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`, then rebuild the installer.
+2. **Sign in** — Open the browser once at https://www.shadowtalk-ai.com/auth or sign in inside the app.
+3. **Deploy CORS fix** — Desktop uses `shadowtalk://`; Supabase edge functions must allow that origin (`supabase functions deploy` after pulling latest `cors.ts`).
+
 ## Configuration
 
 - Root `capacitor.config.ts` — app id `com.shadowtalk.ai`, Electron tray/splash

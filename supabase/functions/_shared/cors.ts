@@ -19,11 +19,21 @@
  // Pattern to match Lovable preview/staging domains
  const LOVABLE_PREVIEW_PATTERN = /^https:\/\/[a-z0-9-]+--[a-f0-9-]+\.lovable\.app$/;
  const LOVABLE_PROJECT_PATTERN = /^https:\/\/[a-z0-9-]+\.lovable(project)?\.com$/;
- const LOVABLE_APP_PATTERN = /^https:\/\/[a-z0-9-]+\.lovable\.app$/;
- 
- // Validate origin against allowed list
- function isAllowedOrigin(origin: string | null): boolean {
-   if (!origin) return false;
+const LOVABLE_APP_PATTERN = /^https:\/\/[a-z0-9-]+\.lovable\.app$/;
+
+/** Capacitor/Electron desktop shell (custom protocol from capacitor.config.ts) */
+const SHADOWTALK_DESKTOP_PATTERN = /^shadowtalk:\/\/.+/i;
+const CAPACITOR_ELECTRON_PATTERN = /^capacitor-electron:\/\/.+/i;
+const CAPACITOR_LOCALHOST_PATTERN = /^capacitor:\/\/localhost/i;
+
+// Validate origin against allowed list
+function isAllowedOrigin(origin: string | null): boolean {
+  // Electron often omits Origin; allow and use primary site in ACAO
+  if (!origin) return true;
+
+  if (SHADOWTALK_DESKTOP_PATTERN.test(origin)) return true;
+  if (CAPACITOR_ELECTRON_PATTERN.test(origin)) return true;
+  if (CAPACITOR_LOCALHOST_PATTERN.test(origin)) return true;
    
    // Check production origins first
    if (PRODUCTION_ORIGINS.includes(origin)) return true;
@@ -40,9 +50,10 @@
    return false;
  }
  
- export function getCorsHeaders(origin: string | null): Record<string, string> {
-   // Strict origin validation - never return * in production
-   const allowedOrigin = isAllowedOrigin(origin) ? origin! : PRODUCTION_ORIGINS[0];
+export function getCorsHeaders(origin: string | null): Record<string, string> {
+  // Strict origin validation - never return * in production
+  const allowedOrigin =
+    origin && isAllowedOrigin(origin) ? origin : PRODUCTION_ORIGINS[0];
  
    return {
      "Access-Control-Allow-Origin": allowedOrigin,

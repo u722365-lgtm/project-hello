@@ -87,6 +87,13 @@ import { SEOHead } from "@/components/SEOHead";
 import { PAGE_SEO } from "@/lib/seo";
 import { BRAND } from "@/lib/brand";
 import { useChatSettings } from "@/hooks/useChatSettings";
+import {
+  getChatFetchHeaders,
+  getChatFunctionUrl,
+  isSupabaseConfigured,
+  DESKTOP_ENV_SETUP_HINT,
+  formatChatFetchError,
+} from "@/lib/supabaseEnv";
 // Types
 interface Message { 
   id: string; 
@@ -104,8 +111,6 @@ type Conversation = {
   archived_at?: string | null;
 };
 type Personality = "friendly" | "sarcastic" | "professional" | "creative" | "meticulous" | "curious" | "diplomatic" | "witty" | "pragmatic" | "inquisitive" | "spicy";
-
-const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
 
 /** Legacy E2EE payloads stored before vault unlock was removed from chat */
 function displayStoredText(raw: string): string {
@@ -716,13 +721,17 @@ const ChatbotPage = () => {
         }
       }
 
+      const chatUrl = getChatFunctionUrl();
+      if (!chatUrl || !isSupabaseConfigured()) {
+        throw new Error(
+          `Chat is not configured for this build. ${DESKTOP_ENV_SETUP_HINT}`,
+        );
+      }
+
       const { data: { session } } = await supabase.auth.getSession();
-      const resp = await fetch(CHAT_URL, {
+      const resp = await fetch(chatUrl, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session?.access_token}`,
-        },
+        headers: getChatFetchHeaders(session?.access_token),
         signal: controller.signal,
         body: stringifyChatBody({
           messages: augmented,
@@ -1005,7 +1014,7 @@ const ChatbotPage = () => {
       }
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") return;
-      const msg = err instanceof Error ? err.message : "Error connecting to chat service.";
+      const msg = formatChatFetchError(err);
       toast({ title: "Message failed", description: msg, variant: "destructive" });
       setMessages((prev) => [
         ...prev,
