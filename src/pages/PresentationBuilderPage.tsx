@@ -517,9 +517,44 @@ const PresentationBuilderPage = () => {
       }
 
       const filename = `${presentation.title.replace(/[^a-zA-Z0-9]/g, '_')}.pptx`;
-      toast.loading(`Writing ${filename}…`, { id: exportToastId });
-      await pptx.writeFile({ fileName: filename });
-      toast.success("Professional PPTX downloaded!", { id: exportToastId });
+
+      if (destination === "onedrive") {
+        toast.loading(`Uploading ${filename} to OneDrive…`, { id: exportToastId });
+        const blob = await pptx.write({ outputType: "blob" }) as Blob;
+        const arrayBuf = await blob.arrayBuffer();
+        // base64 encode (chunked to avoid stack overflow on large buffers)
+        const bytes = new Uint8Array(arrayBuf);
+        let binary = "";
+        const CHUNK = 0x8000;
+        for (let i = 0; i < bytes.length; i += CHUNK) {
+          binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + CHUNK)));
+        }
+        const base64 = btoa(binary);
+        const folderPath = window.prompt(
+          "OneDrive folder to save into (leave blank for root):",
+          "ShadowTalk/Presentations"
+        );
+        if (folderPath === null) {
+          toast.dismiss(exportToastId);
+          setIsExporting(false);
+          return;
+        }
+        const { data, error } = await supabase.functions.invoke("upload-presentation-onedrive", {
+          body: { filename, base64, folderPath: folderPath.trim() || undefined },
+        });
+        if (error || (data && data.error)) {
+          throw new Error(error?.message || data?.error || "Upload failed");
+        }
+        toast.success("Saved to OneDrive!", {
+          id: exportToastId,
+          description: data?.webUrl ? "Click to open" : undefined,
+          action: data?.webUrl ? { label: "Open", onClick: () => window.open(data.webUrl, "_blank") } : undefined,
+        });
+      } else {
+        toast.loading(`Writing ${filename}…`, { id: exportToastId });
+        await pptx.writeFile({ fileName: filename });
+        toast.success("Professional PPTX downloaded!", { id: exportToastId });
+      }
     } catch (err) {
       console.error("PPTX export error:", err);
       toast.error("Export failed: " + (err instanceof Error ? err.message : "Unknown error"), { id: exportToastId });
