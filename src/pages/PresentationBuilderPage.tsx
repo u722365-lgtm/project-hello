@@ -6,7 +6,7 @@ import {
   Trash2, Copy, Type, BarChart3, Quote, Layout, 
   Clock, GitCompare, List, Image, Loader2, Maximize, Minimize,
   SlidersHorizontal, FileText, Eye, Search, ListTree, Palette, Sparkles,
-  Globe, CheckCircle2, Edit3, ArrowRight, ExternalLink, Shield, Target, TrendingUp
+  Globe, CheckCircle2, Edit3, ArrowRight, ExternalLink, Shield, Target, TrendingUp, Cloud
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
