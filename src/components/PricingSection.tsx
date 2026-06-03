@@ -1,5 +1,5 @@
 import React from "react";
-import { Check, Star, Zap, Crown, Rocket, Gift, Coins, PlayCircle, TrendingUp, Sparkles, Timer, BookOpen } from "lucide-react";
+import { Check, Star, Zap, Crown, Rocket, Gift, Coins, PlayCircle, TrendingUp, Sparkles, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -101,27 +101,6 @@ const PricingSection = () => {
         />
 
         <div className="text-center mb-12 sm:mb-16">
-          {/* Lifetime alternative — anchors monthly as the default path */}
-          <motion.div
-            variants={variants.scaleFadeIn}
-            initial="hidden"
-            whileInView="visible"
-            viewport={viewport}
-            whileHover={hoverLift}
-            className="inline-flex items-center space-x-3 glass-subtle border-warning/20 rounded-xl px-4 sm:px-6 py-3 sm:py-4 mb-6"
-          >
-            <Timer className="h-6 w-6 text-warning" />
-            <div className="text-left">
-              <span className="text-sm font-bold text-warning">Prefer one payment? $99 lifetime</span>
-              <p className="text-xs text-muted-foreground">
-                Or stay flexible with Premium at $15/mo — cancel anytime.{" "}
-                <Button variant="link" className="text-warning p-0 h-auto text-xs" onClick={() => navigate('/lifetime-deal')}>
-                  See lifetime →
-                </Button>
-              </p>
-            </div>
-          </motion.div>
-          
           {/* Referral */}
           <motion.div
             variants={variants.fadeSlideUp}

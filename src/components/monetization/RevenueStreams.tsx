@@ -81,13 +81,13 @@ export function RevenueStreams() {
     {
       id: 'elite',
       title: 'Elite Membership',
-      description: 'Lifetime founding member access - one payment',
+      description: 'Top tier — white-label, vault, and phone support',
       icon: Crown,
       color: 'from-primary/20 to-secondary/20',
       borderColor: 'border-primary/30',
       iconColor: 'text-primary',
-      cta: 'Claim Now',
-      highlight: '$39.99 lifetime',
+      cta: 'Go Elite',
+      highlight: '$20/mo',
       featured: true,
     },
   ];

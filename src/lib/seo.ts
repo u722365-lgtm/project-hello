@@ -258,12 +258,6 @@ export const PAGE_SEO: Record<string, PageMeta> = {
     keywords: ['founder access', 'early access', 'exclusive', 'premium'],
     canonical: 'https://www.shadowtalk-ai.com/founder-access',
   },
-  lifetimeDeal: {
-    title: 'Lifetime Deal',
-    description: 'Get lifetime access to ShadowTalk AI Elite features with a one-time payment.',
-    keywords: ['lifetime deal', 'one-time payment', 'lifetime access'],
-    canonical: 'https://www.shadowtalk-ai.com/lifetime-deal',
-  },
   cookies: {
     title: 'Cookie Policy',
     description: 'Learn about how ShadowTalk AI uses cookies and tracking technologies.',

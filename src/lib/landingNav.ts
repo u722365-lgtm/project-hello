@@ -62,7 +62,7 @@ export const LANDING_PRODUCT_LINKS: LandingProductLink[] = [
   },
   {
     label: "Pricing",
-    description: "Plans & lifetime deal",
+    description: "Plans & billing",
     href: "/pricing",
     icon: Shield,
   },

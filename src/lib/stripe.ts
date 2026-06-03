@@ -113,17 +113,4 @@ export const PLAN_DETAILS = {
     ],
     comparison: "75% cheaper than ChatGPT Pro ($200)!",
   },
-  lifetime: {
-    name: "Lifetime Deal",
-    price: 99,
-    period: "one-time",
-    features: [
-      "🔥 EVERYTHING in Elite - FOREVER",
-      "No monthly payments ever",
-      "All future updates included",
-      "Priority lifetime support",
-      "First 100 users only!",
-    ],
-    comparison: "Pay once, use forever!",
-  },
 } as const;

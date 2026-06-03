@@ -41,7 +41,6 @@ const pages = [
   { name: "Profile", href: "/profile", icon: User, desc: "Your profile" },
   { name: "Billing", href: "/billing", icon: CreditCard, desc: "Manage billing" },
   { name: "Founder Access", href: "/founder-access", icon: Rocket, desc: "Founder perks" },
-  { name: "Lifetime Deal", href: "/lifetime-deal", icon: Tag, desc: "One-time purchase" },
   { name: "Deep Research", href: "/research", icon: SearchIcon, desc: "Deep research tool" },
   { name: "Knowledge Graph", href: "/knowledge", icon: Globe, desc: "Knowledge explorer" },
   { name: "Strategy Lab", href: "/strategy-lab", icon: FlaskConical, desc: "Strategy experiments" },

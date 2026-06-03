@@ -31,12 +31,11 @@ Tagline positioning: more features and lower price than typical ChatGPT tiers; b
 | **Pro** | $5/mo | Unlimited messages, more images/research, pro models, priority queue, export, no ads |
 | **Premium** | $15/mo | Higher limits, extended context, Proactive Context Engine (PCE), workflows, collaboration rooms |
 | **Elite** | $20/mo | Unlimited images/research, full offline mode, Stealth Vault, agents, fine-tuning, white-label, 24/7 phone support |
-| **Lifetime** | $99 one-time | Elite-equivalent forever (limited promotional offer) |
 | **Enterprise** | Custom | API access, SSO/teams, custom knowledge base, SLA, dedicated support |
 
 **Philosophy:** Free tier unlocks the product surface; paid tiers raise **limits**, **model quality**, and **priority** — not basic feature paywalls.
 
-Upgrade paths: **/pricing**, **/founder-access**, **/lifetime-deal**, Profile → subscription.
+Upgrade paths: **/pricing**, **/founder-access**, Profile → subscription.
 
 ### Main chat experience (/chatbot)
 - **E2EE:** Users unlock workspace with a master passphrase; messages encrypted at rest.

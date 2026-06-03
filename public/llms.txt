@@ -35,7 +35,6 @@
 
 - [Pricing](/pricing): Free, Pro, Premium, Elite plans.
 - [Billing](/billing): Subscription management.
-- [Lifetime Deal](/lifetime-deal): One-time Elite access.
 - [Settings](/settings): Preferences, offline AI, API keys.
 - [Profile](/profile): User profile and BYOK.
 

@@ -22,12 +22,10 @@ import {
   PAY_PER_SOLUTIONS,
   API_PLANS,
   WHITELABEL_PLANS,
-  LIFETIME_DEAL,
 } from "@/lib/monetization";
-import { getLifetimeSlotsDisplay } from "@/lib/ethicalGrowth";
 import Navigation from "@/components/Navigation";
 
-const VALID_PLAN_IDS = new Set(["free", "pro", "premium", "elite", "lifetime"]);
+const VALID_PLAN_IDS = new Set(["free", "pro", "premium", "elite"]);
 
 const FounderAccessPage = () => {
   const { toast } = useToast();
@@ -38,16 +36,15 @@ const FounderAccessPage = () => {
 
   useEffect(() => {
     const plan = searchParams.get("plan")?.toLowerCase();
+    if (plan === "lifetime") {
+      setSelectedTier("elite");
+      return;
+    }
     if (plan && VALID_PLAN_IDS.has(plan)) {
       setSelectedTier(plan);
     }
   }, [searchParams]);
   const [activePaymentMethod, setActivePaymentMethod] = useState<string>("bank");
-
-  const lifetimeSlots = getLifetimeSlotsDisplay();
-  const progressPercent = lifetimeSlots
-    ? ((lifetimeSlots.total - lifetimeSlots.remaining) / lifetimeSlots.total) * 100
-    : 0;
 
   const copyToClipboard = (text: string, field: string) => {
     navigator.clipboard.writeText(text);
@@ -100,8 +97,7 @@ const FounderAccessPage = () => {
       case 'free': return Zap;
       case 'pro': return Star;
       case 'premium': return Rocket;
-      case 'elite': 
-      case 'lifetime': return Crown;
+      case 'elite': return Crown;
       default: return Zap;
     }
   };
@@ -178,52 +174,6 @@ const FounderAccessPage = () => {
             <p className="text-muted-foreground text-lg max-w-md mx-auto">
               Select your plan and complete payment to unlock your access
             </p>
-          </motion.div>
-
-          {/* Lifetime Deal Banner */}
-          <motion.div variants={itemVariants} className="mb-8">
-            <Link to="/lifetime-deal">
-              <motion.div 
-                className="group relative rounded-2xl overflow-hidden border border-[hsl(var(--border))] bg-gradient-to-r from-[hsl(40_95%_55%/0.08)] via-[hsl(var(--card))] to-[hsl(315_90%_58%/0.06)] p-[1px]"
-                whileHover={{ scale: 1.005 }}
-                transition={{ duration: 0.2 }}
-              >
-                <div className="flex items-center justify-between gap-4 p-4 md:p-5 rounded-2xl bg-[hsl(var(--card)/0.8)] backdrop-blur-sm">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[hsl(var(--warning))] to-[hsl(var(--accent))] flex items-center justify-center shrink-0 shadow-[0_0_20px_hsl(var(--warning)/0.3)]">
-                      <Sparkles className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <Badge className="bg-[hsl(var(--warning)/0.2)] text-[hsl(var(--warning))] text-[10px] uppercase tracking-wider font-bold border-0">
-                          One-time
-                        </Badge>
-                        {lifetimeSlots && (
-                          <span className="text-sm font-semibold text-[hsl(var(--warning))]">
-                            {lifetimeSlots.remaining} of {lifetimeSlots.total} spots left
-                          </span>
-                        )}
-                      </div>
-                      <h3 className="font-bold text-foreground">$99 Lifetime Deal — Everything, Forever</h3>
-                      <p className="text-xs text-muted-foreground mt-0.5">See /lifetime-deal for what&apos;s included</p>
-                    </div>
-                  </div>
-                  <Button variant="secondary" size="sm" className="shrink-0 gap-1 group-hover:bg-[hsl(var(--warning))] group-hover:text-[hsl(var(--primary-foreground))] transition-colors hidden md:flex">
-                    View Deal <ChevronRight className="w-4 h-4" />
-                  </Button>
-                </div>
-                {lifetimeSlots && (
-                  <div className="h-0.5 bg-[hsl(var(--muted))]">
-                    <motion.div
-                      className="h-full bg-gradient-to-r from-[hsl(var(--warning))] to-[hsl(var(--accent))]"
-                      initial={{ width: 0 }}
-                      animate={{ width: `${progressPercent}%` }}
-                      transition={{ duration: 1.5, ease: "easeOut" }}
-                    />
-                  </div>
-                )}
-              </motion.div>
-            </Link>
           </motion.div>
 
           {/* Main Layout */}

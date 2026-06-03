@@ -30,7 +30,6 @@ const VOICE_ROUTES = [
   { path: "/profile", names: ["profile", "my profile", "account", "settings"] },
   { path: "/billing", names: ["billing", "payments", "monetization"] },
   { path: "/founder-access", names: ["founder", "founder access", "founders"] },
-  { path: "/lifetime-deal", names: ["lifetime deal", "lifetime", "deal"] },
   { path: "/research", names: ["research", "deep research", "deep search"] },
   { path: "/knowledge", names: ["knowledge", "knowledge graph", "knowledge base"] },
   { path: "/strategy-lab", names: ["strategy lab", "lab", "experiments"] },

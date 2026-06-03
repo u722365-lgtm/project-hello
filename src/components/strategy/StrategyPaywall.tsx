@@ -81,10 +81,10 @@ export const StrategyPaywall = ({ monthlyUsage, hasActiveDayPass }: StrategyPayw
               variant="outline"
               size="lg"
               className="w-full gap-2"
-              onClick={() => navigate('/lifetime-deal')}
+              onClick={() => navigate('/founder-access?plan=premium')}
             >
               <Sparkles className="h-4 w-4" />
-              Or Get Lifetime Deal ($99) — Unlimited Forever
+              Upgrade to Premium — unlimited access
             </Button>
           </div>
 

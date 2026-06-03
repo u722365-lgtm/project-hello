@@ -93,29 +93,6 @@ export const SUBSCRIPTION_TIERS: PricingTier[] = [
     ],
   },
   {
-    id: 'lifetime',
-    name: 'Lifetime Deal',
-    price: 99,
-    period: 'one-time',
-    description: 'LIMITED: First 100 users only!',
-    badge: '🔥 TONIGHT ONLY',
-    popular: true,
-    features: [
-      'EVERYTHING included forever',
-      'All Premium features',
-      'Offline AI (Sovereign Mode)',
-      'Deep Research & Strategy Agent',
-      'Stealth Vault (E2E Encrypted)',
-      'AI Code Generation & Execution',
-      'Voice Mode & Translation',
-      'Collaborative Workspaces',
-      'White-label branding',
-      'API access (unlimited)',
-      'Priority 24/7 support',
-      'Lifetime updates - No renewals',
-    ],
-  },
-  {
     id: 'elite',
     name: 'Elite',
     price: 20,
@@ -123,7 +100,7 @@ export const SUBSCRIPTION_TIERS: PricingTier[] = [
     description: 'Enterprise-grade for teams',
     badge: 'ENTERPRISE',
     features: [
-      'Everything in Lifetime',
+      'Everything in Premium',
       'Team management',
       'SSO & SAML',
       'Custom integrations',
@@ -132,36 +109,6 @@ export const SUBSCRIPTION_TIERS: PricingTier[] = [
     ],
   },
 ];
-
-// Lifetime Deal Configuration
-export const LIFETIME_DEAL = {
-  id: 'lifetime',
-  name: 'Lifetime Deal',
-  price: 99,
-  originalPrice: 999,
-  currency: 'USD',
-  pkrPrice: 27500,
-  /** Used only when VITE_LIFETIME_SLOTS_* env vars are set — see getLifetimeSlotsDisplay() */
-  slotsTotal: 100,
-  deadline: new Date('2026-01-30T23:59:59').toISOString(),
-  features: [
-    { icon: '🧠', title: 'Unlimited AI Chat', description: 'No message limits, forever' },
-    { icon: '🔬', title: 'Deep Research', description: 'Multi-source analysis & reports' },
-    { icon: '📊', title: 'Strategy Agent', description: 'Business plans & SWOT analysis' },
-    { icon: '✈️', title: 'Offline Mode', description: 'Full AI without internet' },
-    { icon: '🔒', title: 'Stealth Vault', description: 'E2E encrypted notes' },
-    { icon: '💻', title: 'Code Execution', description: 'Python & JavaScript sandbox' },
-    { icon: '🎙️', title: 'Voice Mode', description: 'Talk to AI naturally' },
-    { icon: '🌍', title: 'Translation', description: '200+ languages' },
-    { icon: '🏢', title: 'Workspaces', description: 'Team collaboration' },
-    { icon: '🎨', title: 'White-label', description: 'Custom branding' },
-    { icon: '🔌', title: 'API Access', description: 'Build your own apps' },
-    { icon: '⚡', title: 'Priority Support', description: '24/7 assistance' },
-  ],
-  notIncluded: [
-    'Admin panel access',
-  ],
-};
 
 // Credit Packages for Pay-Per-Use
 export const CREDIT_PACKAGES: CreditPackage[] = [

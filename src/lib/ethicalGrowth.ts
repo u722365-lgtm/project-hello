@@ -81,17 +81,6 @@ export const COMMUNITY_ETHICS = {
   ctaChangelog: { href: "/changelog", label: "See the roadmap in changelog" },
 } as const;
 
-/** Lifetime slots: only show counts when explicitly configured (avoid fake scarcity) */
-export function getLifetimeSlotsDisplay(): { remaining: number; total: number } | null {
-  const remaining = import.meta.env.VITE_LIFETIME_SLOTS_REMAINING;
-  const total = import.meta.env.VITE_LIFETIME_SLOTS_TOTAL;
-  if (remaining === undefined || total === undefined) return null;
-  const r = Number(remaining);
-  const t = Number(total);
-  if (!Number.isFinite(r) || !Number.isFinite(t) || t <= 0) return null;
-  return { remaining: Math.max(0, Math.min(r, t)), total: t };
-}
-
 export const COMPARISON_DISCLAIMER =
   "Comparisons reflect ShadowTalk features and public competitor positioning as of our last docs update — verify current pricing on each provider's site.";
 

@@ -108,5 +108,3 @@ export const PRICING_ADDONS = [
 ] as const;
 
 export const RECOMMENDED_PLAN_ID = RECOMMENDED_MONTHLY_PLAN;
-
-export const LIFETIME_PRICE = PLAN_DETAILS.lifetime.price;

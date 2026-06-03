@@ -125,7 +125,9 @@ const ProfilePage = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState("");
 
-  const currentPlanDetails = PLAN_DETAILS[userPlan as keyof typeof PLAN_DETAILS] || PLAN_DETAILS.free;
+  const planKey =
+    userPlan === "lifetime" ? "elite" : (userPlan as keyof typeof PLAN_DETAILS);
+  const currentPlanDetails = PLAN_DETAILS[planKey] || PLAN_DETAILS.free;
   const { balance, transactions, isLoading: creditsLoading } = useShadowCredits();
 
   useEffect(() => {

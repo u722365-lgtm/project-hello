@@ -50,7 +50,6 @@ const Footer = () => {
         { name: "Careers", href: "/careers" },
         { name: "Press", href: "/press" },
         { name: "Founder Access", href: "/founder-access" },
-        { name: "Lifetime Deal", href: "/lifetime-deal" },
       ],
     },
     {

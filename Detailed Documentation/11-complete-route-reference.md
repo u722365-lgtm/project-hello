@@ -92,7 +92,7 @@ All routes are declared in **`src/App.tsx`**. Unless noted, pages are lazy-loade
 |------|------|-------------|
 | `/pricing` | `PricingPage` | Plans (Free, Pro, Premium, Elite) |
 | `/billing` | `MonetizationPage` | Subscription management |
-| `/lifetime-deal` | `LifetimeDealPage` | Lifetime Elite offer |
+| `/lifetime-deal` | redirect → `/pricing` | Legacy URL (lifetime offer removed) |
 | `/founder-access` | `FounderAccessPage` | Founder access |
 | `/enterprise` | `EnterpriseSettingsPage` | Enterprise admin |
 | `/ghost-ads` | `GhostAdsPage` | Privacy-preserving ads experiment |

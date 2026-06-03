@@ -6,14 +6,8 @@ import { heroTitleVariants } from "@/lib/pricingMotion";
 import { usePlatformMetrics } from "@/hooks/usePlatformMetrics";
 import { getSocialProofLine } from "@/lib/conversionPsychology";
 import { PRICING_PAGE_HOOK } from "@/lib/conversionCopy";
-import PricingBillingToggle, { type BillingMode } from "@/components/pricing/PricingBillingToggle";
 
-type PricingHeroProps = {
-  billing: BillingMode;
-  onBillingChange: (mode: BillingMode) => void;
-};
-
-const PricingHero = ({ billing, onBillingChange }: PricingHeroProps) => {
+const PricingHero = () => {
   const { profile, viewport, variants } = useLandingMotion();
   const { totalUsers, isLoading } = usePlatformMetrics();
 
@@ -58,14 +52,11 @@ const PricingHero = ({ billing, onBillingChange }: PricingHeroProps) => {
           animate="visible"
           variants={variants.fadeSlideUp}
           transition={{ delay: 0.15 }}
-          className="flex flex-col items-center gap-4"
+          className="flex flex-col items-center gap-3"
         >
-          <PricingBillingToggle value={billing} onChange={onBillingChange} />
           <p className="text-xs text-muted-foreground max-w-md text-center leading-relaxed">
             <Sparkles className="h-3.5 w-3.5 text-warning inline mr-1 align-text-bottom" />
-            {billing === "monthly"
-              ? "Premium ($15/mo) is the default for daily builders — unlimited messages and Mission Control."
-              : "Annual billing lowers effective monthly cost — see plan details below."}
+            Premium ($15/mo) is the default for daily builders — unlimited messages and Mission Control.
           </p>
           <p className="text-[11px] text-muted-foreground/90 max-w-lg text-center">{PRICING_PAGE_HOOK}</p>
         </motion.div>
