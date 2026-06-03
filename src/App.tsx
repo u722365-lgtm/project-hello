@@ -21,6 +21,7 @@ import BootScreen from "@/components/BootScreen";
 import { shouldSkipBootScreen } from "@/lib/skipBootScreen";
 import CommandPalette from "@/components/CommandPalette";
 import { createContext, useContext } from "react";
+import { BackToHomeButton } from "@/components/BackToHomeButton";
 
 export const CommandPaletteContext = createContext<{ open: () => void }>({ open: () => {} });
  // Critical path pages - loaded immediately
@@ -279,6 +280,7 @@ const App = () => {
                      <PersistedAuthRedirect />
                      <WorkspacePathRemember />
                      <AnimatedRoutes />
+                     <BackToHomeButton />
                    </SitePageShell>
                  </SiteMotionProvider>
                  <CommandPalette open={cmdOpen} onOpenChange={setCmdOpen} />
