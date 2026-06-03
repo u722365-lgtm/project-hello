@@ -67,6 +67,18 @@ export async function saveTextWithDialog(
   return result.filePath;
 }
 
+const DESKTOP_SIGN_IN_URL = "https://www.shadowtalk-ai.com/auth";
+
+/** Open browser sign-in; session is stored in the desktop app after you return and complete login in-app if needed */
+export async function openDesktopSignIn(): Promise<void> {
+  const api = getDesktopAPI();
+  if (api) {
+    await api.openExternal(DESKTOP_SIGN_IN_URL);
+    return;
+  }
+  window.open(DESKTOP_SIGN_IN_URL, "_blank", "noopener,noreferrer");
+}
+
 export async function desktopNotify(title: string, body: string): Promise<void> {
   const api = getDesktopAPI();
   if (api) {

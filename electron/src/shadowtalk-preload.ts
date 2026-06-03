@@ -1,5 +1,8 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
+const CHAT_STREAM_CHUNK = 'st-desktop:chatStreamChunk';
+const CHAT_STREAM_END = 'st-desktop:chatStreamEnd';
+
 const invoke = <T>(channel: string, ...args: unknown[]): Promise<T> =>
   ipcRenderer.invoke(channel, ...args) as Promise<T>;
 
@@ -32,4 +35,24 @@ contextBridge.exposeInMainWorld('shadowtalkDesktop', {
   getAutoLaunch: () => invoke<boolean>('st-desktop:getAutoLaunch'),
 
   setAutoLaunch: (enabled: boolean) => invoke<boolean>('st-desktop:setAutoLaunch', enabled),
+
+  chatStream: (
+    payload: { url: string; headers: Record<string, string>; body: string },
+    onChunk: (chunk: string) => void,
+    onEnd: (result: { ok: boolean; status: number; body: string }) => void,
+  ) => {
+    const requestId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const onChunkEvt = (_: unknown, data: { requestId: string; chunk: string }) => {
+      if (data.requestId === requestId) onChunk(data.chunk);
+    };
+    const onEndEvt = (_: unknown, data: { requestId: string; ok: boolean; status: number; body: string }) => {
+      if (data.requestId !== requestId) return;
+      ipcRenderer.removeListener(CHAT_STREAM_CHUNK, onChunkEvt);
+      ipcRenderer.removeListener(CHAT_STREAM_END, onEndEvt);
+      onEnd({ ok: data.ok, status: data.status, body: data.body });
+    };
+    ipcRenderer.on(CHAT_STREAM_CHUNK, onChunkEvt);
+    ipcRenderer.on(CHAT_STREAM_END, onEndEvt);
+    return invoke<{ started: boolean }>('st-desktop:chatStream', { ...payload, requestId });
+  },
 });

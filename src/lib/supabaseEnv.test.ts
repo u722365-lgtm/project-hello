@@ -29,7 +29,7 @@ describe('supabaseEnv', () => {
 
   it('expands generic Failed to fetch for desktop troubleshooting', () => {
     const msg = formatChatFetchError(new Error('Failed to fetch'));
-    expect(msg).toContain('desktop:make');
+    expect(msg).toContain('shadowtalk-setup.exe');
     expect(msg).toContain('DESKTOP.md');
   });
 });

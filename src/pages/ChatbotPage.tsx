@@ -94,6 +94,8 @@ import {
   DESKTOP_ENV_SETUP_HINT,
   formatChatFetchError,
 } from "@/lib/supabaseEnv";
+import { isShadowTalkDesktop } from "@/lib/desktopBridge";
+import { desktopChatStream } from "@/lib/desktopChatFetch";
 // Types
 interface Message { 
   id: string; 
@@ -116,6 +118,24 @@ type Personality = "friendly" | "sarcastic" | "professional" | "creative" | "met
 function displayStoredText(raw: string): string {
   if (raw.startsWith("e2e:")) return "[Encrypted message]";
   return raw;
+}
+
+function parseSseContentLines(
+  lines: string[],
+  assistantContent: string,
+): string {
+  let content = assistantContent;
+  for (const line of lines) {
+    if (!line.startsWith("data: ") || line === "data: [DONE]") continue;
+    try {
+      const data = JSON.parse(line.slice(6));
+      const delta = data.choices?.[0]?.delta?.content;
+      if (delta) content += delta;
+    } catch {
+      /* ignore malformed SSE chunk */
+    }
+  }
+  return content;
 }
 
 const ChatbotPage = () => {
@@ -729,31 +749,24 @@ const ChatbotPage = () => {
       }
 
       const { data: { session } } = await supabase.auth.getSession();
-      const resp = await fetch(chatUrl, {
-        method: "POST",
-        headers: getChatFetchHeaders(session?.access_token),
-        signal: controller.signal,
-        body: stringifyChatBody({
-          messages: augmented,
-          personality,
-          mode: chatMode,
-          ...buildChatProviderPayload(aiProvider, aiConfig, keys),
-        }),
+      const requestBody = stringifyChatBody({
+        messages: augmented,
+        personality,
+        mode: chatMode,
+        ...buildChatProviderPayload(aiProvider, aiConfig, keys),
       });
 
-      if (!resp.ok) {
+      const raiseChatHttpError = async (status: number, rawBody: string) => {
         let detail = "Chat request failed";
         let needsByok = false;
         try {
-          const errJson = await resp.json();
+          const errJson = JSON.parse(rawBody);
           detail = typeof errJson.error === "string" ? errJson.error : detail;
           needsByok = errJson?.needsByok === true || errJson?.code === "PLATFORM_CREDITS_EXHAUSTED";
         } catch {
-          detail = (await resp.text().catch(() => "")) || detail;
+          detail = rawBody || detail;
         }
-        // Platform credits exhausted AND no stored BYOK key on the server.
-        // Open the BYOK dialog so the user can paste their own API key and continue.
-        if (resp.status === 402 && needsByok) {
+        if (status === 402 && needsByok) {
           setPendingByokProvider("openrouter");
           setByokDialogOpen(true);
           toast({
@@ -762,54 +775,74 @@ const ChatbotPage = () => {
           });
         }
         throw new Error(detail);
-      }
+      };
 
-      const contentType = resp.headers.get("content-type") || "";
-      if (!contentType.includes("text/event-stream")) {
-        let detail = "Unexpected response from chat service";
-        try {
-          const json = await resp.json();
-          detail = typeof json.error === "string" ? json.error : detail;
-        } catch {
-          /* ignore */
-        }
-        throw new Error(detail);
-      }
-
-      const reader = resp.body?.getReader();
-      const decoder = new TextDecoder();
       const aiMessageId = crypto.randomUUID();
       let assistantContent = "";
 
-      while (reader) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const chunk = decoder.decode(value);
-        const lines = chunk.split("\n");
-        for (const line of lines) {
-          if (line.startsWith("data: ") && line !== "data: [DONE]") {
-            try {
-              const data = JSON.parse(line.slice(6));
-              const delta = data.choices?.[0]?.delta?.content;
-              if (delta) {
-                assistantContent += delta;
-                setMessages((prev) => {
-                  const exists = prev.find((m) => m.id === aiMessageId);
-                  if (exists) {
-                    return prev.map((m) =>
-                      m.id === aiMessageId ? { ...m, content: assistantContent } : m,
-                    );
-                  }
-                  return [
-                    ...prev,
-                    { id: aiMessageId, type: "ai", content: assistantContent, timestamp: new Date() },
-                  ];
-                });
-              }
-            } catch {
-              /* ignore malformed SSE chunk */
-            }
+      const pushAssistant = (content: string) => {
+        assistantContent = content;
+        setMessages((prev) => {
+          const exists = prev.find((m) => m.id === aiMessageId);
+          if (exists) {
+            return prev.map((m) =>
+              m.id === aiMessageId ? { ...m, content: assistantContent } : m,
+            );
           }
+          return [
+            ...prev,
+            { id: aiMessageId, type: "ai", content: assistantContent, timestamp: new Date() },
+          ];
+        });
+      };
+
+      if (isShadowTalkDesktop()) {
+        let lineBuffer = "";
+        const end = await desktopChatStream(
+          chatUrl,
+          requestBody,
+          session?.access_token,
+          controller.signal,
+          (chunk) => {
+            lineBuffer += chunk;
+            const lines = lineBuffer.split("\n");
+            lineBuffer = lines.pop() ?? "";
+            const next = parseSseContentLines(lines, assistantContent);
+            if (next !== assistantContent) pushAssistant(next);
+          },
+        );
+        if (!end.ok) {
+          await raiseChatHttpError(end.status, end.body);
+        }
+      } else {
+        const resp = await fetch(chatUrl, {
+          method: "POST",
+          headers: getChatFetchHeaders(session?.access_token),
+          signal: controller.signal,
+          body: requestBody,
+        });
+
+        if (!resp.ok) {
+          await raiseChatHttpError(resp.status, await resp.text().catch(() => ""));
+        }
+
+        const contentType = resp.headers.get("content-type") || "";
+        if (!contentType.includes("text/event-stream")) {
+          await raiseChatHttpError(resp.status, await resp.text().catch(() => ""));
+        }
+
+        const reader = resp.body?.getReader();
+        const decoder = new TextDecoder();
+        let lineBuffer = "";
+
+        while (reader) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          lineBuffer += decoder.decode(value, { stream: true });
+          const lines = lineBuffer.split("\n");
+          lineBuffer = lines.pop() ?? "";
+          const next = parseSseContentLines(lines, assistantContent);
+          if (next !== assistantContent) pushAssistant(next);
         }
       }
 

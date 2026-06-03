@@ -63,11 +63,21 @@ npm run desktop:make:publish
 
 Or use `npm run desktop:make` for installs without auto-update.
 
+### Production-ready desktop (end users)
+
+After `npm run desktop:make`, ship **`electron/dist/shadowtalk-setup.exe`**. End users only need to:
+
+1. Install the `.exe`
+2. Open ShadowTalk → **Settings** → sign in (same email as the website)
+3. Chat in the main workspace
+
+No Supabase CLI, `.env`, or `supabase deploy` is required on user PCs. Chat uses a **native IPC path** (no browser CORS) plus automatic CORS header fixes for web fetches.
+
 ### "Failed to fetch" in desktop chat
 
-1. **Rebuild from latest `main`** — Electron rewrites Supabase CORS headers for `shadowtalk://` (works even before you deploy edge functions).
-2. **Sign in** — Use **Settings** in the app or https://www.shadowtalk-ai.com/auth with the same account.
-3. **Optional server deploy** — `supabase functions deploy chat` (updates `cors.ts` on Supabase; recommended for all clients).
+1. **Reinstall** the latest `shadowtalk-setup.exe` from your build (must include commit with desktop chat IPC).
+2. **Sign in** inside the app (Settings), not only in the browser.
+3. **Owner-only (optional):** deploy edge functions from Lovable Cloud — not via personal Supabase CLI unless you own project `axsudmhjpfzffcicfvuj`.
 4. **Custom Supabase project** — Copy `env.example` → `.env` with your URL/anon key, then `npm run desktop:make`.
 
 ## Configuration

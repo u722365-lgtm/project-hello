@@ -27,6 +27,11 @@ export interface ShadowTalkDesktopAPI {
   showNotification: (title: string, body: string) => Promise<void>;
   getAutoLaunch: () => Promise<boolean>;
   setAutoLaunch: (enabled: boolean) => Promise<boolean>;
+  chatStream: (
+    payload: { url: string; headers: Record<string, string>; body: string },
+    onChunk: (chunk: string) => void,
+    onEnd: (result: { ok: boolean; status: number; body: string }) => void,
+  ) => Promise<{ started: boolean }>;
 }
 
 interface OpenDialogOptions {

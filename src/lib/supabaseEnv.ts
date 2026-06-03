@@ -50,8 +50,8 @@ export function formatChatFetchError(err: unknown): string {
     err instanceof Error ? err.message : "Error connecting to chat service.";
   if (msg === "Failed to fetch" || msg.includes("NetworkError")) {
     return (
-      "Could not reach the chat service. Pull latest main, rebuild the installer (npm run desktop:make), " +
-      "sign in, and optionally run: supabase functions deploy chat. See DESKTOP.md."
+      "Could not reach the chat service. Quit the app, reinstall the latest shadowtalk-setup.exe, " +
+      "then sign in from Settings. See DESKTOP.md."
     );
   }
   return msg;

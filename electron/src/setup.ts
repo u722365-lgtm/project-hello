@@ -232,10 +232,15 @@ function setupDesktopSupabaseCors(customScheme: string): Map<number, string> {
   const pendingOrigins = new Map<number, string>();
   const supabaseFilter = { urls: ['https://*.supabase.co/*', 'https://*.supabase.in/*'] };
 
+  const fallbackOrigin = `${customScheme}://localhost`;
+
   session.defaultSession.webRequest.onBeforeSendHeaders(supabaseFilter, (details, callback) => {
     const origin = details.requestHeaders.Origin ?? details.requestHeaders.origin;
     if (origin && isDesktopAppOrigin(origin, customScheme)) {
       pendingOrigins.set(details.id, origin);
+    } else if (details.url.includes('/functions/v1/')) {
+      // Electron often omits Origin on shadowtalk:// — still patch ACAO for browser fetch fallback
+      pendingOrigins.set(details.id, fallbackOrigin);
     }
     callback({ requestHeaders: details.requestHeaders });
   });

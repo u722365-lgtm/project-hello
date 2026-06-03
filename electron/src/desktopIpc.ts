@@ -1,4 +1,5 @@
 import { app, dialog, ipcMain, Notification, shell } from 'electron';
+import type { WebContents } from 'electron';
 import { access } from 'fs/promises';
 import { readFile, writeFile } from 'fs/promises';
 import { homedir } from 'os';
@@ -16,7 +17,50 @@ const CHANNEL = {
   getAutoLaunch: 'st-desktop:getAutoLaunch',
   setAutoLaunch: 'st-desktop:setAutoLaunch',
   revealInFolder: 'st-desktop:revealInFolder',
+  chatStream: 'st-desktop:chatStream',
 } as const;
+
+export const CHAT_STREAM_CHUNK = 'st-desktop:chatStreamChunk';
+export const CHAT_STREAM_END = 'st-desktop:chatStreamEnd';
+
+type ChatStreamPayload = {
+  requestId: string;
+  url: string;
+  headers: Record<string, string>;
+  body: string;
+};
+
+async function pumpChatSse(wc: WebContents, requestId: string, url: string, headers: Record<string, string>, body: string) {
+  try {
+    const res = await fetch(url, { method: 'POST', headers, body });
+    if (!res.ok) {
+      const errText = await res.text();
+      wc.send(CHAT_STREAM_END, { requestId, ok: false, status: res.status, body: errText });
+      return;
+    }
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('text/event-stream')) {
+      const errText = await res.text();
+      wc.send(CHAT_STREAM_END, { requestId, ok: false, status: res.status, body: errText });
+      return;
+    }
+    const reader = res.body?.getReader();
+    if (!reader) {
+      wc.send(CHAT_STREAM_END, { requestId, ok: false, status: 500, body: 'No response body' });
+      return;
+    }
+    const decoder = new TextDecoder();
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      wc.send(CHAT_STREAM_CHUNK, { requestId, chunk: decoder.decode(value, { stream: true }) });
+    }
+    wc.send(CHAT_STREAM_END, { requestId, ok: true, status: 200, body: '' });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Chat request failed';
+    wc.send(CHAT_STREAM_END, { requestId, ok: false, status: 0, body: msg });
+  }
+}
 
 export function registerDesktopIpc(): void {
   ipcMain.handle(CHANNEL.getInfo, async () => {
@@ -97,5 +141,14 @@ export function registerDesktopIpc(): void {
   ipcMain.handle(CHANNEL.setAutoLaunch, async (_event, enabled: boolean) => {
     app.setLoginItemSettings({ openAtLogin: enabled });
     return enabled;
+  });
+
+  ipcMain.handle(CHANNEL.chatStream, async (event, payload: ChatStreamPayload) => {
+    const { requestId, url, headers, body } = payload;
+    if (!url.includes('.supabase.co/functions/v1/') && !url.includes('.supabase.in/functions/v1/')) {
+      throw new Error('Invalid chat URL');
+    }
+    void pumpChatSse(event.sender, requestId, url, headers, body);
+    return { started: true as const };
   });
 }
