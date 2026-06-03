@@ -52,6 +52,17 @@ npm run desktop:start
 3. Deploy the site. Users download from **https://www.shadowtalk-ai.com/downloads** (direct URLs under `/downloads/`).
 4. Optionally attach the same files to **GitHub Releases** for mirrors.
 
+### Auto-update (optional)
+
+Desktop builds **do not** check GitHub for updates by default (avoids crash when no release exists). After you publish `v1.0.0` on GitHub Releases, rebuild with:
+
+```bash
+set SHADOWTALK_AUTO_UPDATE=1
+npm run desktop:make:publish
+```
+
+Or use `npm run desktop:make` for installs without auto-update.
+
 ## Configuration
 
 - Root `capacitor.config.ts` — app id `com.shadowtalk.ai`, Electron tray/splash
