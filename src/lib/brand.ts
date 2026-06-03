@@ -10,61 +10,61 @@ export const BRAND = {
   founder: "Zain",
   /** Memorable mnemonic — use consistently */
   mnemonic: "Think AI. Think ShadowTalk.",
-  tagline: "The agentic AI workspace that gets work done.",
+  tagline: "The agentic AI workspace that finishes your work.",
   shortPitch:
-    "Plan it. Run it. Ship it. One workspace for agents, tools, and privacy when you need it.",
+    "Plan it. Run it. Ship it. One workspace for agents, 30+ tools, and privacy when stakes are high.",
   manifesto:
-    "AI should execute — not just chat. ShadowTalk is where goals become missions, tools chain together, and you stay in control.",
+    "AI should execute — not just chat. ShadowTalk turns goals into missions, chains tools, and keeps you in control at every step.",
   /** Landing hero — bold, memorable, still honest about what we ship */
-  heroHeadline: ["The Agentic AI", "That Finishes Your Work"],
+  heroHeadline: ["Stop Chatting.", "Start Shipping."],
   heroSubtitle:
-    "Stop renting tab chaos from chat-only bots. ShadowTalk plans missions, runs 30+ tools, and ships deliverables — with you in the loop when it matters.",
-  heroBadge: "Built for builders who are done with “just chatting”",
+    "ShadowTalk is the agentic workspace: Mission Control, 30+ tools, multi-step agents, and deliverables you can hand off — free to try, no card required.",
+  heroBadge: "Free to try · Honest limits · Proof in our docs",
 } as const;
 
 /** Section headlines & subcopy for the home page */
 export const LANDING_COPY = {
   manifesto: {
     kicker: BRAND.mnemonic,
-    title: ["When someone says AI,", "you should think ShadowTalk."],
-    body: "Other tools answer. ShadowTalk executes — agents, missions, vault, voice, and thirty tools in one neural workspace. Once you feel the difference, generic chat feels like yesterday.",
-    traction: "Join creators who stopped juggling five apps for one goal.",
+    title: ["Generic chat is cheap.", "Execution is ShadowTalk."],
+    body: "One workspace runs research, code, vault, voice, and autonomous missions — so you stop copying outputs between five tabs. Try it free; verify features in our docs and changelog.",
+    traction: "Join builders who replaced “another chat tab” with a workspace that ships.",
   },
   comparison: {
-    badge: "Why teams switch",
-    title: ["Forget the tab circus.", "Remember ShadowTalk."],
+    badge: "Feature-for-feature, honest",
+    title: ["They reply.", "We run the playbook."],
     subtitle:
-      "ChatGPT talks. Claude drafts. ShadowTalk runs the whole playbook — agents, tools, missions, and privacy on your terms.",
+      "Side-by-side on agents, tools, privacy, and price — sourced from our docs, not hype. Confirm competitor pricing on their sites before you switch.",
   },
   features: {
-    badge: "One brain. Every tool.",
-    title: ["Everything you wished", "one AI could do."],
+    badge: "What you actually get",
+    title: ["One workspace.", "Thirty-plus tools."],
     subtitle:
-      "From Mission Control to on-device Gemma — this is the workspace founders reach for when “open another chat tab” is no longer enough.",
+      "Mission Control, marketplace agents, IDE, research, presentations, Stealth Vault, BYOK, and optional on-device models — listed in /docs, shipped in product.",
   },
   pricing: {
-    badge: "Invest in execution, not subscriptions",
-    title: ["Elite power.", "Without the $200 tax."],
+    badge: "Transparent tiers",
+    title: ["Unlimited execution.", "Without surprise fees."],
     subtitle:
-      "More agents, more tools, more control — at tiers that respect your budget. Start free. Scale when ShadowTalk becomes your default.",
+      "Free to prove the workspace. Pro, Premium, and Elite when you're ready — cancel anytime, money-back guarantee, data practices stated before you pay.",
   },
   testimonials: {
-    badge: "Early believers",
-    title: ["The vibe is real", "even before the stars are."],
+    badge: "How early users work",
+    title: ["No fake quotes.", "Real workflows."],
     subtitle:
-      "We're building in public with founders who already treat ShadowTalk as their command center — honest feedback, no fake quotes.",
+      "Founder-led product: try the free tier, read the changelog, send feedback — we publish what ships instead of invented testimonials.",
   },
   community: {
-    badge: "ShadowTalk collective",
-    title: ["Build beside people", "who ship with AI."],
+    badge: "Live product, live metrics",
+    title: ["Build in public", "with us."],
     subtitle:
-      "Creators, coders, and operators who chose execution over endless prompts — and who help shape what ShadowTalk becomes next.",
+      "Community numbers come from real workspace activity when available — plus public status, roadmap in changelog, and direct founder feedback.",
   },
   faq: {
-    badge: "Still thinking?",
-    title: ["Questions fade.", "Momentum doesn't."],
+    badge: "Straight answers",
+    title: ["Know the product", "before you pay."],
     subtitle:
-      "Everything you need to know before ShadowTalk becomes the name you say when someone asks which AI you use.",
+      "Limits, billing, privacy, and integrations — answered here and in /docs so you can choose ShadowTalk with confidence.",
   },
   founder: {
     line: "Crafted by a founder obsessed with agentic AI that actually ships — not slide decks.",
@@ -107,13 +107,13 @@ export const BRAND_PILLARS = [
 
 /** Rotating hero / chat hooks — memorable, specific */
 export const BRAND_HOOKS = [
-  "When you need AI that ships, not just chats.",
-  "Your goals. Our agents. Real deliverables.",
-  "ChatGPT talks. ShadowTalk executes.",
-  "One workspace. Thirty tools. Zero tab chaos.",
+  "Try chat free — see agents and tools in one workspace.",
+  "Mission Control runs multi-step work while you stay in the loop.",
+  "30+ tools from one prompt — research, code, vault, voice.",
+  "ChatGPT talks. ShadowTalk ships deliverables.",
+  "Premium matches ChatGPT Plus pricing — with more execution built in.",
+  "Proof in /changelog and /docs — not marketing fluff.",
   "Think AI. Think ShadowTalk.",
-  "The workspace that makes other AIs feel like drafts.",
-  "Built for the moment you stop accepting chat-only AI.",
 ] as const;
 
 export const CHAT_WELCOME_LINES = [

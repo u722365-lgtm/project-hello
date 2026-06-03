@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { FileText } from "lucide-react";
 import { PROOF_LINKS } from "@/lib/ethicalGrowth";
+import { PROOF_BAR_LABEL } from "@/lib/conversionCopy";
 
 type ProofOverHypeBarProps = {
   className?: string;
@@ -14,7 +15,7 @@ export function ProofOverHypeBar({ className = "" }: ProofOverHypeBarProps) {
     >
       <span className="inline-flex items-center gap-1.5 text-muted-foreground font-medium">
         <FileText className="h-3.5 w-3.5 text-primary" />
-        Proof, not hype:
+        {PROOF_BAR_LABEL}
       </span>
       {PROOF_LINKS.map((link, i) => (
         <span key={link.href} className="inline-flex items-center gap-1.5">

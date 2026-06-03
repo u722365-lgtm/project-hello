@@ -5,7 +5,7 @@ import {
   NUDGE_THRESHOLDS,
   RECOMMENDED_MONTHLY_PLAN,
 } from "@/lib/conversionPsychology";
-import { getHonestLimitHeadline, getHonestLimitSubline } from "@/lib/ethicalGrowth";
+import { getUpgradeNudgeHeadline, getUpgradeNudgeSubline } from "@/lib/conversionCopy";
 
 export type NudgeIntensity = "none" | "soft" | "strong" | "blocking";
 
@@ -40,8 +40,10 @@ export function useSubscriptionNudge(dailyMessagesUsed: number, conversationCoun
     const shouldShowBanner = intensity !== "none";
     const shouldBlockSend = intensity === "blocking";
 
-    const headline = getHonestLimitHeadline(dailyMessagesUsed, limit) || "Free tier usage";
-    const subline = getHonestLimitSubline(dailyMessagesUsed, limit);
+    const level =
+      intensity === "blocking" ? "blocking" : intensity === "strong" ? "strong" : "soft";
+    const headline = getUpgradeNudgeHeadline(dailyMessagesUsed, limit, level);
+    const subline = getUpgradeNudgeSubline(dailyMessagesUsed, limit, level, conversationCount);
 
     return {
       intensity,
@@ -54,5 +56,5 @@ export function useSubscriptionNudge(dailyMessagesUsed: number, conversationCoun
       headline,
       subline,
     };
-  }, [dailyMessagesUsed, getDailyMessageLimit, isProOrHigher, userPlan]);
+  }, [conversationCount, dailyMessagesUsed, getDailyMessageLimit, isProOrHigher, userPlan]);
 }

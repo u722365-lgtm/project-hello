@@ -78,6 +78,7 @@ import { useAutoBrowse } from "@/components/chat/BrowseActivityPanel";
 import { ChatUpgradeNudge } from "@/components/monetization/ChatUpgradeNudge";
 import { UpgradePrompt } from "@/components/monetization/UpgradePrompt";
 import { useSubscriptionNudge } from "@/hooks/useSubscriptionNudge";
+import { CHAT_LIMIT_TOAST } from "@/lib/conversionCopy";
 import { getDailyMessageCount, incrementDailyMessageCount } from "@/lib/dailyMessageCounter";
 import { openProjectInIde, saveIdePayload } from "@/lib/idePayloadStorage";
 import { detectAppBuilderIntent, generateAppProject } from "@/lib/appBuilder";
@@ -872,8 +873,8 @@ const ChatbotPage = () => {
     if (!isProOrHigher && nudge.shouldBlockSend) {
       setUpgradeOpen(true);
       toast({
-        title: "Daily limit reached",
-        description: "Premium ($15/mo) unlocks unlimited messages and Mission Control — best value for daily use.",
+        title: CHAT_LIMIT_TOAST.title,
+        description: CHAT_LIMIT_TOAST.description,
         variant: "destructive",
       });
       return;

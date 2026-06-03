@@ -114,20 +114,20 @@ export function generateMetaTags(meta: PageMeta): Record<string, string> {
  // Page-specific SEO configurations
 export const PAGE_SEO: Record<string, PageMeta> = {
   home: {
-    title: 'ShadowTalk AI — Agentic AI Workspace',
-    description: 'ShadowTalk AI: the agentic workspace that gets work done. Mission Control, 30+ tools, multi-step agents, vault & BYOK. Think AI — think ShadowTalk.',
+    title: 'ShadowTalk AI — Agentic AI Workspace That Ships Your Work',
+    description: 'Try ShadowTalk free: Mission Control, 30+ tools, multi-step agents, vault & BYOK. Honest limits, transparent pricing, proof in docs and changelog.',
     keywords: ['ShadowTalk', 'agentic AI', 'AI agents', 'AI workspace', 'Mission Control', 'AI automation', 'GPT alternative', 'privacy AI'],
     canonical: 'https://www.shadowtalk-ai.com/home',
   },
   pricing: {
-    title: 'Pricing Plans',
-    description: 'Choose the perfect ShadowTalk AI plan for your needs. Start free, upgrade anytime. Pro from $5/mo, Premium $15/mo, Elite $20/mo.',
+    title: 'Pricing — Free to Start, Cancel Anytime',
+    description: 'ShadowTalk pricing: Free tier with stated daily limits. Pro $5/mo, Premium $15/mo, Elite $20/mo. Cancel anytime, 30-day money-back, data handling disclosed upfront.',
     keywords: ['AI pricing', 'chatbot subscription', 'AI plans'],
     canonical: 'https://www.shadowtalk-ai.com/pricing',
   },
   chatbot: {
-    title: 'ShadowTalk AI — Agentic AI Workspace',
-    description: 'ShadowTalk AI: the agentic workspace that gets work done. Mission Control, 30+ tools, multi-step agents, and multi-model chat.',
+    title: 'ShadowTalk AI — Try Chat Free',
+    description: 'Open the ShadowTalk workspace: agents, 30+ tools, missions, and multi-model chat. Free tier with clear daily limits — upgrade when you are ready.',
     keywords: ['ShadowTalk', 'AI chat', 'chatbot', 'AI assistant', 'agentic AI'],
     canonical: 'https://www.shadowtalk-ai.com/',
   },

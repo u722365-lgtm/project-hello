@@ -3,6 +3,7 @@ import { MessageSquare, GitBranch } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { COMMUNITY_ETHICS } from "@/lib/ethicalGrowth";
+import { COMMUNITY_MARKETING } from "@/lib/conversionCopy";
 import ProofOverHypeBar from "@/components/growth/ProofOverHypeBar";
 
 export function CommunityBuildingBlock() {
@@ -11,10 +12,10 @@ export function CommunityBuildingBlock() {
       <div className="container mx-auto px-4 max-w-4xl text-center">
         <div className="inline-flex items-center gap-2 rounded-full border border-border/50 bg-card/50 px-3 py-1 text-xs text-muted-foreground mb-4">
           <GitBranch className="h-3.5 w-3.5 text-primary" />
-          {COMMUNITY_ETHICS.title}
+          {COMMUNITY_MARKETING.title}
         </div>
-        <h2 className="text-2xl sm:text-3xl font-bold mb-3">Ship in the open</h2>
-        <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">{COMMUNITY_ETHICS.subtitle}</p>
+        <h2 className="text-2xl sm:text-3xl font-bold mb-3">{COMMUNITY_MARKETING.headline}</h2>
+        <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">{COMMUNITY_MARKETING.subtitle}</p>
         <ProofOverHypeBar className="mb-8" />
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Button asChild variant="default" className="gap-2">

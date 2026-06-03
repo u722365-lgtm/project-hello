@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Check, Shield } from "lucide-react";
 import { PRICING_TRANSPARENCY } from "@/lib/ethicalGrowth";
+import { PRICING_PAGE_HOOK } from "@/lib/conversionCopy";
 
 type PricingTransparencyBlockProps = {
   className?: string;
@@ -18,9 +19,7 @@ export function PricingTransparencyBlock({ className = "", compact = false }: Pr
         <h3 className="text-lg font-semibold">Before you upgrade</h3>
       </div>
       {!compact && (
-        <p className="text-sm text-muted-foreground mb-4">
-          What you get, how billing works, and how we handle data — stated upfront.
-        </p>
+        <p className="text-sm text-muted-foreground mb-4">{PRICING_PAGE_HOOK}</p>
       )}
       <ul className="space-y-2 text-sm text-muted-foreground mb-4">
         <li>{PRICING_TRANSPARENCY.cancel}</li>

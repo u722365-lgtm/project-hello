@@ -59,7 +59,7 @@
 
 ## Ethical growth & transparency
 
-- First visit: workspace at /chatbot opens without a boot screen; hero on /home shows honest free vs paid limits and links to changelog, status, docs, trust, and transparency.
+- First visit: workspace at /chatbot opens without a boot screen; hero on /home leads with "Try chat free", honest free vs paid limits, and links to changelog, status, docs, trust, and transparency.
 - Pricing: cancellation, refunds, and data handling are stated on /pricing before upgrade (see PricingTransparencyBlock).
 - Proactive suggestions: opt-in only, labeled "Optional suggestion", dismissible, rate-limited per session (support widget).
 - Referrals: personal links only — no contact spam; rewards described on /referral.

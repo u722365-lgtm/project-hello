@@ -160,7 +160,7 @@ const HeroSection = () => {
                 }}
               >
                 <Zap className="mr-2 sm:mr-3 h-5 w-5" />
-                See what ships
+                Explore features
               </Button>
             </LandingMagneticButton>
           </motion.div>

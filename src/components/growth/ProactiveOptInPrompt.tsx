@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
 import { PROACTIVE_ETHICS } from "@/lib/ethicalGrowth";
+import { PROACTIVE_MARKETING } from "@/lib/conversionCopy";
 
 type ProactiveOptInPromptProps = {
   onEnable: () => void;
@@ -21,8 +22,8 @@ export function ProactiveOptInPrompt({ onEnable, onDismiss, className = "" }: Pr
           {PROACTIVE_ETHICS.label}
         </span>
       </div>
-      <p className="text-sm font-medium text-foreground mb-1">{PROACTIVE_ETHICS.enableTitle}</p>
-      <p className="text-xs text-muted-foreground mb-3 leading-relaxed">{PROACTIVE_ETHICS.enableBody}</p>
+      <p className="text-sm font-medium text-foreground mb-1">{PROACTIVE_MARKETING.enableTitle}</p>
+      <p className="text-xs text-muted-foreground mb-3 leading-relaxed">{PROACTIVE_MARKETING.enableBody}</p>
       <div className="flex gap-2">
         <Button size="sm" className="flex-1" onClick={onEnable}>
           Enable suggestions

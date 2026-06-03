@@ -5,6 +5,7 @@ import { useLandingMotion } from "@/hooks/use-landing-motion";
 import { heroTitleVariants } from "@/lib/pricingMotion";
 import { usePlatformMetrics } from "@/hooks/usePlatformMetrics";
 import { getSocialProofLine } from "@/lib/conversionPsychology";
+import { PRICING_PAGE_HOOK } from "@/lib/conversionCopy";
 import PricingBillingToggle, { type BillingMode } from "@/components/pricing/PricingBillingToggle";
 
 type PricingHeroProps = {
@@ -60,12 +61,13 @@ const PricingHero = ({ billing, onBillingChange }: PricingHeroProps) => {
           className="flex flex-col items-center gap-4"
         >
           <PricingBillingToggle value={billing} onChange={onBillingChange} />
-          <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-            <Sparkles className="h-3.5 w-3.5 text-warning" />
+          <p className="text-xs text-muted-foreground max-w-md text-center leading-relaxed">
+            <Sparkles className="h-3.5 w-3.5 text-warning inline mr-1 align-text-bottom" />
             {billing === "monthly"
-              ? "Premium is the sweet spot for most builders"
-              : "$99 once — everything in Elite, forever"}
+              ? "Premium ($15/mo) is the default for daily builders — unlimited messages and Mission Control."
+              : "Annual billing lowers effective monthly cost — see plan details below."}
           </p>
+          <p className="text-[11px] text-muted-foreground/90 max-w-lg text-center">{PRICING_PAGE_HOOK}</p>
         </motion.div>
       </div>
     </section>
