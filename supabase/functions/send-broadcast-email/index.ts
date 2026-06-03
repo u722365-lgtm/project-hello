@@ -15,6 +15,20 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const auth = await requireAuth(req, corsHeaders);
+  if (!auth.authenticated) return auth.response;
+  const { data: roleRow } = await auth.supabase
+    .from("user_roles").select("role").eq("user_id", auth.userId).eq("role", "admin").maybeSingle();
+  if (!roleRow) {
+    return new Response(JSON.stringify({ error: "Admin access required" }), {
+      status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  const escapeHtml = (s: string) =>
+    String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+
   try {
     const resendKey = Deno.env.get("Resend_api_key");
     if (!resendKey) throw new Error("Resend API key not configured");
@@ -23,7 +37,14 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { subject, features, preview_only } = await req.json();
+    const raw = await req.json();
+    const subject = escapeHtml(String(raw.subject || ""));
+    const preview_only = !!raw.preview_only;
+    const features = Array.isArray(raw.features) ? raw.features.map((f: any) => ({
+      title: escapeHtml(String(f?.title || "")),
+      description: escapeHtml(String(f?.description || "")),
+      emoji: escapeHtml(String(f?.emoji || "✨")),
+    })) : [];
 
     if (!subject || !features || !Array.isArray(features) || features.length === 0) {
       return new Response(
