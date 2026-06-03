@@ -303,7 +303,7 @@ const PresentationBuilderPage = () => {
     }
   }, [topic, slideCount, style, additionalContext]);
 
-  const exportToPPTX = useCallback(async () => {
+  const exportToPPTX = useCallback(async (destination: "download" | "onedrive" = "download") => {
     if (!presentation) return;
     setIsExporting(true);
     const exportToastId = toast.loading(`Preparing PPTX (${presentation.slides.length} slides)…`);
@@ -760,9 +760,13 @@ const PresentationBuilderPage = () => {
                   <Button size="sm" variant="outline" onClick={() => addSlide()} className="h-7 text-xs gap-1">
                     <Plus className="w-3 h-3" /> Add Slide
                   </Button>
-                  <Button size="sm" onClick={exportToPPTX} disabled={isExporting} className="h-7 text-xs gap-1">
+                  <Button size="sm" onClick={() => exportToPPTX("download")} disabled={isExporting} className="h-7 text-xs gap-1">
                     {isExporting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />}
                     Export PPTX
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => exportToPPTX("onedrive")} disabled={isExporting} className="h-7 text-xs gap-1">
+                    <Cloud className="w-3 h-3" />
+                    Save to OneDrive
                   </Button>
                 </>
               )}
