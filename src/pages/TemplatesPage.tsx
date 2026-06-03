@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { LayoutGrid, Paintbrush, Search, Sparkles, Wand2, FolderOpen } from "lucide-react";
 import Navigation from "@/components/Navigation";
@@ -25,12 +26,18 @@ import type { ThemeTemplate } from "@/lib/themes/types";
 
 const CATEGORIES = [...new Set(THEME_TEMPLATES.map((t) => t.category))];
 
+const TAB_VALUES = new Set(["gallery", "custom", "mine"]);
+
 const TemplatesPage = () => {
   const { templates, activeTemplateId, applyTemplate, downloadTemplate } = useThemeTemplates();
   const { variants, hoverLift, isMobile } = useLandingMotion();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string | "all">("all");
-  const [tab, setTab] = useState("gallery");
+  const tabParam = searchParams.get("tab");
+  const [tab, setTab] = useState(() =>
+    tabParam && TAB_VALUES.has(tabParam) ? tabParam : "gallery",
+  );
   const [customLibrary, setCustomLibrary] = useState(() => loadCustomThemesLibrary());
   const [designerSeed, setDesignerSeed] = useState<string | null>(null);
   const [designerInitialForm, setDesignerInitialForm] = useState<CustomThemeFormState | null>(null);
@@ -39,6 +46,12 @@ const TemplatesPage = () => {
   useEffect(() => {
     void publishAutoImproveEvent("template_browse", { action: "gallery_open" });
   }, []);
+
+  useEffect(() => {
+    if (tabParam && TAB_VALUES.has(tabParam) && tabParam !== tab) {
+      setTab(tabParam);
+    }
+  }, [tabParam, tab]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -117,6 +130,7 @@ const TemplatesPage = () => {
             onValueChange={(v) => {
               setTab(v);
               if (v !== "custom") setDesignerInitialForm(null);
+              setSearchParams(v === "gallery" ? {} : { tab: v }, { replace: true });
             }}
             className="max-w-6xl mx-auto"
           >
@@ -218,14 +232,28 @@ const TemplatesPage = () => {
                 ))}
               </motion.div>
 
-              <motion.p
-                className="text-center text-xs text-muted-foreground mb-6"
-                animate={{ opacity: [0.6, 1, 0.6] }}
-                transition={{ duration: 3, repeat: Infinity }}
-              >
-                <Sparkles className="inline h-3.5 w-3.5 mr-1 text-primary" />
-                Want your own look? Open the Custom design tab.
-              </motion.p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-6">
+                <motion.p
+                  className="text-center text-xs text-muted-foreground"
+                  animate={{ opacity: [0.6, 1, 0.6] }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                >
+                  <Sparkles className="inline h-3.5 w-3.5 mr-1 text-primary" />
+                  Want your own look? Design a custom theme.
+                </motion.p>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="gap-1.5"
+                  onClick={() => {
+                    setTab("custom");
+                    setSearchParams({ tab: "custom" }, { replace: true });
+                  }}
+                >
+                  <Paintbrush className="h-3.5 w-3.5" />
+                  Custom design
+                </Button>
+              </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
                 {filtered.map((template, index) => (

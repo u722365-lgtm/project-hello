@@ -9,7 +9,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Globe, Monitor, Moon, Palette, Settings, Volume2 } from "lucide-react";
+import { Globe, Monitor, Moon, Palette, Paintbrush, Settings, Volume2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
 import {
   getUiCompactMode,
@@ -46,6 +48,7 @@ function SettingRow({
 }
 
 export function SettingsGeneralSection() {
+  const navigate = useNavigate();
   const { setTheme } = useTheme();
   const [soundEnabled, setSoundEnabled] = useState(() => getUiSoundEnabled());
   const [compactMode, setCompactMode] = useState(() => getUiCompactMode());
@@ -96,6 +99,24 @@ export function SettingsGeneralSection() {
                 </SelectContent>
               </Select>
             </SettingRow>
+            <Button
+              type="button"
+              variant="secondary"
+              className="w-full gap-2"
+              onClick={() => navigate("/templates?tab=custom")}
+            >
+              <Paintbrush className="h-4 w-4" />
+              Open custom theme designer
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full gap-2"
+              onClick={() => navigate("/templates")}
+            >
+              <Palette className="h-4 w-4" />
+              Browse 100 UI templates
+            </Button>
           </SettingsShellCard>
 
           <SettingsShellCard title="Compact mode" description="Tighter spacing" icon={Monitor}>

@@ -22,7 +22,8 @@ import {
 const pages = [
   { name: "Chatbot", href: "/chatbot", icon: MessageSquare, desc: "AI chat assistant" },
   { name: "Pricing", href: "/pricing", icon: Shield, desc: "Plans & pricing" },
-  { name: "UI Templates", href: "/templates", icon: LayoutGrid, desc: "100 themes — apply site-wide" },
+  { name: "UI Templates", href: "/templates", icon: LayoutGrid, desc: "100 presets + custom theme designer" },
+  { name: "Custom theme designer", href: "/templates?tab=custom", icon: LayoutGrid, desc: "Design your own palette and apply site-wide" },
   { name: "Strategy Agent", href: "/strategy", icon: Brain, desc: "AI strategy advisor" },
   { name: "AI Workspace", href: "/workspace", icon: Sparkles, desc: "Business memory & context" },
   { name: "Code IDE", href: "/ide", icon: Code, desc: "Monaco editor & live preview" },

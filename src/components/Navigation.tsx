@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Menu, X, Bot, Shield, BookOpen, Users, History, User, Code, BarChart3, Building2, Settings, UserCircle, Brain, Sparkles, ChevronDown, MoreHorizontal, Download, Share, Smartphone, MessageSquare, CreditCard, Rocket, Tag, ShieldCheck, Presentation, Target, Store, Terminal, Eye } from "lucide-react";
+import { Menu, X, Bot, Shield, BookOpen, Users, History, User, Code, BarChart3, Building2, Settings, UserCircle, Brain, Sparkles, ChevronDown, MoreHorizontal, Download, Share, Smartphone, MessageSquare, CreditCard, Rocket, Tag, ShieldCheck, Presentation, Target, Store, Terminal, Eye, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { FeedbackForm } from "@/components/FeedbackForm";
@@ -98,6 +98,7 @@ const Navigation = ({ landingAnimated = false }: NavigationProps) => {
 
   const secondaryNavItems = [
     { name: "Chatbot", href: "/chatbot", icon: MessageSquare, isLink: true },
+    { name: "UI Templates", href: "/templates", icon: LayoutGrid, isLink: true },
     { name: "Marketplace", href: "/marketplace", icon: Store, isLink: true },
     { name: "Mission Control", href: "/missioncontrol", icon: Target, isLink: true },
     { name: "Presentations", href: "/presentations", icon: Presentation, isLink: true },
