@@ -23,6 +23,22 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Auth: require admin or internal cron secret
+  const cronSecret = Deno.env.get("INTERNAL_CRON_SECRET") || "";
+  const providedCron = req.headers.get("x-internal-cron-secret") || "";
+  const isCron = cronSecret && providedCron === cronSecret;
+  if (!isCron) {
+    const auth = await requireAuth(req, corsHeaders);
+    if (!auth.authenticated) return auth.response;
+    const { data: roleRow } = await auth.supabase
+      .from("user_roles").select("role").eq("user_id", auth.userId).eq("role", "admin").maybeSingle();
+    if (!roleRow) {
+      return new Response(JSON.stringify({ error: "Admin access required" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+  }
+
   try {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
