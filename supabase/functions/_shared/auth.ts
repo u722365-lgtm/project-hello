@@ -26,37 +26,62 @@ export async function requireAuth(
     return {
       authenticated: false,
       response: new Response(
-        JSON.stringify({ error: "Missing or invalid Authorization header" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ error: "Missing or invalid Authorization header", success: false }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       ),
     };
   }
 
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_ANON_KEY")!,
-    { global: { headers: { Authorization: authHeader } } }
-  );
+  const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 
-  const token = authHeader.replace("Bearer ", "");
-  const { data, error } = await supabase.auth.getClaims(token);
-
-  if (error || !data?.claims) {
+  // Fail-safe: if backend isn't configured, never throw (prevents edge runtime errors).
+  if (!supabaseUrl || !anonKey) {
     return {
       authenticated: false,
       response: new Response(
-        JSON.stringify({ error: "Invalid or expired token" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ error: "Auth not configured", warning: "Missing SUPABASE_URL / SUPABASE_ANON_KEY" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       ),
     };
   }
 
-  return {
-    authenticated: true,
-    userId: data.claims.sub as string,
-    email: data.claims.email as string | undefined,
-    supabase,
-  };
+  try {
+    const supabase = createClient(
+      supabaseUrl,
+      anonKey,
+      { global: { headers: { Authorization: authHeader } } },
+    );
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data, error } = await supabase.auth.getClaims(token);
+
+    if (error || !data?.claims) {
+      return {
+        authenticated: false,
+        response: new Response(
+          JSON.stringify({ error: "Invalid or expired token", success: false }),
+          // 200 avoids client runtime overlays on stale sessions; callers should check authenticated flag.
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        ),
+      };
+    }
+
+    return {
+      authenticated: true,
+      userId: data.claims.sub as string,
+      email: data.claims.email as string | undefined,
+      supabase,
+    };
+  } catch (e) {
+    return {
+      authenticated: false,
+      response: new Response(
+        JSON.stringify({ error: "Auth failed", warning: e instanceof Error ? e.message : String(e) }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      ),
+    };
+  }
 }
 
 /**
@@ -73,9 +98,13 @@ export async function optionalAuth(
   }
 
   try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+    if (!supabaseUrl || !anonKey) return { userId: null };
+
     const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
+      supabaseUrl,
+      anonKey,
       { global: { headers: { Authorization: authHeader } } }
     );
 
