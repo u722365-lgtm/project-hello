@@ -6,10 +6,13 @@ import { useLandingMotionContext } from "@/components/landing/LandingMotionProvi
 import LandingAnimate from "@/components/landing/LandingAnimate";
 
 const CouponBanner = () => {
+  const promoText = import.meta.env.VITE_PROMO_BANNER_TEXT as string | undefined;
+  const promoCode = import.meta.env.VITE_PROMO_BANNER_CODE as string | undefined;
+  const promoEnds = import.meta.env.VITE_PROMO_BANNER_ENDS as string | undefined;
   const [isVisible, setIsVisible] = useState(true);
   const { hoverLift, profile, orbTransition } = useLandingMotionContext();
 
-  if (!isVisible) return null;
+  if (!promoText || !isVisible) return null;
 
   return (
     <LandingAnimate preset="slideDown" inView={false} className="bg-gradient-primary text-primary-foreground overflow-hidden">
@@ -28,20 +31,22 @@ const CouponBanner = () => {
               <Percent className="h-4 w-4" />
             </motion.div>
             <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 min-w-0">
-              <span className="font-semibold text-sm sm:text-base truncate">
-                🎉 Limited Time: 50% OFF Lifetime Plan!
-              </span>
-              <div className="hidden sm:flex items-center space-x-2 text-sm">
-                <Clock className="h-4 w-4 shrink-0" />
-                <span>Ends Dec 31st</span>
-              </div>
+              <span className="font-semibold text-sm sm:text-base truncate">{promoText}</span>
+              {promoEnds && (
+                <div className="hidden sm:flex items-center space-x-2 text-sm">
+                  <Clock className="h-4 w-4 shrink-0" />
+                  <span>{promoEnds}</span>
+                </div>
+              )}
             </div>
           </motion.div>
           <div className="flex items-center space-x-2 sm:space-x-3 shrink-0">
             <motion.div whileHover={hoverLift} whileTap={{ scale: 0.97 }}>
-              <Button variant="secondary" size="sm" className="hidden sm:inline-flex">
-                Use Code: LIFETIME50
-              </Button>
+              {promoCode && (
+                <Button variant="secondary" size="sm" className="hidden sm:inline-flex">
+                  Code: {promoCode}
+                </Button>
+              )}
             </motion.div>
             <motion.button
               type="button"

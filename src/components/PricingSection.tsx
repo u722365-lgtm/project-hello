@@ -20,6 +20,8 @@ import { useLandingMotion } from "@/hooks/use-landing-motion";
 import LandingSectionHeader from "@/components/landing/LandingSectionHeader";
 import LandingAmbientOrb from "@/components/landing/LandingAmbientOrb";
 import LandingInteractiveCard from "@/components/landing/LandingInteractiveCard";
+import FreeTierLimitsStrip from "@/components/growth/FreeTierLimitsStrip";
+import PricingTransparencyBlock from "@/components/growth/PricingTransparencyBlock";
 
 const cardVariants = {
   hidden: { opacity: 0, y: 50, scale: 0.95 },
@@ -75,6 +77,7 @@ const PricingSection = () => {
       />
 
       <div className="container mx-auto px-4 relative z-10">
+        <FreeTierLimitsStrip className="mb-8 max-w-3xl mx-auto" />
         <LandingSectionHeader
           badge={LANDING_COPY.pricing.badge}
           badgeIcon={Star}
@@ -302,6 +305,8 @@ const PricingSection = () => {
             ))}
           </div>
         </div>
+
+        <PricingTransparencyBlock className="mt-12 max-w-3xl mx-auto" />
 
         {/* Bottom trust */}
         <motion.div

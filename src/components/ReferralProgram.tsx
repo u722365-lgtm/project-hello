@@ -15,6 +15,7 @@ import { motion } from "framer-motion";
 import {
   getTier, getNextTier, getShareLinks, MILESTONES, POWER_USER_TIERS,
 } from "@/hooks/useReferralTracking";
+import ReferralEthicsNotice from "@/components/growth/ReferralEthicsNotice";
 
 interface ReferralStats {
   referral_code: string;
@@ -134,6 +135,7 @@ const ReferralProgram = () => {
 
   return (
     <div className="space-y-6">
+      <ReferralEthicsNotice />
       {/* Hero Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}

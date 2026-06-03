@@ -13,6 +13,8 @@ import LandingMagneticButton from "@/components/landing/LandingMagneticButton";
 import RotatingHookText from "@/components/landing/RotatingHookText";
 import { StealthKillSwitch } from "@/components/StealthKillSwitch";
 import { useStealthKillSwitch } from "@/hooks/useStealthKillSwitch";
+import FreeTierLimitsStrip from "@/components/growth/FreeTierLimitsStrip";
+import ProofOverHypeBar from "@/components/growth/ProofOverHypeBar";
 
 const floatingOrbAnim = {
   y: [0, -20, 0],
@@ -144,7 +146,7 @@ const HeroSection = () => {
                 onClick={() => navigate("/chatbot")}
               >
                 <MessageCircle className="mr-2 sm:mr-3 h-5 w-5" />
-                Enter ShadowTalk — Free
+                Try chat — free
                 <ArrowRight className="ml-2 sm:ml-3 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             </LandingMagneticButton>
@@ -161,6 +163,14 @@ const HeroSection = () => {
                 See what ships
               </Button>
             </LandingMagneticButton>
+          </motion.div>
+
+          <motion.div variants={variants.fadeSlideUp} className="max-w-2xl mx-auto mb-8 px-2">
+            <FreeTierLimitsStrip />
+          </motion.div>
+
+          <motion.div variants={variants.fadeSlideUp} className="mb-8 px-2">
+            <ProofOverHypeBar />
           </motion.div>
 
           <motion.div

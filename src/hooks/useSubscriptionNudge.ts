@@ -2,11 +2,10 @@ import { useMemo } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { useFeatureGating } from "@/hooks/useFeatureGating";
 import {
-  getEndowmentMessage,
-  getLossAversionMessage,
   NUDGE_THRESHOLDS,
   RECOMMENDED_MONTHLY_PLAN,
 } from "@/lib/conversionPsychology";
+import { getHonestLimitHeadline, getHonestLimitSubline } from "@/lib/ethicalGrowth";
 
 export type NudgeIntensity = "none" | "soft" | "strong" | "blocking";
 
@@ -41,17 +40,8 @@ export function useSubscriptionNudge(dailyMessagesUsed: number, conversationCoun
     const shouldShowBanner = intensity !== "none";
     const shouldBlockSend = intensity === "blocking";
 
-    const headline =
-      intensity === "blocking"
-        ? "Daily limit reached"
-        : intensity === "strong"
-          ? "Almost at your free limit"
-          : "You're on a roll";
-
-    const subline =
-      intensity === "blocking"
-        ? getLossAversionMessage(dailyMessagesUsed, limit)
-        : `${getLossAversionMessage(dailyMessagesUsed, limit)} ${getEndowmentMessage(conversationCount)}`;
+    const headline = getHonestLimitHeadline(dailyMessagesUsed, limit) || "Free tier usage";
+    const subline = getHonestLimitSubline(dailyMessagesUsed, limit);
 
     return {
       intensity,
@@ -64,11 +54,5 @@ export function useSubscriptionNudge(dailyMessagesUsed: number, conversationCoun
       headline,
       subline,
     };
-  }, [
-    conversationCount,
-    dailyMessagesUsed,
-    getDailyMessageLimit,
-    isProOrHigher,
-    userPlan,
-  ]);
+  }, [dailyMessagesUsed, getDailyMessageLimit, isProOrHigher, userPlan]);
 }
