@@ -26,8 +26,8 @@ export async function requireAuth(
     return {
       authenticated: false,
       response: new Response(
-        JSON.stringify({ error: "Missing or invalid Authorization header" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ error: "Missing or invalid Authorization header", success: false }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       ),
     };
   }
@@ -60,8 +60,9 @@ export async function requireAuth(
       return {
         authenticated: false,
         response: new Response(
-          JSON.stringify({ error: "Invalid or expired token" }),
-          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          JSON.stringify({ error: "Invalid or expired token", success: false }),
+          // 200 avoids client runtime overlays on stale sessions; callers should check authenticated flag.
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         ),
       };
     }
