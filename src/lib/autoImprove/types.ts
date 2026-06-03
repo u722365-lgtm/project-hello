@@ -48,6 +48,10 @@ export interface LearnedProfile {
   pageVisitCounts?: Record<string, number>;
   /** Active + recent UI/UX suggestions (themes, density, motion) */
   uiUxSuggestions?: UiUxSuggestion[];
+  /** User saw, dismissed, or applied a theme suggestion — do not suggest themes again */
+  themeSuggestionCompleted?: boolean;
+  /** Best theme template offered (for reference after one-time suggestion) */
+  offeredThemeTemplateId?: string;
   preferredTemplateCategory?: string;
   suggestedMotion?: "calm" | "normal" | "energetic";
   suggestedDensity?: "compact" | "comfortable" | "spacious";

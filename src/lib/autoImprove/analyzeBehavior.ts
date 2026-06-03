@@ -1,6 +1,7 @@
 import type { BehaviorEvent, LearnedProfile, ImprovementApplied } from "./types";
 import { EMPTY_PROFILE } from "./types";
 import { analyzeUiUx } from "./analyzeUiUx";
+import { isThemeUiUxSuggestion } from "./uiUxTypes";
 
 const MODE_ALIASES: Record<string, string> = {
   general: "general",
@@ -156,10 +157,36 @@ export function analyzeBehavior(
     profile.recentImprovements = [...profile.recentImprovements, ...newImprovements].slice(-12);
   }
 
-  const { pageVisitCounts, suggestions: uiUxSuggestions } = analyzeUiUx(events, profile, confidence);
+  const themeSuggestionCompleted =
+    previous.themeSuggestionCompleted === true ||
+    events.some((e) => e.type === "theme_apply") ||
+    events.some(
+      (e) =>
+        e.type === "ui_suggestion_dismiss" &&
+        (String(e.payload?.suggestionId || "").startsWith("theme-") ||
+          e.payload?.suggestionId === "browse-templates"),
+    );
+
+  const profileForUiUx: LearnedProfile = {
+    ...profile,
+    themeSuggestionCompleted,
+    offeredThemeTemplateId: previous.offeredThemeTemplateId,
+  };
+
+  const { pageVisitCounts, suggestions: uiUxSuggestions } = analyzeUiUx(
+    events,
+    profileForUiUx,
+    confidence,
+  );
   profile.pageVisitCounts = pageVisitCounts;
+  profile.themeSuggestionCompleted = themeSuggestionCompleted;
   profile.uiUxSuggestions = uiUxSuggestions;
-  if (uiUxSuggestions[0]?.suggestedTemplateId) {
+
+  const bestTheme = uiUxSuggestions.find(isThemeUiUxSuggestion);
+  if (bestTheme?.suggestedTemplateId) {
+    profile.offeredThemeTemplateId = bestTheme.suggestedTemplateId;
+    profile.preferredTemplateCategory = bestTheme.suggestedTemplateId.split("-")[0];
+  } else if (uiUxSuggestions[0]?.suggestedTemplateId) {
     const tpl = uiUxSuggestions[0].suggestedTemplateId;
     profile.preferredTemplateCategory = tpl.split("-")[0];
   }

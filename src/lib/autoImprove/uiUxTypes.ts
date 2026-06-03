@@ -12,3 +12,12 @@ export interface UiUxSuggestion {
 }
 
 export type PageVisitCounts = Record<string, number>;
+
+/** Theme/template prompts — shown at most once per learning profile */
+export function isThemeUiUxSuggestion(s: UiUxSuggestion): boolean {
+  return (
+    Boolean(s.suggestedTemplateId) ||
+    s.id.startsWith("theme-") ||
+    s.id === "browse-templates"
+  );
+}

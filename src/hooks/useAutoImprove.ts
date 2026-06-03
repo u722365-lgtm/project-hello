@@ -14,6 +14,7 @@ import {
   syncProfileToMemories,
   bumpMetric,
   PROFILE_SETTING_KEY,
+  isThemeUiUxSuggestion,
   type BehaviorEventType,
   type LearnedProfile,
   type ImprovementApplied,
@@ -172,9 +173,21 @@ export function useAutoImprove() {
 
   const dismissUiUxSuggestion = useCallback(
     async (id: string) => {
-      const next = {
+      const current = profile?.uiUxSuggestions || [];
+      const dismissed = current.find((s) => s.id === id);
+      const markThemeDone = dismissed && isThemeUiUxSuggestion(dismissed);
+      const next: LearnedProfile = {
         ...(profile || EMPTY_PROFILE),
-        uiUxSuggestions: (profile?.uiUxSuggestions || []).filter((s) => s.id !== id),
+        uiUxSuggestions: current
+          .filter((s) => s.id !== id)
+          .filter((s) => !(markThemeDone && isThemeUiUxSuggestion(s))),
+        ...(markThemeDone
+          ? {
+              themeSuggestionCompleted: true,
+              offeredThemeTemplateId:
+                dismissed?.suggestedTemplateId ?? profile?.offeredThemeTemplateId,
+            }
+          : {}),
       };
       await saveProfile(next);
       void capture("ui_suggestion_dismiss", { suggestionId: id });

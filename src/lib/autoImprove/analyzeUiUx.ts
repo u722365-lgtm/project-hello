@@ -1,6 +1,7 @@
 import { THEME_TEMPLATES } from "@/lib/themes/generateTemplates";
 import type { BehaviorEvent, LearnedProfile } from "./types";
 import type { UiUxSuggestion } from "./uiUxTypes";
+import { isThemeUiUxSuggestion } from "./uiUxTypes";
 
 const PRODUCT_HEAVY = ["/chatbot", "/missioncontrol", "/ide", "/research", "/workspace"];
 const DOCS_HEAVY = ["/docs", "/settings", "/help", "/faq"];
@@ -61,7 +62,7 @@ export function analyzeUiUx(
         )
       : 0;
 
-  if (topPath && totalViews >= 8) {
+  if (!profile.themeSuggestionCompleted && topPath && totalViews >= 8) {
     const prefix = slugToTemplatePrefix(topPath);
     const variant = (sortedPaths.length % 10) + 1;
     const templateId = pickTemplateId(prefix, variant);
@@ -103,7 +104,7 @@ export function analyzeUiUx(
   }
 
   const docsHeavy = DOCS_HEAVY.reduce((s, p) => s + (merged[p] || 0), 0) / Math.max(totalViews, 1) > 0.25;
-  if (docsHeavy) {
+  if (!profile.themeSuggestionCompleted && docsHeavy) {
     suggestions.push({
       id: "theme-mono-03",
       title: "Readable Mono Terminal theme",
@@ -116,7 +117,7 @@ export function analyzeUiUx(
     });
   }
 
-  if (profile.peakHour !== undefined && (profile.peakHour >= 22 || profile.peakHour <= 5)) {
+  if (!profile.themeSuggestionCompleted && profile.peakHour !== undefined && (profile.peakHour >= 22 || profile.peakHour <= 5)) {
     suggestions.push({
       id: "theme-sovereign-02",
       title: "Softer night contrast",
@@ -128,19 +129,38 @@ export function analyzeUiUx(
     });
   }
 
-  suggestions.push({
-    id: "browse-templates",
-    title: "Explore 100 UI templates",
-    description: "Download themes and apply them instantly across ShadowTalk.",
-    reason: "Personalize the entire site from /templates",
-    priority: 40,
-    createdAt: now,
-  });
+  const themeCandidates = suggestions.filter(isThemeUiUxSuggestion);
+  const nonTheme = suggestions.filter((s) => !isThemeUiUxSuggestion(s));
 
-  const deduped = suggestions
+  let finalSuggestions: UiUxSuggestion[];
+
+  if (profile.themeSuggestionCompleted) {
+    finalSuggestions = nonTheme;
+  } else {
+    const bestTheme = themeCandidates.sort((a, b) => b.priority - a.priority)[0];
+    if (bestTheme) {
+      finalSuggestions = [bestTheme, ...nonTheme];
+    } else if (confidence >= 0.3 && totalViews >= 3) {
+      finalSuggestions = [
+        {
+          id: "browse-templates",
+          title: "Explore 100 UI templates",
+          description: "Download themes and apply them instantly across ShadowTalk.",
+          reason: "Personalize the entire site from /templates",
+          priority: 40,
+          createdAt: now,
+        },
+        ...nonTheme,
+      ];
+    } else {
+      finalSuggestions = nonTheme;
+    }
+  }
+
+  const deduped = finalSuggestions
     .sort((a, b) => b.priority - a.priority)
     .filter((s, i, arr) => arr.findIndex((x) => x.id === s.id) === i)
-    .slice(0, 5);
+    .slice(0, 4);
 
   return { pageVisitCounts: merged, suggestions: deduped };
 }
