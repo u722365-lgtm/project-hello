@@ -30,16 +30,37 @@ const getRatingStars = (rating: number): string => {
   return '⭐'.repeat(rating) + '☆'.repeat(5 - rating);
 };
 
-const handler = async (req: Request): Promise<Response> => {
-  console.log("[FEEDBACK-NOTIFICATION] Function started");
+const escapeHtml = (s: string): string =>
+  String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 
+const handler = async (req: Request): Promise<Response> => {
+  const origin = req.headers.get("origin");
+  const corsHeaders = getCorsHeaders(origin);
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return handleCorsOptions(origin);
   }
 
+  // IP-based rate limit: 10 / 10min
+  const ip = (req.headers.get("x-forwarded-for") || "unknown").split(",")[0].trim();
+  // @ts-ignore
+  const RL: Map<string, number[]> = (globalThis as any).__feedbackRL ??= new Map();
+  const now = Date.now();
+  const recent = (RL.get(ip) || []).filter((t) => now - t < 10 * 60 * 1000);
+  if (recent.length >= 10) {
+    return new Response(JSON.stringify({ error: "Too many requests" }), {
+      status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+  recent.push(now); RL.set(ip, recent);
+
   try {
-    const { feedbackId, category, rating, message, userEmail }: FeedbackNotificationRequest = await req.json();
-    console.log("[FEEDBACK-NOTIFICATION] Received feedback:", { feedbackId, category, rating });
+    const rawBody: FeedbackNotificationRequest = await req.json();
+    const feedbackId = escapeHtml(String(rawBody.feedbackId || ""));
+    const category = escapeHtml(String(rawBody.category || "other"));
+    const rating = Math.min(5, Math.max(0, Number(rawBody.rating) || 0));
+    const message = escapeHtml(String(rawBody.message || ""));
+    const userEmail = rawBody.userEmail ? escapeHtml(String(rawBody.userEmail)) : undefined;
 
     const adminEmail = "shadowtalk68@gmail.com";
 
