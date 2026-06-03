@@ -1,12 +1,14 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/components/AuthProvider";
 import { useAutoImproveContext } from "@/contexts/AutoImproveContext";
 import { maybeFetchDailyInsights } from "@/lib/autoImprove/dailyInsightsClient";
 import { hasAnalyticsConsent } from "@/lib/autoImprove/consent";
+import { isLearningEnabled } from "@/lib/autoImprove/learningConsent";
 import { AnimatePresence, motion } from "framer-motion";
 import { Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { UiUxSuggestionPanel } from "@/components/autoImprove/UiUxSuggestionPanel";
 
 /**
  * Background engine: runs analysis on route changes, syncs cloud memories/insights, surfaces improvement toasts.
@@ -14,7 +16,22 @@ import { Button } from "@/components/ui/button";
 export const AutoImproveEngine = () => {
   const location = useLocation();
   const { user } = useAuth();
-  const { runAnalysis, pendingImprovements, dismissImprovementNotice } = useAutoImproveContext();
+  const {
+    runAnalysis,
+    pendingImprovements,
+    dismissImprovementNotice,
+    capturePageView,
+    uiUxSuggestions,
+    dismissUiUxSuggestion,
+    learningEnabled,
+  } = useAutoImproveContext();
+  const lastPath = useRef<string>("");
+
+  useEffect(() => {
+    if (!isLearningEnabled() || location.pathname === lastPath.current) return;
+    lastPath.current = location.pathname;
+    void capturePageView(location.pathname);
+  }, [location.pathname, capturePageView]);
 
   useEffect(() => {
     const t = setTimeout(() => runAnalysis(), 2000);
@@ -30,6 +47,9 @@ export const AutoImproveEngine = () => {
 
   return (
     <AnimatePresence>
+      {learningEnabled && uiUxSuggestions.length > 0 && (
+        <UiUxSuggestionPanel suggestions={uiUxSuggestions} onDismiss={dismissUiUxSuggestion} />
+      )}
       {pendingImprovements.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 16 }}

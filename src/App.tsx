@@ -15,6 +15,7 @@ import { AuthProvider } from "@/components/AuthProvider";
 import { SecurityProvider } from "@/components/SecurityProvider";
 import { ShadowMemoryProvider } from "@/contexts/ShadowMemoryContext";
 import { AutoImproveProvider } from "@/contexts/AutoImproveContext";
+import { ThemeTemplateProvider } from "@/contexts/ThemeTemplateContext";
 import { StealthKillSwitchProvider } from "@/contexts/StealthKillSwitchContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import BootScreen from "@/components/BootScreen";
@@ -87,6 +88,7 @@ const CreativeStudioPage = lazy(() => import("./pages/CreativeStudioPage"));
 const CyberCommandPage = lazy(() => import("./pages/CyberCommandPage"));
 const AutoImproveEngine = lazy(() => import("@/components/autoImprove/AutoImproveEngine"));
 const PersonalLLMPage = lazy(() => import("./pages/PersonalLLMPage"));
+const TemplatesPage = lazy(() => import("./pages/TemplatesPage"));
 const PWABanner = lazy(() => import("./components/PWABanner"));
 const CookieConsent = lazy(() => import("./components/CookieConsent"));
 const CustomerSupportWidget = lazy(() => import("./components/CustomerSupportWidget"));
@@ -191,6 +193,7 @@ const AnimatedRoutes = () => {
           <Route path="/trust" element={<PageTransition><TrustPage /></PageTransition>} />
           <Route path="/cyber" element={<PageTransition><CyberCommandPage /></PageTransition>} />
           <Route path="/personal-llm" element={<PageTransition><PersonalLLMPage /></PageTransition>} />
+          <Route path="/templates" element={<PageTransition><TemplatesPage /></PageTransition>} />
           <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
         </Routes>
       </AnimatePresence>
@@ -208,6 +211,7 @@ const App = () => {
   useEffect(() => {
     import("@/lib/shadowMode").then(({ initShadowMode }) => initShadowMode());
     import("@/lib/profilePreferences").then(({ initProfileUiPreferences }) => initProfileUiPreferences());
+    import("@/lib/themes/applyTheme").then(({ restoreStoredTheme }) => restoreStoredTheme());
 
     const hasSeenBoot = sessionStorage.getItem('shadowtalk-booted');
     if (hasSeenBoot || shouldSkipBootScreen()) {
@@ -266,6 +270,7 @@ const App = () => {
               <SecurityProvider>
               <ShadowMemoryProvider>
               <AutoImproveProvider>
+              <ThemeTemplateProvider>
               <CommandPaletteContext.Provider value={{ open: () => setCmdOpen(true) }}>
               {showBootScreen && !hasBooted && (
                 <BootScreen onComplete={handleBootComplete} />
@@ -296,6 +301,7 @@ const App = () => {
                   )}
                </BrowserRouter>
               </CommandPaletteContext.Provider>
+              </ThemeTemplateProvider>
               </AutoImproveProvider>
               </ShadowMemoryProvider>
               </SecurityProvider>

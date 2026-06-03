@@ -15,12 +15,14 @@ import {
   User, Eye, CreditCard, Rocket, Tag, Search as SearchIcon,
   Globe, FileText, HelpCircle, Mail, Activity, Newspaper,
   Briefcase, Lock, Cookie, Scale, Wallet, FlaskConical,
-  Database, Ghost, Key, BarChart, Layers
+  Database, Ghost, Key, BarChart,   Layers,
+  LayoutGrid,
 } from "lucide-react";
 
 const pages = [
   { name: "Chatbot", href: "/chatbot", icon: MessageSquare, desc: "AI chat assistant" },
   { name: "Pricing", href: "/pricing", icon: Shield, desc: "Plans & pricing" },
+  { name: "UI Templates", href: "/templates", icon: LayoutGrid, desc: "100 themes — apply site-wide" },
   { name: "Strategy Agent", href: "/strategy", icon: Brain, desc: "AI strategy advisor" },
   { name: "AI Workspace", href: "/workspace", icon: Sparkles, desc: "Business memory & context" },
   { name: "Code IDE", href: "/ide", icon: Code, desc: "Monaco editor & live preview" },

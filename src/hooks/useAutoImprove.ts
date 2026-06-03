@@ -163,6 +163,25 @@ export function useAutoImprove() {
     setPendingImprovements((prev) => prev.filter((i) => i.id !== id));
   }, []);
 
+  const capturePageView = useCallback(
+    (path: string) => capture("page_view", { path }),
+    [capture],
+  );
+
+  const uiUxSuggestions = profile?.uiUxSuggestions ?? [];
+
+  const dismissUiUxSuggestion = useCallback(
+    async (id: string) => {
+      const next = {
+        ...(profile || EMPTY_PROFILE),
+        uiUxSuggestions: (profile?.uiUxSuggestions || []).filter((s) => s.id !== id),
+      };
+      await saveProfile(next);
+      void capture("ui_suggestion_dismiss", { suggestionId: id });
+    },
+    [capture, profile, saveProfile],
+  );
+
   const clearLearning = useCallback(async () => {
     const { clearBehaviorEvents } = await import("@/lib/autoImprove/eventStore");
     await clearBehaviorEvents();
@@ -194,7 +213,11 @@ export function useAutoImprove() {
     pendingImprovements,
     dismissImprovementNotice,
     clearLearning,
+    capturePageView,
+    uiUxSuggestions,
+    dismissUiUxSuggestion,
     preferSeeRouting: (profile || EMPTY_PROFILE).preferSeeRouting === true,
     learningEnabled: isLearningEnabled(),
+    pageVisitCounts: profile?.pageVisitCounts ?? {},
   };
 }

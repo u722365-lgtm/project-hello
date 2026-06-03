@@ -21,6 +21,7 @@ const Footer = () => {
         { name: "Marketplace", href: "/marketplace" },
         { name: "API Docs", href: "/api" },
         { name: "Changelog", href: "/changelog" },
+        { name: "UI Templates", href: "/templates" },
       ],
     },
     {

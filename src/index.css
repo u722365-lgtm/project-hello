@@ -59,6 +59,21 @@
 }
 
 @layer base {
+  html[data-shadowtalk-density="compact"] {
+    --radius: 0.5rem;
+    font-size: 14px;
+  }
+  html[data-shadowtalk-density="spacious"] {
+    --radius: 1.125rem;
+  }
+  html[data-shadowtalk-motion="calm"] .landing-page-content *,
+  html[data-shadowtalk-motion="calm"] .shadowtalk-chat-shell * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.15s !important;
+  }
+}
+
+@layer base {
   * { @apply border-border; }
   body { 
     @apply bg-background text-foreground antialiased;

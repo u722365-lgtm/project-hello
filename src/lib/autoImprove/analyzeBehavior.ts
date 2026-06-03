@@ -1,5 +1,6 @@
 import type { BehaviorEvent, LearnedProfile, ImprovementApplied } from "./types";
 import { EMPTY_PROFILE } from "./types";
+import { analyzeUiUx } from "./analyzeUiUx";
 
 const MODE_ALIASES: Record<string, string> = {
   general: "general",
@@ -71,6 +72,8 @@ export function analyzeBehavior(
         break;
       case "regenerate":
         regenerates += 1;
+        break;
+      case "page_view":
         break;
       default:
         break;
@@ -152,6 +155,16 @@ export function analyzeBehavior(
   if (newImprovements.length > 0) {
     profile.recentImprovements = [...profile.recentImprovements, ...newImprovements].slice(-12);
   }
+
+  const { pageVisitCounts, suggestions: uiUxSuggestions } = analyzeUiUx(events, profile, confidence);
+  profile.pageVisitCounts = pageVisitCounts;
+  profile.uiUxSuggestions = uiUxSuggestions;
+  if (uiUxSuggestions[0]?.suggestedTemplateId) {
+    const tpl = uiUxSuggestions[0].suggestedTemplateId;
+    profile.preferredTemplateCategory = tpl.split("-")[0];
+  }
+  if (uiUxSuggestions.some((s) => s.tweak === "reduce_motion")) profile.suggestedMotion = "calm";
+  if (uiUxSuggestions.some((s) => s.tweak === "compact_density")) profile.suggestedDensity = "compact";
 
   return { profile, newImprovements };
 }

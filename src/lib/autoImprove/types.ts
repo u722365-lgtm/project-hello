@@ -1,3 +1,7 @@
+import type { UiUxSuggestion } from "./uiUxTypes";
+
+export type { UiUxSuggestion } from "./uiUxTypes";
+
 export type BehaviorEventType =
   | "chat_send"
   | "mode_change"
@@ -8,7 +12,11 @@ export type BehaviorEventType =
   | "conversation_new"
   | "mission_complete"
   | "deep_research"
-  | "image_gen";
+  | "image_gen"
+  | "page_view"
+  | "template_browse"
+  | "theme_apply"
+  | "ui_suggestion_dismiss";
 
 export interface BehaviorEvent {
   id: string;
@@ -36,6 +44,13 @@ export interface LearnedProfile {
   peakHour?: number;
   systemHintAddon?: string;
   recentImprovements: ImprovementApplied[];
+  /** Aggregated route visits for UI/UX adaptation */
+  pageVisitCounts?: Record<string, number>;
+  /** Active + recent UI/UX suggestions (themes, density, motion) */
+  uiUxSuggestions?: UiUxSuggestion[];
+  preferredTemplateCategory?: string;
+  suggestedMotion?: "calm" | "normal" | "energetic";
+  suggestedDensity?: "compact" | "comfortable" | "spacious";
 }
 
 export const EMPTY_PROFILE: LearnedProfile = {

@@ -1,4 +1,5 @@
-import { Sparkles, Trash2, RefreshCw } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Sparkles, Trash2, RefreshCw, Layout } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -6,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAutoImproveContext } from "@/contexts/AutoImproveContext";
 
 export const AutoImproveInsights = () => {
-  const { profile, runAnalysis, clearLearning, isLoading } = useAutoImproveContext();
+  const { profile, runAnalysis, clearLearning, isLoading, uiUxSuggestions } = useAutoImproveContext();
 
   if (isLoading) return null;
 
@@ -18,8 +19,8 @@ export const AutoImproveInsights = () => {
           Adaptive learning
         </CardTitle>
         <CardDescription>
-          ShadowTalk learns from how you chat and quietly tunes defaults. Data stays on your device unless analytics
-          consent is enabled.
+          ShadowTalk learns from chat and navigation, suggests UI/UX themes, and tunes defaults. Data stays on-device
+          unless analytics consent is enabled.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -45,6 +46,23 @@ export const AutoImproveInsights = () => {
             </Badge>
           ))}
         </div>
+
+        {uiUxSuggestions.length > 0 && (
+          <div className="rounded-lg border border-secondary/30 bg-secondary/5 p-3 space-y-2">
+            <p className="text-xs font-semibold flex items-center gap-1.5 text-secondary">
+              <Layout className="h-3.5 w-3.5" />
+              UI/UX suggestions
+            </p>
+            <ul className="text-xs text-muted-foreground space-y-1">
+              {uiUxSuggestions.slice(0, 3).map((s) => (
+                <li key={s.id}>{s.title}</li>
+              ))}
+            </ul>
+            <Button size="sm" variant="secondary" className="w-full h-8 text-xs" asChild>
+              <Link to="/templates">Open template gallery</Link>
+            </Button>
+          </div>
+        )}
 
         {profile.recentImprovements.length > 0 && (
           <ul className="text-xs text-muted-foreground space-y-1 border-t border-border pt-3">

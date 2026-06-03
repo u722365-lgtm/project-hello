@@ -8,3 +8,5 @@ export * from "./learningConsent";
 export * from "./syncProfileMemories";
 export * from "./dailyInsightsClient";
 export * from "./metrics";
+export * from "./uiUxTypes";
+export * from "./analyzeUiUx";
