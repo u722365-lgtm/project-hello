@@ -1,13 +1,13 @@
 {
   "version": "1.0.0",
-  "releasedAt": "",
+  "releasedAt": "2026-06-03",
   "installers": {
     "windows": {
       "filename": "shadowtalk-setup.exe",
       "websiteUrl": "/downloads/shadowtalk-setup.exe",
-      "available": false,
-      "sizeBytes": null,
-      "sha256": null
+      "available": true,
+      "sizeBytes": 94336298,
+      "sha256": "33e912aa1a9aaeeb2e9855f599d4adea9d96f14df649becc29bbba29d992a339"
     },
     "mac": {
       "filename": "shadowtalk-setup.dmg",
