@@ -22,6 +22,7 @@ const Footer = () => {
         { name: "API Docs", href: "/api" },
         { name: "Changelog", href: "/changelog" },
         { name: "UI Templates", href: "/templates" },
+        { name: "Download desktop", href: "/downloads" },
       ],
     },
     {

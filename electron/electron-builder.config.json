@@ -1,6 +1,7 @@
 {
   "appId": "com.shadowtalk.ai",
   "productName": "ShadowTalk AI",
+  "artifactName": "shadowtalk-setup.${ext}",
   "copyright": "Copyright © ShadowTalk AI",
   "directories": {
     "buildResources": "resources",
@@ -22,7 +23,8 @@
     "oneClick": false,
     "allowToChangeInstallationDirectory": true,
     "installerIcon": "assets/appIcon.ico",
-    "uninstallerIcon": "assets/appIcon.ico"
+    "uninstallerIcon": "assets/appIcon.ico",
+    "shortcutName": "ShadowTalk AI"
   },
   "win": {
     "target": ["nsis"],

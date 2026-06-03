@@ -55,6 +55,13 @@ Thumbs.db
 *.temp
 .cache/
 
+# Desktop installers (large binaries — stage with npm run desktop:stage before deploy)
+public/downloads/*.exe
+public/downloads/*.dmg
+public/downloads/*.AppImage
+!public/downloads/manifest.json
+!public/downloads/README.md
+
 # Sensitive files (auto-detected)
 .env
 

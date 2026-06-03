@@ -36,9 +36,21 @@ npm run desktop:start
 
 ## Publish to users
 
-1. Run `npm run desktop:make` on each target OS (or use CI).
-2. Upload artifacts to **GitHub Releases**.
-3. Link download URLs on https://www.shadowtalk-ai.com/download (`/download` page).
+1. Run `npm run desktop:make` on each target OS (Windows CI: `.github/workflows/desktop-release.yml` on tag `v*`).
+2. Stage installers for the website:
+
+   ```bash
+   npm run desktop:stage
+   ```
+
+   This copies branded files into `public/downloads/`:
+
+   - `shadowtalk-setup.exe` (Windows)
+   - `shadowtalk-setup.dmg` (macOS)
+   - `shadowtalk-setup.AppImage` (Linux)
+
+3. Deploy the site. Users download from **https://www.shadowtalk-ai.com/downloads** (direct URLs under `/downloads/`).
+4. Optionally attach the same files to **GitHub Releases** for mirrors.
 
 ## Configuration
 

@@ -26,7 +26,7 @@ export const DesktopAppSettings = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Button variant="outline" onClick={() => navigate("/download")}>
+          <Button variant="outline" onClick={() => navigate("/downloads")}>
             Get ShadowTalk Desktop
           </Button>
         </CardContent>

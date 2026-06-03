@@ -204,6 +204,10 @@
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
-</urlset>
-
+  <url>
+    <loc>https://www.shadowtalk-ai.com/downloads</loc>
+    <lastmod>2026-06-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
 </urlset>
