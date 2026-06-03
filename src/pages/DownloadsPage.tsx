@@ -24,10 +24,16 @@ import {
   DESKTOP_INSTALLERS,
   GITHUB_RELEASES_LATEST,
   detectDesktopPlatform,
-  installerDownloadUrl,
   type DesktopDownloadsManifest,
   type DesktopPlatform,
 } from "@/lib/desktopDownloads";
+import {
+  openFallbackReleases,
+  resolveDesktopDownload,
+  type ResolvedDesktopDownload,
+} from "@/lib/desktopDownloadResolve";
+import { DesktopDownloadButton } from "@/components/downloads/DesktopDownloadButton";
+import { useToast } from "@/hooks/use-toast";
 
 const DESKTOP_FEATURES = [
   {
@@ -76,9 +82,17 @@ function PlatformIcon({ platform }: { platform: DesktopPlatform }) {
 
 const DownloadsPage = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { isDesktop, info } = useDesktopApp();
   const detected = useMemo(() => detectDesktopPlatform(), []);
   const [manifest, setManifest] = useState<DesktopDownloadsManifest | null>(null);
+  const [primaryResolved, setPrimaryResolved] = useState<ResolvedDesktopDownload | null>(null);
+  const [checkingPrimary, setCheckingPrimary] = useState(true);
+
+  const primaryPlatform =
+    detected !== "unknown" ? detected : ("windows" as DesktopPlatform);
+
+  const primaryMeta = DESKTOP_INSTALLERS[primaryPlatform];
 
   useEffect(() => {
     fetch("/downloads/manifest.json", { cache: "no-store" })
@@ -87,26 +101,40 @@ const DownloadsPage = () => {
       .catch(() => setManifest(null));
   }, []);
 
-  const primaryPlatform =
-    detected !== "unknown" ? detected : ("windows" as DesktopPlatform);
+  useEffect(() => {
+    setCheckingPrimary(true);
+    void resolveDesktopDownload(primaryPlatform, manifest).then((r) => {
+      setPrimaryResolved(r);
+      setCheckingPrimary(false);
+    });
+  }, [primaryPlatform, manifest]);
 
-  const primaryMeta = DESKTOP_INSTALLERS[primaryPlatform];
-  const primaryUrl = installerDownloadUrl(primaryPlatform, manifest);
-  const primaryAvailable = manifest?.installers?.[primaryPlatform]?.available ?? false;
-  const primarySize = manifest?.installers?.[primaryPlatform]?.sizeBytes ?? null;
+  const primaryAvailable = primaryResolved?.source !== "unavailable" && Boolean(primaryResolved?.url);
+  const primarySize = primaryResolved?.sizeBytes ?? null;
 
-  const platforms = (["windows", "mac", "linux"] as const).map((platform) => {
-    const meta = DESKTOP_INSTALLERS[platform];
-    const entry = manifest?.installers?.[platform];
-    return {
-      platform,
-      meta,
-      url: installerDownloadUrl(platform, manifest),
-      available: entry?.available ?? false,
-      sizeBytes: entry?.sizeBytes ?? null,
-      filename: meta.filename,
-    };
-  });
+  const handlePrimaryDownload = () => {
+    if (!primaryResolved?.url) {
+      toast({
+        title: "Installer not on the website yet",
+        description:
+          "Build shadowtalk-setup.exe on a Windows PC (see below), then deploy. You do not send the file to an AI — you publish it via git deploy or GitHub Releases.",
+        variant: "destructive",
+      });
+      openFallbackReleases(manifest);
+      return;
+    }
+    if (primaryResolved.source === "github") {
+      toast({ title: "Downloading from GitHub", description: primaryResolved.filename });
+    }
+    const a = document.createElement("a");
+    a.href = primaryResolved.url;
+    a.rel = "noopener noreferrer";
+    if (primaryResolved.source === "website") a.download = primaryResolved.filename;
+    else a.target = "_blank";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
 
   return (
     <>
@@ -173,35 +201,31 @@ const DownloadsPage = () => {
                   <Button
                     size="lg"
                     className="btn-glow gap-2 h-12 px-8 text-base"
-                    asChild
+                    disabled={checkingPrimary}
+                    onClick={handlePrimaryDownload}
                   >
-                    <a href={primaryUrl} download={primaryMeta.filename}>
-                      <Download className="h-5 w-5" />
-                      Download {primaryMeta.filename}
-                    </a>
+                    <Download className="h-5 w-5" />
+                    {checkingPrimary
+                      ? "Checking installer…"
+                      : `Download ${primaryMeta.filename}`}
                   </Button>
                   {primarySize ? (
                     <p className="text-xs text-muted-foreground mt-2">{formatBytes(primarySize)}</p>
                   ) : null}
-                  {!primaryAvailable && (
-                    <p className="text-xs text-amber-500/90 mt-3 flex items-center justify-center gap-1">
-                      <AlertCircle className="h-3.5 w-3.5" />
-                      Installer not on CDN yet — try{" "}
-                      <a
-                        href={manifest?.fallbackReleaseUrl ?? GITHUB_RELEASES_LATEST}
-                        className="underline"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        GitHub Releases
-                      </a>{" "}
-                      or build locally.
+                  {!checkingPrimary && !primaryAvailable && (
+                    <p className="text-xs text-amber-500/90 mt-3 max-w-md mx-auto leading-relaxed">
+                      <AlertCircle className="h-3.5 w-3.5 inline mr-1 align-text-bottom" />
+                      No installer is hosted yet. The site owner must build{" "}
+                      <code className="text-[10px]">{primaryMeta.filename}</code> on Windows and deploy it
+                      (steps below). Clicking download opens GitHub Releases if a build exists there.
                     </p>
                   )}
-                  {primaryAvailable && (
+                  {!checkingPrimary && primaryAvailable && (
                     <p className="text-xs text-primary mt-3 flex items-center justify-center gap-1">
                       <CheckCircle2 className="h-3.5 w-3.5" />
-                      Ready to install from shadowtalk-ai.com
+                      {primaryResolved?.source === "website"
+                        ? "Ready to install from shadowtalk-ai.com"
+                        : "Downloading from GitHub Releases"}
                     </p>
                   )}
                   <div className="flex flex-wrap justify-center gap-3 mt-6">
@@ -212,50 +236,57 @@ const DownloadsPage = () => {
                 </CardContent>
               </Card>
 
+              <Card className="mb-8 border-amber-500/30 bg-amber-500/5">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">Site owner — how to publish installers</CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm text-muted-foreground space-y-3">
+                  <p>
+                    Download buttons only work after <strong>you</strong> build the setup file on a real
+                    Windows / Mac / Linux machine. You do <strong>not</strong> email the .exe to an AI — you
+                    deploy it with your website or GitHub Releases.
+                  </p>
+                  <ol className="list-decimal list-inside space-y-1 text-xs">
+                    <li>On a Windows PC: clone the repo, run <code>npm run desktop:make</code></li>
+                    <li>Run <code>npm run desktop:stage</code> (copies to <code>public/downloads/</code>)</li>
+                    <li>Commit, push, and redeploy shadowtalk-ai.com — or upload the same file to GitHub Releases</li>
+                  </ol>
+                </CardContent>
+              </Card>
+
               <div className="grid md:grid-cols-3 gap-4 mb-12">
-                {platforms.map(({ platform, meta, url, available, sizeBytes, filename }) => (
-                  <Card
-                    key={platform}
-                    className={
-                      platform === primaryPlatform && detected !== "unknown"
-                        ? "border-primary/40 ring-1 ring-primary/20"
-                        : "border-border/60"
-                    }
-                  >
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-base flex items-center gap-2">
-                        <PlatformIcon platform={platform} />
-                        {meta.label}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3 text-sm text-muted-foreground">
-                      <p>{meta.description}</p>
-                      <code className="block text-xs bg-muted/40 px-2 py-1 rounded break-all">
-                        {filename}
-                      </code>
-                      {sizeBytes ? (
-                        <p className="text-xs">{formatBytes(sizeBytes)}</p>
-                      ) : null}
-                      <Button
-                        size="sm"
-                        variant={available ? "default" : "secondary"}
-                        className="w-full gap-1.5"
-                        asChild
-                      >
-                        <a href={url} download={filename}>
-                          <Download className="h-3.5 w-3.5" />
-                          Download setup
-                        </a>
-                      </Button>
-                      {!available && (
-                        <p className="text-[10px] text-muted-foreground">
-                          File hosts at{" "}
-                          <span className="font-mono">/downloads/{filename}</span> after release staging.
-                        </p>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
+                {(["windows", "mac", "linux"] as const).map((platform) => {
+                  const meta = DESKTOP_INSTALLERS[platform];
+                  return (
+                    <Card
+                      key={platform}
+                      className={
+                        platform === primaryPlatform && detected !== "unknown"
+                          ? "border-primary/40 ring-1 ring-primary/20"
+                          : "border-border/60"
+                      }
+                    >
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base flex items-center gap-2">
+                          <PlatformIcon platform={platform} />
+                          {meta.label}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-3 text-sm text-muted-foreground">
+                        <p>{meta.description}</p>
+                        <code className="block text-xs bg-muted/40 px-2 py-1 rounded break-all">
+                          {meta.filename}
+                        </code>
+                        <DesktopDownloadButton
+                          platform={platform}
+                          manifest={manifest}
+                          className="w-full gap-1.5"
+                          label="Download setup"
+                        />
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
 
               <Card className="mb-12 border-border/50">
