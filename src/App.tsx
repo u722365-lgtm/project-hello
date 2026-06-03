@@ -6,6 +6,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { PageTransition } from "@/components/PageTransition";
+import { PageLoader } from "@/components/PageLoader";
+import { SiteMotionProvider } from "@/components/motion/SiteMotionProvider";
+import SitePageShell from "@/components/motion/SitePageShell";
+import GlobalScrollReveal from "@/components/motion/GlobalScrollReveal";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/components/AuthProvider";
 import { SecurityProvider } from "@/components/SecurityProvider";
@@ -119,15 +123,6 @@ import WorkspacePathRemember from "@/components/WorkspacePathRemember";
    },
  });
  
- // Loading fallback component
- const PageLoader = () => (
-   <div className="min-h-screen bg-background flex items-center justify-center">
-     <div className="flex flex-col items-center gap-4">
-       <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-       <p className="text-muted-foreground text-sm">Loading...</p>
-     </div>
-   </div>
- );
 
 const AnimatedRoutes = () => {
   const location = useLocation();
@@ -278,9 +273,14 @@ const App = () => {
               <Toaster />
               <Sonner />
                <BrowserRouter>
-                 <PersistedAuthRedirect />
-                 <WorkspacePathRemember />
-                 <AnimatedRoutes />
+                 <SiteMotionProvider>
+                   <SitePageShell>
+                     <GlobalScrollReveal />
+                     <PersistedAuthRedirect />
+                     <WorkspacePathRemember />
+                     <AnimatedRoutes />
+                   </SitePageShell>
+                 </SiteMotionProvider>
                  <CommandPalette open={cmdOpen} onOpenChange={setCmdOpen} />
                   {deferredChrome && (
                     <Suspense fallback={null}>
