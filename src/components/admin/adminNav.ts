@@ -63,6 +63,7 @@ export const adminNavGroups: AdminNavGroup[] = [
       { id: "journeys", label: "Journeys", icon: Route },
       { id: "timezone", label: "Timezones", icon: Clock },
       { id: "business", label: "Business insights", icon: BarChart3 },
+      { id: "gsc", label: "Search Console", icon: Globe, description: "Read-only GSC summary" },
     ],
   },
   {

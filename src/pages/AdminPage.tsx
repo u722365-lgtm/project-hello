@@ -69,6 +69,7 @@ import { ChangelogManager } from '@/components/admin/ChangelogManager';
 import { AdminFAQManager } from '@/components/admin/AdminFAQManager';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { AdminDashboard } from '@/components/admin/AdminDashboard';
+import GoogleSearchConsoleSummary from '@/components/admin/GoogleSearchConsoleSummary';
 
 import { BusinessInsightsDashboard } from '@/components/admin/BusinessInsightsDashboard';
 import { TimezoneInsights } from '@/components/admin/TimezoneInsights';
@@ -302,6 +303,8 @@ const AdminPage = () => {
         return <TimezoneInsights />;
       case 'business':
         return <BusinessInsightsDashboard />;
+      case 'gsc':
+        return <GoogleSearchConsoleSummary />;
       case 'payments':
         return <ManualPaymentsManager />;
       case 'feedback':
