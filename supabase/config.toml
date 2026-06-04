@@ -67,6 +67,10 @@ project_id = "axsudmhjpfzffcicfvuj"
     verify_jwt = false
   [functions.generate-blog]
     verify_jwt = false
+  [functions.changelog-to-blog]
+    verify_jwt = false
+  [functions.share-og]
+    verify_jwt = false
   [functions.firecrawl-scrape]
     verify_jwt = false
   [functions.shadow-agent-tools]

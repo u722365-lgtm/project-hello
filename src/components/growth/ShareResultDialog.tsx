@@ -1,0 +1,133 @@
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
+import { Copy, Check, Share2, Twitter, Linkedin, Mail, Download } from "lucide-react";
+import {
+  getShareSocialUrls,
+  renderShareCardPng,
+  type ShareKind,
+} from "@/lib/growth/shareGrowth";
+
+type ShareResultDialogProps = {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  kind: ShareKind;
+  title: string;
+  subtitle?: string;
+  referralCode?: string | null;
+};
+
+export function ShareResultDialog({
+  open,
+  onOpenChange,
+  kind,
+  title,
+  subtitle,
+  referralCode,
+}: ShareResultDialogProps) {
+  const { toast } = useToast();
+  const [copied, setCopied] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+
+  const social = getShareSocialUrls({ title, subtitle, ref: referralCode, kind });
+
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(social.link);
+      setCopied(true);
+      toast({ title: "Link copied", description: "Share anywhere — previews load automatically." });
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast({ title: "Copy failed", variant: "destructive" });
+    }
+  };
+
+  const downloadCard = async () => {
+    setDownloading(true);
+    try {
+      const blob = await renderShareCardPng(title, subtitle);
+      if (!blob) throw new Error("Canvas unavailable");
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `shadowtalk-${kind}-${Date.now()}.png`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast({ title: "Image saved", description: "Upload to X, LinkedIn, or Stories." });
+    } catch {
+      toast({ title: "Could not create image", variant: "destructive" });
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Share2 className="h-5 w-5 text-primary" />
+            Share your win
+          </DialogTitle>
+          <DialogDescription>
+            One link with a rich preview. Your referral code is included when you&apos;re signed in.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-3">
+          <div className="flex gap-2">
+            <Input readOnly value={social.link} className="text-xs font-mono" />
+            <Button type="button" variant="outline" size="icon" onClick={copyLink} aria-label="Copy link">
+              {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <Button type="button" variant="outline" size="sm" asChild>
+              <a href={social.twitter} target="_blank" rel="noopener noreferrer">
+                <Twitter className="h-4 w-4 mr-2" />
+                Post on X
+              </a>
+            </Button>
+            <Button type="button" variant="outline" size="sm" asChild>
+              <a href={social.linkedin} target="_blank" rel="noopener noreferrer">
+                <Linkedin className="h-4 w-4 mr-2" />
+                LinkedIn
+              </a>
+            </Button>
+            <Button type="button" variant="outline" size="sm" asChild>
+              <a href={social.whatsapp} target="_blank" rel="noopener noreferrer">
+                WhatsApp
+              </a>
+            </Button>
+            <Button type="button" variant="outline" size="sm" asChild>
+              <a href={social.email}>
+                <Mail className="h-4 w-4 mr-2" />
+                Email
+              </a>
+            </Button>
+          </div>
+
+          <Button
+            type="button"
+            variant="secondary"
+            className="w-full"
+            disabled={downloading}
+            onClick={downloadCard}
+          >
+            <Download className="h-4 w-4 mr-2" />
+            {downloading ? "Creating image…" : "Download share card (PNG)"}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
-  Presentation, X, Sparkles, ChevronLeft, ChevronRight, Download, ExternalLink, Loader2,
+  Presentation, X, Sparkles, ChevronLeft, ChevronRight, Download, ExternalLink, Loader2, Share2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,8 @@ import {
   savePresentationToSession,
   type KimiPresentationMode,
 } from "@/lib/kimiPresentation";
+import { ShareResultDialog } from "@/components/growth/ShareResultDialog";
+import { useUserReferralCode } from "@/hooks/useUserReferralCode";
 
 export interface PresentationStudioProps {
   isOpen: boolean;
@@ -46,6 +48,8 @@ export const PresentationStudio = ({
   const [presentation, setPresentation] = useState<PresentationData | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [phase, setPhase] = useState<GenerationPhase>("idle");
+  const [shareOpen, setShareOpen] = useState(false);
+  const referralCode = useUserReferralCode();
   const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
@@ -212,6 +216,10 @@ export const PresentationStudio = ({
           </Button>
           {presentation && (
             <div className="flex flex-col gap-2 pt-2 border-t border-border">
+              <Button variant="outline" size="sm" onClick={() => setShareOpen(true)}>
+                <Share2 className="h-3.5 w-3.5 mr-2" />
+                Share deck
+              </Button>
               <Button variant="outline" size="sm" onClick={openFullEditor}>
                 <ExternalLink className="h-3.5 w-3.5 mr-2" />
                 Open full editor & PPTX
@@ -256,6 +264,18 @@ export const PresentationStudio = ({
           )}
         </div>
       </div>
+      <ShareResultDialog
+        open={shareOpen}
+        onOpenChange={setShareOpen}
+        kind="presentation"
+        title={topic.trim() ? `Slides: ${topic.trim()}` : "ShadowTalk presentation"}
+        subtitle={
+          presentation
+            ? `${presentation.slides.length} slides · Kimi-style deck`
+            : "AI presentation built in ShadowTalk"
+        }
+        referralCode={referralCode}
+      />
     </motion.div>
   );
 };

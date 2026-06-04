@@ -86,6 +86,8 @@ import { useShadowTalkModel } from "@/hooks/useShadowTalkModel";
 import { SEOHead } from "@/components/SEOHead";
 import { PAGE_SEO } from "@/lib/seo";
 import { BRAND } from "@/lib/brand";
+import { ReferralNudgeBanner } from "@/components/growth/ReferralNudgeBanner";
+import { recordSuccessfulChatSession } from "@/lib/growth/sessionMilestones";
 import { useChatSettings } from "@/hooks/useChatSettings";
 import {
   getChatFetchHeaders,
@@ -877,6 +879,9 @@ const ChatbotPage = () => {
           console.warn("[chat] saveMessage(assistant) failed", e),
         );
       }
+      if (assistantContent.trim().length > 0) {
+        recordSuccessfulChatSession();
+      }
       return assistantContent || undefined;
     },
     [aiProvider, aiConfig, keys, chatMode, personality, user, gemmaOffline.chatLocal, sovereignModel],
@@ -1350,6 +1355,7 @@ const ChatbotPage = () => {
             recommendedPlan={nudge.recommendedPlan}
             onDismiss={() => setNudgeDismissed(true)}
           />
+          <ReferralNudgeBanner />
           <UpgradePrompt
             open={upgradeOpen}
             onOpenChange={setUpgradeOpen}

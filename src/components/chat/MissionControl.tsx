@@ -8,7 +8,7 @@ import {
   RefreshCw, AlertTriangle, ArrowRight, Sparkles, Target,
   Brain, Workflow, Bot, Activity, TrendingUp, Users,
   Search, Image, Mic, PenTool, BarChart3, Network,
-  GitBranch, ArrowDown, Circle, ChevronDown, ChevronUp
+  GitBranch, ArrowDown, Circle, ChevronDown, ChevronUp, Share2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,8 @@ import { useMissions, Mission } from "@/hooks/useMissions";
 import { useMissionExecutor } from "@/hooks/useMissionExecutor";
 import { useMissionQuota, MISSION_LIMITS } from "@/hooks/useMissionQuota";
 import { cn } from "@/lib/utils";
+import { ShareResultDialog } from "@/components/growth/ShareResultDialog";
+import { useUserReferralCode } from "@/hooks/useUserReferralCode";
 
 interface MissionControlProps {
   isOpen: boolean;
@@ -266,6 +268,8 @@ export const MissionControl = ({ isOpen, onClose, onMissionComplete, initialGoal
   const [autoApprove, setAutoApprove] = useState(false);
   const [activeTab, setActiveTab] = useState("create");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [shareOpen, setShareOpen] = useState(false);
+  const referralCode = useUserReferralCode();
 
   useEffect(() => {
     if (initialGoal) setGoal(initialGoal);
@@ -630,23 +634,32 @@ Example: Find 10 SaaS companies in Berlin, analyze their pricing pages, compare 
                                 : String(activeMission.result)
                               }
                             </pre>
-                            <Button
-                              size="sm"
-                              className="mt-3"
-                              onClick={() => {
-                                if (onMissionComplete && activeMission.result) {
-                                  onMissionComplete(
-                                    typeof activeMission.result === 'object'
-                                      ? JSON.stringify(activeMission.result, null, 2)
-                                      : String(activeMission.result)
-                                  );
-                                }
-                                onClose();
-                              }}
-                            >
-                              <MessageSquare className="h-4 w-4 mr-2" />
-                              Send to Chat
-                            </Button>
+                            <div className="flex flex-wrap gap-2 mt-3">
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                onClick={() => setShareOpen(true)}
+                              >
+                                <Share2 className="h-4 w-4 mr-2" />
+                                Share result
+                              </Button>
+                              <Button
+                                size="sm"
+                                onClick={() => {
+                                  if (onMissionComplete && activeMission.result) {
+                                    onMissionComplete(
+                                      typeof activeMission.result === 'object'
+                                        ? JSON.stringify(activeMission.result, null, 2)
+                                        : String(activeMission.result)
+                                    );
+                                  }
+                                  onClose();
+                                }}
+                              >
+                                <MessageSquare className="h-4 w-4 mr-2" />
+                                Send to Chat
+                              </Button>
+                            </div>
                           </CardContent>
                         </Card>
                       )}
@@ -732,6 +745,18 @@ Example: Find 10 SaaS companies in Berlin, analyze their pricing pages, compare 
           <IntelligenceSidebar missions={missions} />
         </div>
       </motion.div>
+      <ShareResultDialog
+        open={shareOpen}
+        onOpenChange={setShareOpen}
+        kind="mission"
+        title={activeMission?.title ? `Mission: ${activeMission.title}` : "ShadowTalk mission complete"}
+        subtitle={
+          activeMission?.goal
+            ? activeMission.goal.slice(0, 120)
+            : "Autonomous agent run finished in ShadowTalk"
+        }
+        referralCode={referralCode}
+      />
     </AnimatePresence>
   );
 };
