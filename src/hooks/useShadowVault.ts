@@ -26,17 +26,23 @@ export interface VaultConnection {
 }
 
 // Available services that can be connected
-export const AVAILABLE_SERVICES = [
-  { name: 'Gmail', type: 'email' as ServiceType, icon: '📧', description: 'Send and receive emails' },
-  { name: 'Google Calendar', type: 'calendar' as ServiceType, icon: '📅', description: 'Manage calendar events' },
-  { name: 'Google Drive', type: 'storage' as ServiceType, icon: '📁', description: 'Access and manage files' },
-  { name: 'Google Sheets', type: 'storage' as ServiceType, icon: '📊', description: 'Read and write spreadsheets' },
-  { name: 'WhatsApp', type: 'messaging' as ServiceType, icon: '💬', description: 'Send messages (coming soon)' },
-  { name: 'LinkedIn', type: 'social' as ServiceType, icon: '💼', description: 'Professional networking (coming soon)' },
-  { name: 'Stripe', type: 'payment' as ServiceType, icon: '💳', description: 'Payment processing' },
-  { name: 'Notion', type: 'storage' as ServiceType, icon: '📝', description: 'Notes and databases' },
-  { name: 'Slack', type: 'messaging' as ServiceType, icon: '🔔', description: 'Team messaging' },
-  { name: 'HubSpot', type: 'crm' as ServiceType, icon: '🎯', description: 'CRM and marketing' },
+export const AVAILABLE_SERVICES: Array<{
+  name: string;
+  type: ServiceType;
+  icon: string;
+  description: string;
+  comingSoon?: boolean;
+}> = [
+  { name: 'Gmail', type: 'email', icon: '📧', description: 'Send and receive emails' },
+  { name: 'Google Calendar', type: 'calendar', icon: '📅', description: 'Manage calendar events' },
+  { name: 'Google Drive', type: 'storage', icon: '📁', description: 'Access and manage files' },
+  { name: 'Google Sheets', type: 'storage', icon: '📊', description: 'Read and write spreadsheets' },
+  { name: 'WhatsApp', type: 'messaging', icon: '💬', description: 'Send messages', comingSoon: true },
+  { name: 'LinkedIn', type: 'social', icon: '💼', description: 'Professional networking', comingSoon: true },
+  { name: 'Stripe', type: 'payment', icon: '💳', description: 'Payment processing' },
+  { name: 'Notion', type: 'storage', icon: '📝', description: 'Notes and databases' },
+  { name: 'Slack', type: 'messaging', icon: '🔔', description: 'Team messaging' },
+  { name: 'HubSpot', type: 'crm', icon: '🎯', description: 'CRM and marketing' },
 ];
 
 export const useShadowVault = () => {
