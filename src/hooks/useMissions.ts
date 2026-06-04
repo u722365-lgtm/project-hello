@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { privateRealtimeChannel } from '@/lib/realtimeChannel';
+import { privateRealtimeChannel, userScopedRealtimeTopic } from '@/lib/realtimeChannel';
 import { useToast } from '@/hooks/use-toast';
 
 // =============================================================================
@@ -311,9 +311,16 @@ export const useMissions = () => {
     }
   }, []);
 
-  // Subscribe to realtime updates
+  // Subscribe to realtime updates (per-user channel — enforced by realtime.messages RLS)
   useEffect(() => {
-    const channel = privateRealtimeChannel('missions-realtime')
+    let channel: ReturnType<typeof privateRealtimeChannel> | null = null;
+    let cancelled = false;
+
+    const subscribe = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || cancelled) return;
+
+      channel = privateRealtimeChannel(userScopedRealtimeTopic('missions', user.id))
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'missions' },
@@ -362,9 +369,13 @@ export const useMissions = () => {
         }
       )
       .subscribe();
+    };
+
+    void subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      cancelled = true;
+      if (channel) supabase.removeChannel(channel);
     };
   }, [activeMission]);
 

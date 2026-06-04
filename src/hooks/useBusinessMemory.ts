@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { privateRealtimeChannel } from '@/lib/realtimeChannel';
+import { privateRealtimeChannel, userScopedRealtimeTopic } from '@/lib/realtimeChannel';
 import { useAuth } from '@/components/AuthProvider';
 import { useToast } from '@/hooks/use-toast';
 
@@ -75,7 +75,7 @@ export function useBusinessMemory() {
 
     // Subscribe to realtime changes
     if (user) {
-      const channel = privateRealtimeChannel('business_memories_changes')
+      const channel = privateRealtimeChannel(userScopedRealtimeTopic('business-memories', user.id))
         .on(
           'postgres_changes',
           {
