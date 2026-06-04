@@ -261,7 +261,7 @@ export const ShadowVaultPanel = ({ isOpen, onClose }: ShadowVaultPanelProps) => 
                     <div className="grid grid-cols-2 gap-3">
                       {availableServices.map((service) => {
                         const isConnected = connections.some(c => c.service_name === service.name);
-                        const isComingSoon = service.description.includes('coming soon');
+                        const isComingSoon = Boolean(service.comingSoon);
                         
                         return (
                           <Card 
