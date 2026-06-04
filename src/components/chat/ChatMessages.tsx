@@ -31,6 +31,7 @@ interface ChatMessagesProps {
   onOpenInBrowser?: (url: string) => void;
   onConfirmTool?: (messageId: string) => void;
   onCancelTool?: (messageId: string) => void;
+  onShareReply?: (content: string) => void;
   messagesEndRef: React.RefObject<HTMLDivElement>;
   thinkingStage?: 'understanding' | 'reasoning' | 'generating' | 'refining' | null;
   layout?: 'default' | 'gemini' | 'shadow-pulse';
@@ -52,6 +53,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
   onOpenIDE,
   onLaunchWebsite,
   onOpenInBrowser,
+  onShareReply,
   messagesEndRef,
   thinkingStage,
   layout = 'default',
@@ -107,6 +109,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
             onOpenIDE={onOpenIDE}
             onLaunchWebsite={onLaunchWebsite}
             onOpenInBrowser={onOpenInBrowser}
+            onShareReply={onShareReply}
             layout={isGemini ? 'gemini' : 'default'}
           />
         ))}

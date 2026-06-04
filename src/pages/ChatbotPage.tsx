@@ -87,7 +87,17 @@ import { SEOHead } from "@/components/SEOHead";
 import { PAGE_SEO } from "@/lib/seo";
 import { BRAND } from "@/lib/brand";
 import { ReferralNudgeBanner } from "@/components/growth/ReferralNudgeBanner";
+import { ShareResultDialog } from "@/components/growth/ShareResultDialog";
+import { ShareWinBanner } from "@/components/growth/ShareWinBanner";
 import { recordSuccessfulChatSession } from "@/lib/growth/sessionMilestones";
+import {
+  buildChatShareSubtitle,
+  buildChatShareTitle,
+  isShareWorthyReply,
+  recordChatShareBannerShown,
+  shouldShowChatShareBanner,
+} from "@/lib/growth/selfMarketing";
+import { useUserReferralCode } from "@/hooks/useUserReferralCode";
 import { useChatSettings } from "@/hooks/useChatSettings";
 import {
   getChatFetchHeaders,
@@ -200,6 +210,9 @@ const ChatbotPage = () => {
   const [showMissionControl, setShowMissionControl] = useState(false);
   const [showOfflineTools, setShowOfflineTools] = useState(false);
   const [toolsMenuOpen, setToolsMenuOpen] = useState(false);
+  const [chatShareOffer, setChatShareOffer] = useState<{ title: string; subtitle?: string } | null>(null);
+  const [chatShareDialogOpen, setChatShareDialogOpen] = useState(false);
+  const referralCode = useUserReferralCode();
   const [guestArchivedIds, setGuestArchivedIdsState] = useState<Set<string>>(() =>
     getGuestArchivedIds(),
   );
@@ -1081,6 +1094,13 @@ const ChatbotPage = () => {
       if (aiProvider === "shadowtalk" && sovereignModel.enabled) {
         void sovereignModel.learnFromTurn(msgContent, assistantReply);
       }
+      if (assistantReply && isShareWorthyReply(assistantReply) && shouldShowChatShareBanner()) {
+        setChatShareOffer({
+          title: buildChatShareTitle(msgContent, assistantReply),
+          subtitle: buildChatShareSubtitle(msgContent),
+        });
+        recordChatShareBannerShown();
+      }
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") return;
       const msg = formatChatFetchError(err);
@@ -1099,6 +1119,21 @@ const ChatbotPage = () => {
   const userDisplayName = user?.user_metadata?.full_name?.split(" ")[0] || user?.email?.split("@")[0] || "there";
   const userInitials = user?.email ? user.email.charAt(0).toUpperCase() : "G";
 
+  const openChatShare = useCallback(
+    (assistantContent: string, userPrompt?: string) => {
+      const lastUser =
+        userPrompt ??
+        [...messages].reverse().find((m) => m.type === "user" && m.id !== "welcome")?.content ??
+        "";
+      setChatShareOffer({
+        title: buildChatShareTitle(lastUser, assistantContent),
+        subtitle: buildChatShareSubtitle(lastUser),
+      });
+      setChatShareDialogOpen(true);
+    },
+    [messages],
+  );
+
   const handleExport = () => {
     try {
       const payload = {
@@ -1106,6 +1141,8 @@ const ChatbotPage = () => {
         conversationId: currentConversationId,
         personality,
         mode: chatMode,
+        sharedVia: BRAND.fullName,
+        inviteUrl: "https://www.shadowtalk-ai.com/chatbot?utm_source=export&utm_medium=json&utm_campaign=chat_export",
         messages: messages.map((m) => ({
           role: m.type,
           content: m.content,
@@ -1430,6 +1467,7 @@ const ChatbotPage = () => {
                       if (url) window.open(url, "_blank", "noopener,noreferrer");
                       else setShowShadowBrowser(true);
                     }}
+                    onShareReply={(content) => openChatShare(content)}
                     messagesEndRef={messagesEndRef}
                     layout="gemini"
                   />
@@ -1438,17 +1476,38 @@ const ChatbotPage = () => {
             </AnimatePresence>
           </div>
           {!isEmptyChat && (
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={SETTINGS_SPRING}
-              className="shadowtalk-chat-input-dock"
-            >
-              <div className="shadowtalk-chat-input-shell w-full">
-                <ChatInput {...chatInputProps} />
-              </div>
-            </motion.div>
+            <>
+              <ShareWinBanner
+                visible={Boolean(chatShareOffer && !chatShareDialogOpen)}
+                title={chatShareOffer?.title ?? ""}
+                subtitle={chatShareOffer?.subtitle}
+                referralCode={referralCode}
+                onOpenShareDialog={() => setChatShareDialogOpen(true)}
+                onDismiss={() => setChatShareOffer(null)}
+              />
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={SETTINGS_SPRING}
+                className="shadowtalk-chat-input-dock"
+              >
+                <div className="shadowtalk-chat-input-shell w-full">
+                  <ChatInput {...chatInputProps} />
+                </div>
+              </motion.div>
+            </>
           )}
+          <ShareResultDialog
+            open={chatShareDialogOpen}
+            onOpenChange={(open) => {
+              setChatShareDialogOpen(open);
+              if (!open) setChatShareOffer(null);
+            }}
+            kind="chat"
+            title={chatShareOffer?.title ?? "Built with ShadowTalk AI"}
+            subtitle={chatShareOffer?.subtitle}
+            referralCode={referralCode}
+          />
         </ChatMainPanel>
       {showImageGenerator && <ImageGenerator onClose={() => setShowImageGenerator(false)} onImageGenerated={(url) => setMessages(prev => [...prev, { id: crypto.randomUUID(), type: 'ai', content: '🎨 Generated image', timestamp: new Date(), imageUrl: url }])} />}
       {showDeepResearch && <DeepResearchPanel isOpen={showDeepResearch} onClose={() => setShowDeepResearch(false)} onInsertToChat={(c) => setMessages(prev => [...prev, { id: crypto.randomUUID(), type: 'ai', content: c, timestamp: new Date() }])} />}

@@ -1,5 +1,7 @@
 import React, { useMemo } from 'react';
-import { User, Copy, RefreshCw, Volume2, VolumeX, Lock, Edit2, ExternalLink, Compass, Sparkles } from 'lucide-react';
+import { User, Copy, RefreshCw, Volume2, VolumeX, Lock, Edit2, ExternalLink, Compass, Sparkles, Share2 } from 'lucide-react';
+import { formatCopyWithAttribution } from '@/lib/growth/selfMarketing';
+import { useUserReferralCode } from '@/hooks/useUserReferralCode';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
@@ -54,6 +56,7 @@ interface MessageBubbleProps {
   variant?: 'default' | 'neural';
   onConfirmTool?: (messageId: string) => void;
   onCancelTool?: (messageId: string) => void;
+  onShareReply?: (content: string) => void;
 }
 
 export const MessageBubble: React.FC<MessageBubbleProps> = ({
@@ -74,8 +77,10 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
   variant,
   onConfirmTool,
   onCancelTool,
+  onShareReply,
 }) => {
   const { toast } = useToast();
+  const referralCode = useUserReferralCode();
   const isUser = message.type === 'user';
   const isWelcome = message.id === 'welcome';
   const layout =
@@ -89,8 +94,14 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
   }, [message.content, isUser, isWelcome]);
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(message.content);
-    toast({ title: 'Copied to clipboard' });
+    const text = !isUser
+      ? formatCopyWithAttribution(message.content, referralCode)
+      : message.content;
+    await navigator.clipboard.writeText(text);
+    toast({
+      title: 'Copied to clipboard',
+      description: !isUser ? 'Includes your ShadowTalk invite link.' : undefined,
+    });
   };
 
   return (
@@ -415,6 +426,18 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
                   <RefreshCw className={`h-3 w-3 mr-1.5 ${isLoading ? 'animate-spin' : ''}`} />
                   Retry
                 </Button>
+                {onShareReply && message.content.trim().length > 120 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onShareReply(message.content)}
+                    disabled={isLoading}
+                    className="h-8 px-3 text-[11px] text-primary/80 hover:text-primary rounded-full hover:bg-primary/10"
+                  >
+                    <Share2 className="h-3 w-3 mr-1.5" />
+                    Share
+                  </Button>
+                )}
               </>
             )}
             <Button 
