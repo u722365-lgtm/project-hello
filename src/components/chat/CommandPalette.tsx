@@ -460,7 +460,7 @@ export const CommandPalette = ({ open, onOpenChange, onAction }: CommandPaletteP
       description: "AI-powered business strategy advisor",
       icon: <Target className="h-4 w-4" />,
       category: "AI Tools",
-      action: () => navigate("/strategy-agent"),
+      action: () => navigate("/strategy"),
       keywords: ["strategy", "business", "swot", "analysis", "advisor"],
       badge: "Pro",
       badgeVariant: "default" as const,

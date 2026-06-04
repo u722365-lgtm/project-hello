@@ -1,8 +1,9 @@
 import { useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useStrategyAccess } from "@/hooks/useStrategyAccess";
+import { useStrategyRunner } from "@/hooks/useStrategyRunner";
 import { useAuth } from "@/components/AuthProvider";
-import { StrategyPaywall } from "./StrategyPaywall";
 import {
   Brain,
   Search,
@@ -35,7 +36,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { StrategyCharts } from "./StrategyCharts";
 import { StrategyPDFGenerator } from "./StrategyPDFGenerator";
 import { ResearchPanel } from "./ResearchPanel";
@@ -43,58 +43,19 @@ import { SWOTAnalysis } from "./SWOTAnalysis";
 import { BusinessSimulator } from "./BusinessSimulator";
 import { ProactiveInsights } from "./ProactiveInsights";
 import { AutonomousReferralEngine } from "./AutonomousReferralEngine";
+import { StrategyStepTimeline } from "./StrategyStepTimeline";
+import { StrategyReportHistory, type HistoryReport } from "./StrategyReportHistory";
+import type { BusinessIdea, StrategyResult } from "@/lib/strategy/types";
 
-export interface BusinessIdea {
-  name: string;
-  description: string;
-  location: string;
-  industry: string;
-  targetMarket: string;
-  initialInvestment: string;
-}
-
-export interface ResearchData {
-  competitors: Array<{ name: string; marketShare: number; pricing: string }>;
-  regulations: string[];
-  marketTrends: string[];
-  costs: Array<{ item: string; cost: number }>;
-  opportunities: string[];
-  threats: string[];
-  sources: Array<{ title: string; url: string }>;
-}
-
-export interface FinancialProjection {
-  month: string;
-  revenue: number;
-  expenses: number;
-  profit: number;
-}
-
-export interface SWOTData {
-  strengths: string[];
-  weaknesses: string[];
-  opportunities: string[];
-  threats: string[];
-}
-
-export interface StrategyResult {
-  executiveSummary: string;
-  research: ResearchData;
-  swot: SWOTData;
-  financialProjections: FinancialProjection[];
-  recommendations: string[];
-  riskAssessment: string;
-  implementationPlan: string[];
-}
-
-type AgentPhase = "idle" | "researching" | "analyzing" | "generating" | "complete";
+export type { BusinessIdea, StrategyResult } from "@/lib/strategy/types";
 
 const phaseInfo = {
   idle: { label: "Ready", icon: Brain, color: "text-muted-foreground" },
-  researching: { label: "Researching Market", icon: Globe, color: "text-blue-500" },
-  analyzing: { label: "Analyzing Data", icon: BarChart3, color: "text-purple-500" },
-  generating: { label: "Generating Strategy", icon: FileText, color: "text-orange-500" },
-  complete: { label: "Strategy Ready", icon: CheckCircle, color: "text-green-500" }
+  planning: { label: "Planning research", icon: Brain, color: "text-violet-500" },
+  executing: { label: "Running research steps", icon: Globe, color: "text-blue-500" },
+  synthesizing: { label: "Building strategy report", icon: FileText, color: "text-orange-500" },
+  complete: { label: "Strategy ready", icon: CheckCircle, color: "text-green-500" },
+  failed: { label: "Run failed", icon: AlertCircle, color: "text-destructive" },
 };
 
 const industryOptions = [
@@ -107,7 +68,7 @@ const ceoTemplates = [
   {
     name: "Board Meeting Prep",
     icon: "📊",
-    description: "Generate encrypted board deck with financials, KPIs, and action items",
+    description: "Board deck playbook with financials, KPIs, and action items",
     preset: {
       description: "Prepare a comprehensive board meeting package including: executive summary of quarterly performance, financial highlights (revenue, burn rate, runway), key metrics dashboard, strategic initiatives update, risk register, and proposed resolutions for board approval. Include a structured agenda and time allocations.",
       targetMarket: "Board of Directors, Investors",
@@ -144,12 +105,19 @@ const ceoTemplates = [
 
 const StrategyAgent = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const chartsRef = useRef<HTMLDivElement>(null);
-  const { canUseStrategy, hasActiveDayPass, monthlyUsage, remainingFree, loading: accessLoading, recordUsage, FREE_REPORTS_PER_MONTH } = useStrategyAccess();
-  
-  const [phase, setPhase] = useState<AgentPhase>("idle");
-  const [progress, setProgress] = useState(0);
+  const { canUseStrategy, recordUsage } = useStrategyAccess();
+  const runner = useStrategyRunner();
+
+  const phase = runner.phase;
+  const progress = runner.progress;
+  const result = runner.result;
+  const error = runner.error;
+  const usedFallback = runner.usedFallback;
+  const steps = runner.steps;
+
   const [activeTab, setActiveTab] = useState("input");
   
   const [businessIdea, setBusinessIdea] = useState<BusinessIdea>({
@@ -161,9 +129,6 @@ const StrategyAgent = () => {
     initialInvestment: ""
   });
   
-  const [result, setResult] = useState<StrategyResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
   const updateBusinessIdea = (field: keyof BusinessIdea, value: string) => {
     setBusinessIdea(prev => ({ ...prev, [field]: value }));
   };
@@ -190,173 +155,58 @@ const StrategyAgent = () => {
 
   const runStrategyAgent = async () => {
     if (!validateInput()) return;
-    if (!canUseStrategy) return;
-    
-    setError(null);
-    setPhase("researching");
-    setProgress(0);
-    setActiveTab("research");
-
-    // AbortController for timeout management
-    const controller = new AbortController();
-    const PHASE_TIMEOUT = 45000; // 45s per phase to prevent hanging
-
-    const invokeWithTimeout = async (body: any) => {
-      const timeoutId = setTimeout(() => controller.abort(), PHASE_TIMEOUT);
-      try {
-        const response = await supabase.functions.invoke('chat', { body });
-        clearTimeout(timeoutId);
-        if (response.error) throw new Error(response.error.message);
-        return response;
-      } catch (err: any) {
-        clearTimeout(timeoutId);
-        if (err.name === 'AbortError' || controller.signal.aborted) {
-          throw new Error('Request timed out. Using fallback data.');
-        }
-        throw err;
-      }
-    };
-
-    try {
-      // Phase 1: Web Research (with timeout + fallback)
-      setProgress(10);
-      const researchPrompt = `You are a business research analyst. Analyze this business idea and provide comprehensive market research:
-
-Business: ${businessIdea.name}
-Description: ${businessIdea.description}
-Location: ${businessIdea.location}
-Industry: ${businessIdea.industry}
-Target Market: ${businessIdea.targetMarket || "General consumers"}
-Initial Investment: ${businessIdea.initialInvestment || "Not specified"}
-
-Provide a JSON response with this exact structure:
-{
-  "competitors": [{"name": "string", "marketShare": number (0-100), "pricing": "string"}],
-  "regulations": ["string array of relevant regulations"],
-  "marketTrends": ["string array of current market trends for 2026"],
-  "costs": [{"item": "string", "cost": number in USD}],
-  "opportunities": ["string array of market opportunities"],
-  "threats": ["string array of market threats"],
-  "sources": [{"title": "string", "url": "string"}]
-}
-
-Include realistic data for ${businessIdea.location} market in 2026. Be specific and actionable.`;
-
-      setProgress(25);
-      
-      let researchData: ResearchData;
-      try {
-        const researchResponse = await invokeWithTimeout({ 
-          messages: [{ role: "user", content: researchPrompt }],
-          isResearch: true
-        });
-        const content = researchResponse.data?.response || researchResponse.data?.text || "";
-        const jsonMatch = content.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          researchData = JSON.parse(jsonMatch[0]);
-        } else {
-          throw new Error("Could not parse research data");
-        }
-      } catch {
-        // Graceful fallback - don't abort entire flow
-        researchData = generateFallbackResearch(businessIdea);
-      }
-
-      setProgress(40);
-      setPhase("analyzing");
-
-      // Phase 2: SWOT + Financial (with timeout + fallback)
-      const analysisPrompt = `Based on this market research for "${businessIdea.name}" in ${businessIdea.location}:
-
-Competitors: ${JSON.stringify(researchData.competitors)}
-Market Trends: ${JSON.stringify(researchData.marketTrends)}
-Opportunities: ${JSON.stringify(researchData.opportunities)}
-Threats: ${JSON.stringify(researchData.threats)}
-Estimated Costs: ${JSON.stringify(researchData.costs)}
-Initial Investment: ${businessIdea.initialInvestment || "$50,000"}
-
-Generate a comprehensive business analysis in this exact JSON format:
-{
-  "swot": {
-    "strengths": ["5 key strengths"],
-    "weaknesses": ["5 potential weaknesses"],
-    "opportunities": ["5 market opportunities"],
-    "threats": ["5 market threats"]
-  },
-  "financialProjections": [
-    {"month": "Month 1", "revenue": number, "expenses": number, "profit": number},
-    ... for 12 months with realistic growth trajectory
-  ],
-  "executiveSummary": "2-3 paragraph executive summary",
-  "recommendations": ["5 strategic recommendations"],
-  "riskAssessment": "Paragraph about key risks and mitigation strategies",
-  "implementationPlan": ["10 implementation steps with timeline"]
-}
-
-Be realistic and specific to ${businessIdea.industry} in ${businessIdea.location}.`;
-
-      setProgress(55);
-      setPhase("generating");
-
-      let analysisData: Omit<StrategyResult, 'research'>;
-      try {
-        const analysisResponse = await invokeWithTimeout({
-          messages: [{ role: "user", content: analysisPrompt }],
-          isResearch: true
-        });
-        const content = analysisResponse.data?.response || analysisResponse.data?.text || "";
-        const jsonMatch = content.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          analysisData = JSON.parse(jsonMatch[0]);
-        } else {
-          throw new Error("Could not parse analysis data");
-        }
-      } catch {
-        analysisData = generateFallbackAnalysis(businessIdea);
-      }
-
-      setProgress(85);
-
-      // Combine all data
-      const finalResult: StrategyResult = {
-        ...analysisData,
-        research: researchData
-      };
-
-      setResult(finalResult);
-      setProgress(100);
-      setPhase("complete");
-      setActiveTab("overview");
-
-      // Record usage
-      await recordUsage(businessIdea.name, businessIdea.industry);
-
+    if (!user) {
       toast({
-        title: "Strategy Complete! 🎉",
-        description: "Your business strategy has been generated successfully."
+        title: "Sign in required",
+        description: "Create a free account to run Strategy Agent.",
+        variant: "destructive",
       });
+      navigate("/auth");
+      return;
+    }
+    if (!canUseStrategy) return;
 
-    } catch (err) {
-      console.error("Strategy Agent Error:", err);
-      setError(err instanceof Error ? err.message : "An error occurred while generating your strategy");
-      setPhase("idle");
+    setActiveTab("research");
+    try {
+      const out = await runner.run(businessIdea, user.id);
+      if (!out) return;
+      await recordUsage(businessIdea.name, businessIdea.industry);
+      setActiveTab("overview");
       toast({
-        title: "Error",
-        description: "Failed to generate strategy. Please try again.",
-        variant: "destructive"
+        title: "Strategy complete",
+        description: out.usedFallback
+          ? "Report saved with estimated sections — retry for more live sources."
+          : "Your business strategy is ready with web-backed research.",
+      });
+    } catch {
+      toast({
+        title: "Strategy failed",
+        description: error || "Please try again.",
+        variant: "destructive",
       });
     }
   };
 
   const resetAgent = () => {
-    setPhase("idle");
-    setProgress(0);
-    setResult(null);
-    setError(null);
+    runner.reset();
     setActiveTab("input");
   };
 
-  const PhaseIcon = phaseInfo[phase].icon;
+  const openHistoryReport = (report: HistoryReport) => {
+    setBusinessIdea(report.business_idea);
+    runner.loadReport({
+      id: report.id,
+      business_idea: report.business_idea,
+      result: report.result,
+      plan_steps: report.plan_steps,
+      used_fallback: report.used_fallback,
+    });
+    setActiveTab("overview");
+  };
+
+  const PhaseIcon = phaseInfo[phase]?.icon ?? Brain;
+  const phaseMeta = phaseInfo[phase] ?? phaseInfo.idle;
+  const isRunning = runner.isRunning;
 
   // No paywall — strategy agent is free for all logged-in users
 
@@ -379,27 +229,44 @@ Be realistic and specific to ${businessIdea.industry} in ${businessIdea.location
           </h1>
           
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Transform your business idea into an investor-ready strategy with real-time market research, 
-            data visualization, and professional PDF reports.
+            Autonomous multi-step research with live web sources, SWOT and financials, saved report history, and PDF export.
           </p>
         </motion.div>
+
+        {!user && (
+          <Card className="border-primary/30 bg-primary/5">
+            <CardContent className="py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <p className="text-sm">Sign in to run Strategy Agent and save reports.</p>
+              <Button type="button" onClick={() => navigate("/auth")}>
+                Sign in free
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {usedFallback && phase === "complete" && (
+          <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-200/90">
+            Some sections use estimated data because live research did not complete. Run again for web-backed sources.
+          </div>
+        )}
 
         {/* Status Bar */}
         <Card className="border-2 border-primary/20 bg-card/80 backdrop-blur">
           <CardContent className="p-4">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-full bg-primary/10 ${phaseInfo[phase].color}`}>
+                <div className={`p-2 rounded-full bg-primary/10 ${phaseMeta.color}`}>
                   <PhaseIcon className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="font-medium">{phaseInfo[phase].label}</p>
+                  <p className="font-medium">{phaseMeta.label}</p>
                   <p className="text-sm text-muted-foreground">
                     {phase === "idle" && "Enter your business details to begin"}
-                    {phase === "researching" && "Gathering real-time market intelligence..."}
-                    {phase === "analyzing" && "Processing data and generating insights..."}
-                    {phase === "generating" && "Creating your personalized strategy..."}
+                    {phase === "planning" && "Building a research playbook…"}
+                    {phase === "executing" && "Running web search and deep research steps…"}
+                    {phase === "synthesizing" && "Compiling investor-ready report…"}
                     {phase === "complete" && "Your strategy is ready for review"}
+                    {phase === "failed" && (error || "Something went wrong")}
                   </p>
                 </div>
               </div>
@@ -416,12 +283,16 @@ Be realistic and specific to ${businessIdea.industry} in ${businessIdea.location
 
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid grid-cols-3 md:grid-cols-9 gap-2 h-auto p-2 bg-muted/50">
+          <TabsList className="grid grid-cols-3 md:grid-cols-10 gap-2 h-auto p-2 bg-muted/50">
             <TabsTrigger value="input" className="gap-2">
               <Brain className="h-4 w-4" />
               <span className="hidden sm:inline">Input</span>
             </TabsTrigger>
-            <TabsTrigger value="research" disabled={!result && phase === "idle"} className="gap-2">
+            <TabsTrigger value="history" className="gap-2">
+              <FileText className="h-4 w-4" />
+              <span className="hidden sm:inline">History</span>
+            </TabsTrigger>
+            <TabsTrigger value="research" disabled={!result && !isRunning} className="gap-2">
               <Search className="h-4 w-4" />
               <span className="hidden sm:inline">Research</span>
             </TabsTrigger>
@@ -470,7 +341,7 @@ Be realistic and specific to ${businessIdea.industry} in ${businessIdea.location
                     CEO Suite — Quick Templates
                   </CardTitle>
                   <CardDescription>
-                    Pre-built encrypted workflows for executives. Click to auto-fill.
+                    CEO playbooks that pre-fill your goal. Click to auto-fill, then generate.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -478,7 +349,7 @@ Be realistic and specific to ${businessIdea.industry} in ${businessIdea.location
                     {ceoTemplates.map((template, i) => (
                       <button
                         key={i}
-                        disabled={phase !== "idle"}
+                        disabled={isRunning}
                         onClick={() => {
                           setBusinessIdea(prev => ({
                             ...prev,
@@ -520,7 +391,7 @@ Be realistic and specific to ${businessIdea.industry} in ${businessIdea.location
                         placeholder="e.g., SwiftDrone Logistics"
                         value={businessIdea.name}
                         onChange={(e) => updateBusinessIdea("name", e.target.value)}
-                        disabled={phase !== "idle"}
+                        disabled={isRunning}
                       />
                     </div>
                     
@@ -533,7 +404,7 @@ Be realistic and specific to ${businessIdea.industry} in ${businessIdea.location
                         placeholder="e.g., Karachi, Pakistan"
                         value={businessIdea.location}
                         onChange={(e) => updateBusinessIdea("location", e.target.value)}
-                        disabled={phase !== "idle"}
+                        disabled={isRunning}
                       />
                     </div>
                     
@@ -546,7 +417,7 @@ Be realistic and specific to ${businessIdea.industry} in ${businessIdea.location
                         className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
                         value={businessIdea.industry}
                         onChange={(e) => updateBusinessIdea("industry", e.target.value)}
-                        disabled={phase !== "idle"}
+                        disabled={isRunning}
                       >
                         <option value="">Select Industry</option>
                         {industryOptions.map(ind => (
@@ -564,7 +435,7 @@ Be realistic and specific to ${businessIdea.industry} in ${businessIdea.location
                         placeholder="e.g., E-commerce businesses, Restaurants"
                         value={businessIdea.targetMarket}
                         onChange={(e) => updateBusinessIdea("targetMarket", e.target.value)}
-                        disabled={phase !== "idle"}
+                        disabled={isRunning}
                       />
                     </div>
                     
@@ -577,7 +448,7 @@ Be realistic and specific to ${businessIdea.industry} in ${businessIdea.location
                         placeholder="e.g., $50,000"
                         value={businessIdea.initialInvestment}
                         onChange={(e) => updateBusinessIdea("initialInvestment", e.target.value)}
-                        disabled={phase !== "idle"}
+                        disabled={isRunning}
                       />
                     </div>
                   </div>
@@ -591,7 +462,7 @@ Be realistic and specific to ${businessIdea.industry} in ${businessIdea.location
                       placeholder="Describe your business idea in detail. What problem does it solve? What makes it unique? Who are your customers?"
                       value={businessIdea.description}
                       onChange={(e) => updateBusinessIdea("description", e.target.value)}
-                      disabled={phase !== "idle"}
+                      disabled={isRunning}
                       rows={4}
                     />
                   </div>
@@ -606,11 +477,11 @@ Be realistic and specific to ${businessIdea.industry} in ${businessIdea.location
                   <div className="flex gap-4 pt-4">
                     <Button
                       onClick={runStrategyAgent}
-                      disabled={phase !== "idle"}
+                      disabled={isRunning}
                       size="lg"
                       className="flex-1 gap-2"
                     >
-                      {phase === "idle" ? (
+                      {!isRunning ? (
                         <>
                           <Zap className="h-5 w-5" />
                           Generate Strategy
@@ -640,11 +511,26 @@ Be realistic and specific to ${businessIdea.industry} in ${businessIdea.location
             </motion.div>
           </TabsContent>
 
+          <TabsContent value="history">
+            <StrategyReportHistory onOpen={openHistoryReport} />
+          </TabsContent>
+
           {/* Research Tab */}
-          <TabsContent value="research">
+          <TabsContent value="research" className="space-y-4">
+            {isRunning && steps.length > 0 && (
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">Research steps</CardTitle>
+                  <CardDescription>Live tools run in sequence — sources attach to your report.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <StrategyStepTimeline steps={steps} />
+                </CardContent>
+              </Card>
+            )}
             <ResearchPanel 
               research={result?.research || null} 
-              isLoading={phase === "researching"}
+              isLoading={isRunning}
               businessName={businessIdea.name}
               location={businessIdea.location}
             />
@@ -779,126 +665,5 @@ Be realistic and specific to ${businessIdea.industry} in ${businessIdea.location
     </div>
   );
 };
-
-// Fallback data generators
-function generateFallbackResearch(idea: BusinessIdea): ResearchData {
-  return {
-    competitors: [
-      { name: `${idea.industry} Leader Co.`, marketShare: 35, pricing: "Premium" },
-      { name: `Local ${idea.industry} Services`, marketShare: 25, pricing: "Mid-range" },
-      { name: "Regional Startup", marketShare: 15, pricing: "Budget" },
-      { name: "Other Players", marketShare: 25, pricing: "Various" }
-    ],
-    regulations: [
-      `${idea.industry} licensing requirements in ${idea.location}`,
-      "Business registration and tax compliance",
-      "Employment regulations and labor laws",
-      "Consumer protection regulations",
-      "Environmental compliance standards"
-    ],
-    marketTrends: [
-      `Growing demand for ${idea.industry.toLowerCase()} services in 2026`,
-      "Digital transformation acceleration",
-      "Sustainability focus in business operations",
-      "Remote/hybrid service delivery models",
-      "AI and automation integration"
-    ],
-    costs: [
-      { item: "Initial Setup & Registration", cost: 5000 },
-      { item: "Equipment & Technology", cost: 15000 },
-      { item: "Marketing & Branding", cost: 8000 },
-      { item: "Operational Expenses (3 months)", cost: 12000 },
-      { item: "Contingency Fund", cost: 10000 }
-    ],
-    opportunities: [
-      "Underserved market segments",
-      "Technology adoption gaps",
-      "Partnership opportunities with local businesses",
-      "Government incentives for new businesses",
-      "Export potential to neighboring regions"
-    ],
-    threats: [
-      "Economic uncertainty",
-      "Established competitor response",
-      "Regulatory changes",
-      "Supply chain vulnerabilities",
-      "Talent acquisition challenges"
-    ],
-    sources: [
-      { title: "Industry Report 2026", url: "https://example.com/report" },
-      { title: `${idea.location} Business Guide`, url: "https://example.com/guide" },
-      { title: "Market Analysis Database", url: "https://example.com/analysis" }
-    ]
-  };
-}
-
-function generateFallbackAnalysis(idea: BusinessIdea): Omit<StrategyResult, 'research'> {
-  const baseRevenue = 10000;
-  const growthRate = 1.15;
-  
-  return {
-    executiveSummary: `${idea.name} represents a compelling opportunity in the ${idea.industry} sector of ${idea.location}. Based on our comprehensive market analysis, there is significant demand for innovative solutions in this space. The business model leverages current market trends including digital transformation, sustainability focus, and customer-centric service delivery. With proper execution and the recommended initial investment, ${idea.name} is positioned to capture meaningful market share within the first 12-18 months of operation. Key success factors include differentiated service offerings, strategic partnerships, and a strong digital presence.`,
-    swot: {
-      strengths: [
-        "First-mover advantage in target market segment",
-        "Lean operational structure",
-        "Technology-enabled service delivery",
-        "Strong value proposition",
-        "Flexible and adaptable business model"
-      ],
-      weaknesses: [
-        "Limited initial capital compared to established players",
-        "Brand awareness building required",
-        "Small initial team capacity",
-        "Limited geographic coverage initially",
-        "Dependency on key personnel"
-      ],
-      opportunities: [
-        "Growing market demand in " + idea.location,
-        "Digital transformation acceleration",
-        "Partnership opportunities with complementary businesses",
-        "Government support programs for new businesses",
-        "Expansion to adjacent markets"
-      ],
-      threats: [
-        "Competitive response from established players",
-        "Economic uncertainty and market volatility",
-        "Regulatory changes in the industry",
-        "Talent acquisition and retention challenges",
-        "Technology disruption risks"
-      ]
-    },
-    financialProjections: Array.from({ length: 12 }, (_, i) => {
-      const revenue = Math.round(baseRevenue * Math.pow(growthRate, i));
-      const expenses = Math.round(revenue * (0.7 - (i * 0.01)));
-      return {
-        month: `Month ${i + 1}`,
-        revenue,
-        expenses,
-        profit: revenue - expenses
-      };
-    }),
-    recommendations: [
-      "Focus on building a strong digital presence from day one",
-      "Develop strategic partnerships with complementary businesses",
-      "Implement customer feedback loops for continuous improvement",
-      "Invest in team training and development",
-      "Create a referral program to accelerate customer acquisition"
-    ],
-    riskAssessment: "The primary risks for this venture include market competition, economic fluctuations, and operational challenges during the scaling phase. Mitigation strategies should include maintaining adequate cash reserves (minimum 6 months operating expenses), diversifying revenue streams, and building redundancy in key operational processes. Regular risk assessments and contingency planning are recommended on a quarterly basis.",
-    implementationPlan: [
-      "Week 1-2: Complete business registration and legal setup",
-      "Week 3-4: Secure initial funding and open business accounts",
-      "Month 2: Set up operational infrastructure and technology",
-      "Month 2-3: Hire core team members",
-      "Month 3: Develop marketing materials and launch website",
-      "Month 3-4: Begin soft launch with pilot customers",
-      "Month 4: Official market launch with promotional campaign",
-      "Month 5-6: Gather feedback and optimize operations",
-      "Month 7-9: Scale customer acquisition efforts",
-      "Month 10-12: Evaluate expansion opportunities"
-    ]
-  };
-}
 
 export default StrategyAgent;

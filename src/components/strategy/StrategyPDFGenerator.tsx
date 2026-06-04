@@ -19,7 +19,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import { BusinessIdea, StrategyResult } from "./StrategyAgent";
+import type { BusinessIdea, StrategyResult } from "@/lib/strategy/types";
 
 interface StrategyPDFGeneratorProps {
   businessIdea: BusinessIdea;

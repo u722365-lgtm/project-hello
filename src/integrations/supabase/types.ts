@@ -2762,6 +2762,45 @@ export type Database = {
         }
         Relationships: []
       }
+      strategy_reports: {
+        Row: {
+          business_idea: Json
+          created_at: string
+          id: string
+          plan_steps: Json
+          result: Json | null
+          status: string
+          title: string
+          updated_at: string
+          used_fallback: boolean
+          user_id: string
+        }
+        Insert: {
+          business_idea: Json
+          created_at?: string
+          id?: string
+          plan_steps?: Json
+          result?: Json | null
+          status?: string
+          title: string
+          updated_at?: string
+          used_fallback?: boolean
+          user_id: string
+        }
+        Update: {
+          business_idea?: Json
+          created_at?: string
+          id?: string
+          plan_steps?: Json
+          result?: Json | null
+          status?: string
+          title?: string
+          updated_at?: string
+          used_fallback?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       strategy_usage: {
         Row: {
           business_name: string
