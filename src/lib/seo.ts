@@ -1,8 +1,12 @@
  // SEO utilities and structured data helpers
  
- export interface PageMeta {
-   title: string;
-   description: string;
+/** Google/Bing search snippet — keep ≤160 characters */
+export const SITE_SEARCH_DESCRIPTION =
+  'ShadowTalk AI is a privacy-first agentic workspace—fast AI chat, autonomous missions, 30+ tools, voice & code, BYOK models, and a Windows desktop app. Try free.';
+
+export interface PageMeta {
+  title: string;
+  description: string;
    keywords?: string[];
    canonical?: string;
    ogImage?: string;
@@ -115,7 +119,7 @@ export function generateMetaTags(meta: PageMeta): Record<string, string> {
 export const PAGE_SEO: Record<string, PageMeta> = {
   home: {
     title: 'Think AI. Think ShadowTalk. — Agentic AI Workspace',
-    description: 'Think AI. Think ShadowTalk. The agentic workspace that ships your work — Mission Control, 30+ tools, multi-step agents. Try free, no card required.',
+    description: SITE_SEARCH_DESCRIPTION,
     keywords: ['ShadowTalk', 'agentic AI', 'AI agents', 'AI workspace', 'Mission Control', 'AI automation', 'GPT alternative', 'privacy AI'],
     canonical: 'https://www.shadowtalk-ai.com/home',
   },
@@ -127,7 +131,7 @@ export const PAGE_SEO: Record<string, PageMeta> = {
   },
   chatbot: {
     title: 'ShadowTalk AI — Try Chat Free',
-    description: 'Open the ShadowTalk workspace: agents, 30+ tools, missions, and multi-model chat. Free tier with clear daily limits — upgrade when you are ready.',
+    description: SITE_SEARCH_DESCRIPTION,
     keywords: ['ShadowTalk', 'AI chat', 'chatbot', 'AI assistant', 'agentic AI'],
     canonical: 'https://www.shadowtalk-ai.com/',
   },
