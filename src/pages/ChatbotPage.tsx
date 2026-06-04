@@ -31,6 +31,8 @@ import { useOfflineChatHistory } from "@/hooks/useOfflineChatHistory";
 import { useGeoLocation } from "@/hooks/useGeoLocation";
 import { useGuestUsage, GUEST_LIMITS } from "@/hooks/useGuestUsage";
 import { useToolOrchestrator } from "@/hooks/useToolOrchestrator";
+import { useAgenticToolDispatch } from "@/hooks/useAgenticToolDispatch";
+import { detectShadowExecutionFromChat } from "@/lib/execution/inferFromChat";
 import { ChatAmbientBackground } from "@/components/chat/ChatAmbientBackground";
 import { ChatEmptyState } from "@/components/chat/ChatEmptyState";
 import { ChatMainPanel } from "@/components/chat/ChatMainPanel";
@@ -115,7 +117,7 @@ interface Message {
   timestamp: Date;
   attachment?: { type: 'image' | 'file'; data: string; name: string; mimeType: string };
   imageUrl?: string;
-  toolExecution?: { tool: string; status: string; result?: string };
+  toolExecution?: { tool: string; status: string; result?: string; params?: Record<string, string> };
 }
 type Conversation = {
   id: string;
@@ -161,6 +163,7 @@ const ChatbotPage = () => {
   const { trackChatMessage, trackConversationCreated } = useUsageTracking();
   const { getOfflineSession } = useOfflineAuth();
   const toolOrchestrator = useToolOrchestrator();
+  const { dispatchDetection, goToExecute } = useAgenticToolDispatch();
   const gemmaOffline = useGemmaOffline();
   const sovereignModel = useShadowTalkModel();
   const { getAgentById, agents: marketplaceAgents, loading: marketplaceCatalogLoading } = useMarketplace();
@@ -675,6 +678,12 @@ const ChatbotPage = () => {
     async (
       chatMessages: Array<{ role: string; content: string }>,
       conversationId: string,
+      chatFlags?: {
+        webSearch?: boolean;
+        searchQuery?: string;
+        deepResearch?: boolean;
+        researchQuery?: string;
+      },
     ): Promise<string | undefined> => {
       abortControllerRef.current?.abort();
       const controller = new AbortController();
@@ -767,6 +776,12 @@ const ChatbotPage = () => {
         personality,
         mode: chatMode,
         ...buildChatProviderPayload(aiProvider, aiConfig, keys),
+        ...(chatFlags?.webSearch
+          ? { webSearch: true, searchQuery: chatFlags.searchQuery }
+          : {}),
+        ...(chatFlags?.deepResearch
+          ? { deepResearch: true, researchQuery: chatFlags.researchQuery }
+          : {}),
       });
 
       const raiseChatHttpError = async (status: number, rawBody: string) => {
@@ -1001,6 +1016,89 @@ const ChatbotPage = () => {
       }));
     chatMessages.push({ role: "user", content: msgContent });
 
+    const execHint = detectShadowExecutionFromChat(msgContent);
+    if (execHint.use && execHint.autoRoute) {
+      goToExecute(msgContent, execHint.deliverableType);
+      const label =
+        execHint.deliverableType === "strategy_report"
+          ? "Strategy report"
+          : execHint.deliverableType === "research_brief"
+            ? "Research brief"
+            : "Shadow Execution";
+      const routeMsg = `**${label}** fits this request better than a single chat reply — opening the execution workspace with your goal pre-filled. I'll run a visible plan with live web research and a saved deliverable.`;
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: crypto.randomUUID(),
+          type: "ai",
+          content: routeMsg,
+          timestamp: new Date(),
+          toolExecution: {
+            tool: "shadow_execution",
+            status: "complete",
+            params: { goal: msgContent, mode: execHint.deliverableType },
+            result: label,
+          },
+        },
+      ]);
+      if (user) void saveMessage(routeMsg, "assistant", conversationId).catch(() => {});
+      setIsLoading(false);
+      return;
+    }
+
+    const toolOutcome = dispatchDetection(msgContent, {
+      openDeepResearch: (q) => {
+        setShowDeepResearch(true);
+        if (q) setMessage(q);
+      },
+      openImageGenerator: () => setShowImageGenerator(true),
+      openAgenticRunner: (g) => goToExecute(g, "general"),
+      openBrowser: () => setShowShadowBrowser(true),
+      openShadowLive: () => setShowShadowTalkLive(true),
+      openMissionControl: () => goToExecute(msgContent, "general"),
+      openShadowExecution: (g, mode) => goToExecute(g, mode),
+      setPendingMessage: (text) => setMessage(text),
+      appendAssistantMessage: (content, toolExecution) => {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: crypto.randomUUID(),
+            type: "ai",
+            content,
+            timestamp: new Date(),
+            toolExecution,
+          },
+        ]);
+        if (user) void saveMessage(content, "assistant", conversationId).catch(() => {});
+      },
+    });
+
+    if (toolOutcome.handled) {
+      if (toolOutcome.chatFlags?.webSearch || toolOutcome.chatFlags?.deepResearch) {
+        try {
+          const assistantReply = await runChatCompletion(
+            chatMessages,
+            conversationId,
+            toolOutcome.chatFlags,
+          );
+          if (assistantReply && isShareWorthyReply(assistantReply) && shouldShowChatShareBanner()) {
+            setChatShareOffer({
+              title: buildChatShareTitle(msgContent, assistantReply),
+              subtitle: buildChatShareSubtitle(msgContent),
+            });
+            recordChatShareBannerShown();
+          }
+        } catch (err) {
+          if (!(err instanceof DOMException && err.name === "AbortError")) {
+            const msg = formatChatFetchError(err);
+            toast({ title: "Message failed", description: msg, variant: "destructive" });
+          }
+        }
+      }
+      setIsLoading(false);
+      return;
+    }
+
     const toolDetection = toolOrchestrator.detectTool(msgContent);
     const appIntent =
       detectAppBuilderIntent(msgContent) ??
@@ -1116,6 +1214,17 @@ const ChatbotPage = () => {
   const hasActiveChat = messages.some((m) => m.id !== "welcome");
   const userDisplayName = user?.user_metadata?.full_name?.split(" ")[0] || user?.email?.split("@")[0] || "there";
   const userInitials = user?.email ? user.email.charAt(0).toUpperCase() : "G";
+
+  const handleConfirmTool = useCallback(
+    (messageId: string) => {
+      const msg = messages.find((m) => m.id === messageId);
+      const te = msg?.toolExecution;
+      if (!te?.params?.goal) return;
+      const mode = (te.params.mode as "general" | "strategy_report" | "research_brief" | "content_pack") || "general";
+      goToExecute(te.params.goal, mode);
+    },
+    [messages, goToExecute],
+  );
 
   const openChatShare = useCallback(
     (assistantContent: string, userPrompt?: string) => {
@@ -1466,6 +1575,7 @@ const ChatbotPage = () => {
                       else setShowShadowBrowser(true);
                     }}
                     onShareReply={(content) => openChatShare(content)}
+                    onConfirmTool={handleConfirmTool}
                     messagesEndRef={messagesEndRef}
                     layout="gemini"
                   />

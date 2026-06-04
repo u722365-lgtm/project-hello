@@ -1,5 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { ToolType } from "@/hooks/useToolOrchestrator";
+import { buildExecutePath, inferDeliverableType } from "@/lib/execution/inferFromChat";
+import type { DeliverableType } from "@/lib/execution/types";
 import type { ExecuteShadowToolContext, ShadowToolResult } from "./types";
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
@@ -65,7 +67,8 @@ function formatSearchResults(results: Array<{ title?: string; link?: string; sni
 }
 
 const UI_ROUTES: Partial<Record<ToolType, { path: string; label: string }>> = {
-  mission_control: { path: "/missioncontrol", label: "Mission Control (S.E.E.)" },
+  shadow_execution: { path: "/execute", label: "Shadow Execution" },
+  mission_control: { path: "/execute", label: "Shadow Execution" },
   strategy_agent: { path: "/execute?mode=strategy_report", label: "Shadow Execution" },
   workspace: { path: "/workspace", label: "AI Workspace" },
   ide: { path: "/ide", label: "Code IDE" },
@@ -260,19 +263,27 @@ export async function executeShadowTool(
       }
       return {
         kind: "ui",
-        tool: "mission_control",
-        message: "Launching autonomous mission for this goal.",
-        path: `/missioncontrol?goal=${encodeURIComponent(p.goal || message)}`,
+        tool: "shadow_execution",
+        message: "Launching Shadow Execution for this goal.",
+        path: buildExecutePath(p.goal || message, inferDeliverableType(message)),
       };
     }
 
+    case "shadow_execution":
     case "mission_control":
+    case "strategy_agent": {
+      const mode = (
+        tool === "strategy_agent"
+          ? "strategy_report"
+          : (p.mode as DeliverableType) || inferDeliverableType(message)
+      ) as DeliverableType;
       return {
         kind: "ui",
-        tool,
-        message: "Opening Mission Control (S.E.E.).",
-        path: `/missioncontrol?goal=${encodeURIComponent(message)}`,
+        tool: "shadow_execution",
+        message: "Opening Shadow Execution (autonomous plan + live tools).",
+        path: buildExecutePath(p.goal || message, mode),
       };
+    }
 
     case "document_generator":
     case "creative_synthesis":

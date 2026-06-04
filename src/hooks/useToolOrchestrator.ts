@@ -36,6 +36,7 @@ export type ToolType =
   | 'knowledge_vault'
   | 'memory_panel'
   | 'mission_control'
+  | 'shadow_execution'
   | 'custom_instructions'
   | 'conversation_branching'
   | 'bunker_mode'
@@ -49,7 +50,7 @@ export type ToolType =
   | 'presentation_builder'
   | 'music_generator';
 
-interface ToolDetectionResult {
+export interface ToolDetectionResult {
   tool: ToolType | null;
   confidence: number;
   action?: string;
@@ -594,7 +595,25 @@ const TOOL_PATTERNS: Array<{
     autoExecute: false,
   },
 
-  // Mission Control (S.E.E.)
+  // Shadow Execution — unified autonomous workspace (/execute)
+  {
+    tool: 'shadow_execution',
+    patterns: [
+      /\bshadow\s+execution\b/i,
+      /\b(?:open|launch|run|start)\s+(?:\/)?execute\b/i,
+      /\bexecute\s+(?:tool|workspace|playbook)\b/i,
+      /\b(?:run|execute)\s+(?:the\s+)?playbook\b/i,
+      /\bautonomous\s+(?:execution|workspace|run)\b/i,
+      /\b(?:create|build|generate)\s+(?:a\s+)?(?:strategy\s+report|investor(?:-ready)?\s+report)\b/i,
+      /\b(?:full|complete)\s+(?:market\s+research|competitive\s+analysis)\s+(?:report|with\s+sources)\b/i,
+      /\b(?:plan|research|analyze)\s+.{20,120}\s+(?:with\s+)?(?:real\s+)?(?:tools|web\s+search|sources)\b/i,
+    ],
+    priority: 8,
+    autoExecute: true,
+    extractParams: (msg) => ({ goal: msg }),
+  },
+
+  // Mission Control (S.E.E.) → routes to /execute
   {
     tool: 'mission_control',
     patterns: [
@@ -602,10 +621,11 @@ const TOOL_PATTERNS: Array<{
       /\b(create|start|launch|run)\s+(?:a\s+)?mission/i,
       /\bs\.?e\.?e\.?\s+(?:engine|missions?)/i,
       /\bbackground\s+(?:task|agent|mission)/i,
-      /\bautonomous\s+(?:task|mission|execution)/i,
+      /\bautonomous\s+(?:task|mission)\b/i,
     ],
-    priority: 6,
-    autoExecute: false,
+    priority: 7,
+    autoExecute: true,
+    extractParams: (msg) => ({ goal: msg, mode: "general" }),
   },
 
   // Custom Instructions
@@ -646,18 +666,21 @@ const TOOL_PATTERNS: Array<{
     autoExecute: false,
   },
 
-  // Strategy Agent
+  // Strategy Agent → routes to /execute?mode=strategy_report
   {
     tool: 'strategy_agent',
     patterns: [
       /\bstrategy\s+(?:agent|advisor|consultant)/i,
       /\bbusiness\s+(?:strategy|plan|analysis)/i,
       /\bswot\s+analysis/i,
-      /\b(open|launch)\s+(?:the\s+)?strategy/i,
+      /\b(open|launch|run)\s+(?:the\s+)?strategy/i,
       /\bcompetitive\s+(?:analysis|intelligence)/i,
+      /\bmarket\s+expansion\s+analysis/i,
+      /\binvestor(?:-ready)?\s+(?:report|deck|update)/i,
     ],
-    priority: 6,
-    autoExecute: false,
+    priority: 7,
+    autoExecute: true,
+    extractParams: (msg) => ({ goal: msg, mode: "strategy_report" }),
   },
 
   // Cognitive Loop

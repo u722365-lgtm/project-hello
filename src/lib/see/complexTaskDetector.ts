@@ -1,7 +1,7 @@
 import type { ComplexTaskDetection } from "./types";
 
 const EXPLICIT_SEE =
-  /\b(s\.?e\.?e\.?|sovereign execution|mission control|autonomous mission|background mission|multi[- ]step mission)\b/i;
+  /\b(s\.?e\.?e\.?|sovereign execution|shadow\s+execution|\/execute|mission control|autonomous mission|background mission|multi[- ]step mission)\b/i;
 
 const MULTI_STEP_PHRASES = [
   /\b(step[- ]by[- ]step|end[- ]to[- ]end|full workflow|complete workflow)\b/i,

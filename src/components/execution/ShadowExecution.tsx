@@ -87,8 +87,16 @@ export function ShadowExecution({
   const [businessIdea, setBusinessIdea] = useState<BusinessIdea>(emptyIdea());
 
   useEffect(() => {
-    if (initialGoal) setGoal(initialGoal);
-  }, [initialGoal]);
+    if (!initialGoal) return;
+    setGoal(initialGoal);
+    if (initialDeliverable === "strategy_report") {
+      setBusinessIdea((prev) => ({
+        ...prev,
+        description: initialGoal,
+        name: prev.name || "From chat",
+      }));
+    }
+  }, [initialGoal, initialDeliverable]);
 
   useEffect(() => {
     if (activeMission) void fetchActions(activeMission.id);

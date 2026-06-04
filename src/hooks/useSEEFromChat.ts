@@ -2,6 +2,7 @@ import { useCallback, useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { detectComplexTask } from "@/lib/see/complexTaskDetector";
+import { inferDeliverableType } from "@/lib/execution/inferFromChat";
 import { useMissions, Mission } from "@/hooks/useMissions";
 import { useMissionExecutor } from "@/hooks/useMissionExecutor";
 import { useMissionQuota } from "@/hooks/useMissionQuota";
@@ -74,9 +75,11 @@ export const useSEEFromChat = () => {
       }
 
       const title = goal.trim().slice(0, 56) + (goal.length > 56 ? "…" : "");
+      const deliverable_type = inferDeliverableType(goal);
       const mission = await createMission(title, goal.trim(), {
         auto_approve: options?.autoApprove ?? false,
         description: `Launched from chat · ${detection.reason}`,
+        deliverable_type,
       });
 
       if (!mission) return null;
