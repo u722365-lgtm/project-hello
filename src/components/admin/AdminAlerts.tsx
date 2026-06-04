@@ -16,6 +16,7 @@ import {
   Settings
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { privateRealtimeChannel } from '@/lib/realtimeChannel';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -40,8 +41,7 @@ export const AdminAlerts: React.FC = () => {
     fetchAlerts();
     
     // Subscribe to real-time alerts
-    const channel = supabase
-      .channel('admin-alerts')
+    const channel = privateRealtimeChannel('admin-alerts')
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'admin_alerts' },

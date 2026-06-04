@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { privateRealtimeChannel } from "@/lib/realtimeChannel";
 import { useAuth } from "@/components/AuthProvider";
 
 export interface UserNotification {
@@ -48,8 +49,7 @@ export function useUserNotifications() {
   useEffect(() => {
     if (!user) return;
 
-    const channel = supabase
-      .channel(`user-notifications-${user.id}`)
+    const channel = privateRealtimeChannel(`user-notifications-${user.id}`)
       .on(
         "postgres_changes",
         {

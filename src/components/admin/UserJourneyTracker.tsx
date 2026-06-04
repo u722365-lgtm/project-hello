@@ -14,6 +14,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { privateRealtimeChannel } from '@/lib/realtimeChannel';
 import { format } from 'date-fns';
 
 interface JourneyData {
@@ -51,8 +52,7 @@ export const UserJourneyTracker: React.FC = () => {
     fetchJourneyData();
     
     // Subscribe to real-time updates
-    const channel = supabase
-      .channel('journey-updates')
+    const channel = privateRealtimeChannel('journey-updates')
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'user_journeys' },

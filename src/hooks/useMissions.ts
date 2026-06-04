@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { privateRealtimeChannel } from '@/lib/realtimeChannel';
 import { useToast } from '@/hooks/use-toast';
 
 // =============================================================================
@@ -312,8 +313,7 @@ export const useMissions = () => {
 
   // Subscribe to realtime updates
   useEffect(() => {
-    const channel = supabase
-      .channel('missions-realtime')
+    const channel = privateRealtimeChannel('missions-realtime')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'missions' },

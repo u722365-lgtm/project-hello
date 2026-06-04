@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { privateRealtimeChannel } from "@/lib/realtimeChannel";
 
 export interface CVE {
   id: string;
@@ -120,8 +121,7 @@ export function useRealtimeCVEs(onNewCVE: (cve: CVE) => void) {
   const queryClient = useQueryClient();
 
   const subscribe = () => {
-    const channel = supabase
-      .channel("threat-intel-cves-realtime")
+    const channel = privateRealtimeChannel("threat-intel-cves-realtime")
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "threat_intel_cves" },

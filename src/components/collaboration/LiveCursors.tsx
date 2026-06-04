@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import { privateRealtimeChannel } from "@/lib/realtimeChannel";
 import { useAuth } from "@/components/AuthProvider";
 
 interface CursorPosition {
@@ -81,7 +82,7 @@ export const LiveCursors = ({ channelName, containerRef, enabled = true }: LiveC
   useEffect(() => {
     if (!user || !enabled) return;
     
-    const channel = supabase.channel(`cursors-${channelName}`)
+    const channel = privateRealtimeChannel(`cursors-${channelName}`)
       .on('broadcast', { event: 'cursor' }, ({ payload }) => {
         if (payload.userId === user.id) return;
         

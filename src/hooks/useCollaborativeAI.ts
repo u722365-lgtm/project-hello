@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { privateRealtimeChannel } from "@/lib/realtimeChannel";
 import { useAuth } from "@/components/AuthProvider";
 
 interface SharedAIMessage {
@@ -27,7 +28,7 @@ export const useCollaborativeAI = ({ roomId, enabled = true }: UseCollaborativeA
   useEffect(() => {
     if (!user || !roomId || !enabled) return;
 
-    const channel = supabase.channel(`collab-ai:${roomId}`)
+    const channel = privateRealtimeChannel(`collab-ai:${roomId}`)
       .on("broadcast", { event: "ai_message" }, ({ payload }) => {
         const msg = payload as SharedAIMessage;
         setSharedMessages(prev => [...prev, msg]);

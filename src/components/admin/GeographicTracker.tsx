@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
+import { privateRealtimeChannel } from "@/lib/realtimeChannel";
 import { Globe, MapPin, Users, Activity, TrendingUp, Grid3X3, CircleDot } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { TimezoneInsights } from "./TimezoneInsights";
@@ -78,8 +79,7 @@ export const GeographicTracker = () => {
     loadUserLocations();
 
     // Subscribe to realtime updates
-    const channel = supabase
-      .channel("geo-tracking")
+    const channel = privateRealtimeChannel("geo-tracking")
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "user_locations" },

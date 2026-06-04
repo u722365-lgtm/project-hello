@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
+import { privateRealtimeChannel } from "@/lib/realtimeChannel";
 import { Clock, TrendingUp, Users, Sun, Moon, Sunrise, Sunset } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -54,8 +55,7 @@ export const TimezoneInsights = () => {
   useEffect(() => {
     loadTimezoneData();
     
-    const channel = supabase
-      .channel("timezone-updates")
+    const channel = privateRealtimeChannel("timezone-updates")
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "user_locations" },

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { privateRealtimeChannel } from '@/lib/realtimeChannel';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -59,8 +60,7 @@ export const RealTimeFeedback: React.FC = () => {
 
   useEffect(() => {
     // Subscribe to real-time feedback
-    const channel = supabase
-      .channel('admin-feedback-realtime')
+    const channel = privateRealtimeChannel('admin-feedback-realtime')
       .on(
         'postgres_changes',
         {

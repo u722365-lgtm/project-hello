@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
+import { privateRealtimeChannel } from "@/lib/realtimeChannel";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -80,8 +81,7 @@ const CollaborativeRoom = () => {
     joinRoom();
     
     // Subscribe to new messages
-    const messagesChannel = supabase
-      .channel(`room-messages-${roomId}`)
+    const messagesChannel = privateRealtimeChannel(`room-messages-${roomId}`)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
@@ -93,8 +93,7 @@ const CollaborativeRoom = () => {
       .subscribe();
 
     // Subscribe to participant changes
-    const participantsChannel = supabase
-      .channel(`room-participants-${roomId}`)
+    const participantsChannel = privateRealtimeChannel(`room-participants-${roomId}`)
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
@@ -106,8 +105,7 @@ const CollaborativeRoom = () => {
       .subscribe();
 
     // Subscribe to document changes for real-time sync
-    const documentChannel = supabase
-      .channel(`room-document-${roomId}`)
+    const documentChannel = privateRealtimeChannel(`room-document-${roomId}`)
       .on('postgres_changes', {
         event: '*',
         schema: 'public',

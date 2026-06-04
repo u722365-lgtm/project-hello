@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { privateRealtimeChannel } from "@/lib/realtimeChannel";
 import { useAuth } from "@/components/AuthProvider";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
@@ -48,7 +49,7 @@ export const useRealtimePresence = ({ channelName, throttleMs = 50 }: UseRealtim
   useEffect(() => {
     if (!user || !channelName) return;
 
-    const channel = supabase.channel(`presence:${channelName}`, {
+    const channel = privateRealtimeChannel(`presence:${channelName}`, {
       config: {
         presence: {
           key: user.id,

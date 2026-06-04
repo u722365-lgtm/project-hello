@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { X, Megaphone, AlertTriangle, Info, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { privateRealtimeChannel } from "@/lib/realtimeChannel";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -60,8 +61,7 @@ export const AnnouncementBanner = () => {
 
     load();
 
-    const channel = supabase
-      .channel("announcements-banner")
+    const channel = privateRealtimeChannel("announcements-banner")
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "announcements" },
