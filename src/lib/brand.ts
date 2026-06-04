@@ -13,14 +13,14 @@ export const BRAND = {
   /** Primary brand line — landing hero, manifesto, chat empty state, SEO */
   tagline: "Think AI. Think ShadowTalk.",
   shortPitch:
-    "The agentic workspace that ships your work — missions, 30+ tools, and deliverables in one place.",
+    "Stop juggling AI tabs. ShadowTalk finishes the job—agentic chat, missions, 30+ tools, voice & code, desktop app.",
   manifesto:
     "AI should execute — not just chat. ShadowTalk turns goals into missions, chains tools, and keeps you in control at every step.",
   /** Landing hero — tagline as headline for maximum recall */
   heroHeadline: ["Think AI.", "Think ShadowTalk."],
   heroSubtitle:
-    "The workspace that ships what other AIs only suggest — agents, tools, and finished work under one roof.",
-  heroBadge: "Free to try · No card · One name you'll remember",
+    "Stop juggling AI tabs. One workspace for agentic chat, missions, 30+ tools, voice & code, and a desktop app—free start, no card.",
+  heroBadge: "Free start · No card · Your old stack will feel slow",
 } as const;
 
 /** Section headlines & subcopy for the home page */
@@ -28,7 +28,7 @@ export const LANDING_COPY = {
   manifesto: {
     kicker: "One line. One workspace.",
     title: ["You will forget", "most AI names."],
-    body: "Not this one. Think AI. Think ShadowTalk. — then ship research, code, vault, voice, and autonomous missions without the five-tab copy-paste grind.",
+    body: "Not this one. Think AI. Think ShadowTalk. — finish research, code, vault, voice, and autonomous missions in one flow. No five-tab copy-paste grind.",
     traction: "Join builders who made the name stick and the work leave the chat window.",
   },
   comparison: {
@@ -109,6 +109,7 @@ export const BRAND_PILLARS = [
 /** Rotating hero / chat hooks — memorable, specific */
 export const BRAND_HOOKS = [
   "Think AI. Think ShadowTalk.",
+  "Stop juggling tabs — finish the job here.",
   "Chat suggests. ShadowTalk ships.",
   "One workspace. Thirty tools. Zero tab marathon.",
   "Mission Control finishes the work you started in chat.",

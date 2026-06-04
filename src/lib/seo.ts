@@ -4,9 +4,15 @@
 export const SITE_SEARCH_DESCRIPTION =
   'Stop juggling AI tabs. ShadowTalk finishes the job—agentic chat, missions, 30+ tools, voice & code, desktop app. Free start, no card. Your old stack will feel slow.';
 
+/** Link previews (X, LinkedIn, Discord) — curiosity-led */
+export const SITE_SOCIAL_DESCRIPTION =
+  'Why are builders switching to ShadowTalk? One workspace for agents, code, research & voice—free, no card. Open it once and tab-hopping feels ancient.';
+
 export interface PageMeta {
   title: string;
   description: string;
+  /** Overrides og/twitter description when set (defaults to `description`) */
+  socialDescription?: string;
    keywords?: string[];
    canonical?: string;
    ogImage?: string;
@@ -26,19 +32,21 @@ export function generateMetaTags(meta: PageMeta): Record<string, string> {
     ? meta.title
     : `${meta.title} | ${brand}`;
 
+  const social = (meta.socialDescription ?? meta.description).slice(0, 160);
+
   return {
     title: fullTitle,
     description: meta.description.slice(0, 160),
     keywords: meta.keywords?.join(', ') || '',
     canonical: meta.canonical || baseUrl,
     'og:title': fullTitle,
-    'og:description': meta.description.slice(0, 160),
+    'og:description': social,
     'og:image': meta.ogImage || defaultImage,
     'og:type': meta.ogType || 'website',
     'og:url': meta.canonical || baseUrl,
     'twitter:card': meta.twitterCard || 'summary_large_image',
     'twitter:title': fullTitle,
-    'twitter:description': meta.description.slice(0, 160),
+    'twitter:description': social,
     'twitter:image': meta.ogImage || defaultImage,
     robots: meta.noIndex ? 'noindex, nofollow' : 'index, follow',
   };
@@ -120,6 +128,7 @@ export const PAGE_SEO: Record<string, PageMeta> = {
   home: {
     title: 'Think AI. Think ShadowTalk. — Agentic AI Workspace',
     description: SITE_SEARCH_DESCRIPTION,
+    socialDescription: SITE_SOCIAL_DESCRIPTION,
     keywords: ['ShadowTalk', 'agentic AI', 'AI agents', 'AI workspace', 'Mission Control', 'AI automation', 'GPT alternative', 'privacy AI'],
     canonical: 'https://www.shadowtalk-ai.com/home',
   },
@@ -132,6 +141,7 @@ export const PAGE_SEO: Record<string, PageMeta> = {
   chatbot: {
     title: 'ShadowTalk AI — Try Chat Free',
     description: SITE_SEARCH_DESCRIPTION,
+    socialDescription: SITE_SOCIAL_DESCRIPTION,
     keywords: ['ShadowTalk', 'AI chat', 'chatbot', 'AI assistant', 'agentic AI'],
     canonical: 'https://www.shadowtalk-ai.com/',
   },
