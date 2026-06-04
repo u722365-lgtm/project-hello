@@ -780,20 +780,44 @@ const ChatbotPage = () => {
       const aiMessageId = crypto.randomUUID();
       let assistantContent = "";
 
-      const pushAssistant = (content: string) => {
-        assistantContent = content;
+      // SPEED: coalesce setMessages calls to one per frame so streaming
+      // doesn't trigger a full React reconcile on every SSE chunk.
+      let pendingContent: string | null = null;
+      let rafId: number | null = null;
+      const flushAssistant = () => {
+        rafId = null;
+        if (pendingContent === null) return;
+        const content = pendingContent;
+        pendingContent = null;
         setMessages((prev) => {
           const exists = prev.find((m) => m.id === aiMessageId);
           if (exists) {
             return prev.map((m) =>
-              m.id === aiMessageId ? { ...m, content: assistantContent } : m,
+              m.id === aiMessageId ? { ...m, content } : m,
             );
           }
           return [
             ...prev,
-            { id: aiMessageId, type: "ai", content: assistantContent, timestamp: new Date() },
+            { id: aiMessageId, type: "ai", content, timestamp: new Date() },
           ];
         });
+      };
+      const pushAssistant = (content: string) => {
+        assistantContent = content;
+        pendingContent = content;
+        if (rafId === null) {
+          rafId = typeof requestAnimationFrame !== "undefined"
+            ? requestAnimationFrame(flushAssistant)
+            : (setTimeout(flushAssistant, 16) as unknown as number);
+        }
+      };
+      const finalizeAssistant = () => {
+        if (rafId !== null) {
+          if (typeof cancelAnimationFrame !== "undefined") cancelAnimationFrame(rafId);
+          else clearTimeout(rafId as unknown as number);
+          rafId = null;
+        }
+        if (pendingContent !== null) flushAssistant();
       };
 
       if (isShadowTalkDesktop()) {
@@ -846,8 +870,12 @@ const ChatbotPage = () => {
         }
       }
 
+      finalizeAssistant();
+      // SPEED: don't block UI on DB write — fire and forget.
       if (assistantContent && user) {
-        await saveMessage(assistantContent, "assistant", conversationId);
+        void saveMessage(assistantContent, "assistant", conversationId).catch((e) =>
+          console.warn("[chat] saveMessage(assistant) failed", e),
+        );
       }
       return assistantContent || undefined;
     },
@@ -940,7 +968,10 @@ const ChatbotPage = () => {
     setMessage("");
     setSelectedFile(null);
     setIsLoading(true);
-    if (user) await saveMessage(msgContent, "user", conversationId);
+    // SPEED: persist user message in the background; don't block the AI call on a DB write.
+    if (user) void saveMessage(msgContent, "user", conversationId).catch((e) =>
+      console.warn("[chat] saveMessage(user) failed", e),
+    );
 
     if (!isProOrHigher) {
       setDailyChats(incrementDailyMessageCount());
@@ -1286,13 +1317,13 @@ const ChatbotPage = () => {
             onManageSubscription={() => navigate("/billing")}
             onSignOut={signOut}
             onOpenAnalytics={() => navigate("/analytics")}
-            onOpenScriptAutomation={() => navigate("/workspace")}
+            onOpenScriptAutomation={() => navigate("/workspace?panel=automation")}
             onOpenStealthVault={() => navigate("/vault")}
-            onOpenAgentWorkflows={() => navigate("/workspace")}
-            onOpenModelFineTuning={() => navigate("/workspace")}
-            onOpenWhiteLabelBranding={() => navigate("/workspace")}
-            onOpenGeminiAnalytics={() => navigate("/settings")}
-            onOpenCanvas={() => navigate("/workspace")}
+            onOpenAgentWorkflows={() => navigate("/agent-architecture")}
+            onOpenModelFineTuning={() => navigate("/personal-llm")}
+            onOpenWhiteLabelBranding={() => navigate("/enterprise-license")}
+            onOpenGeminiAnalytics={() => navigate("/analytics")}
+            onOpenCanvas={() => navigate("/ide")}
             onOpenDeepResearch={() => setShowDeepResearch(true)}
             onOpenGoogleIntegration={() => navigate("/profile?tab=linked")}
             onOpenAgenticRunner={() => setShowMissionControl(true)}

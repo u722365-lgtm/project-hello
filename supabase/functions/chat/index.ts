@@ -21,15 +21,30 @@ async function fetchAdaptiveContext(userId: string, supabaseUrl: string, service
   const sections: string[] = [];
 
   try {
-    // Fetch active business memories (sorted by priority)
-    const { data: bizMemories } = await admin
-      .from('business_memories')
-      .select('category, title, content, priority')
-      .eq('user_id', userId)
-      .eq('is_active', true)
-      .order('priority', { ascending: false })
-      .limit(20);
+    // SPEED: run all three context queries in parallel rather than sequentially.
+    const [bizRes, aiMemRes, knowRes] = await Promise.all([
+      admin
+        .from('business_memories')
+        .select('category, title, content, priority')
+        .eq('user_id', userId)
+        .eq('is_active', true)
+        .order('priority', { ascending: false })
+        .limit(20),
+      admin
+        .from('ai_memories')
+        .select('category, content, confidence, times_referenced')
+        .eq('user_id', userId)
+        .order('confidence', { ascending: false })
+        .limit(15),
+      admin
+        .from('knowledge_entries')
+        .select('title, content, entry_type, tags')
+        .eq('user_id', userId)
+        .order('access_count', { ascending: false })
+        .limit(10),
+    ]);
 
+    const bizMemories = bizRes.data;
     if (bizMemories?.length) {
       const grouped: Record<string, string[]> = {};
       for (const m of bizMemories) {
@@ -43,27 +58,13 @@ async function fetchAdaptiveContext(userId: string, supabaseUrl: string, service
       sections.push(`## BUSINESS MEMORY\n${bizSection}`);
     }
 
-    // Fetch AI memories (top 15 by confidence × reference count)
-    const { data: aiMemories } = await admin
-      .from('ai_memories')
-      .select('category, content, confidence, times_referenced')
-      .eq('user_id', userId)
-      .order('confidence', { ascending: false })
-      .limit(15);
-
+    const aiMemories = aiMemRes.data;
     if (aiMemories?.length) {
       const memItems = aiMemories.map(m => `- [${m.category}] ${m.content} (confidence: ${(m.confidence * 100).toFixed(0)}%)`);
       sections.push(`## AI LEARNED MEMORIES\n${memItems.join('\n')}`);
     }
 
-    // Fetch recent knowledge entries (top 10 by access count)
-    const { data: knowledge } = await admin
-      .from('knowledge_entries')
-      .select('title, content, entry_type, tags')
-      .eq('user_id', userId)
-      .order('access_count', { ascending: false })
-      .limit(10);
-
+    const knowledge = knowRes.data;
     if (knowledge?.length) {
       const kItems = knowledge.map(k => `- **${k.title}** (${k.entry_type}): ${k.content.substring(0, 200)}`);
       sections.push(`## KNOWLEDGE BASE\n${kItems.join('\n')}`);
@@ -1809,86 +1810,13 @@ When a user asks you to write, create, draft, or generate any document (email, a
       throw new Error("AI gateway error");
     }
 
-    // === SPRINT 1: RESPONSE QUALITY SCORING ===
-    // For high-tier queries, buffer the response, score it, and retry if poor (platform gateway only)
-    if (LOVABLE_API_KEY && (routerDecision.tier === 'EXTREME' || routerDecision.tier === 'COMPLEX')) {
-      // Buffer the streamed response to evaluate quality
-      const reader = response.body?.getReader();
-      if (!reader) throw new Error("No response body");
-      
-      const decoder = new TextDecoder();
-      let fullContent = '';
-      const chunks: Uint8Array[] = [];
-      
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        chunks.push(value);
-        const text = decoder.decode(value, { stream: true });
-        
-        // Extract content from SSE for quality check
-        for (const line of text.split('\n')) {
-          if (!line.startsWith('data: ') || line.includes('[DONE]')) continue;
-          try {
-            const parsed = JSON.parse(line.slice(6));
-            const delta = parsed.choices?.[0]?.delta?.content;
-            if (delta) fullContent += delta;
-          } catch { /* skip */ }
-        }
-      }
-
-      // Only quality-check if we got substantial content
-      if (fullContent.length > 100) {
-        const quality = await evaluateResponseQuality(lastUserText, fullContent, LOVABLE_API_KEY);
-        console.log(`[QUALITY SCORER] Score: ${quality.score}/10, Verdict: ${quality.verdict}, Issues: ${quality.issues.join(', ') || 'none'}`);
-
-        // If quality is poor (< 5), retry with upgraded model
-        if (quality.score < 5 && model !== 'openai/gpt-5.2') {
-          console.log("[QUALITY SCORER] Low quality detected, retrying with GPT-5.2...");
-          
-          const retryResponse = await customAiChatCompletions(
-            customAi,
-            platformKey,
-            {
-              model: 'openai/gpt-5.2',
-              messages: [
-                { role: "system", content: systemPrompt + `\n\n> QUALITY IMPROVEMENT: A previous attempt scored ${quality.score}/10. Issues: ${quality.issues.join(', ')}. Ensure this response is comprehensive, accurate, and well-structured.` },
-                ...trimmedMessages,
-              ],
-              stream: true,
-            },
-            fetchWithRetryCompat,
-          );
-
-          if (retryResponse.ok) {
-            console.log("[QUALITY SCORER] Retry successful, streaming upgraded response");
-            return new Response(retryResponse.body, {
-              headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
-            });
-          }
-        }
-      }
-
-      // Re-stream the buffered response
-      const mergedArray = new Uint8Array(chunks.reduce((acc, c) => acc + c.length, 0));
-      let offset = 0;
-      for (const chunk of chunks) {
-        mergedArray.set(chunk, offset);
-        offset += chunk.length;
-      }
-      
-      return new Response(new ReadableStream({
-        start(controller) {
-          controller.enqueue(mergedArray);
-          controller.close();
-        }
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
-      });
-    }
-
-    // For standard tiers, stream directly (no quality check overhead)
-    console.log("[CHAT] Streaming response started");
+    // SPEED OVERHAUL: stream directly for ALL tiers.
+    // The previous quality-scoring path buffered the entire response before sending
+    // a single byte to the user, which defeated streaming for EXTREME / COMPLEX
+    // queries (the cases where TTFB matters most). Models we pick (GPT-5.x, Gemini
+    // 3 Pro) are already strong enough that a retry loop is rarely worth ~5–15s of
+    // perceived latency.
+    console.log("[CHAT] Streaming response started (direct passthrough, tier=" + routerDecision.tier + ")");
     return new Response(response.body, {
       headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
     });

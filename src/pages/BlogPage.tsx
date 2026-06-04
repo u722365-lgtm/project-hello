@@ -19,6 +19,8 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import SEOHead from "@/components/SEOHead";
 import { PAGE_SEO } from "@/lib/seo";
+import NewsletterSignup from "@/components/blog/NewsletterSignup";
+
 
 
 const fadeUp = {
@@ -219,21 +221,8 @@ const BlogPage = () => {
       )}
 
       {/* Newsletter */}
-      <section className="py-20 px-4">
-        <div className="container mx-auto max-w-2xl text-center">
-          <motion.div initial={{ opacity: 0, y: 30, scale: 0.95 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: true }}
-            className="glass-subtle rounded-2xl p-10 relative overflow-hidden"
-          >
-            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
-            <h2 className="text-2xl font-bold mb-4 tracking-tight">Subscribe to our newsletter</h2>
-            <p className="text-muted-foreground mb-6">Get the latest articles, tutorials, and updates delivered to your inbox.</p>
-            <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-              <input type="email" placeholder="Enter your email" className="flex-1 px-4 py-3 bg-background/50 border border-border/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all" />
-              <button className="px-6 py-3 bg-primary text-primary-foreground rounded-xl btn-glow font-medium">Subscribe</button>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+      <NewsletterSignup />
+
 
       <Dialog open={!!selectedPost} onOpenChange={(open) => !open && setSelectedPost(null)}>
         <DialogContent className="max-w-3xl max-h-[85vh] flex flex-col">
