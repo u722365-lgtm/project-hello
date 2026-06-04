@@ -100,6 +100,8 @@ import {
 } from "@/lib/growth/selfMarketing";
 import { useUserReferralCode } from "@/hooks/useUserReferralCode";
 import { useChatSettings } from "@/hooks/useChatSettings";
+import { useE2EE } from "@/hooks/useE2EE";
+import { useChatPrivateMode } from "@/hooks/useChatPrivateMode";
 import {
   getChatFetchHeaders,
   getChatFunctionUrl,
@@ -126,12 +128,6 @@ type Conversation = {
   archived_at?: string | null;
 };
 type Personality = "friendly" | "sarcastic" | "professional" | "creative" | "meticulous" | "curious" | "diplomatic" | "witty" | "pragmatic" | "inquisitive" | "spicy";
-
-/** Legacy E2EE payloads stored before vault unlock was removed from chat */
-function displayStoredText(raw: string): string {
-  if (raw.startsWith("e2e:")) return "[Encrypted message]";
-  return raw;
-}
 
 function parseSseContentLines(
   lines: string[],
@@ -189,6 +185,8 @@ const ChatbotPage = () => {
   const [chatMode, setChatMode] = useState<ChatMode>("general");
   const [aiProvider, setAiProvider] = useState<AIProvider>("lovable");
   const { preferences: chatPreferences, isLoading: chatPrefsLoading } = useChatSettings();
+  const e2ee = useE2EE();
+  const chatPrivate = useChatPrivateMode(e2ee);
   const appliedChatDefaults = useRef(false);
   const [byokDialogOpen, setByokDialogOpen] = useState(false);
   const [pendingByokProvider, setPendingByokProvider] = useState<AIProvider | null>(null);
@@ -370,11 +368,13 @@ const ChatbotPage = () => {
       .order('updated_at', { ascending: false });
     
     if (data && !error) {
-      const rows = data.map((c) => ({
-        ...c,
-        title: displayStoredText(c.title || 'Untitled'),
-        archived_at: (c as Conversation).archived_at ?? null,
-      }));
+      const rows = await Promise.all(
+        data.map(async (c) => ({
+          ...c,
+          title: await chatPrivate.resolveDisplayText(c.title || "Untitled"),
+          archived_at: (c as Conversation).archived_at ?? null,
+        })),
+      );
       setConversations(rows);
       const active = rows.filter(
         (c) => !isConversationArchived(c.id, c.archived_at, guestArchivedIds),
@@ -396,13 +396,19 @@ const ChatbotPage = () => {
       .order('created_at', { ascending: true });
     
     if (data && !error) {
-      const loadedMessages: Message[] = data.map((m) => ({
-        id: m.id,
-        type: m.role === 'user' ? 'user' : 'ai',
-        content: displayStoredText(m.content),
-        timestamp: new Date(m.created_at),
-      }));
-      setMessages(loadedMessages.length === 0 ? [{ id: 'welcome', type: 'ai', content: getWelcomeMessage(), timestamp: new Date() }] : loadedMessages);
+      const loadedMessages: Message[] = await Promise.all(
+        data.map(async (m) => ({
+          id: m.id,
+          type: m.role === "user" ? "user" : "ai",
+          content: await chatPrivate.resolveDisplayText(m.content),
+          timestamp: new Date(m.created_at),
+        })),
+      );
+      setMessages(
+        loadedMessages.length === 0
+          ? [{ id: "welcome", type: "ai", content: getWelcomeMessage(), timestamp: new Date() }]
+          : loadedMessages,
+      );
     }
   };
 
@@ -639,9 +645,12 @@ const ChatbotPage = () => {
     if (!user) return currentConversationId;
     if (currentConversationId) return currentConversationId;
 
+    const titleToSave = chatPrivate.active
+      ? await chatPrivate.wrapForStorage("New Chat")
+      : "New Chat";
     const { data, error } = await supabase
       .from('conversations')
-      .insert({ user_id: user.id, title: 'New Chat' })
+      .insert({ user_id: user.id, title: titleToSave })
       .select()
       .single();
 
@@ -651,8 +660,11 @@ const ChatbotPage = () => {
     }
 
     setCurrentConversationId(data.id);
+    const displayTitle = chatPrivate.active
+      ? "Private Chat"
+      : (await chatPrivate.resolveDisplayText(data.title || "New Chat")) || "New Chat";
     setConversations((prev) => [
-      { id: data.id, title: data.title || 'New Chat', created_at: data.created_at },
+      { id: data.id, title: displayTitle, created_at: data.created_at },
       ...prev,
     ]);
     return data.id;
@@ -661,17 +673,55 @@ const ChatbotPage = () => {
   const saveMessage = async (content: string, role: 'user' | 'assistant', conversationId: string) => {
     if (!user || !conversationId) return null;
 
+    const contentToSave = await chatPrivate.wrapForStorage(content);
     const { data } = await supabase
       .from('messages')
-      .insert({ conversation_id: conversationId, user_id: user.id, content, role, personality })
+      .insert({ conversation_id: conversationId, user_id: user.id, content: contentToSave, role, personality })
       .select().single();
     
     if (role === 'user' && messages.length <= 1) {
-      const title = content.trim().split(/\s+/).slice(0, 3).join(' ').slice(0, 25) || 'New Chat';
+      const titlePlain = content.trim().split(/\s+/).slice(0, 3).join(' ').slice(0, 25) || 'New Chat';
+      const title = await chatPrivate.wrapForStorage(titlePlain);
       await supabase.from('conversations').update({ title, updated_at: new Date().toISOString() }).eq('id', conversationId);
-      setConversations(prev => prev.map(c => c.id === conversationId ? { ...c, title } : c));
+      const displayTitle = chatPrivate.active
+        ? "Private Chat"
+        : titlePlain;
+      setConversations(prev => prev.map(c => c.id === conversationId ? { ...c, title: displayTitle } : c));
     }
     return data;
+  };
+
+  const handleEnableChatEncryption = async () => {
+    let conversationId = currentConversationId;
+    if (user && !conversationId) {
+      conversationId = await ensureConversation();
+    }
+    if (!conversationId && !user) {
+      const guestConvId = `guest-${Date.now()}`;
+      setCurrentConversationId(guestConvId);
+      setConversations((prev) => [
+        { id: guestConvId, title: "Private Chat", created_at: new Date().toISOString() },
+        ...prev,
+      ]);
+      conversationId = guestConvId;
+    }
+    if (!conversationId) return;
+
+    const ok = await chatPrivate.enablePrivateMode({
+      conversationId,
+      messages: messages.filter((m) => m.id !== "welcome"),
+      isGuest: isGuestConversationId(conversationId),
+    });
+    if (!ok) return;
+
+    setConversations((prev) =>
+      prev.map((c) =>
+        c.id === conversationId ? { ...c, title: "Private Chat" } : c,
+      ),
+    );
+    if (user && !isGuestConversationId(conversationId)) {
+      await loadConversation(conversationId);
+    }
   };
 
   const runChatCompletion = useCallback(
@@ -1212,8 +1262,14 @@ const ChatbotPage = () => {
 
   const isEmptyChat = messages.filter((m) => m.id !== "welcome").length === 0;
   const hasActiveChat = messages.some((m) => m.id !== "welcome");
-  const userDisplayName = user?.user_metadata?.full_name?.split(" ")[0] || user?.email?.split("@")[0] || "there";
-  const userInitials = user?.email ? user.email.charAt(0).toUpperCase() : "G";
+  const userDisplayName = chatPrivate.anonymousUi
+    ? "Anonymous"
+    : user?.user_metadata?.full_name?.split(" ")[0] || user?.email?.split("@")[0] || "there";
+  const userInitials = chatPrivate.anonymousUi
+    ? "?"
+    : user?.email
+      ? user.email.charAt(0).toUpperCase()
+      : "G";
 
   const handleConfirmTool = useCallback(
     (messageId: string) => {
@@ -1455,7 +1511,24 @@ const ChatbotPage = () => {
             onOpenHistory={() => setShowSidebar(true)}
             onClearChat={handleClearCurrentChat}
             onDeleteAllChats={handleClearAllChats}
+            encryptionActive={chatPrivate.active}
+            encryptionBusy={chatPrivate.busy}
+            onEnableEncryption={handleEnableChatEncryption}
+            onDisableEncryption={chatPrivate.disablePrivateMode}
           />
+          {chatPrivate.active && (
+            <motion.div
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mx-4 md:mx-6 mb-2 flex items-center justify-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-[11px] font-medium text-emerald-600 dark:text-emerald-400"
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+              </span>
+              End-to-end encrypted · Anonymous session
+            </motion.div>
+          )}
           <ChatHeader
             variant="minimal"
             userPlan={userPlan}

@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { MessageSquarePlus, History, Eraser, Trash2, Settings } from "lucide-react";
+import { ChatEncryptionToggle } from "@/components/chat/ChatEncryptionToggle";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useSettingsMotion } from "@/hooks/useSettingsMotion";
@@ -27,6 +28,10 @@ interface ChatToolbarProps {
   onOpenHistory: () => void;
   onClearChat: () => void;
   onDeleteAllChats: () => void;
+  encryptionActive?: boolean;
+  encryptionBusy?: boolean;
+  onEnableEncryption?: () => void | Promise<void>;
+  onDisableEncryption?: () => void;
   className?: string;
 }
 
@@ -37,6 +42,10 @@ export function ChatToolbar({
   onOpenHistory,
   onClearChat,
   onDeleteAllChats,
+  encryptionActive = false,
+  encryptionBusy = false,
+  onEnableEncryption,
+  onDisableEncryption,
   className = "",
 }: ChatToolbarProps) {
   const navigate = useNavigate();
@@ -51,6 +60,15 @@ export function ChatToolbar({
         className={`flex items-center gap-1 px-4 md:px-6 py-2 border-b border-border/40 glass-subtle shrink-0 ${className}`}
       >
         <div className="ml-auto flex items-center gap-1">
+        {onEnableEncryption && onDisableEncryption && (
+          <ChatEncryptionToggle
+            active={encryptionActive}
+            busy={encryptionBusy}
+            onEnable={onEnableEncryption}
+            onDisable={onDisableEncryption}
+          />
+        )}
+
         <Tooltip>
           <TooltipTrigger asChild>
             <Button

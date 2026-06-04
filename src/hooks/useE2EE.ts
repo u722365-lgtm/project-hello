@@ -121,8 +121,7 @@ export const useE2EE = () => {
         keyFingerprint: fingerprint
       }));
 
-      // Store in session storage for persistence across reloads during the session
-      // (The key itself is NEVER stored, just the session-bound state)
+      await persistSessionKey(key);
       sessionStorage.setItem('shadowtalk_e2e_active', 'true');
       
       toast.success("Security engine engaged. ShadowTalk is now E2EE protected.");
@@ -132,13 +131,46 @@ export const useE2EE = () => {
       toast.error("Failed to engage encryption engine.");
       return false;
     }
-  }, [state.masterSalt]);
+  }, [state.masterSalt, persistSessionKey]);
+
+  /**
+   * One-click session encryption (random key, no passphrase prompt).
+   * Key lives in sessionStorage for the current browser tab session only.
+   */
+  const engageSessionEncryption = useCallback(async () => {
+    try {
+      let salt = state.masterSalt;
+      if (!salt) {
+        salt = arrayToBase64(generateSalt());
+        localStorage.setItem("shadowtalk_e2e_salt", salt);
+        setState((prev) => ({ ...prev, masterSalt: salt }));
+      }
+
+      const entropy = crypto.getRandomValues(new Uint8Array(32));
+      const passphrase = arrayToBase64(entropy);
+      const key = await deriveKey(passphrase, base64ToArray(salt));
+      await persistSessionKey(key);
+
+      setState((prev) => ({
+        ...prev,
+        isUnlocked: true,
+        masterKey: key,
+        masterSalt: salt,
+      }));
+      sessionStorage.setItem("shadowtalk_e2e_active", "true");
+      return true;
+    } catch (error) {
+      console.error("[E2EE] Session encryption engage failed:", error);
+      return false;
+    }
+  }, [state.masterSalt, persistSessionKey]);
 
   const lock = useCallback(() => {
     setState(prev => ({ ...prev, isUnlocked: false, masterKey: null }));
+    clearSessionKey();
     sessionStorage.removeItem('shadowtalk_e2e_active');
     toast.info("Security engine disengaged.");
-  }, []);
+  }, [clearSessionKey]);
 
   /**
    * Encrypt arbitrary string data
@@ -203,6 +235,7 @@ export const useE2EE = () => {
     ...state,
     unlock,
     lock,
+    engageSessionEncryption,
     encryptData,
     decryptData,
     isEncrypted,
