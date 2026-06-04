@@ -1,6 +1,6 @@
 # ShadowTalk AI
 
-> ShadowTalk AI is a privacy-first agentic workspace—fast AI chat, autonomous missions, 30+ tools, voice & code, BYOK models, and a Windows desktop app. Open /chatbot for the product; /home for marketing. Optional on-device models via WebGPU.
+> ShadowTalk: one workspace that finishes the job—agentic chat, missions, 30+ tools, voice & code, desktop app. Free start, no card. Open /chatbot for the product; /home for marketing.
 
 ## Entry & navigation
 

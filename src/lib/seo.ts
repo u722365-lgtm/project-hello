@@ -1,8 +1,8 @@
  // SEO utilities and structured data helpers
  
-/** Google/Bing search snippet — keep ≤160 characters */
+/** Google/Bing search snippet — keep ≤160 characters (conversion-focused) */
 export const SITE_SEARCH_DESCRIPTION =
-  'ShadowTalk AI is a privacy-first agentic workspace—fast AI chat, autonomous missions, 30+ tools, voice & code, BYOK models, and a Windows desktop app. Try free.';
+  'Stop juggling AI tabs. ShadowTalk finishes the job—agentic chat, missions, 30+ tools, voice & code, desktop app. Free start, no card. Your old stack will feel slow.';
 
 export interface PageMeta {
   title: string;
