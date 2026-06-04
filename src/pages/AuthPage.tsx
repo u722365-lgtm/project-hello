@@ -12,6 +12,11 @@ import { Separator } from "@/components/ui/separator";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import shadowRobotImg from "@/assets/shadow-robot.png";
+import { useAuthMotion } from "@/hooks/useAuthMotion";
+import { AuthAmbientBackground } from "@/components/auth/AuthAmbientBackground";
+import { AuthModeTabs, type AuthTabKey } from "@/components/auth/AuthModeTabs";
+import { AuthAnimatedField } from "@/components/auth/AuthAnimatedField";
+import { AuthShimmerButton } from "@/components/auth/AuthShimmerButton";
 import { clearExplicitSignOut, consumeReturnPath, isAnonymousUser } from "@/lib/persistentAuth";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
@@ -100,8 +105,23 @@ const AuthPage = () => {
   const [eyeGlow, setEyeGlow] = useState(0.3);
   const robotContainerRef = useRef<HTMLDivElement>(null);
   const { checkLimit } = useRateLimiter(5, 60000);
+  const authMotion = useAuthMotion();
+  const { reduced, variants: authVariants, gridDrift, shouldAnimateAmbient } = authMotion;
 
   const strength = getPasswordStrength(password);
+
+  const authTabs = [
+    { key: "email" as const, icon: <KeyRound className="h-3.5 w-3.5" />, label: "Email" },
+    { key: "phone" as const, icon: <Smartphone className="h-3.5 w-3.5" />, label: "Phone OTP" },
+    { key: "magiclink" as const, icon: <Mail className="h-3.5 w-3.5" />, label: "Magic Link" },
+  ];
+
+  const handleAuthTabChange = (key: AuthTabKey) => {
+    setAuthMode(key);
+    setRateLimitMsg("");
+    setOtpSent(false);
+    setMagicLinkSent(false);
+  };
 
   useEffect(() => {
     const checkUser = async () => {
@@ -332,26 +352,46 @@ const AuthPage = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col lg:flex-row relative overflow-hidden">
+      <AuthAmbientBackground
+        animate={shouldAnimateAmbient}
+        gridTransition={gridDrift || undefined}
+        className="z-0"
+      />
+
       {/* Left side — Login Form */}
       <div className="flex-1 flex items-center justify-center p-6 lg:p-12 relative z-10">
-        <div className="w-full max-w-md">
-          <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.3 }}>
+        <motion.div
+          className="w-full max-w-md"
+          variants={authVariants.pageEnter}
+          initial="hidden"
+          animate="visible"
+        >
+          <motion.div
+            initial={{ opacity: 0, x: -16 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: authMotion.duration(0.4), ease: [0.16, 1, 0.3, 1] }}
+          >
             <Button variant="ghost" size="sm" onClick={() => navigate('/')} className="mb-8 text-muted-foreground hover:text-foreground">
               <ArrowLeft className="h-4 w-4 mr-2" /> Back to Home
             </Button>
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+            variants={authVariants.glassCard}
+            initial="hidden"
+            animate="visible"
+            className="rounded-2xl border border-border/30 bg-card/40 backdrop-blur-xl p-6 sm:p-8 shadow-[0_8px_40px_hsl(var(--primary)/0.08)]"
           >
             {/* Header */}
             <div className="mb-8">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center border border-primary/20">
+                <motion.div
+                  className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center border border-primary/20"
+                  animate={shouldAnimateAmbient ? { boxShadow: ["0 0 0px hsl(var(--primary) / 0)", "0 0 24px hsl(var(--primary) / 0.25)", "0 0 0px hsl(var(--primary) / 0)"] } : undefined}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                >
                   <Lock className="h-5 w-5 text-primary" />
-                </div>
+                </motion.div>
                 <div className="flex items-center gap-2">
                   {isOffline ? (
                     <Badge variant="secondary" className="gap-1 bg-warning/10 text-warning border-warning/20 text-[10px]">
@@ -364,12 +404,22 @@ const AuthPage = () => {
                   )}
                 </div>
               </div>
-              <h1 className="text-3xl font-bold text-foreground tracking-tight">
-                {isLogin ? "Welcome Back" : "Create Account"}
-              </h1>
-              <p className="text-muted-foreground text-sm mt-1.5">
-                {isLogin ? "Sign in to your sovereign AI workspace" : "Set up your zero-knowledge account"}
-              </p>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={isLogin ? "login-title" : "signup-title"}
+                  variants={authVariants.titleSwap}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                >
+                  <h1 className="text-3xl font-bold text-foreground tracking-tight">
+                    {isLogin ? "Welcome Back" : "Create Account"}
+                  </h1>
+                  <p className="text-muted-foreground text-sm mt-1.5">
+                    {isLogin ? "Sign in to your sovereign AI workspace" : "Set up your zero-knowledge account"}
+                  </p>
+                </motion.div>
+              </AnimatePresence>
             </div>
 
             {/* Rate limit warning */}
@@ -387,65 +437,50 @@ const AuthPage = () => {
               )}
             </AnimatePresence>
 
-            {/* Auth Mode Tabs */}
-            <div className="flex gap-1 p-1 bg-muted/30 rounded-xl mb-6 border border-border/20">
-              {[
-                { key: 'email' as const, icon: <KeyRound className="h-3.5 w-3.5" />, label: 'Email' },
-                { key: 'phone' as const, icon: <Smartphone className="h-3.5 w-3.5" />, label: 'Phone OTP' },
-                { key: 'magiclink' as const, icon: <Mail className="h-3.5 w-3.5" />, label: 'Magic Link' },
-              ].map((tab) => (
-                <button
-                  key={tab.key}
-                  type="button"
-                  onClick={() => { setAuthMode(tab.key); setRateLimitMsg(""); setOtpSent(false); setMagicLinkSent(false); }}
-                  className={cn(
-                    "flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-medium transition-all",
-                    authMode === tab.key
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
-                  )}
-                >
-                  {tab.icon}
-                  {tab.label}
-                </button>
-              ))}
-            </div>
+            <AuthModeTabs
+              tabs={authTabs}
+              active={authMode}
+              onChange={handleAuthTabChange}
+              reduced={reduced}
+            />
 
             {/* Email/Password Form */}
             <AnimatePresence mode="wait">
               {authMode === 'email' && (
                 <motion.form
                   key="email-form"
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 10 }}
-                  transition={{ duration: 0.2 }}
+                  variants={authVariants.formSwap}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
                   onSubmit={handleAuth}
                   className="space-y-4"
                 >
-                  <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Email</label>
+                  <motion.div variants={authVariants.staggerList} initial="hidden" animate="visible" className="space-y-4">
+                  <motion.div variants={authVariants.staggerItem}>
+                  <AuthAnimatedField label="Email" reduced={reduced}>
                     <Input
                       type="email"
                       placeholder="you@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="bg-muted/20 border-border/50 h-11 focus:border-primary/50"
+                      className="bg-muted/20 border-border/50 h-11 focus:border-primary/50 transition-shadow focus:shadow-[0_0_0_3px_hsl(var(--primary)/0.15)]"
                       disabled={isOffline && !isLogin}
                       maxLength={255}
                       autoComplete="email"
                     />
-                  </div>
+                  </AuthAnimatedField>
+                  </motion.div>
 
-                  <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Password</label>
+                  <motion.div variants={authVariants.staggerItem}>
+                  <AuthAnimatedField label="Password" reduced={reduced}>
                     <div className="relative">
                       <Input
                         type={showPassword ? "text" : "password"}
                         placeholder="••••••••••"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="bg-muted/20 border-border/50 h-11 pr-10 focus:border-primary/50"
+                        className="bg-muted/20 border-border/50 h-11 pr-10 focus:border-primary/50 transition-shadow focus:shadow-[0_0_0_3px_hsl(var(--primary)/0.15)]"
                         disabled={isOffline && !isLogin}
                         maxLength={128}
                         autoComplete={isLogin ? "current-password" : "new-password"}
@@ -460,6 +495,7 @@ const AuthPage = () => {
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </Button>
                     </div>
+                  </AuthAnimatedField>
 
                     {/* Password strength (signup only) */}
                     <AnimatePresence>
@@ -499,17 +535,18 @@ const AuthPage = () => {
                         </motion.div>
                       )}
                     </AnimatePresence>
-                  </div>
+                  </motion.div>
 
                   {/* Confirm password (signup) */}
                   <AnimatePresence>
                     {!isLogin && (
                       <motion.div
+                        variants={authVariants.staggerItem}
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}
                         exit={{ opacity: 0, height: 0 }}
                       >
-                        <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Confirm Password</label>
+                        <AuthAnimatedField label="Confirm Password" reduced={reduced}>
                         <div className="relative">
                           <Input
                             type={showConfirmPassword ? "text" : "password"}
@@ -517,7 +554,7 @@ const AuthPage = () => {
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
                             className={cn(
-                              "bg-muted/20 border-border/50 h-11 pr-10 focus:border-primary/50",
+                              "bg-muted/20 border-border/50 h-11 pr-10 focus:border-primary/50 transition-shadow focus:shadow-[0_0_0_3px_hsl(var(--primary)/0.15)]",
                               confirmPassword && confirmPassword !== password && "border-destructive/50"
                             )}
                             disabled={isOffline}
@@ -537,14 +574,15 @@ const AuthPage = () => {
                         {confirmPassword && confirmPassword !== password && (
                           <p className="text-[10px] text-destructive mt-1">Passwords do not match</p>
                         )}
+                        </AuthAnimatedField>
                       </motion.div>
                     )}
                   </AnimatePresence>
 
-                  {/* Submit */}
-                  <Button
+                  <motion.div variants={authVariants.staggerItem}>
+                  <AuthShimmerButton
                     type="submit"
-                    className="w-full h-11 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-medium shadow-[0_4px_20px_hsl(var(--primary)/0.3)]"
+                    reduced={reduced}
                     disabled={loading || (isOffline && !isLogin) || (isOffline && isLogin && !hasOfflineCredentials)}
                   >
                     {loading ? (
@@ -552,19 +590,26 @@ const AuthPage = () => {
                     ) : (
                       <><Shield className="h-4 w-4 mr-2" /> {isLogin ? (isOffline ? "Sign In Offline" : "Sign In Securely") : "Create Account"}</>
                     )}
-                  </Button>
+                  </AuthShimmerButton>
+                  </motion.div>
 
-                  {/* OAuth */}
-                  <div className="relative my-6">
+                  <motion.div variants={authVariants.staggerItem} className="relative my-6">
                     <Separator className="bg-border/20" />
-                    <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-3 text-[10px] text-muted-foreground uppercase tracking-wider">or</span>
-                  </div>
+                    <motion.span
+                      className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-card/80 backdrop-blur-sm px-3 text-[10px] text-muted-foreground uppercase tracking-wider"
+                      animate={shouldAnimateAmbient ? { opacity: [0.6, 1, 0.6] } : undefined}
+                      transition={{ duration: 2.5, repeat: Infinity }}
+                    >
+                      or
+                    </motion.span>
+                  </motion.div>
 
                   <div className="grid grid-cols-2 gap-3">
+                    <motion.div variants={authVariants.oauthItem(0)} initial="hidden" animate="visible">
                     <Button
                       type="button"
                       variant="outline"
-                      className="gap-2 h-11 border-border/30 bg-muted/10 hover:bg-muted/20 hover:border-primary/30"
+                      className="w-full gap-2 h-11 border-border/30 bg-muted/10 hover:bg-muted/20 hover:border-primary/30"
                       onClick={handleGoogleSignIn}
                       disabled={googleLoading || isOffline}
                     >
@@ -578,10 +623,12 @@ const AuthPage = () => {
                       )}
                       <span className="text-sm">Google</span>
                     </Button>
+                    </motion.div>
+                    <motion.div variants={authVariants.oauthItem(1)} initial="hidden" animate="visible">
                     <Button
                       type="button"
                       variant="outline"
-                      className="gap-2 h-11 border-border/30 bg-muted/10 hover:bg-muted/20 hover:border-primary/30"
+                      className="w-full gap-2 h-11 border-border/30 bg-muted/10 hover:bg-muted/20 hover:border-primary/30"
                       onClick={handleAppleSignIn}
                       disabled={appleLoading || isOffline}
                     >
@@ -592,7 +639,9 @@ const AuthPage = () => {
                       )}
                       <span className="text-sm">Apple</span>
                     </Button>
+                    </motion.div>
                   </div>
+                  </motion.div>
                 </motion.form>
               )}
 
@@ -600,30 +649,29 @@ const AuthPage = () => {
               {authMode === 'phone' && (
                 <motion.div
                   key="phone-form"
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 10 }}
-                  transition={{ duration: 0.2 }}
+                  variants={authVariants.formSwap}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
                   className="space-y-4"
                 >
                   {!otpSent ? (
                     <>
-                      <div>
-                        <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Phone Number</label>
+                      <AuthAnimatedField label="Phone Number" reduced={reduced}>
                         <Input
                           type="tel"
                           placeholder="+1234567890"
                           value={phoneNumber}
                           onChange={(e) => setPhoneNumber(e.target.value)}
-                          className="bg-muted/20 border-border/50 h-11 focus:border-primary/50"
+                          className="bg-muted/20 border-border/50 h-11 focus:border-primary/50 transition-shadow focus:shadow-[0_0_0_3px_hsl(var(--primary)/0.15)]"
                           maxLength={16}
                         />
                         <p className="text-[10px] text-muted-foreground mt-1.5">Include country code (e.g. +1 for US, +91 for India)</p>
-                      </div>
-                      <Button
+                      </AuthAnimatedField>
+                      <AuthShimmerButton
                         type="button"
+                        reduced={reduced}
                         onClick={handleSendPhoneOTP}
-                        className="w-full h-11 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-medium shadow-[0_4px_20px_hsl(var(--primary)/0.3)]"
                         disabled={loading || isOffline}
                       >
                         {loading ? (
@@ -631,14 +679,19 @@ const AuthPage = () => {
                         ) : (
                           <><Smartphone className="h-4 w-4 mr-2" /> Send OTP Code</>
                         )}
-                      </Button>
+                      </AuthShimmerButton>
                     </>
                   ) : (
                     <>
                       <div className="text-center space-y-3">
-                        <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto">
+                        <motion.div
+                          initial={{ scale: 0, rotate: -12 }}
+                          animate={{ scale: 1, rotate: 0 }}
+                          transition={authMotion.springSnappy}
+                          className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto"
+                        >
                           <Smartphone className="h-7 w-7 text-primary" />
-                        </div>
+                        </motion.div>
                         <div>
                           <p className="text-sm font-medium text-foreground">Enter verification code</p>
                           <p className="text-xs text-muted-foreground mt-1">Sent to {phoneNumber}</p>
@@ -656,10 +709,10 @@ const AuthPage = () => {
                           </InputOTPGroup>
                         </InputOTP>
                       </div>
-                      <Button
+                      <AuthShimmerButton
                         type="button"
+                        reduced={reduced}
                         onClick={handleVerifyPhoneOTP}
-                        className="w-full h-11 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-medium shadow-[0_4px_20px_hsl(var(--primary)/0.3)]"
                         disabled={loading || otpCode.length !== 6}
                       >
                         {loading ? (
@@ -667,7 +720,7 @@ const AuthPage = () => {
                         ) : (
                           <><Shield className="h-4 w-4 mr-2" /> Verify Code</>
                         )}
-                      </Button>
+                      </AuthShimmerButton>
                       <div className="flex items-center justify-center gap-2">
                         <Button
                           type="button"
@@ -699,39 +752,34 @@ const AuthPage = () => {
               {authMode === 'magiclink' && (
                 <motion.form
                   key="magiclink-form"
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 10 }}
-                  transition={{ duration: 0.2 }}
+                  variants={authVariants.formSwap}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
                   onSubmit={handleMagicLink}
                   className="space-y-4"
                 >
                   {!magicLinkSent ? (
                     <>
-                      <div>
-                        <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Email Address</label>
+                      <AuthAnimatedField label="Email Address" reduced={reduced}>
                         <Input
                           type="email"
                           placeholder="you@example.com"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
-                          className="bg-muted/20 border-border/50 h-11 focus:border-primary/50"
+                          className="bg-muted/20 border-border/50 h-11 focus:border-primary/50 transition-shadow focus:shadow-[0_0_0_3px_hsl(var(--primary)/0.15)]"
                           maxLength={255}
                           autoComplete="email"
                         />
                         <p className="text-[10px] text-muted-foreground mt-1.5">We'll send a secure sign-in link to your inbox</p>
-                      </div>
-                      <Button
-                        type="submit"
-                        className="w-full h-11 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-medium shadow-[0_4px_20px_hsl(var(--primary)/0.3)]"
-                        disabled={loading || isOffline}
-                      >
+                      </AuthAnimatedField>
+                      <AuthShimmerButton type="submit" reduced={reduced} disabled={loading || isOffline}>
                         {loading ? (
                           <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Sending...</>
                         ) : (
                           <><Mail className="h-4 w-4 mr-2" /> Send Magic Link</>
                         )}
-                      </Button>
+                      </AuthShimmerButton>
                     </>
                   ) : (
                     <div className="text-center space-y-4 py-4">
@@ -766,7 +814,11 @@ const AuthPage = () => {
             </AnimatePresence>
 
             {/* Toggle */}
-            <div className="mt-6 text-center">
+            <motion.div
+              className="mt-6 text-center"
+              whileHover={reduced ? undefined : { scale: 1.02 }}
+              transition={{ type: "spring", stiffness: 400, damping: 28 }}
+            >
               <Button
                 variant="link"
                 onClick={() => { setIsLogin(!isLogin); setRateLimitMsg(""); }}
@@ -775,7 +827,7 @@ const AuthPage = () => {
               >
                 {isLogin ? "Don't have an account? Create one" : "Already have an account? Sign in"}
               </Button>
-            </div>
+            </motion.div>
 
             {/* Security footer */}
             <motion.div
@@ -797,7 +849,7 @@ const AuthPage = () => {
               </span>
             </motion.div>
           </motion.div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Right side — Shadow Robot Animation */}
@@ -1098,14 +1150,40 @@ const AuthPage = () => {
       </div>
 
       {/* Mobile robot peek (below form on small screens) */}
-      <div className="lg:hidden flex justify-center py-8 relative">
+      <div className="lg:hidden flex flex-col items-center justify-center py-8 relative overflow-hidden">
+        {shouldAnimateAmbient && (
+          <motion.div
+            className="absolute h-40 w-40 rounded-full blur-[80px] bg-primary/15"
+            animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+            aria-hidden
+          />
+        )}
         <motion.img
           src={shadowRobotImg}
           alt="ShadowTalk AI Guardian"
-          className="w-32 h-32 object-contain opacity-30"
-          animate={{ y: [0, -6, 0] }}
+          className="relative z-10 w-36 h-36 object-contain"
+          animate={
+            shouldAnimateAmbient
+              ? {
+                  y: [0, -10, 0],
+                  filter: [
+                    "drop-shadow(0 0 20px hsl(var(--primary) / 0.2))",
+                    "drop-shadow(0 0 40px hsl(var(--primary) / 0.45))",
+                    "drop-shadow(0 0 20px hsl(var(--primary) / 0.2))",
+                  ],
+                }
+              : { y: [0, -6, 0] }
+          }
           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
         />
+        <motion.p
+          className="relative z-10 mt-3 text-[10px] font-mono tracking-widest text-primary/70"
+          animate={shouldAnimateAmbient ? { opacity: [0.4, 1, 0.4] } : undefined}
+          transition={{ duration: 2.5, repeat: Infinity }}
+        >
+          GUARDIAN ACTIVE
+        </motion.p>
       </div>
     </div>
   );
