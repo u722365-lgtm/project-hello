@@ -26,12 +26,22 @@ export interface MissionStep {
   proof?: MissionStepProof;
 }
 
+export type MissionDeliverableType =
+  | "general"
+  | "strategy_report"
+  | "research_brief"
+  | "content_pack";
+
 export interface Mission {
   id: string;
   user_id: string;
   title: string;
   description?: string;
   goal: string;
+  deliverable_type?: MissionDeliverableType;
+  business_idea?: Record<string, unknown> | null;
+  used_fallback?: boolean;
+  deliverable_markdown?: string | null;
   status: 'queued' | 'running' | 'paused' | 'completed' | 'failed' | 'cancelled';
   priority: number;
   progress: number;
@@ -97,7 +107,11 @@ export const useMissions = () => {
       const typedMissions = (data || []).map(m => ({
         ...m,
         steps: (m.steps as unknown as MissionStep[]) || [],
-        result: m.result as Record<string, unknown> | undefined
+        result: m.result as Record<string, unknown> | undefined,
+        deliverable_type: (m.deliverable_type as MissionDeliverableType) || "general",
+        business_idea: m.business_idea as Record<string, unknown> | null | undefined,
+        used_fallback: Boolean(m.used_fallback),
+        deliverable_markdown: m.deliverable_markdown ?? null,
       })) as Mission[];
       
       setMissions(typedMissions);
@@ -138,6 +152,8 @@ export const useMissions = () => {
       priority?: number;
       auto_approve?: boolean;
       scheduled_at?: string;
+      deliverable_type?: MissionDeliverableType;
+      business_idea?: Record<string, unknown>;
     }
   ): Promise<Mission | null> => {
     setIsLoading(true);
@@ -158,7 +174,9 @@ export const useMissions = () => {
           priority: options?.priority || 0,
           auto_approve: options?.auto_approve || false,
           scheduled_at: options?.scheduled_at,
-          status: 'queued'
+          deliverable_type: options?.deliverable_type || "general",
+          business_idea: options?.business_idea ?? null,
+          status: "queued",
         })
         .select()
         .single();
@@ -168,7 +186,10 @@ export const useMissions = () => {
       const newMission = {
         ...data,
         steps: (data.steps as unknown as MissionStep[]) || [],
-        result: data.result as Record<string, unknown> | undefined
+        result: data.result as Record<string, unknown> | undefined,
+        deliverable_type: (data.deliverable_type as MissionDeliverableType) || "general",
+        business_idea: data.business_idea as Record<string, unknown> | null | undefined,
+        used_fallback: Boolean(data.used_fallback),
       } as Mission;
       
       setMissions(prev => [newMission, ...prev]);

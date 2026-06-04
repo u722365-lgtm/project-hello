@@ -175,11 +175,18 @@ export const PAGE_SEO: Record<string, PageMeta> = {
     keywords: ['terms of service', 'terms and conditions', 'legal'],
     canonical: 'https://www.shadowtalk-ai.com/terms',
   },
+  execute: {
+    title: 'Shadow Execution - Autonomous AI Workspace',
+    description:
+      'One autonomous engine for missions, strategy reports, and research briefs — live web tools, saved history, PDF export.',
+    keywords: ['autonomous AI', 'mission control', 'strategy agent', 'business intelligence', 'S.E.E.'],
+    canonical: 'https://www.shadowtalk-ai.com/execute',
+  },
   strategy: {
     title: 'Strategy Agent - AI Business Intelligence',
     description: 'Get AI-powered business strategy analysis, market research, and competitive intelligence with ShadowTalk Strategy Agent.',
     keywords: ['AI strategy', 'business intelligence', 'market research', 'competitive analysis'],
-    canonical: 'https://www.shadowtalk-ai.com/strategy',
+    canonical: 'https://www.shadowtalk-ai.com/execute?mode=strategy_report',
   },
   workspace: {
     title: 'AI Workspace - Collaborative Intelligence',

@@ -1667,9 +1667,12 @@ export type Database = {
         Row: {
           actual_duration_ms: number | null
           auto_approve: boolean
+          business_idea: Json | null
           completed_at: string | null
           created_at: string
           current_step: number | null
+          deliverable_markdown: string | null
+          deliverable_type: string
           description: string | null
           error_message: string | null
           estimated_duration_ms: number | null
@@ -1687,14 +1690,18 @@ export type Database = {
           steps: Json
           title: string
           updated_at: string
+          used_fallback: boolean
           user_id: string
         }
         Insert: {
           actual_duration_ms?: number | null
           auto_approve?: boolean
+          business_idea?: Json | null
           completed_at?: string | null
           created_at?: string
           current_step?: number | null
+          deliverable_markdown?: string | null
+          deliverable_type?: string
           description?: string | null
           error_message?: string | null
           estimated_duration_ms?: number | null
@@ -1712,14 +1719,18 @@ export type Database = {
           steps?: Json
           title: string
           updated_at?: string
+          used_fallback?: boolean
           user_id: string
         }
         Update: {
           actual_duration_ms?: number | null
           auto_approve?: boolean
+          business_idea?: Json | null
           completed_at?: string | null
           created_at?: string
           current_step?: number | null
+          deliverable_markdown?: string | null
+          deliverable_type?: string
           description?: string | null
           error_message?: string | null
           estimated_duration_ms?: number | null
@@ -1737,6 +1748,7 @@ export type Database = {
           steps?: Json
           title?: string
           updated_at?: string
+          used_fallback?: boolean
           user_id?: string
         }
         Relationships: []

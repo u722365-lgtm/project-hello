@@ -2,9 +2,14 @@ import { useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useMissions, Mission, MissionStep } from "./useMissions";
-import { generateMissionPlan } from "@/lib/see/generateMissionPlan";
+import { generateExecutionPlan } from "@/lib/execution/generateExecutionPlan";
+import {
+  buildMissionResultPayload,
+  synthesizeDeliverable,
+} from "@/lib/execution/synthesizeDeliverable";
+import type { DeliverableType } from "@/lib/execution/types";
+import type { BusinessIdea } from "@/lib/strategy/types";
 import { executeMissionTool } from "@/lib/see/missionToolExecutor";
-import { streamChatCompletion } from "@/lib/see/chatCompletion";
 import type { MissionPlanStep } from "@/lib/see/types";
 import { trackAgenticEvent } from "@/lib/agenticMetrics";
 
@@ -153,32 +158,41 @@ export const useMissionExecutor = () => {
     async (mission: Mission, ctx: ExecutionContext): Promise<string> => {
       const results = resultsRef.current;
       const steps = stepsRef.current;
+      const dtype = (mission.deliverable_type || "general") as DeliverableType;
+      const businessIdea = mission.business_idea as BusinessIdea | undefined;
 
-      const finalResult = await streamChatCompletion(
-        ctx.accessToken,
-        `Compile the final deliverable for this ShadowTalk S.E.E. mission.
+      const deliverable = await synthesizeDeliverable({
+        deliverableType: dtype,
+        goal: mission.goal,
+        steps,
+        accessToken: ctx.accessToken,
+        businessIdea: businessIdea ?? null,
+        signal: abortRef.current?.signal,
+      });
 
-Goal: ${mission.goal}
-
-Step outputs:
-${results.map((r, idx) => `### Step ${idx + 1}\n${r}`).join("\n\n")}
-
-Provide a comprehensive, actionable final report with citations where available.`,
-        { model: "google/gemini-2.5-pro", signal: abortRef.current?.signal }
-      );
+      const resultPayload = buildMissionResultPayload(deliverable);
+      const markdown =
+        deliverable.markdown ||
+        deliverable.strategy?.executiveSummary ||
+        "";
 
       await trackAgenticEvent("mission_complete", { missionId: mission.id });
       await updateMissionStatus(mission.id, "completed", {
-        result: { output: finalResult, steps: results },
+        result: resultPayload,
         progress: 100,
         completed_at: new Date().toISOString(),
         actual_duration_ms:
           Date.now() - new Date(mission.started_at || mission.created_at).getTime(),
         steps: planToMissionSteps(steps),
-      });
+        used_fallback: deliverable.usedFallback ?? false,
+        deliverable_markdown: markdown,
+      } as Partial<Mission>);
 
-      toast({ title: "Mission complete", description: `"${mission.title}" finished with verified steps.` });
-      return finalResult;
+      toast({
+        title: dtype === "strategy_report" ? "Strategy complete" : "Execution complete",
+        description: `"${mission.title}" finished with verified steps.`,
+      });
+      return markdown;
     },
     [toast, updateMissionStatus]
   );
@@ -262,7 +276,12 @@ Provide a comprehensive, actionable final report with citations where available.
         });
         await addAction(mission.id, "planning", "Generating execution plan with real tools");
 
-        const steps = await generateMissionPlan(mission.goal, ctx.accessToken, abortRef.current.signal);
+        const steps = await generateExecutionPlan(
+          mission.goal,
+          (mission.deliverable_type || "general") as DeliverableType,
+          ctx.accessToken,
+          abortRef.current.signal,
+        );
         stepsRef.current = steps;
         resultsRef.current = [];
 

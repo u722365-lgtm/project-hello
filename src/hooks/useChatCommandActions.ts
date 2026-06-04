@@ -54,7 +54,7 @@ export function useChatCommandActions(handlers: ChatCommandHandlers) {
           navigate("/vault");
           break;
         case "missions":
-          navigate("/missioncontrol");
+          navigate("/execute");
           break;
         case "knowledge-vault":
           navigate("/knowledge");
@@ -69,7 +69,7 @@ export function useChatCommandActions(handlers: ChatCommandHandlers) {
           navigate("/offline-license");
           break;
         case "agentic":
-          navigate("/missioncontrol");
+          navigate("/execute");
           break;
         case "creative":
           navigate("/studio");
@@ -78,7 +78,7 @@ export function useChatCommandActions(handlers: ChatCommandHandlers) {
           handlers.setChatMode("creative");
           break;
         case "multi-model":
-          navigate("/strategy");
+          navigate("/execute?mode=strategy_report");
           break;
         case "script-automation":
           navigate("/workspace");

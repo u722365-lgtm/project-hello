@@ -1,7 +1,8 @@
 import { useCallback, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { executeMissionTool } from "@/lib/see/missionToolExecutor";
-import { generateStrategyPlan } from "@/lib/strategy/generateStrategyPlan";
+import { generateExecutionPlan } from "@/lib/execution/generateExecutionPlan";
+import type { DeliverableType } from "@/lib/execution/types";
 import { synthesizeStrategyReport } from "@/lib/strategy/synthesizeStrategyReport";
 import {
   generateFallbackAnalysis,
@@ -67,7 +68,12 @@ export function useStrategyRunner() {
     let persistedId: string | null = null;
 
     try {
-      let plan = await generateStrategyPlan(idea, token, controller.signal);
+      let plan = await generateExecutionPlan(
+        buildStrategyGoal(idea),
+        "strategy_report" as DeliverableType,
+        token,
+        controller.signal,
+      );
       plan = plan.slice(0, MAX_STEPS);
       setSteps(plan);
       setProgress(12);

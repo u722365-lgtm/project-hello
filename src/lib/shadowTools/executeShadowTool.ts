@@ -66,7 +66,7 @@ function formatSearchResults(results: Array<{ title?: string; link?: string; sni
 
 const UI_ROUTES: Partial<Record<ToolType, { path: string; label: string }>> = {
   mission_control: { path: "/missioncontrol", label: "Mission Control (S.E.E.)" },
-  strategy_agent: { path: "/strategy", label: "Strategy Agent" },
+  strategy_agent: { path: "/execute?mode=strategy_report", label: "Shadow Execution" },
   workspace: { path: "/workspace", label: "AI Workspace" },
   ide: { path: "/ide", label: "Code IDE" },
   marketplace: { path: "/marketplace", label: "Marketplace" },

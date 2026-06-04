@@ -91,7 +91,7 @@ const Navigation = ({ landingAnimated = false }: NavigationProps) => {
 
   const primaryNavItems = [
     { name: t("nav.pricing"), href: "/pricing", icon: Shield, isLink: true },
-    { name: "Strategy Agent", href: "/strategy", icon: Brain, isLink: true },
+    { name: "Shadow Execution", href: "/execute", icon: Rocket, isLink: true },
     { name: "AI Workspace", href: "/workspace", icon: Sparkles, isLink: true },
     { name: "Code IDE", href: "/ide", icon: Code, isLink: true },
   ];
@@ -100,7 +100,6 @@ const Navigation = ({ landingAnimated = false }: NavigationProps) => {
     { name: "Chatbot", href: "/chatbot", icon: MessageSquare, isLink: true },
     { name: "UI Templates", href: "/templates", icon: LayoutGrid, isLink: true },
     { name: "Marketplace", href: "/marketplace", icon: Store, isLink: true },
-    { name: "Mission Control", href: "/missioncontrol", icon: Target, isLink: true },
     { name: "Presentations", href: "/presentations", icon: Presentation, isLink: true },
     { name: "Developers", href: "/developers", icon: Terminal, isLink: true },
     { name: "Download app", href: "/downloads", icon: Download, isLink: true },

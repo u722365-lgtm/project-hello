@@ -65,6 +65,7 @@ export const CommandPaletteContext = createContext<{ open: () => void }>({ open:
     const PrivacyScorePage = lazy(() => import("./pages/PrivacyScorePage"));
   const PresentationBuilderPage = lazy(() => import("./pages/PresentationBuilderPage"));
    const MissionControlPage = lazy(() => import("./pages/MissionControlPage"));
+ const ExecutePage = lazy(() => import("./pages/ExecutePage"));
    const ReferralPage = lazy(() => import("./pages/ReferralPage"));
 const DeepResearchPage = lazy(() => import("./pages/DeepResearchPage"));
 const KnowledgeGraphPage = lazy(() => import("./pages/KnowledgeGraphPage"));
@@ -164,6 +165,7 @@ const AnimatedRoutes = () => {
           <Route path="/billing" element={<PageTransition><MonetizationPage /></PageTransition>} />
           <Route path="/founder-access" element={<PageTransition><FounderAccessPage /></PageTransition>} />
           <Route path="/lifetime-deal" element={<Navigate to="/pricing" replace />} />
+          <Route path="/execute" element={<PageTransition><ExecutePage /></PageTransition>} />
           <Route path="/strategy" element={<PageTransition><StrategyAgentPage /></PageTransition>} />
           <Route path="/workspace" element={<PageTransition><WorkspacePage /></PageTransition>} />
           <Route path="/ide" element={<PageTransition><IdePage /></PageTransition>} />

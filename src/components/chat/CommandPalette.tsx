@@ -453,15 +453,15 @@ export const CommandPalette = ({ open, onOpenChange, onAction }: CommandPaletteP
       keywords: ["eco", "green", "carbon", "sustainability", "planet", "environment"],
     },
     
-    // Strategy Agent
+    // Shadow Execution (Strategy + Missions unified)
     {
-      id: "strategy-agent",
-      label: "Strategy Agent",
-      description: "AI-powered business strategy advisor",
-      icon: <Target className="h-4 w-4" />,
+      id: "shadow-execution",
+      label: "Shadow Execution",
+      description: "Autonomous missions, strategy reports, and research",
+      icon: <Rocket className="h-4 w-4" />,
       category: "AI Tools",
-      action: () => navigate("/strategy"),
-      keywords: ["strategy", "business", "swot", "analysis", "advisor"],
+      action: () => navigate("/execute"),
+      keywords: ["strategy", "mission", "see", "execution", "swot", "autonomous"],
       badge: "Pro",
       badgeVariant: "default" as const,
     },
@@ -486,19 +486,6 @@ export const CommandPalette = ({ open, onOpenChange, onAction }: CommandPaletteP
       category: "AI Tools",
       action: () => onAction("memory"),
       keywords: ["memory", "context", "remember", "business", "preferences"],
-    },
-    
-    // Mission Control (S.E.E.)
-    {
-      id: "mission-control",
-      label: "Mission Control",
-      description: "S.E.E. autonomous background tasks",
-      icon: <Rocket className="h-4 w-4" />,
-      category: "AI Tools",
-      action: () => onAction("missions"),
-      keywords: ["mission", "see", "autonomous", "background", "task"],
-      badge: "Unique",
-      badgeVariant: "secondary" as const,
     },
     
     // Custom Instructions

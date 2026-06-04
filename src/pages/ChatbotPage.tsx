@@ -16,7 +16,6 @@ import { ConversationSidebar } from "@/components/chat/ConversationSidebar";
 import { ImageGenerator } from "@/components/chat/ImageGenerator";
 import { DeepResearchPanel } from "@/components/chat/DeepResearchPanel";
 import { CommandPalette } from "@/components/chat/CommandPalette";
-import { MissionControl } from "@/components/chat/MissionControl";
 
 const ShadowTalkLive = lazy(() =>
   import("@/components/chat/ShadowTalkLive").then((m) => ({ default: m.ShadowTalkLive })),
@@ -207,7 +206,6 @@ const ChatbotPage = () => {
   const [showShadowTalkLive, setShowShadowTalkLive] = useState(false);
   const [showShadowBrowser, setShowShadowBrowser] = useState(false);
   const [showCommandPalette, setShowCommandPalette] = useState(false);
-  const [showMissionControl, setShowMissionControl] = useState(false);
   const [showOfflineTools, setShowOfflineTools] = useState(false);
   const [toolsMenuOpen, setToolsMenuOpen] = useState(false);
   const [chatShareOffer, setChatShareOffer] = useState<{ title: string; subtitle?: string } | null>(null);
@@ -1192,7 +1190,7 @@ const ChatbotPage = () => {
       case "missions":
       case "agentic":
       case "cognitive-loop":
-        setShowMissionControl(true);
+        navigate("/execute");
         return;
       case "offline-tools":
       case "offline":
@@ -1368,7 +1366,7 @@ const ChatbotPage = () => {
             onOpenCanvas={() => navigate("/ide")}
             onOpenDeepResearch={() => setShowDeepResearch(true)}
             onOpenGoogleIntegration={() => navigate("/profile?tab=linked")}
-            onOpenAgenticRunner={() => setShowMissionControl(true)}
+            onOpenAgenticRunner={() => navigate("/execute")}
             onOpenVisualReasoning={() => setShowCommandPalette(true)}
             onOpenCreativeSynthesis={() => navigate("/studio")}
             onOpenImageGenerator={() => setShowImageGenerator(true)}
@@ -1523,19 +1521,6 @@ const ChatbotPage = () => {
         />
       )}
       <CommandPalette open={showCommandPalette} onOpenChange={setShowCommandPalette} onAction={handleCommandAction} />
-      {showMissionControl && (
-        <MissionControl
-          isOpen={showMissionControl}
-          onClose={() => setShowMissionControl(false)}
-          onMissionComplete={(result) => {
-            setMessages((prev) => [
-              ...prev,
-              { id: crypto.randomUUID(), type: "ai", content: `✅ S.E.E. mission deliverable:\n\n${result}`, timestamp: new Date() },
-            ]);
-            setShowMissionControl(false);
-          }}
-        />
-      )}
       {showShadowTalkLive && (
         <Suspense fallback={null}>
           <ShadowTalkLive

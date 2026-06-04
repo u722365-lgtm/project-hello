@@ -1,18 +1,8 @@
-import { useEffect } from "react";
-import StrategyAgent from "@/components/strategy/StrategyAgent";
-import Navigation from "@/components/Navigation";
+import { Navigate } from "react-router-dom";
 
-const StrategyAgentPage = () => {
-  useEffect(() => {
-    document.title = "Strategy Agent - ShadowTalk AI | Business Intelligence Platform";
-  }, []);
-
-  return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-      <StrategyAgent />
-    </div>
-  );
-};
+/** Redirect legacy /strategy → unified Shadow Execution */
+const StrategyAgentPage = () => (
+  <Navigate to="/execute?mode=strategy_report" replace />
+);
 
 export default StrategyAgentPage;
