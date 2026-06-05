@@ -1,9 +1,42 @@
 # ShadowTalk Release Notes
 
+## Shan Foods enterprise rollout (June 2026)
+
+**Before employees open the app — run once in Supabase:**
+
+```bash
+supabase db push
+supabase functions deploy chat
+supabase functions deploy check-subscription
+supabase functions deploy self-heal
+supabase functions deploy user-provider-keys
+```
+
+**Secrets (Dashboard → Edge Functions):**
+
+- `LOVABLE_API_KEY` — required for chat AI
+- `ENTERPRISE_EMAIL_DOMAINS` — optional; defaults include `shanfoods.com`, `shan.com`, `shanfood.com`
+
+**Employee onboarding:**
+
+1. Send magic-link invites to `@shanfoods.com` emails (Auth → Users → Invite)
+2. Employees land on `/chatbot` — auto **enterprise** tier, unlimited features
+3. iPhone: Share → Add to Home Screen for best experience
+
+**Smoke test:**
+
+- [ ] `user@shanfoods.com` signs in → enterprise badge / no upgrade nag
+- [ ] Send chat message → AI responds
+- [ ] Refresh → history persists
+- [ ] Works on iPhone Safari
+
+---
+
 ## Latest (main — June 2026)
 
 | Area | What shipped |
 |------|----------------|
+| **Enterprise** | Shan Foods `@shanfoods.com` auto enterprise tier + welcome UI |
 | **Navigation** | `/` → `/chatbot`; marketing at `/home` |
 | **Auth** | Persistent session + anonymous auto sign-in (`persistentAuth.ts`) |
 | **Entry UX** | No boot screen on chat paths; chat shell renders during auth |

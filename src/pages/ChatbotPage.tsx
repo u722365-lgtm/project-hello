@@ -8,6 +8,7 @@ import { ChatMode } from "@/components/chat/ModeSelector";
 import { AIProvider } from "@/components/chat/ProviderSelector";
 import { ChatHeader } from "@/components/chat/ChatHeader";
 import { ChatToolbar } from "@/components/chat/ChatToolbar";
+import { EnterpriseWelcomeBanner } from "@/components/chat/EnterpriseWelcomeBanner";
 import { ChatIconRail } from "@/components/chat/ChatIconRail";
 import { ChatShadowSidebar } from "@/components/chat/ChatShadowSidebar";
 import { ChatInput } from "@/components/chat/ChatInput";
@@ -1839,6 +1840,7 @@ const ChatbotPage = () => {
           >
             {BRAND.tagline}
           </motion.p>
+          <EnterpriseWelcomeBanner email={user?.email} displayName={userDisplayName} />
           <ChatToolbar
             hasActiveChat={hasActiveChat}
             conversationCount={conversations.length}

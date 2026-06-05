@@ -1,5 +1,6 @@
 import { useAuth } from "@/components/AuthProvider";
 import { useToast } from "@/hooks/use-toast";
+import { hasSpecialAccessEmail } from "@/lib/resolveUserPlan";
 
 export type PlanTier = 'free' | 'pro' | 'premium' | 'lifetime' | 'elite' | 'enterprise';
 
@@ -69,14 +70,12 @@ const planHierarchy: Record<PlanTier, number> = {
   enterprise: 4,
 };
 
-// Special access emails that get all features
-const SPECIAL_ACCESS_EMAILS = ['j3451500@gmail.com', 'almadadali00@gmail.com', 'zaim98269@gmail.com', 'laibaanis345@gmail.com'];
-
 export const useFeatureGating = () => {
   const { userPlan, user } = useAuth();
   const { toast } = useToast();
 
-  const hasSpecialAccess = SPECIAL_ACCESS_EMAILS.some(e => e.toLowerCase() === user?.email?.toLowerCase());
+  const hasSpecialAccess =
+    hasSpecialAccessEmail(user?.email) || userPlan === "enterprise";
 
   const getEffectivePlanLevel = (): number => {
     if (hasSpecialAccess) return planHierarchy.enterprise;

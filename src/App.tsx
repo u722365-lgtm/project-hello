@@ -45,7 +45,7 @@ import { PushIntelligencePanel } from "@/components/chat/PushIntelligencePanel";
  
  // Lazy loaded pages - code splitting for better performance
  const PricingPage = lazy(() => import("./pages/PricingPage"));
- const ChatbotPage = lazy(() => import("./pages/ChatbotPage"));
+ import ChatbotPage from "./pages/ChatbotPage";
  const AdminPage = lazy(() => import("./pages/AdminPage"));
  const DocsPage = lazy(() => import("./pages/DocsPage"));
  const ChangelogPage = lazy(() => import("./pages/ChangelogPage"));

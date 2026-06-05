@@ -1,6 +1,11 @@
  // Production-Ready CORS Configuration for Edge Functions
  // Strict origin validation with comprehensive security headers
  
+ function extraOriginsFromEnv(): string[] {
+   const raw = Deno.env.get("ALLOWED_ORIGINS") ?? "";
+   return raw.split(",").map((o) => o.trim()).filter(Boolean);
+ }
+
  // Explicitly allowed origins for production
  const PRODUCTION_ORIGINS = [
    "https://shadowtalk-ai.lovable.app",
@@ -37,6 +42,7 @@ function isAllowedOrigin(origin: string | null): boolean {
    
    // Check production origins first
    if (PRODUCTION_ORIGINS.includes(origin)) return true;
+   if (extraOriginsFromEnv().includes(origin)) return true;
    
    // Check Lovable preview/staging domains
    if (LOVABLE_PREVIEW_PATTERN.test(origin)) return true;

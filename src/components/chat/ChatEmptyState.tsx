@@ -5,8 +5,10 @@ import { useSettingsMotion } from "@/hooks/useSettingsMotion";
 import { settingsHapticTick } from "@/lib/settingsFeedback";
 import { cn } from "@/lib/utils";
 import { BRAND } from "@/lib/brand";
+import { resolveEnterpriseTenant } from "@/lib/enterpriseTenants";
+import { useAuth } from "@/components/AuthProvider";
 
-const QUICK_PROMPTS = [
+const DEFAULT_QUICK_PROMPTS = [
   { label: "Brainstorm ideas", prompt: "Help me brainstorm creative ideas for ", icon: Sparkles },
   { label: "Write code", prompt: "Write clean, production-ready code for ", icon: Code2 },
   { label: "Deep research", prompt: "Research and summarize ", icon: Search },
@@ -29,7 +31,10 @@ export function ChatEmptyState({
   composerDockStyle,
   children,
 }: ChatEmptyStateProps) {
+  const { user } = useAuth();
   const { staggerList, staggerItem, spring, reduced } = useSettingsMotion();
+  const tenant = resolveEnterpriseTenant(user?.email);
+  const quickPrompts = tenant?.quickPrompts ?? DEFAULT_QUICK_PROMPTS;
 
   return (
     <motion.div
@@ -46,7 +51,7 @@ export function ChatEmptyState({
         Hello, <span className="gradient-text">{userDisplayName}</span>
       </motion.h1>
       <motion.p variants={staggerItem} className="shadowtalk-chat-tagline text-base sm:text-lg font-semibold tracking-tight">
-        <span className="gradient-text">{BRAND.tagline}</span>
+        <span className="gradient-text">{tenant?.welcomeSubtitle ?? BRAND.tagline}</span>
       </motion.p>
 
       {apiConnectedLabel && (
@@ -62,8 +67,12 @@ export function ChatEmptyState({
         variants={staggerItem}
         className="mt-8 flex flex-wrap justify-center gap-2 max-w-lg"
       >
-        {QUICK_PROMPTS.map((item) => {
-          const Icon = item.icon;
+        {quickPrompts.map((item, index) => {
+          const defaultIcons = [Sparkles, Code2, Search, PenLine, Zap] as const;
+          const Icon =
+            "icon" in item && item.icon
+              ? item.icon
+              : defaultIcons[index % defaultIcons.length];
           return (
             <motion.button
               key={item.label}

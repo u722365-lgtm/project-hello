@@ -8,6 +8,7 @@ import {
   refreshSessionIfNeeded,
   restoreOrCreateSession,
 } from '@/lib/persistentAuth';
+import { resolvePlanFromCheckSubscription } from '@/lib/resolveUserPlan';
 
 type UserPlan = 'free' | 'pro' | 'premium' | 'lifetime' | 'elite' | 'enterprise';
 
@@ -57,15 +58,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  const PRODUCT_PLANS: Record<string, UserPlan> = {
-    'prod_TZocSSpPddFCH1': 'pro',
-    'prod_TbiuwlUUg3F17C': 'premium',
-    'prod_TbhEVUPSLMSF53': 'elite',
-    'prod_TbivJcOChrAcvq': 'enterprise',
-  };
-
-  const SPECIAL_ACCESS_EMAILS = ['j3451500@gmail.com', 'almadadali00@gmail.com', 'zaim98269@gmail.com', 'laibaanis345@gmail.com'];
-
   const applySession = useCallback((next: Session | null) => {
     setSession(next);
     setUser(next?.user ?? null);
@@ -80,17 +72,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
 
-    if (SPECIAL_ACCESS_EMAILS.some(e => e.toLowerCase() === current.user.email?.toLowerCase())) {
-      setSubscribed(true);
-      setUserPlan('elite');
-      setSubscriptionEnd(null);
-      return;
-    }
-
     if (isAnonymousUser(current)) {
-      setSubscribed(false);
-      setUserPlan('free');
-      setSubscriptionEnd(null);
+      const resolved = resolvePlanFromCheckSubscription(current.user.email, null);
+      setSubscribed(resolved.subscribed);
+      setUserPlan(resolved.plan);
+      setSubscriptionEnd(resolved.subscriptionEnd);
       return;
     }
 
@@ -98,26 +84,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { data, error } = await supabase.functions.invoke('check-subscription');
 
       if (error) {
-        console.error('Subscription check error:', error);
-        setSubscribed(false);
-        setUserPlan('free');
+        console.warn('Subscription check error:', error.message);
+        const resolved = resolvePlanFromCheckSubscription(current.user.email, null);
+        setSubscribed(resolved.subscribed);
+        setUserPlan(resolved.plan);
+        setSubscriptionEnd(resolved.subscriptionEnd);
         return;
       }
 
-      if (data?.subscribed && data?.product_id) {
-        const plan = PRODUCT_PLANS[data.product_id] || 'pro';
-        setSubscribed(true);
-        setUserPlan(plan);
-        setSubscriptionEnd(data.subscription_end || null);
-      } else {
-        setSubscribed(false);
-        setUserPlan('free');
-        setSubscriptionEnd(null);
-      }
+      const resolved = resolvePlanFromCheckSubscription(current.user.email, data);
+      setSubscribed(resolved.subscribed);
+      setUserPlan(resolved.plan);
+      setSubscriptionEnd(resolved.subscriptionEnd);
     } catch (error) {
-      console.error('Error checking subscription:', error);
-      setSubscribed(false);
-      setUserPlan('free');
+      console.warn('Error checking subscription:', error);
+      const resolved = resolvePlanFromCheckSubscription(current.user.email, null);
+      setSubscribed(resolved.subscribed);
+      setUserPlan(resolved.plan);
+      setSubscriptionEnd(resolved.subscriptionEnd);
     }
   }, []);
 
