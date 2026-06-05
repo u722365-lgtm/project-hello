@@ -3,6 +3,7 @@
  * Listens to proposed `runtime_handler` shapes from the self-heal edge function.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { isSelfHealRemoteEnabled } from "@/lib/selfHealing/selfHealConfig";
 
 interface RuntimeHandler {
   action: "retry" | "fallback" | "silence" | "reload";
@@ -30,7 +31,7 @@ export function startAutoRecoverySync() {
   let stopped = false;
 
   const pull = async () => {
-    if (stopped) return;
+    if (stopped || !isSelfHealRemoteEnabled()) return;
     try {
       const { data, error } = await supabase
         .from("shadowtalk_fix_proposals")

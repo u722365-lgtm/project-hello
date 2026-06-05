@@ -1,4 +1,9 @@
 import { supabase } from "@/integrations/supabase/client";
+import {
+  isSelfHealRemoteEnabled,
+  shouldIgnoreCapturedError,
+} from "@/lib/selfHealing/selfHealConfig";
+import { probeSelfHealEndpoint } from "@/lib/selfHealing/probeSelfHeal";
 
 const QUEUE_KEY = "shadowtalk_self_heal_queue";
 const SENT_KEY = "shadowtalk_self_heal_sent";
@@ -55,7 +60,6 @@ function markSent(fp: string) {
   try {
     const sent = JSON.parse(localStorage.getItem(SENT_KEY) ?? "{}") as Record<string, number>;
     sent[fp] = Date.now();
-    // Trim old
     const cutoff = Date.now() - 24 * 60 * 60 * 1000;
     for (const k of Object.keys(sent)) if (sent[k] < cutoff) delete sent[k];
     localStorage.setItem(SENT_KEY, JSON.stringify(sent));
@@ -68,6 +72,8 @@ export function capture(err: Omit<CapturedError, "fingerprint" | "capturedAt" | 
   fingerprint?: string;
 }) {
   try {
+    if (shouldIgnoreCapturedError(err.message, err.source_file)) return;
+
     const route = typeof window !== "undefined" ? window.location.pathname : undefined;
     const url = typeof window !== "undefined" ? window.location.href : undefined;
     const ua = typeof navigator !== "undefined" ? navigator.userAgent : undefined;
@@ -91,7 +97,9 @@ export function capture(err: Omit<CapturedError, "fingerprint" | "capturedAt" | 
     queue.push(captured);
     writeQueue(queue);
 
-    void flush();
+    if (isSelfHealRemoteEnabled()) {
+      void flush();
+    }
   } catch {
     /* never throw from capture */
   }
@@ -99,19 +107,12 @@ export function capture(err: Omit<CapturedError, "fingerprint" | "capturedAt" | 
 
 let flushing = false;
 let consecutiveFailures = 0;
-const MAX_FAILURES = 5;
-const FAILURE_COOLDOWN_MS = 5 * 60_000;
-
-function shouldSkipCaptureUrl(url: string): boolean {
-  const u = url.toLowerCase();
-  return (
-    u.includes("/functions/v1/self-heal") ||
-    u.includes("/functions/v1/index-source")
-  );
-}
+const MAX_FAILURES = 3;
+const FAILURE_COOLDOWN_MS = 10 * 60_000;
 
 export async function flush(): Promise<void> {
   if (flushing) return;
+  if (!isSelfHealRemoteEnabled()) return;
   if (consecutiveFailures >= MAX_FAILURES) return;
   flushing = true;
   try {
@@ -129,11 +130,6 @@ export async function flush(): Promise<void> {
           q.unshift(next);
           writeQueue(q);
         }
-        if (consecutiveFailures >= MAX_FAILURES) {
-          setTimeout(() => {
-            consecutiveFailures = 0;
-          }, FAILURE_COOLDOWN_MS);
-        }
       } else {
         consecutiveFailures = 0;
       }
@@ -147,18 +143,21 @@ export async function flush(): Promise<void> {
     }
   } finally {
     flushing = false;
-    if (readQueue().length > 0 && consecutiveFailures < MAX_FAILURES) {
-      setTimeout(() => void flush(), 1500);
+    if (readQueue().length > 0 && consecutiveFailures < MAX_FAILURES && isSelfHealRemoteEnabled()) {
+      setTimeout(() => void flush(), 2000);
     }
   }
 }
 
 let installed = false;
+
+/** Passive listeners only — never patches fetch or console (prevents blank-screen cascades) */
 export function installGlobalErrorCapture() {
   if (installed || typeof window === "undefined") return;
   installed = true;
 
   window.addEventListener("error", (e) => {
+    if (shouldIgnoreCapturedError(e.message || "", e.filename)) return;
     capture({
       kind: "runtime",
       message: e.message || "Unknown error",
@@ -173,80 +172,28 @@ export function installGlobalErrorCapture() {
     const reason = e.reason;
     const message =
       reason instanceof Error ? reason.message : typeof reason === "string" ? reason : "Unhandled promise rejection";
+    if (shouldIgnoreCapturedError(message)) return;
     capture({
       kind: "promise",
       message,
       stack: reason instanceof Error ? reason.stack : undefined,
     });
   });
+}
 
-  // Console warning/error capture
-  const origError = console.error.bind(console);
-  const origWarn = console.warn.bind(console);
-  console.error = (...args: unknown[]) => {
-    try {
-      const msg = args.map((a) => (a instanceof Error ? a.message : String(a))).join(" ").slice(0, 1000);
-      if (
-        msg &&
-        !msg.includes("[self-heal]") &&
-        !msg.includes("self-heal") &&
-        !msg.includes("shadowtalk_fix_proposals") &&
-        !msg.includes("shadowtalk_errors")
-      ) {
-        capture({ kind: "console", message: msg, context: { level: "error" } });
-      }
-    } catch {
-      /* ignore */
-    }
-    origError(...args);
-  };
-  console.warn = (...args: unknown[]) => {
-    try {
-      const msg = args.map((a) => (a instanceof Error ? a.message : String(a))).join(" ").slice(0, 1000);
-      if (msg) capture({ kind: "console", message: msg, context: { level: "warn" } });
-    } catch {
-      /* ignore */
-    }
-    origWarn(...args);
+/** Probe edge function after app paint; only then enable remote reporting */
+export function scheduleSelfHealBootstrap() {
+  if (typeof window === "undefined") return;
+
+  const run = () => {
+    void probeSelfHealEndpoint().then((ok) => {
+      if (ok) void flush();
+    });
   };
 
-  // Patch fetch for API/edge/RLS error capture
-  const origFetch = window.fetch.bind(window);
-  window.fetch = async (input, init) => {
-    const url = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
-    try {
-      const res = await origFetch(input as RequestInfo, init);
-      if (!res.ok && res.status >= 400 && !shouldSkipCaptureUrl(url)) {
-        let body = "";
-        try {
-          body = (await res.clone().text()).slice(0, 500);
-        } catch {
-          /* ignore */
-        }
-        const isSupabase = url.includes("supabase.co");
-        const isEdge = url.includes("/functions/v1/");
-        const isRLS = body.toLowerCase().includes("row-level security") || body.toLowerCase().includes("rls");
-        capture({
-          kind: isRLS ? "rls" : isEdge ? "edge" : isSupabase ? "api" : "api",
-          message: `HTTP ${res.status} ${url.split("?")[0]}`,
-          context: { status: res.status, body },
-        });
-      }
-      return res;
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : "fetch failed";
-      capture({
-        kind: "api",
-        message: `Network: ${msg} ${url.split("?")[0]}`,
-        stack: e instanceof Error ? e.stack : undefined,
-      });
-      throw e;
-    }
-  };
-
-  // Initial flush
-  setTimeout(() => void flush(), 3000);
-
-  // Periodic flush
-  setInterval(() => void flush(), 30_000);
+  if (typeof window.requestIdleCallback === "function") {
+    window.requestIdleCallback(run, { timeout: 8000 });
+  } else {
+    window.setTimeout(run, 5000);
+  }
 }

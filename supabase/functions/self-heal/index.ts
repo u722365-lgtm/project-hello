@@ -1,4 +1,4 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -149,11 +149,42 @@ async function resolveUserId(authHeader: string | null, supabaseUrl: string, ano
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
+  if (req.method === "GET") {
+    return new Response(
+      JSON.stringify({ ok: true, service: "self-heal", version: 2 }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+  }
+
   try {
     const supabaseUrl = env("SUPABASE_URL");
     const serviceRole = env("SUPABASE_SERVICE_ROLE_KEY");
     const anonKey = env("SUPABASE_ANON_KEY");
     const lovableKey = env("LOVABLE_API_KEY");
+
+    let body: Record<string, unknown> = {};
+    if (req.method === "POST") {
+      try {
+        body = (await req.json()) as Record<string, unknown>;
+      } catch {
+        return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
+    if (body.health === true) {
+      return new Response(
+        JSON.stringify({
+          ok: true,
+          service: "self-heal",
+          storage: Boolean(supabaseUrl && serviceRole),
+          ai: Boolean(lovableKey),
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
 
     if (!supabaseUrl || !serviceRole) {
       return new Response(
@@ -166,15 +197,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    let payload: ErrorPayload;
-    try {
-      payload = (await req.json()) as ErrorPayload;
-    } catch {
-      return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    const payload = body as unknown as ErrorPayload;
 
     if (!payload?.message || !payload?.fingerprint) {
       return new Response(JSON.stringify({ error: "message and fingerprint required" }), {
