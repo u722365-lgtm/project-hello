@@ -3178,6 +3178,54 @@ export type Database = {
         }
         Relationships: []
       }
+      user_sessions: {
+        Row: {
+          city: string | null
+          country: string | null
+          created_at: string
+          device_label: string | null
+          id: string
+          ip_hash: string | null
+          is_current: boolean
+          last_seen_at: string
+          revoked_at: string | null
+          session_token: string
+          updated_at: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          device_label?: string | null
+          id?: string
+          ip_hash?: string | null
+          is_current?: boolean
+          last_seen_at?: string
+          revoked_at?: string | null
+          session_token: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          device_label?: string | null
+          id?: string
+          ip_hash?: string | null
+          is_current?: boolean
+          last_seen_at?: string
+          revoked_at?: string | null
+          session_token?: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_settings: {
         Row: {
           created_at: string
