@@ -38,11 +38,13 @@ interface DeepResearchPanelProps {
   onInsertToChat: (content: string) => void;
   initialQuery?: string;
   autoResearch?: boolean;
+  /** Full-page embed inside Research Hub */
+  embedded?: boolean;
 }
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
 
-export const DeepResearchPanel = ({ isOpen, onClose, onInsertToChat, initialQuery, autoResearch }: DeepResearchPanelProps) => {
+export const DeepResearchPanel = ({ isOpen, onClose, onInsertToChat, initialQuery, autoResearch, embedded }: DeepResearchPanelProps) => {
   const [query, setQuery] = useState(initialQuery || "");
   const [isResearching, setIsResearching] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -239,15 +241,19 @@ export const DeepResearchPanel = ({ isOpen, onClose, onInsertToChat, initialQuer
     a.click();
   };
 
-  if (!isOpen) return null;
+  if (!isOpen && !embedded) return null;
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: 300 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 300 }}
+      initial={embedded ? { opacity: 0 } : { opacity: 0, x: 300 }}
+      animate={embedded ? { opacity: 1 } : { opacity: 1, x: 0 }}
+      exit={embedded ? { opacity: 0 } : { opacity: 0, x: 300 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="fixed right-0 top-0 h-full w-full max-w-2xl bg-background/95 backdrop-blur-xl border-l border-border/50 shadow-2xl shadow-primary/5 z-50 flex flex-col"
+      className={
+        embedded
+          ? "h-full w-full bg-background flex flex-col"
+          : "fixed right-0 top-0 h-full w-full max-w-2xl bg-background/95 backdrop-blur-xl border-l border-border/50 shadow-2xl shadow-primary/5 z-50 flex flex-col"
+      }
     >
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-border/50 bg-gradient-to-r from-muted/30 via-transparent to-muted/30">
@@ -260,9 +266,11 @@ export const DeepResearchPanel = ({ isOpen, onClose, onInsertToChat, initialQuer
             <p className="text-xs text-muted-foreground">Multi-source synthesis engine</p>
           </div>
         </div>
-        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={onClose}>
-          <X className="h-4 w-4" />
-        </Button>
+        {!embedded && (
+          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={onClose}>
+            <X className="h-4 w-4" />
+          </Button>
+        )}
       </div>
 
       {/* Search Bar */}

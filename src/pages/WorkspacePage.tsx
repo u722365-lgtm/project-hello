@@ -28,7 +28,11 @@ const categoryIcons: Record<MemoryCategory, React.ReactNode> = {
   facts: <FileText className="h-5 w-5" />,
 };
 
-const WorkspacePage: React.FC = () => {
+interface WorkspacePageProps {
+  embedded?: boolean;
+}
+
+const WorkspacePage: React.FC<WorkspacePageProps> = ({ embedded = false }) => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { 
@@ -100,15 +104,17 @@ const WorkspacePage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className={embedded ? "h-full overflow-y-auto bg-background" : "min-h-screen bg-background"}>
       {/* Header */}
       <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
+              {!embedded && (
               <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
                 <ArrowLeft className="h-5 w-5" />
               </Button>
+              )}
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-primary/10">
                   <Brain className="h-6 w-6 text-primary" />

@@ -22,12 +22,12 @@ export interface ChatSidebarNavItem {
 
 export const CHAT_SIDEBAR_NAV: ChatSidebarNavItem[] = [
   { label: "Chat", icon: MessageSquare, to: "/chatbot", end: true, section: "workspace" },
-  { label: "Intelligence", shortLabel: "Intel", icon: Brain, to: "/missioncontrol", section: "explore" },
-  { label: "Knowledge", icon: Network, to: "/knowledge", section: "explore" },
-  { label: "Documents", icon: FileText, to: "/workspace", section: "explore" },
+  { label: "Execute", shortLabel: "Exec", icon: Brain, to: "/execute", section: "explore" },
+  { label: "Research", icon: Network, to: "/research", section: "explore" },
+  { label: "Workspace", icon: FileText, to: "/workspace", section: "explore" },
   { label: "Code IDE", icon: Code, to: "/ide", section: "explore" },
-  { label: "Signals", icon: Radio, to: "/analytics", section: "explore" },
-  { label: "Automations", icon: Workflow, to: "/workspace", section: "explore" },
+  { label: "Insights", icon: Radio, to: "/insights", section: "explore" },
+  { label: "Automations", icon: Workflow, to: "/workspace?tab=automate", section: "explore" },
   { label: "Integrations", icon: Plug, to: "/developers", section: "explore" },
   { label: "Settings", icon: Settings, to: "/settings", section: "explore" },
 ];

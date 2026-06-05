@@ -16,7 +16,7 @@ import Footer from '@/components/Footer';
 import { usePrivacyScore } from '@/hooks/usePrivacyScore';
 import { cn } from '@/lib/utils';
 
-const PrivacyScorePage = () => {
+const PrivacyScorePage = ({ embedded = false }: { embedded?: boolean }) => {
   const navigate = useNavigate();
   const { score } = usePrivacyScore();
   const [animatedScore, setAnimatedScore] = useState(0);
@@ -93,20 +93,23 @@ const PrivacyScorePage = () => {
 
   return (
     <>
-      <SEOHead
-        meta={{
-          title: "Privacy Score | ShadowTalk AI",
-          description: "See your real-time privacy score. Track blocked trackers, cookies, and fingerprinting attempts. Your data stays sovereign.",
-        }}
-      />
-      <div className="min-h-screen bg-background">
-        <Navigation />
+      {!embedded && (
+        <SEOHead
+          meta={{
+            title: "Privacy Score | ShadowTalk AI",
+            description: "See your real-time privacy score. Track blocked trackers, cookies, and fingerprinting attempts. Your data stays sovereign.",
+          }}
+        />
+      )}
+      <div className={embedded ? "h-full overflow-y-auto bg-background" : "min-h-screen bg-background"}>
+        {!embedded && <Navigation />}
 
-        <main className="pt-24 pb-16 px-4 max-w-6xl mx-auto">
-          {/* Back button */}
-          <Button variant="ghost" onClick={() => navigate(-1)} className="mb-6 gap-2">
-            <ArrowLeft className="h-4 w-4" /> Back
-          </Button>
+        <main className={`px-4 max-w-6xl mx-auto ${embedded ? "py-6" : "pt-24 pb-16"}`}>
+          {!embedded && (
+            <Button variant="ghost" onClick={() => navigate(-1)} className="mb-6 gap-2">
+              <ArrowLeft className="h-4 w-4" /> Back
+            </Button>
+          )}
 
           {/* Hero Section - Privacy Score */}
           <motion.div
@@ -365,7 +368,7 @@ const PrivacyScorePage = () => {
           </motion.div>
         </main>
 
-        <Footer />
+        {!embedded && <Footer />}
       </div>
     </>
   );

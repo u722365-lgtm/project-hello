@@ -99,6 +99,8 @@ interface ShadowBrowserProps {
   onClose: () => void;
   onInsertToChat?: (content: string) => void;
   initialUrl?: string;
+  /** Full-page embed inside Research Hub */
+  embedded?: boolean;
 }
 
 // ─── Constants ─────────────────────────────────────────────────
@@ -340,7 +342,7 @@ const ReadingModeOverlay = ({ content, onClose }: { content: string; onClose: ()
 
 // ─── Main Component ────────────────────────────────────────────
 
-export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl }: ShadowBrowserProps) => {
+export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl, embedded }: ShadowBrowserProps) => {
   const { toast } = useToast();
 
   // Core state
@@ -887,17 +889,21 @@ export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl }: S
     return () => { if (iframeTimeoutRef.current) clearTimeout(iframeTimeoutRef.current); };
   }, []);
 
-  if (!isOpen) return null;
+  if (!isOpen && !embedded) return null;
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.95, y: 20 }}
+      initial={{ opacity: 0, scale: embedded ? 1 : 0.95, y: embedded ? 0 : 20 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.95, y: 20 }}
+      exit={{ opacity: 0, scale: embedded ? 1 : 0.95, y: embedded ? 0 : 20 }}
       transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-      className={`fixed z-50 bg-gradient-to-br from-background via-background to-primary/5 border border-border/50 shadow-2xl shadow-primary/10 overflow-hidden flex flex-col ${
-        isFullscreen ? "inset-0" : "right-4 top-4 bottom-4 w-[85vw] max-w-6xl rounded-2xl"
-      }`}
+      className={
+        embedded
+          ? "h-full w-full bg-gradient-to-br from-background via-background to-primary/5 overflow-hidden flex flex-col"
+          : `fixed z-50 bg-gradient-to-br from-background via-background to-primary/5 border border-border/50 shadow-2xl shadow-primary/10 overflow-hidden flex flex-col ${
+              isFullscreen ? "inset-0" : "right-4 top-4 bottom-4 w-[85vw] max-w-6xl rounded-2xl"
+            }`
+      }
     >
       <ConnectionStatus />
       <KeyboardShortcutsModal isOpen={showKeyboardShortcuts} onClose={() => setShowKeyboardShortcuts(false)} />

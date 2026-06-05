@@ -136,20 +136,25 @@ export function useAgenticToolDispatch() {
           );
           return { handled: true };
 
-        case "deep_research":
+        case "deep_research": {
+          const query = params.query ?? message;
           if (detection.autoExecute) {
-            return {
-              handled: false,
-              chatFlags: { deepResearch: true, researchQuery: params.query ?? message },
-            };
+            navigate(`/research?tab=investigate&q=${encodeURIComponent(query)}&auto=1`);
+            ui.appendAssistantMessage("Opening **Shadow Research** — multi-source synthesis with citations.", {
+              tool: "deep_research",
+              status: "complete",
+              params,
+            });
+            return { handled: true };
           }
-          ui.openDeepResearch(params.query ?? message);
-          ui.appendAssistantMessage("Opening **Deep Research** — multi-source synthesis with citations.", {
+          navigate(`/research?tab=investigate&q=${encodeURIComponent(query)}`);
+          ui.appendAssistantMessage("Opening **Shadow Research** — multi-source synthesis with citations.", {
             tool: "deep_research",
             status: "complete",
             params,
           });
           return { handled: true };
+        }
 
         case "image_generator":
           ui.setPendingMessage(params.prompt ?? message);
@@ -189,7 +194,12 @@ export function useAgenticToolDispatch() {
           return { handled: true };
 
         case "shadow_browser":
-          ui.openBrowser();
+          navigate("/research?tab=browser");
+          ui.appendAssistantMessage("Opening **Shadow Browser** in the research hub.", {
+            tool: "shadow_browser",
+            status: "complete",
+            params,
+          });
           return { handled: true };
 
         case "shadow_live":

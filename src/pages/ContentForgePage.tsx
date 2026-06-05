@@ -1,7 +1,8 @@
 import { useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Zap, Presentation, FileText, Sparkles } from "lucide-react";
+import { Zap, Presentation, FileText, Sparkles, Palette } from "lucide-react";
+import CreativeStudioPage from "@/pages/CreativeStudioPage";
 import Navigation from "@/components/Navigation";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -47,6 +48,7 @@ const ContentForgePage = () => {
     slides: <Presentation className="h-4 w-4" />,
     documents: <FileText className="h-4 w-4" />,
     beast: <Zap className="h-4 w-4" />,
+    studio: <Palette className="h-4 w-4" />,
   };
 
   return (
@@ -72,7 +74,7 @@ const ContentForgePage = () => {
                   Shadow Content Forge
                   <Badge variant="secondary" className="text-[10px] font-normal">Unified</Badge>
                 </h1>
-                <p className="text-[11px] text-muted-foreground">Presentations + documents — one workspace</p>
+                <p className="text-[11px] text-muted-foreground">Slides, documents, studio & Beast Mode — one workspace</p>
               </div>
             </div>
 
@@ -125,6 +127,7 @@ const ContentForgePage = () => {
           {mode === "beast" && (
             <BeastForgePanel initialTopic={topic} onComplete={handleBeastComplete} />
           )}
+          {mode === "studio" && <CreativeStudioPage embedded />}
         </div>
       </div>
     </div>

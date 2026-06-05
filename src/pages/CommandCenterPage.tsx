@@ -220,9 +220,9 @@ const CommandCenterPage = () => {
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 {[
-                  { icon: TrendingUp, label: "Trend Analysis", desc: "Real-time industry trends", href: "/analytics" },
+                  { icon: TrendingUp, label: "Trend Analysis", desc: "Real-time industry trends", href: "/insights?tab=usage" },
                   { icon: Search, label: "Deep Research", desc: "Multi-source intelligence", href: "/research" },
-                  { icon: Shield, label: "Risk Monitor", desc: "Threat & compliance alerts", href: "/security-audit" },
+                  { icon: Shield, label: "Risk Monitor", desc: "Threat & compliance alerts", href: "/security?tab=audit" },
                   { icon: BarChart3, label: "Performance", desc: "KPI tracking & benchmarks", href: "/data-insights" },
                 ].map((widget, i) => (
                   <motion.div

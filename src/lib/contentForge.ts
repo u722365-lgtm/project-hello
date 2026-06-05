@@ -1,4 +1,4 @@
-export type ContentForgeMode = "slides" | "documents" | "beast";
+export type ContentForgeMode = "slides" | "documents" | "beast" | "studio";
 
 export const CONTENT_FORGE_MODES: {
   id: ContentForgeMode;
@@ -20,12 +20,17 @@ export const CONTENT_FORGE_MODES: {
     label: "Beast Mode",
     description: "Full document + slide deck in one run",
   },
+  {
+    id: "studio",
+    label: "Studio",
+    description: "Image editor + document transformation",
+  },
 ];
 
 export const BEAST_SESSION_KEY = "shadowtalk_beast_payload";
 
 export function parseForgeMode(value: string | null): ContentForgeMode {
-  if (value === "documents" || value === "beast") return value;
+  if (value === "documents" || value === "beast" || value === "studio") return value;
   return "slides";
 }
 

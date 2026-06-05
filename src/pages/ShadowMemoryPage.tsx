@@ -38,7 +38,7 @@ const CATEGORY_META: Record<ActivityCategory, { label: string; icon: typeof Brai
 
 const ALL_CATEGORIES: ActivityCategory[] = Object.keys(CATEGORY_META) as ActivityCategory[];
 
-const ShadowMemoryPage = () => {
+const ShadowMemoryPage = ({ embedded = false }: { embedded?: boolean }) => {
   const { isReady, getActivities, getStats, deleteActivity, clearAll, exportJSON, exportCSV, exportLogs } =
     useShadowMemoryContext();
 
@@ -109,9 +109,9 @@ const ShadowMemoryPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-      <div className="container mx-auto px-4 pt-24 pb-16 max-w-5xl">
+    <div className={embedded ? "h-full overflow-y-auto bg-background" : "min-h-screen bg-background"}>
+      {!embedded && <Navigation />}
+      <div className={`container mx-auto px-4 max-w-5xl ${embedded ? "py-6" : "pt-24 pb-16"}`}>
         {/* Privacy Banner */}
         <PrivacyBanner dataLocation="device" featureName="Shadow Memory" />
 
@@ -383,7 +383,7 @@ const ShadowMemoryPage = () => {
           </div>
         </motion.div>
       </div>
-      <Footer />
+      {!embedded && <Footer />}
     </div>
   );
 };

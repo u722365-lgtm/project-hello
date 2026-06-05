@@ -1539,19 +1539,19 @@ const ChatbotPage = () => {
             onExport={handleExport}
             onManageSubscription={() => navigate("/billing")}
             onSignOut={signOut}
-            onOpenAnalytics={() => navigate("/analytics")}
-            onOpenScriptAutomation={() => navigate("/workspace?panel=automation")}
-            onOpenStealthVault={() => navigate("/vault")}
-            onOpenAgentWorkflows={() => navigate("/agent-architecture")}
+            onOpenAnalytics={() => navigate("/insights?tab=usage")}
+            onOpenScriptAutomation={() => navigate("/workspace?tab=automate")}
+            onOpenStealthVault={() => navigate("/security?tab=vault")}
+            onOpenAgentWorkflows={() => navigate("/workspace?tab=agents")}
             onOpenModelFineTuning={() => navigate("/personal-llm")}
             onOpenWhiteLabelBranding={() => navigate("/enterprise-license")}
-            onOpenGeminiAnalytics={() => navigate("/analytics")}
+            onOpenGeminiAnalytics={() => navigate("/insights?tab=usage")}
             onOpenCanvas={() => navigate("/ide")}
             onOpenDeepResearch={() => setShowDeepResearch(true)}
             onOpenGoogleIntegration={() => navigate("/profile?tab=linked")}
             onOpenAgenticRunner={() => navigate("/execute")}
             onOpenVisualReasoning={() => setShowCommandPalette(true)}
-            onOpenCreativeSynthesis={() => navigate("/studio")}
+            onOpenCreativeSynthesis={() => navigate("/forge?mode=studio")}
             onOpenImageGenerator={() => setShowImageGenerator(true)}
             onOpenShadowTalkLive={() => setShowShadowTalkLive(true)}
             onOpenBrowser={() => setShowShadowBrowser(true)}

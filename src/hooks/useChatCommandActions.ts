@@ -51,16 +51,16 @@ export function useChatCommandActions(handlers: ChatCommandHandlers) {
           handlers.setChatMode("hsca");
           break;
         case "vault":
-          navigate("/vault");
+          navigate("/security?tab=vault");
           break;
         case "missions":
           navigate("/execute");
           break;
         case "knowledge-vault":
-          navigate("/knowledge");
+          navigate("/research?tab=knowledge");
           break;
         case "memory":
-          navigate("/shadow-memory");
+          navigate("/insights?tab=activity");
           break;
         case "sovereign":
           navigate("/personal-llm");
@@ -72,7 +72,7 @@ export function useChatCommandActions(handlers: ChatCommandHandlers) {
           navigate("/execute");
           break;
         case "creative":
-          navigate("/studio");
+          navigate("/forge?mode=studio");
           break;
         case "document":
           handlers.setChatMode("creative");
@@ -81,7 +81,7 @@ export function useChatCommandActions(handlers: ChatCommandHandlers) {
           navigate("/execute?mode=strategy_report");
           break;
         case "script-automation":
-          navigate("/workspace");
+          navigate("/workspace?tab=automate");
           break;
         case "agent-workflows":
           navigate("/agents");
@@ -93,7 +93,7 @@ export function useChatCommandActions(handlers: ChatCommandHandlers) {
           navigate("/enterprise");
           break;
         case "gemini-analytics":
-          navigate("/analytics");
+          navigate("/insights?tab=usage");
           break;
         case "google":
           navigate("/developers");

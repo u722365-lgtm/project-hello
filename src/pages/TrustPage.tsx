@@ -244,7 +244,7 @@ const architectureGuarantees = [
   },
 ];
 
-const TrustPage = () => {
+const TrustPage = ({ embedded = false }: { embedded?: boolean }) => {
   const proofs = usePrivacyProofs();
   const integrityHash = useIntegrityHash();
   const [selectedTab, setSelectedTab] = useState<'proofs' | 'architecture' | 'data-map'>('proofs');
@@ -254,9 +254,9 @@ const TrustPage = () => {
   const checkedCount = Object.values(proofs).filter(v => v !== null).length;
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-      <div className="container mx-auto px-4 py-8 pt-24 max-w-5xl">
+    <div className={embedded ? "h-full overflow-y-auto bg-background" : "min-h-screen bg-background"}>
+      {!embedded && <Navigation />}
+      <div className={`container mx-auto px-4 max-w-5xl ${embedded ? "py-6" : "py-8 pt-24"}`}>
         {/* Hero */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}

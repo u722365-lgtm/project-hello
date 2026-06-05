@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Menu, X, Bot, Shield, BookOpen, Users, History, User, Code, BarChart3, Building2, Settings, UserCircle, Brain, Sparkles, ChevronDown, MoreHorizontal, Download, Share, Smartphone, MessageSquare, CreditCard, Rocket, Tag, ShieldCheck, Presentation, Target, Store, Terminal, Eye, LayoutGrid } from "lucide-react";
+import { Menu, X, Bot, Shield, BookOpen, Users, History, User, Code, BarChart3, Building2, Settings, UserCircle, Brain, Sparkles, ChevronDown, MoreHorizontal, Download, Share, Smartphone, MessageSquare, CreditCard, Rocket, Tag, ShieldCheck, Presentation, Target, Store, Terminal, Eye, LayoutGrid, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { FeedbackForm } from "@/components/FeedbackForm";
@@ -92,7 +92,7 @@ const Navigation = ({ landingAnimated = false }: NavigationProps) => {
   const primaryNavItems = [
     { name: t("nav.pricing"), href: "/pricing", icon: Shield, isLink: true },
     { name: "Shadow Execution", href: "/execute", icon: Rocket, isLink: true },
-    { name: "AI Workspace", href: "/workspace", icon: Sparkles, isLink: true },
+    { name: "Shadow Workspace", href: "/workspace", icon: Sparkles, isLink: true },
     { name: "Code IDE", href: "/ide", icon: Code, isLink: true },
   ];
 
@@ -103,15 +103,15 @@ const Navigation = ({ landingAnimated = false }: NavigationProps) => {
     { name: "Content Forge", href: "/forge", icon: Presentation, isLink: true },
     { name: "Developers", href: "/developers", icon: Terminal, isLink: true },
     { name: "Download app", href: "/downloads", icon: Download, isLink: true },
-    { name: "Privacy Score", href: "/privacy-score", icon: ShieldCheck, isLink: true },
+    { name: "Security Center", href: "/security", icon: ShieldCheck, isLink: true },
     { name: t("nav.docs"), href: "/docs", icon: BookOpen, isLink: true },
     { name: t("nav.changelog"), href: "/changelog", icon: History, isLink: true },
     { name: t("nav.rooms"), href: "/rooms", icon: Users, isLink: true },
     { name: t("nav.api"), href: "/api", icon: Code, isLink: true },
-    { name: t("nav.analytics"), href: "/analytics", icon: BarChart3, isLink: true },
+    { name: "Shadow Insights", href: "/insights", icon: BarChart3, isLink: true },
+    { name: "Shadow Research", href: "/research", icon: Globe, isLink: true },
     { name: "Enterprise", href: "/enterprise", icon: Building2, isLink: true },
     { name: "About", href: "/about", icon: UserCircle, isLink: true },
-    { name: "Shadow Memory", href: "/shadow-memory", icon: Eye, isLink: true },
     { name: "Agents", href: "/agents", icon: Bot, isLink: true },
     { name: "Compliance", href: "/compliance", icon: ShieldCheck, isLink: true },
     { name: "Competitive", href: "/competitive", icon: BarChart3, isLink: true },

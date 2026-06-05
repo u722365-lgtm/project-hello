@@ -53,7 +53,7 @@ const FEATURE_LABEL: Record<string, string> = {
   file_upload: "Files",
 };
 
-const AnalyticsPage = () => {
+const AnalyticsPage = ({ embedded = false }: { embedded?: boolean }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -159,15 +159,15 @@ const AnalyticsPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
+    <div className={embedded ? "h-full overflow-y-auto bg-background" : "min-h-screen bg-background"}>
+      {!embedded && <Navigation />}
       
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-1/4 left-1/3 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[180px]" />
         <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-accent/5 rounded-full blur-[150px]" />
       </div>
 
-      <main className="container mx-auto px-4 pt-24 pb-16 relative z-10">
+      <main className={`container mx-auto px-4 relative z-10 ${embedded ? "py-6" : "pt-24 pb-16"}`}>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between mb-10">
           <div>
             <Badge variant="outline" className="mb-4 glass-subtle border-primary/20">
@@ -332,7 +332,7 @@ const AnalyticsPage = () => {
         </Tabs>
       </main>
 
-      <Footer />
+      {!embedded && <Footer />}
     </div>
   );
 };

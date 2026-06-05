@@ -27,35 +27,29 @@ const pages = [
   { name: "UI Templates", href: "/templates", icon: LayoutGrid, desc: "100 presets + custom theme designer" },
   { name: "Custom theme designer", href: "/templates?tab=custom", icon: LayoutGrid, desc: "Design your own palette and apply site-wide" },
   { name: "Strategy Agent", href: "/strategy", icon: Brain, desc: "AI strategy advisor" },
-  { name: "AI Workspace", href: "/workspace", icon: Sparkles, desc: "Business memory & context" },
+  { name: "Shadow Workspace", href: "/workspace", icon: Sparkles, desc: "Memory, agents & automations" },
+  { name: "Shadow Research", href: "/research", icon: SearchIcon, desc: "Deep research, knowledge & browser" },
+  { name: "Shadow Insights", href: "/insights", icon: BarChart3, desc: "Usage, behavior & activity" },
+  { name: "Security Center", href: "/security", icon: ShieldCheck, desc: "Vault, privacy score & audits" },
   { name: "Code IDE", href: "/ide", icon: Code, desc: "Monaco editor & live preview" },
   { name: "Marketplace", href: "/marketplace", icon: Store, desc: "Agent marketplace" },
-  { name: "Mission Control", href: "/missioncontrol", icon: Target, desc: "Manage missions" },
-  { name: "Content Forge", href: "/forge", icon: Presentation, desc: "Slides, documents & Beast Mode" },
+  { name: "Shadow Execution", href: "/execute", icon: Target, desc: "Multi-step missions & deliverables" },
+  { name: "Content Forge", href: "/forge", icon: Presentation, desc: "Slides, documents, studio & Beast Mode" },
   { name: "Developers", href: "/developers", icon: Terminal, desc: "Developer tools" },
-  { name: "Privacy Score", href: "/privacy-score", icon: ShieldCheck, desc: "Check your privacy" },
   { name: "Docs", href: "/docs", icon: BookOpen, desc: "Documentation" },
   { name: "Changelog", href: "/changelog", icon: History, desc: "What's new" },
   { name: "Chat Rooms", href: "/rooms", icon: Users, desc: "Collaborative rooms" },
   { name: "API", href: "/api", icon: Code, desc: "API reference" },
-  { name: "Analytics", href: "/analytics", icon: BarChart3, desc: "Usage analytics" },
   { name: "Enterprise", href: "/enterprise", icon: Building2, desc: "Enterprise settings" },
   { name: "About", href: "/about", icon: UserCircle, desc: "About ShadowTalk" },
-  { name: "Shadow Memory", href: "/shadow-memory", icon: Eye, desc: "Your activity log" },
   { name: "Admin", href: "/admin", icon: Settings, desc: "Admin dashboard" },
   { name: "Profile", href: "/profile", icon: User, desc: "Your profile" },
   { name: "Billing", href: "/billing", icon: CreditCard, desc: "Manage billing" },
   { name: "Founder Access", href: "/founder-access", icon: Rocket, desc: "Founder perks" },
-  { name: "Deep Research", href: "/research", icon: SearchIcon, desc: "Deep research tool" },
-  { name: "Knowledge Graph", href: "/knowledge", icon: Globe, desc: "Knowledge explorer" },
   { name: "Strategy Lab", href: "/strategy-lab", icon: FlaskConical, desc: "Strategy experiments" },
   { name: "Sovereign Data", href: "/sovereign-data", icon: Database, desc: "Data sovereignty" },
-  { name: "Stealth Vault", href: "/vault", icon: Lock, desc: "Encrypted vault" },
-  { name: "Business Memory", href: "/business-memory", icon: Layers, desc: "Business context" },
   { name: "Sovereign Wallet", href: "/wallet", icon: Wallet, desc: "Credit wallet" },
   { name: "Ghost Ads", href: "/ghost-ads", icon: Ghost, desc: "Privacy-first ads" },
-  { name: "Data Insights", href: "/data-insights", icon: BarChart, desc: "Data analytics" },
-  { name: "Security Audit", href: "/security-audit", icon: Key, desc: "Security scanner" },
   { name: "Command Center", href: "/command-center", icon: Target, desc: "Automation hub" },
   { name: "Help Center", href: "/help", icon: HelpCircle, desc: "Get help" },
   { name: "FAQ", href: "/faq", icon: FileText, desc: "Common questions" },
@@ -99,9 +93,11 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ open, onOpenChange }) =
   }, [navigate, onOpenChange]);
 
   const core = pages.filter(p =>
-    ["/chatbot", "/ide", "/workspace", "/strategy", "/pricing", "/marketplace", "/missioncontrol"].includes(p.href),
+    ["/chatbot", "/ide", "/workspace", "/execute", "/strategy", "/pricing", "/marketplace"].includes(p.href),
   );
-  const tools = pages.filter(p => ["/forge", "/presentations", "/developers", "/research", "/knowledge", "/strategy-lab", "/command-center", "/security-audit", "/data-insights"].includes(p.href));
+  const tools = pages.filter(p =>
+    ["/forge", "/research", "/insights", "/security", "/developers", "/strategy-lab", "/command-center"].includes(p.href),
+  );
   const rest = pages.filter(p => !core.includes(p) && !tools.includes(p));
 
   return (

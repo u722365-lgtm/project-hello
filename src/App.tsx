@@ -65,6 +65,10 @@ export const CommandPaletteContext = createContext<{ open: () => void }>({ open:
   const DevelopersPage = lazy(() => import("./pages/DevelopersPage"));
     const PrivacyScorePage = lazy(() => import("./pages/PrivacyScorePage"));
   const ContentForgePage = lazy(() => import("./pages/ContentForgePage"));
+  const WorkspaceHubPage = lazy(() => import("./pages/WorkspaceHubPage"));
+  const ResearchHubPage = lazy(() => import("./pages/ResearchHubPage"));
+  const InsightsHubPage = lazy(() => import("./pages/InsightsHubPage"));
+  const SecurityHubPage = lazy(() => import("./pages/SecurityHubPage"));
    const MissionControlPage = lazy(() => import("./pages/MissionControlPage"));
  const ExecutePage = lazy(() => import("./pages/ExecutePage"));
    const ReferralPage = lazy(() => import("./pages/ReferralPage"));
@@ -149,7 +153,10 @@ const AnimatedRoutes = () => {
           <Route path="/profile" element={<PageTransition><ProfilePage /></PageTransition>} />
           <Route path="/settings" element={<PageTransition><SettingsPage /></PageTransition>} />
           <Route path="/api" element={<PageTransition><APIPage /></PageTransition>} />
-          <Route path="/analytics" element={<PageTransition><AnalyticsPage /></PageTransition>} />
+          <Route path="/insights" element={<PageTransition><InsightsHubPage /></PageTransition>} />
+          <Route path="/analytics" element={<Navigate to="/insights?tab=usage" replace />} />
+          <Route path="/data-insights" element={<Navigate to="/insights?tab=behavior" replace />} />
+          <Route path="/shadow-memory" element={<Navigate to="/insights?tab=activity" replace />} />
           <Route path="/enterprise" element={<PageTransition><EnterpriseSettingsPage /></PageTransition>} />
           <Route path="/about" element={<PageTransition><AboutPage /></PageTransition>} />
           <Route path="/help" element={<PageTransition><HelpCenterPage /></PageTransition>} />
@@ -168,35 +175,34 @@ const AnimatedRoutes = () => {
           <Route path="/lifetime-deal" element={<Navigate to="/pricing" replace />} />
           <Route path="/execute" element={<PageTransition><ExecutePage /></PageTransition>} />
           <Route path="/strategy" element={<PageTransition><StrategyAgentPage /></PageTransition>} />
-          <Route path="/workspace" element={<PageTransition><WorkspacePage /></PageTransition>} />
+          <Route path="/workspace" element={<PageTransition><WorkspaceHubPage /></PageTransition>} />
+          <Route path="/business-memory" element={<Navigate to="/workspace?tab=explore" replace />} />
           <Route path="/ide" element={<PageTransition><IdePage /></PageTransition>} />
           <Route path="/marketplace" element={<PageTransition><MarketplacePage /></PageTransition>} />
           <Route path="/developers" element={<PageTransition><DevelopersPage /></PageTransition>} />
-          <Route path="/privacy-score" element={<PageTransition><PrivacyScorePage /></PageTransition>} />
+          <Route path="/security" element={<PageTransition><SecurityHubPage /></PageTransition>} />
+          <Route path="/vault" element={<Navigate to="/security?tab=vault" replace />} />
+          <Route path="/privacy-score" element={<Navigate to="/security?tab=score" replace />} />
+          <Route path="/security-audit" element={<Navigate to="/security?tab=audit" replace />} />
+          <Route path="/trust" element={<Navigate to="/security?tab=trust" replace />} />
+          <Route path="/cyber" element={<Navigate to="/security?tab=cyber" replace />} />
           <Route path="/forge" element={<PageTransition><ContentForgePage /></PageTransition>} />
           <Route path="/presentations" element={<Navigate to="/forge?mode=slides" replace />} />
-          <Route path="/missioncontrol" element={<PageTransition><MissionControlPage /></PageTransition>} />
+          <Route path="/missioncontrol" element={<Navigate to="/execute" replace />} />
           <Route path="/referral" element={<PageTransition><ReferralPage /></PageTransition>} />
-          <Route path="/research" element={<PageTransition><DeepResearchPage /></PageTransition>} />
-          <Route path="/knowledge" element={<PageTransition><KnowledgeGraphPage /></PageTransition>} />
+          <Route path="/research" element={<PageTransition><ResearchHubPage /></PageTransition>} />
+          <Route path="/knowledge" element={<Navigate to="/research?tab=knowledge" replace />} />
           <Route path="/strategy-lab" element={<PageTransition><StrategyLabPage /></PageTransition>} />
           <Route path="/sovereign-data" element={<PageTransition><SovereignDataPage /></PageTransition>} />
-          <Route path="/vault" element={<PageTransition><StealthVaultPage /></PageTransition>} />
-          <Route path="/business-memory" element={<PageTransition><BusinessMemoryPage /></PageTransition>} />
           <Route path="/wallet" element={<PageTransition><SovereignWalletPage /></PageTransition>} />
           <Route path="/ghost-ads" element={<PageTransition><GhostAdsPage /></PageTransition>} />
           <Route path="/offline-license" element={<PageTransition><EnterpriseLicensePage /></PageTransition>} />
-          <Route path="/data-insights" element={<PageTransition><DataInsightsPage /></PageTransition>} />
           <Route path="/transparency" element={<PageTransition><TransparencyPage /></PageTransition>} />
-          <Route path="/studio" element={<PageTransition><CreativeStudioPage /></PageTransition>} />
-          <Route path="/security-audit" element={<PageTransition><SecurityAuditPage /></PageTransition>} />
+          <Route path="/studio" element={<Navigate to="/forge?mode=studio" replace />} />
           <Route path="/command-center" element={<PageTransition><CommandCenterPage /></PageTransition>} />
-          <Route path="/shadow-memory" element={<PageTransition><ShadowMemoryPage /></PageTransition>} />
           <Route path="/competitive" element={<PageTransition><CompetitivePage /></PageTransition>} />
           <Route path="/agents" element={<PageTransition><AgentArchitecturePage /></PageTransition>} />
           <Route path="/compliance" element={<PageTransition><ComplianceDashboardPage /></PageTransition>} />
-          <Route path="/trust" element={<PageTransition><TrustPage /></PageTransition>} />
-          <Route path="/cyber" element={<PageTransition><CyberCommandPage /></PageTransition>} />
           <Route path="/personal-llm" element={<PageTransition><PersonalLLMPage /></PageTransition>} />
           <Route path="/templates" element={<PageTransition><TemplatesPage /></PageTransition>} />
           <Route path="/downloads" element={<PageTransition><DownloadsPage /></PageTransition>} />
