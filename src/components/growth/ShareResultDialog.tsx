@@ -23,6 +23,8 @@ type ShareResultDialogProps = {
   title: string;
   subtitle?: string;
   referralCode?: string | null;
+  colleagueMode?: boolean;
+  orgName?: string;
 };
 
 export function ShareResultDialog({
@@ -32,12 +34,19 @@ export function ShareResultDialog({
   title,
   subtitle,
   referralCode,
+  colleagueMode,
+  orgName,
 }: ShareResultDialogProps) {
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
   const [downloading, setDownloading] = useState(false);
 
-  const social = getShareSocialUrls({ title, subtitle, ref: referralCode, kind });
+  const social = getShareSocialUrls({
+    title,
+    subtitle,
+    ref: colleagueMode ? null : referralCode,
+    kind,
+  });
 
   const copyLink = async () => {
     try {
@@ -75,10 +84,12 @@ export function ShareResultDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Share2 className="h-5 w-5 text-primary" />
-            Share your win
+            {colleagueMode ? "Share with a colleague" : "Share your win"}
           </DialogTitle>
           <DialogDescription>
-            One link with a rich preview. Your referral code is included when you&apos;re signed in.
+            {colleagueMode
+              ? `Send this to a ${orgName ?? "team"} teammate — they sign in with their work email.`
+              : "One link with a rich preview. Your referral code is included when you're signed in."}
           </DialogDescription>
         </DialogHeader>
 

@@ -35,6 +35,8 @@ interface ChatMessagesProps {
   messagesEndRef: React.RefObject<HTMLDivElement>;
   thinkingStage?: 'understanding' | 'reasoning' | 'generating' | 'refining' | null;
   layout?: 'default' | 'gemini' | 'shadow-pulse';
+  enterpriseShare?: boolean;
+  includeReferralInShare?: boolean;
 }
 
 export const ChatMessages: React.FC<ChatMessagesProps> = ({
@@ -57,6 +59,8 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
   messagesEndRef,
   thinkingStage,
   layout = 'default',
+  enterpriseShare,
+  includeReferralInShare,
 }) => {
   const isGemini = layout === 'gemini' || layout === 'shadow-pulse';
   const STAGE_INFO = {
@@ -110,6 +114,8 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
             onLaunchWebsite={onLaunchWebsite}
             onOpenInBrowser={onOpenInBrowser}
             onShareReply={onShareReply}
+            enterpriseShare={enterpriseShare}
+            includeReferralInShare={includeReferralInShare}
             layout={isGemini ? 'gemini' : 'default'}
           />
         ))}

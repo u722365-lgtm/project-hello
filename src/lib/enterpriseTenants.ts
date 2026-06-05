@@ -8,6 +8,7 @@ export interface EnterpriseTenant {
   welcomeTitle: string;
   welcomeSubtitle: string;
   signInHint: string;
+  inviteMessage: string;
   quickPrompts: { label: string; prompt: string }[];
   onboardingSteps: { title: string; body: string }[];
   helpTips: { title: string; body: string }[];
@@ -23,6 +24,7 @@ export const ENTERPRISE_TENANTS: EnterpriseTenant[] = [
     welcomeTitle: "Shan Foods AI Workspace",
     welcomeSubtitle: "Research, documents, analysis, and execution — one secure chat for every team.",
     signInHint: "Use your official @shanfoods.com work email to unlock unlimited AI for your role.",
+    inviteMessage: "Join me on ShadowTalk — our team's AI workspace. Sign in with your @shanfoods.com email.",
     quickPrompts: [
       { label: "Product brief", prompt: "Draft a product launch brief for " },
       { label: "Market research", prompt: "Research the market and competitors for " },
@@ -54,6 +56,7 @@ export const ENTERPRISE_TENANTS: EnterpriseTenant[] = [
       { title: "Documents", body: "Ask for Word-style reports, PDF exports, or presentation outlines." },
       { title: "Voice", body: "Tap the mic for voice input where supported." },
       { title: "Mobile", body: "On iPhone: Share → Add to Home Screen for full-screen app experience." },
+      { title: "Invite colleagues", body: "Tap Invite in the welcome banner or help menu — share ShadowTalk with teammates using their work email." },
       { title: "Support", body: "For access issues, contact your IT admin with your work email address." },
     ],
   },
@@ -90,6 +93,7 @@ export function resolveEnterpriseTenant(email: string | null | undefined): Enter
       welcomeTitle: "Enterprise AI Workspace",
       welcomeSubtitle: "Unlimited team chat, research, and document tools.",
       signInHint: `Sign in with your @${domain} work email.`,
+      inviteMessage: `Join me on ShadowTalk — our team's AI workspace. Sign in with your @${domain} email.`,
       quickPrompts: ENTERPRISE_TENANTS[0].quickPrompts,
       onboardingSteps: ENTERPRISE_TENANTS[0].onboardingSteps,
       helpTips: ENTERPRISE_TENANTS[0].helpTips,

@@ -34,6 +34,9 @@ supabase functions deploy user-provider-keys
 - [ ] Send chat message → AI responds
 - [ ] Refresh → history persists
 - [ ] Works on iPhone Safari
+- [ ] **Invite colleague** banner → share link opens auth with work email
+- [ ] Good AI reply → **Share with a colleague** banner appears
+- [ ] Copy AI reply → includes colleague invite link (no referral code)
 
 ---
 

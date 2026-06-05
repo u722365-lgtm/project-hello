@@ -10,6 +10,8 @@ type ShareWinBannerProps = {
   title: string;
   subtitle?: string;
   referralCode?: string | null;
+  colleagueMode?: boolean;
+  orgName?: string;
   onOpenShareDialog: () => void;
   onDismiss: () => void;
 };
@@ -19,6 +21,8 @@ export function ShareWinBanner({
   title,
   subtitle,
   referralCode,
+  colleagueMode,
+  orgName,
   onOpenShareDialog,
   onDismiss,
 }: ShareWinBannerProps) {
@@ -27,7 +31,7 @@ export function ShareWinBanner({
   const social = getShareSocialUrls({
     title,
     subtitle,
-    ref: referralCode,
+    ref: colleagueMode ? null : referralCode,
     kind: "chat",
   });
 
@@ -40,7 +44,7 @@ export function ShareWinBanner({
     try {
       await navigator.share({
         title: `${BRAND.fullName} — share your win`,
-        text: buildViralShareBlurb(title),
+        text: buildViralShareBlurb(title, { colleague: colleagueMode, orgName }),
         url: social.link,
       });
       onDismiss();
@@ -65,7 +69,9 @@ export function ShareWinBanner({
             <Sparkles className="h-5 w-5 text-primary shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground">
-                ShadowTalk finished this — share it and let the product market itself
+                {colleagueMode
+                  ? `Great result — share with a ${orgName ?? "colleague"} teammate`
+                  : "ShadowTalk finished this — share it and let the product market itself"}
               </p>
               <p className="text-xs text-muted-foreground mt-0.5 truncate">
                 {title}

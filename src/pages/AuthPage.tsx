@@ -19,7 +19,7 @@ import { AuthAnimatedField } from "@/components/auth/AuthAnimatedField";
 import { AuthShimmerButton } from "@/components/auth/AuthShimmerButton";
 import { clearExplicitSignOut, consumeReturnPath, isAnonymousUser } from "@/lib/persistentAuth";
 import { isEnterpriseDeployment } from "@/hooks/useEnterpriseExperience";
-import { ENTERPRISE_TENANTS } from "@/lib/enterpriseTenants";
+import { ENTERPRISE_TENANTS, isEnterpriseEmail } from "@/lib/enterpriseTenants";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
 // Rate limiter
@@ -342,6 +342,14 @@ const AuthPage = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(cleanEmail)) {
       toast({ title: "Error", description: "Enter a valid email address", variant: "destructive" });
+      return;
+    }
+    if (enterpriseFlow && !isEnterpriseEmail(cleanEmail)) {
+      toast({
+        title: "Use your work email",
+        description: "Sign in with your official company email (e.g. you@shanfoods.com).",
+        variant: "destructive",
+      });
       return;
     }
     const limit = checkLimit();

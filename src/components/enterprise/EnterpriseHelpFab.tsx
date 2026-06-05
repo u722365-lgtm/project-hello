@@ -9,6 +9,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import type { EnterpriseTenant } from "@/lib/enterpriseTenants";
+import { EnterpriseInviteColleagues } from "@/components/enterprise/EnterpriseInviteColleagues";
 
 interface EnterpriseHelpFabProps {
   tenant: EnterpriseTenant;
@@ -35,6 +36,9 @@ export function EnterpriseHelpFab({ tenant }: EnterpriseHelpFabProps) {
         <SheetHeader>
           <SheetTitle>{tenant.name} — Quick help</SheetTitle>
         </SheetHeader>
+        <div className="mt-4">
+          <EnterpriseInviteColleagues tenant={tenant} />
+        </div>
         <ul className="mt-4 space-y-4">
           {tenant.helpTips.map((tip) => (
             <li key={tip.title} className="rounded-xl border border-border/50 bg-muted/20 p-4">

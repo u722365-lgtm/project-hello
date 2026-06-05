@@ -57,6 +57,8 @@ interface MessageBubbleProps {
   onConfirmTool?: (messageId: string) => void;
   onCancelTool?: (messageId: string) => void;
   onShareReply?: (content: string) => void;
+  enterpriseShare?: boolean;
+  includeReferralInShare?: boolean;
 }
 
 export const MessageBubble: React.FC<MessageBubbleProps> = ({
@@ -78,6 +80,8 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
   onConfirmTool,
   onCancelTool,
   onShareReply,
+  enterpriseShare = false,
+  includeReferralInShare = true,
 }) => {
   const { toast } = useToast();
   const referralCode = useUserReferralCode();
@@ -95,12 +99,20 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 
   const handleCopy = async () => {
     const text = !isUser
-      ? formatCopyWithAttribution(message.content, referralCode)
+      ? formatCopyWithAttribution(
+          message.content,
+          includeReferralInShare ? referralCode : null,
+          { enterprise: enterpriseShare },
+        )
       : message.content;
     await navigator.clipboard.writeText(text);
     toast({
       title: 'Copied to clipboard',
-      description: !isUser ? 'Includes your ShadowTalk invite link.' : undefined,
+      description: !isUser
+        ? enterpriseShare
+          ? 'Includes invite link for colleagues.'
+          : 'Includes your ShadowTalk invite link.'
+        : undefined,
     });
   };
 

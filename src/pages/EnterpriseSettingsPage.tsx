@@ -40,7 +40,7 @@ const EnterpriseSettingsPage = () => {
   const [ipWhitelist, setIpWhitelist] = useState("");
   const [sessionTimeout, setSessionTimeout] = useState("60");
   
-  const isElitePlan = userPlan === 'elite';
+  const hasEnterpriseAccess = userPlan === 'elite' || userPlan === 'enterprise';
 
   const handleSaveSSO = () => { toast({ title: "SSO Configuration Saved", description: "Your SSO settings have been updated." }); };
   const handleTestConnection = () => {
@@ -86,14 +86,14 @@ const EnterpriseSettingsPage = () => {
               </h1>
               <p className="text-muted-foreground">Configure SSO, security, and workspace settings</p>
             </div>
-            {isElitePlan && (
+            {hasEnterpriseAccess && (
               <Badge className="ml-auto bg-gradient-to-r from-primary to-secondary text-primary-foreground border-0">
-                Elite Plan
+                {userPlan === 'enterprise' ? 'Enterprise Plan' : 'Elite Plan'}
               </Badge>
             )}
           </motion.div>
 
-          {!isElitePlan && (
+          {!hasEnterpriseAccess && (
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
               <Card className="mb-8 card-glass border-warning/30 overflow-hidden">
                 <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-warning/50 to-transparent" />
@@ -128,7 +128,7 @@ const EnterpriseSettingsPage = () => {
                         <CardTitle className="flex items-center gap-2"><Key className="h-5 w-5 text-primary" />Single Sign-On (SSO)</CardTitle>
                         <CardDescription>Configure SSO for your organization using SAML 2.0 or OAuth 2.0</CardDescription>
                       </div>
-                      <Switch checked={ssoEnabled} onCheckedChange={setSsoEnabled} disabled={!isElitePlan} />
+                      <Switch checked={ssoEnabled} onCheckedChange={setSsoEnabled} disabled={!hasEnterpriseAccess} />
                     </div>
                   </CardHeader>
                   {ssoEnabled && (
@@ -244,11 +244,11 @@ const EnterpriseSettingsPage = () => {
                         <h4 className="font-medium">Require Multi-Factor Authentication</h4>
                         <p className="text-sm text-muted-foreground">All users must enable MFA to access the workspace</p>
                       </div>
-                      <Switch checked={mfaRequired} onCheckedChange={setMfaRequired} disabled={!isElitePlan} />
+                      <Switch checked={mfaRequired} onCheckedChange={setMfaRequired} disabled={!hasEnterpriseAccess} />
                     </div>
                     <div className="space-y-3">
                       <Label>Session Timeout (minutes)</Label>
-                      <Select value={sessionTimeout} onValueChange={setSessionTimeout} disabled={!isElitePlan}>
+                      <Select value={sessionTimeout} onValueChange={setSessionTimeout} disabled={!hasEnterpriseAccess}>
                         <SelectTrigger className="max-w-xs bg-background/50 border-border/50"><SelectValue /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="15">15 minutes</SelectItem>
@@ -261,9 +261,9 @@ const EnterpriseSettingsPage = () => {
                     </div>
                     <div className="space-y-3">
                       <Label>IP Whitelist</Label>
-                      <textarea className="w-full h-24 p-3 bg-background/50 border border-border/50 rounded-xl text-sm font-mono" placeholder={"Enter IP addresses or CIDR ranges, one per line\ne.g., 192.168.1.0/24"} value={ipWhitelist} onChange={e => setIpWhitelist(e.target.value)} disabled={!isElitePlan} />
+                      <textarea className="w-full h-24 p-3 bg-background/50 border border-border/50 rounded-xl text-sm font-mono" placeholder={"Enter IP addresses or CIDR ranges, one per line\ne.g., 192.168.1.0/24"} value={ipWhitelist} onChange={e => setIpWhitelist(e.target.value)} disabled={!hasEnterpriseAccess} />
                     </div>
-                    <Button className="btn-glow" disabled={!isElitePlan}><CheckCircle2 className="h-4 w-4 mr-2" />Save Security Settings</Button>
+                    <Button className="btn-glow" disabled={!hasEnterpriseAccess}><CheckCircle2 className="h-4 w-4 mr-2" />Save Security Settings</Button>
                   </CardContent>
                 </Card>
               </motion.div>

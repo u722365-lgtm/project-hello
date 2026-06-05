@@ -24,10 +24,16 @@ export function useEnterpriseExperience() {
       isEnterpriseDeployment: isEnterpriseDeployment(),
       needsWorkEmailSignIn,
       hideMonetization: isEnterpriseUser,
-      hideGrowthBanners: isEnterpriseUser,
+      /** Referral rewards / commission nudges only */
+      hideReferralNudges: isEnterpriseUser,
+      /** Post-reply share banner + message share — enabled for everyone */
+      allowProductSharing: true,
+      /** Omit ?ref= from share links for enterprise employees */
+      includeReferralInShare: !isEnterpriseUser,
       unlimitedChat: isEnterpriseUser,
       showOnboarding: Boolean(isEnterpriseUser && tenant),
       showHelpFab: Boolean(isEnterpriseUser && tenant),
+      showInviteColleagues: Boolean(isEnterpriseUser && tenant),
       displayOrgName: tenant?.name ?? (isEnterpriseDeployment() ? "Your organization" : null),
     };
   }, [hasSpecialAccess, isAnonymous, isEnterprise, user?.email, userPlan]);

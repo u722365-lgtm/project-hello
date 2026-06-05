@@ -13,6 +13,7 @@ import { EnterpriseWelcomeBanner } from "@/components/chat/EnterpriseWelcomeBann
 import { EnterpriseEmployeeGate } from "@/components/enterprise/EnterpriseEmployeeGate";
 import { EnterpriseOnboarding } from "@/components/enterprise/EnterpriseOnboarding";
 import { EnterpriseHelpFab } from "@/components/enterprise/EnterpriseHelpFab";
+import { EnterpriseInviteColleagues } from "@/components/enterprise/EnterpriseInviteColleagues";
 import { useEnterpriseExperience } from "@/hooks/useEnterpriseExperience";
 import { ChatIconRail } from "@/components/chat/ChatIconRail";
 import { ChatShadowSidebar } from "@/components/chat/ChatShadowSidebar";
@@ -1868,6 +1869,9 @@ const ChatbotPage = () => {
             {BRAND.tagline}
           </motion.p>
           <EnterpriseWelcomeBanner email={user?.email} displayName={userDisplayName} />
+          {enterprise.showInviteColleagues && enterprise.tenant && (
+            <EnterpriseInviteColleagues tenant={enterprise.tenant} />
+          )}
           <ChatToolbar
             hasActiveChat={hasActiveChat}
             conversationCount={conversations.length}
@@ -1938,7 +1942,7 @@ const ChatbotPage = () => {
               onDismiss={() => setNudgeDismissed(true)}
             />
           )}
-          {!enterprise.hideGrowthBanners && <ReferralNudgeBanner />}
+          {!enterprise.hideReferralNudges && <ReferralNudgeBanner />}
           {!enterprise.hideMonetization && (
             <UpgradePrompt
               open={upgradeOpen}
@@ -2017,6 +2021,8 @@ const ChatbotPage = () => {
                       else setShowShadowBrowser(true);
                     }}
                     onShareReply={(content) => openChatShare(content)}
+                    enterpriseShare={enterprise.isEnterpriseUser}
+                    includeReferralInShare={enterprise.includeReferralInShare}
                     onConfirmTool={handleConfirmTool}
                     messagesEndRef={messagesEndRef}
                     layout="gemini"
@@ -2027,12 +2033,14 @@ const ChatbotPage = () => {
           </div>
           {!isEmptyChat && (
             <>
-              {!enterprise.hideGrowthBanners && (
+              {enterprise.allowProductSharing && (
                 <ShareWinBanner
                   visible={Boolean(chatShareOffer && !chatShareDialogOpen)}
                   title={chatShareOffer?.title ?? ""}
                   subtitle={chatShareOffer?.subtitle}
-                  referralCode={referralCode}
+                  referralCode={enterprise.includeReferralInShare ? referralCode : null}
+                  colleagueMode={enterprise.isEnterpriseUser}
+                  orgName={enterprise.tenant?.name ?? enterprise.displayOrgName ?? undefined}
                   onOpenShareDialog={() => setChatShareDialogOpen(true)}
                   onDismiss={() => setChatShareOffer(null)}
                 />
@@ -2073,7 +2081,9 @@ const ChatbotPage = () => {
             kind="chat"
             title={chatShareOffer?.title ?? "Built with ShadowTalk AI"}
             subtitle={chatShareOffer?.subtitle}
-            referralCode={referralCode}
+            referralCode={enterprise.includeReferralInShare ? referralCode : null}
+            colleagueMode={enterprise.isEnterpriseUser}
+            orgName={enterprise.tenant?.name ?? enterprise.displayOrgName ?? undefined}
           />
         </ChatMainPanel>
       {showImageGenerator && <ImageGenerator onClose={() => setShowImageGenerator(false)} onImageGenerated={(url) => setMessages(prev => [...prev, { id: crypto.randomUUID(), type: 'ai', content: '🎨 Generated image', timestamp: new Date(), imageUrl: url }])} />}

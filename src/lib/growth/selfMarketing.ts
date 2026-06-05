@@ -37,18 +37,42 @@ export function buildChatShareSubtitle(userPrompt: string): string | undefined {
   return p.length > 140 ? `${p.slice(0, 137)}…` : p;
 }
 
+export function buildEnterpriseInviteUrl(): string {
+  const url = new URL(
+    buildAppShareUrl({
+      path: "/auth",
+      ref: null,
+      utm: { source: "colleague", medium: "invite", campaign: "enterprise_rollout" },
+    }),
+  );
+  url.searchParams.set("enterprise", "1");
+  return url.toString();
+}
+
 /** Clipboard footer — every copy becomes a soft referral link. */
-export function formatCopyWithAttribution(body: string, ref?: string | null): string {
-  const link = buildAppShareUrl({
-    path: "/chatbot",
-    ref: ref ?? null,
-    utm: { source: "copy", medium: "clipboard", campaign: "chat_attribution" },
-  });
-  return `${body.trim()}\n\n---\n${BRAND.mnemonic} · ${BRAND.fullName}\n${link}`;
+export function formatCopyWithAttribution(
+  body: string,
+  ref?: string | null,
+  opts?: { enterprise?: boolean },
+): string {
+  const fullLink = opts?.enterprise
+    ? buildEnterpriseInviteUrl()
+    : buildAppShareUrl({
+        path: "/chatbot",
+        ref: ref ?? null,
+        utm: { source: "copy", medium: "clipboard", campaign: "chat_attribution" },
+      });
+  const footer = opts?.enterprise
+    ? `Shared via ${BRAND.fullName} — invite colleagues with your work email:\n${fullLink}`
+    : `${BRAND.mnemonic} · ${BRAND.fullName}\n${fullLink}`;
+  return `${body.trim()}\n\n---\n${footer}`;
 }
 
 /** Tweet-ready line for native share / social. */
-export function buildViralShareBlurb(title: string): string {
+export function buildViralShareBlurb(title: string, opts?: { colleague?: boolean; orgName?: string }): string {
+  if (opts?.colleague && opts.orgName) {
+    return `I used ${BRAND.fullName} at ${opts.orgName} for this — ${title.slice(0, 80)}. Try it with your work email.`;
+  }
   return `I just used ${BRAND.fullName} for this — ${title.slice(0, 90)}. ${BRAND.mnemonic}`;
 }
 
