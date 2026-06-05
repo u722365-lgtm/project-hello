@@ -1,5 +1,6 @@
 import React, { useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@/components/AuthProvider';
+import { useSessionTracking } from '@/hooks/useSessionTracking';
 import { toast } from 'sonner';
 
 const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes inactivity
