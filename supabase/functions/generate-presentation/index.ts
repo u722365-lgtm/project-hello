@@ -45,6 +45,8 @@ interface RequestBody {
   slideCount?: number;
   style?: string;
   additionalContext?: string;
+  sourceDocument?: string;
+  mode?: string;
 }
 
 interface AIResponse {
@@ -58,7 +60,7 @@ serve(async (req) => {
     const auth = await requireAuth(req, corsHeaders);
     if (!auth.authenticated) return auth.response;
 
-    const { topic, slideCount, style, additionalContext } = await req.json() as RequestBody;
+    const { topic, slideCount, style, additionalContext, sourceDocument } = await req.json() as RequestBody;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -170,7 +172,7 @@ OUTPUT FORMAT:
         model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: `Create a MANUS-QUALITY coded presentation about: ${topic}${additionalContext ? `\n\nContext: ${additionalContext}` : ''}${audienceGuidance}\n\nIMPORTANT: Return ONLY valid JSON, no markdown.` },
+          { role: "user", content: `Create a MANUS-QUALITY coded presentation about: ${topic}${additionalContext ? `\n\nContext: ${additionalContext}` : ''}${sourceDocument ? `\n\nSOURCE DOCUMENT (derive slide narrative, data, and structure from this — do not ignore):\n${sourceDocument.slice(0, 14000)}` : ''}${audienceGuidance}\n\nIMPORTANT: Return ONLY valid JSON, no markdown.` },
         ],
         temperature: 0.75,
       }),

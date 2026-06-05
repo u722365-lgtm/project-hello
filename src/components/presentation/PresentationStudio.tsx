@@ -122,7 +122,7 @@ export const PresentationStudio = ({
   const openFullEditor = () => {
     if (presentation) savePresentationToSession(presentation, style);
     onClose();
-    navigate("/presentations?load=session");
+    navigate("/forge?mode=slides&load=session");
   };
 
   if (!isOpen) return null;

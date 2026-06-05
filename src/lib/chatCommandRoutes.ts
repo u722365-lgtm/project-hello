@@ -10,7 +10,7 @@ export const CHAT_COMMAND_NAV_ROUTES: Record<string, string> = {
   "fine-tuning": "/workspace",
   "white-label": "/workspace",
   creative: "/studio",
-  document: "/presentations",
+  document: "/forge?mode=documents",
   sovereign: "/sovereign-data",
   security: "/security-audit",
   "knowledge-vault": "/knowledge",

@@ -217,7 +217,7 @@ export const PAGE_SEO: Record<string, PageMeta> = {
     title: 'AI Presentation Builder',
     description: 'Create stunning presentations with AI. Auto-generate slides, content, and designs from your prompts.',
     keywords: ['AI presentations', 'slide builder', 'deck generator', 'AI slides'],
-    canonical: 'https://www.shadowtalk-ai.com/presentations',
+    canonical: 'https://www.shadowtalk-ai.com/forge',
   },
   developers: {
     title: 'Developer Tools & API',

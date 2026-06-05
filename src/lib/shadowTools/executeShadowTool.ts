@@ -73,7 +73,7 @@ const UI_ROUTES: Partial<Record<ToolType, { path: string; label: string }>> = {
   workspace: { path: "/workspace", label: "AI Workspace" },
   ide: { path: "/ide", label: "Code IDE" },
   marketplace: { path: "/marketplace", label: "Marketplace" },
-  presentation_builder: { path: "/presentations", label: "Presentation Builder" },
+  presentation_builder: { path: "/forge?mode=slides", label: "Content Forge" },
   knowledge_vault: { path: "/knowledge", label: "Knowledge Graph" },
   privacy_score: { path: "/privacy-score", label: "Privacy Score" },
   referral: { path: "/referral", label: "Referral Program" },
