@@ -43,7 +43,7 @@ export function startAutoRecoverySync() {
       const map = loadApplied();
       for (const p of data) {
         if (!p.runtime_handler) continue;
-        map[p.id] = p.runtime_handler as RuntimeHandler;
+        map[p.id] = p.runtime_handler as unknown as RuntimeHandler;
       }
       saveApplied(map);
     } catch {
