@@ -16,6 +16,7 @@ const ACTIVITY_EVENTS = ['mousedown', 'keydown', 'scroll', 'touchstart'] as cons
  */
 export const SecurityProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, signOut } = useAuth();
+  useSessionTracking();
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const warningRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
