@@ -73,6 +73,11 @@ export async function restoreOrCreateSession(): Promise<Session | null> {
     return null;
   }
 
+  // Enterprise deployments: require work-email sign-in (no anonymous sessions)
+  if (import.meta.env.VITE_ENTERPRISE_MODE === "true") {
+    return null;
+  }
+
   const { data, error } = await supabase.auth.signInAnonymously();
   if (error) {
     console.warn("[Auth] Anonymous session unavailable:", error.message);

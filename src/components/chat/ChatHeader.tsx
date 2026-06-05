@@ -235,7 +235,8 @@ export const ChatHeader = ({
   const isMobile = useIsMobile();
   
   const userInitials = user?.email ? user.email.charAt(0).toUpperCase() : "G";
-  const showUpgrade = userPlan === "free" || userPlan === "pro";
+  const showUpgrade =
+    userPlan !== "enterprise" && (userPlan === "free" || userPlan === "pro");
 
   const toolsHandlers = {
     onOpenDeepResearch,

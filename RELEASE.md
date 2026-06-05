@@ -17,10 +17,15 @@ supabase functions deploy user-provider-keys
 - `LOVABLE_API_KEY` — required for chat AI
 - `ENTERPRISE_EMAIL_DOMAINS` — optional; defaults include `shanfoods.com`, `shan.com`, `shanfood.com`
 
+**Lovable build env (recommended for Shan deployment):**
+
+- `VITE_ENTERPRISE_MODE=true` — work-email sign-in gate, no anonymous sessions, hides upgrade/referral nags
+- `VITE_ENTERPRISE_DOMAINS=shanfoods.com,shan.com,shanfood.com` — optional extra domains
+
 **Employee onboarding:**
 
 1. Send magic-link invites to `@shanfoods.com` emails (Auth → Users → Invite)
-2. Employees land on `/chatbot` — auto **enterprise** tier, unlimited features
+2. Employees land on `/chatbot` — auto **enterprise** tier, unlimited features, first-visit tour + help button
 3. iPhone: Share → Add to Home Screen for best experience
 
 **Smoke test:**

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, lazy, Suspense, useCallback } from "react";
+import { Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/components/AuthProvider";
@@ -9,6 +10,10 @@ import { AIProvider } from "@/components/chat/ProviderSelector";
 import { ChatHeader } from "@/components/chat/ChatHeader";
 import { ChatToolbar } from "@/components/chat/ChatToolbar";
 import { EnterpriseWelcomeBanner } from "@/components/chat/EnterpriseWelcomeBanner";
+import { EnterpriseEmployeeGate } from "@/components/enterprise/EnterpriseEmployeeGate";
+import { EnterpriseOnboarding } from "@/components/enterprise/EnterpriseOnboarding";
+import { EnterpriseHelpFab } from "@/components/enterprise/EnterpriseHelpFab";
+import { useEnterpriseExperience } from "@/hooks/useEnterpriseExperience";
 import { ChatIconRail } from "@/components/chat/ChatIconRail";
 import { ChatShadowSidebar } from "@/components/chat/ChatShadowSidebar";
 import { ChatInput } from "@/components/chat/ChatInput";
@@ -174,7 +179,8 @@ function parseSseContentLines(
 const ChatbotPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user, userPlan, signOut, checkSubscription, isOffline } = useAuth();
+  const { user, userPlan, signOut, checkSubscription, isOffline, loading: authLoading } = useAuth();
+  const enterprise = useEnterpriseExperience();
   const { toast } = useToast();
   
   // Hooks
@@ -1747,6 +1753,27 @@ const ChatbotPage = () => {
     hasKeyForProvider,
   };
 
+  if (authLoading) {
+    return (
+      <div className="flex h-[100dvh] items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (enterprise.needsWorkEmailSignIn) {
+    return (
+      <div className="shadowtalk-chat-shell neural-bg flex h-[100dvh] flex-col">
+        <SEOHead meta={PAGE_SEO.chatbot} />
+        <ChatAmbientBackground />
+        <EnterpriseEmployeeGate
+          tenant={enterprise.tenant}
+          orgName={enterprise.displayOrgName ?? "Your organization"}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="shadowtalk-chat-shell neural-bg settings-scroll-smooth">
       <SEOHead meta={PAGE_SEO.chatbot} />
@@ -1899,23 +1926,27 @@ const ChatbotPage = () => {
             toolsMenuOpen={toolsMenuOpen}
             onToolsMenuOpenChange={setToolsMenuOpen}
           />
-          <ChatUpgradeNudge
-            open={nudge.shouldShowBanner && !nudgeDismissed}
-            intensity={nudge.intensity}
-            headline={nudge.headline}
-            subline={nudge.subline}
-            used={nudge.used}
-            limit={nudge.limit}
-            recommendedPlan={nudge.recommendedPlan}
-            onDismiss={() => setNudgeDismissed(true)}
-          />
-          <ReferralNudgeBanner />
-          <UpgradePrompt
-            open={upgradeOpen}
-            onOpenChange={setUpgradeOpen}
-            limitReached={nudge.shouldBlockSend}
-            requiredPlan="premium"
-          />
+          {!enterprise.hideMonetization && (
+            <ChatUpgradeNudge
+              open={nudge.shouldShowBanner && !nudgeDismissed}
+              intensity={nudge.intensity}
+              headline={nudge.headline}
+              subline={nudge.subline}
+              used={nudge.used}
+              limit={nudge.limit}
+              recommendedPlan={nudge.recommendedPlan}
+              onDismiss={() => setNudgeDismissed(true)}
+            />
+          )}
+          {!enterprise.hideGrowthBanners && <ReferralNudgeBanner />}
+          {!enterprise.hideMonetization && (
+            <UpgradePrompt
+              open={upgradeOpen}
+              onOpenChange={setUpgradeOpen}
+              limitReached={nudge.shouldBlockSend}
+              requiredPlan="premium"
+            />
+          )}
           <div className={`flex-1 overflow-hidden relative flex flex-col ${isEmptyChat ? "justify-center" : ""}`}>
             <AnimatePresence mode="wait">
               {isEmptyChat ? (
@@ -1996,14 +2027,16 @@ const ChatbotPage = () => {
           </div>
           {!isEmptyChat && (
             <>
-              <ShareWinBanner
-                visible={Boolean(chatShareOffer && !chatShareDialogOpen)}
-                title={chatShareOffer?.title ?? ""}
-                subtitle={chatShareOffer?.subtitle}
-                referralCode={referralCode}
-                onOpenShareDialog={() => setChatShareDialogOpen(true)}
-                onDismiss={() => setChatShareOffer(null)}
-              />
+              {!enterprise.hideGrowthBanners && (
+                <ShareWinBanner
+                  visible={Boolean(chatShareOffer && !chatShareDialogOpen)}
+                  title={chatShareOffer?.title ?? ""}
+                  subtitle={chatShareOffer?.subtitle}
+                  referralCode={referralCode}
+                  onOpenShareDialog={() => setChatShareDialogOpen(true)}
+                  onDismiss={() => setChatShareOffer(null)}
+                />
+              )}
               {(chatMission.mission || activeMission || isMissionExecuting) && (
                 <div className="px-4 md:px-6 pb-2 max-w-4xl mx-auto w-full">
                   <SEEMissionPanel
@@ -2183,6 +2216,12 @@ const ChatbotPage = () => {
         provider={pendingByokProvider}
         onSaved={handleByokSaved}
       />
+      {enterprise.showOnboarding && enterprise.tenant && (
+        <EnterpriseOnboarding tenant={enterprise.tenant} />
+      )}
+      {enterprise.showHelpFab && enterprise.tenant && (
+        <EnterpriseHelpFab tenant={enterprise.tenant} />
+      )}
       </motion.div>
     </div>
   );

@@ -7,7 +7,10 @@ export interface EnterpriseTenant {
   plan: PlanTier;
   welcomeTitle: string;
   welcomeSubtitle: string;
+  signInHint: string;
   quickPrompts: { label: string; prompt: string }[];
+  onboardingSteps: { title: string; body: string }[];
+  helpTips: { title: string; body: string }[];
 }
 
 /** Built-in enterprise tenants — extend via VITE_ENTERPRISE_DOMAINS */
@@ -19,12 +22,39 @@ export const ENTERPRISE_TENANTS: EnterpriseTenant[] = [
     plan: "enterprise",
     welcomeTitle: "Shan Foods AI Workspace",
     welcomeSubtitle: "Research, documents, analysis, and execution — one secure chat for every team.",
+    signInHint: "Use your official @shanfoods.com work email to unlock unlimited AI for your role.",
     quickPrompts: [
       { label: "Product brief", prompt: "Draft a product launch brief for " },
-      { label: "Market research", prompt: "Research the market for " },
+      { label: "Market research", prompt: "Research the market and competitors for " },
       { label: "SOP / process", prompt: "Write a standard operating procedure for " },
-      { label: "Email draft", prompt: "Draft a professional email about " },
+      { label: "Email draft", prompt: "Draft a professional email to stakeholders about " },
+      { label: "Meeting notes", prompt: "Turn these notes into action items and owners: " },
       { label: "Data summary", prompt: "Summarize these findings and recommend next steps: " },
+    ],
+    onboardingSteps: [
+      {
+        title: "Ask in plain language",
+        body: "Type what you need — research, emails, SOPs, summaries, or analysis. ShadowTalk plans and executes multi-step work.",
+      },
+      {
+        title: "Use quick actions",
+        body: "Tap a suggested prompt below the greeting to start faster. You can edit the text before sending.",
+      },
+      {
+        title: "Attach files & images",
+        body: "Use the + button to upload documents or photos. Ask ShadowTalk to analyze, summarize, or edit them.",
+      },
+      {
+        title: "Your history is saved",
+        body: "Every chat is saved to History (search icon). Pick up where you left off on phone or desktop.",
+      },
+    ],
+    helpTips: [
+      { title: "Deep research", body: "Say “research latest trends in …” for live web sources with citations." },
+      { title: "Documents", body: "Ask for Word-style reports, PDF exports, or presentation outlines." },
+      { title: "Voice", body: "Tap the mic for voice input where supported." },
+      { title: "Mobile", body: "On iPhone: Share → Add to Home Screen for full-screen app experience." },
+      { title: "Support", body: "For access issues, contact your IT admin with your work email address." },
     ],
   },
 ];
@@ -59,7 +89,10 @@ export function resolveEnterpriseTenant(email: string | null | undefined): Enter
       plan: "enterprise",
       welcomeTitle: "Enterprise AI Workspace",
       welcomeSubtitle: "Unlimited team chat, research, and document tools.",
+      signInHint: `Sign in with your @${domain} work email.`,
       quickPrompts: ENTERPRISE_TENANTS[0].quickPrompts,
+      onboardingSteps: ENTERPRISE_TENANTS[0].onboardingSteps,
+      helpTips: ENTERPRISE_TENANTS[0].helpTips,
     };
   }
 

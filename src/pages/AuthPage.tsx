@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,8 @@ import { AuthModeTabs, type AuthTabKey } from "@/components/auth/AuthModeTabs";
 import { AuthAnimatedField } from "@/components/auth/AuthAnimatedField";
 import { AuthShimmerButton } from "@/components/auth/AuthShimmerButton";
 import { clearExplicitSignOut, consumeReturnPath, isAnonymousUser } from "@/lib/persistentAuth";
+import { isEnterpriseDeployment } from "@/hooks/useEnterpriseExperience";
+import { ENTERPRISE_TENANTS } from "@/lib/enterpriseTenants";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
 // Rate limiter
@@ -79,7 +81,11 @@ const FloatingParticle = ({ delay, x, y }: { delay: number; x: string; y: string
 
 const AuthPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
+  const enterpriseFlow =
+    isEnterpriseDeployment() || searchParams.get("enterprise") === "1";
+  const enterpriseTenant = ENTERPRISE_TENANTS[0];
   const [isLogin, setIsLogin] = useState(true);
   const [authMode, setAuthMode] = useState<'email' | 'phone' | 'magiclink'>('email');
   const [email, setEmail] = useState("");
@@ -122,6 +128,13 @@ const AuthPage = () => {
     setOtpSent(false);
     setMagicLinkSent(false);
   };
+
+  useEffect(() => {
+    if (enterpriseFlow) {
+      setIsLogin(true);
+      setAuthMode("magiclink");
+    }
+  }, [enterpriseFlow]);
 
   useEffect(() => {
     const checkUser = async () => {
@@ -413,10 +426,18 @@ const AuthPage = () => {
                   exit="exit"
                 >
                   <h1 className="text-3xl font-bold text-foreground tracking-tight">
-                    {isLogin ? "Welcome Back" : "Create Account"}
+                    {enterpriseFlow
+                      ? enterpriseTenant.welcomeTitle
+                      : isLogin
+                        ? "Welcome Back"
+                        : "Create Account"}
                   </h1>
                   <p className="text-muted-foreground text-sm mt-1.5">
-                    {isLogin ? "Sign in to your sovereign AI workspace" : "Set up your zero-knowledge account"}
+                    {enterpriseFlow
+                      ? enterpriseTenant.signInHint
+                      : isLogin
+                        ? "Sign in to your sovereign AI workspace"
+                        : "Set up your zero-knowledge account"}
                   </p>
                 </motion.div>
               </AnimatePresence>
@@ -764,14 +785,18 @@ const AuthPage = () => {
                       <AuthAnimatedField label="Email Address" reduced={reduced}>
                         <Input
                           type="email"
-                          placeholder="you@example.com"
+                          placeholder={enterpriseFlow ? "you@shanfoods.com" : "you@example.com"}
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           className="bg-muted/20 border-border/50 h-11 focus:border-primary/50 transition-shadow focus:shadow-[0_0_0_3px_hsl(var(--primary)/0.15)]"
                           maxLength={255}
                           autoComplete="email"
                         />
-                        <p className="text-[10px] text-muted-foreground mt-1.5">We'll send a secure sign-in link to your inbox</p>
+                        <p className="text-[10px] text-muted-foreground mt-1.5">
+                          {enterpriseFlow
+                            ? "Use your official work email — we'll send a secure sign-in link"
+                            : "We'll send a secure sign-in link to your inbox"}
+                        </p>
                       </AuthAnimatedField>
                       <AuthShimmerButton type="submit" reduced={reduced} disabled={loading || isOffline}>
                         {loading ? (
