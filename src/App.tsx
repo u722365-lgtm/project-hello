@@ -29,6 +29,7 @@ export const CommandPaletteContext = createContext<{ open: () => void }>({ open:
  import Index from "./pages/Index";
  import AuthPage from "./pages/AuthPage";
  import NotFound from "./pages/NotFound";
+ import SessionsPage from "./pages/SessionsPage";
  
  // Lazy loaded pages - code splitting for better performance
  const PricingPage = lazy(() => import("./pages/PricingPage"));
