@@ -46,6 +46,7 @@ import { useGemmaOffline } from "@/hooks/useGemmaOffline";
 import { useMarketplace } from "@/hooks/useMarketplace";
 import { resolveAgentRuntime } from "@/lib/marketplace/resolveAgentConfig";
 import { prependAgentSystemPrompt } from "@/lib/marketplace/applyAgentToChat";
+import { prependChatKnowledgeContext } from "@/lib/shadowTalkProductKnowledge";
 import {
   clearActiveMarketplaceAgent,
   getActiveMarketplaceSession,
@@ -739,6 +740,11 @@ const ChatbotPage = () => {
       abortControllerRef.current = controller;
 
       let augmented = prependAgentSystemPrompt(chatMessages, marketplaceRuntimeRef.current);
+      augmented = prependChatKnowledgeContext(
+        augmented,
+        user?.email,
+        user?.user_metadata?.full_name as string | undefined,
+      );
       const lastUser =
         [...chatMessages].reverse().find((m) => m.role === "user")?.content?.trim() ?? "";
 

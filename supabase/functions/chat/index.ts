@@ -9,6 +9,8 @@ import {
   parseCustomAi,
   type CustomAiConfig,
 } from "../_shared/custom-ai-provider.ts";
+import { SHADOWTALK_SELF_KNOWLEDGE } from "../_shared/shadowTalkProductKnowledge.ts";
+import { FOUNDER_KNOWLEDGE, buildFounderSessionPrompt } from "../_shared/founderKnowledge.ts";
 
 // ============================================================================
 // SPRINT 1: CHAT INTELLIGENCE ENGINE
@@ -1430,6 +1432,8 @@ Return ONLY valid JSON in this exact format:
     // Extract user ID from auth header for server-side context fetching
     let serverSideContext = '';
     let authUserId: string | null = null;
+    let authUserEmail: string | null = null;
+    let authUserFullName: string | null = null;
     const authHeader = req.headers.get('authorization');
     const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') || '';
@@ -1445,6 +1449,9 @@ Return ONLY valid JSON in this exact format:
           
           if (authUser?.id) {
             authUserId = authUser.id;
+            authUserEmail = authUser.email ?? null;
+            const meta = authUser.user_metadata as { full_name?: string } | undefined;
+            authUserFullName = meta?.full_name ?? null;
             console.log("[CONTEXT ENGINE] Fetching adaptive context for user:", authUser.id);
             serverSideContext = await fetchAdaptiveContext(authUser.id, supabaseUrl, serviceRoleKey);
             if (serverSideContext) {
@@ -1664,7 +1671,9 @@ When a user asks you to write, create, draft, or generate any document (email, a
     const currentDateTime = new Date().toISOString();
     const currentDatePrompt = `\n\n## CURRENT DATE & TIME\nThe current date and time is: ${currentDateTime}. Use this for any time-related questions. The current year is ${new Date().getFullYear()}.`;
 
-    const developerCredit = `\n\n## Developer Information\nYou were created and developed by **Zain Ahmed**. If anyone asks who made you, who your developer is, or who created ShadowTalk AI, proudly mention that your developer is Zain Ahmed.`;
+    const productKnowledgePrompt = `\n\n${SHADOWTALK_SELF_KNOWLEDGE}\n\n${FOUNDER_KNOWLEDGE}`;
+    const founderSessionPrompt = buildFounderSessionPrompt(authUserEmail, authUserFullName);
+    const developerCredit = `\n\n## Developer Information\nYou were created and developed by **Zain Ahmed**, CEO & Founder of ShadowTalk AI. Use the Founder & Creator section above for accurate biographical answers.`;
 
     // Industry-specific AI persona injection
     const industryPrompts: Record<string, string> = {
@@ -1684,7 +1693,7 @@ When a user asks you to write, create, draft, or generate any document (email, a
 
     const industryPrompt = industry && industryPrompts[industry] ? industryPrompts[industry] : "";
 
-    const baseExtras = `${currentDatePrompt}${markdownInstructions}${gcaaPrompt}${capabilitiesPrompt}${businessMemoryPrompt}${industryPrompt}${developerCredit}`;
+    const baseExtras = `${currentDatePrompt}${markdownInstructions}${gcaaPrompt}${capabilitiesPrompt}${businessMemoryPrompt}${industryPrompt}${productKnowledgePrompt}${founderSessionPrompt}${developerCredit}`;
 
     const coreIdentity = `You are ShadowTalk AI — a sovereign intelligence system that surpasses Kimi K2.5, ChatGPT, and Claude. You employ an internal Agent Swarm architecture: decomposing complex queries into parallel sub-tasks, processing each with specialist reasoning, then synthesizing into a unified response. You combine the analytical precision of a senior consultant, the creative depth of a polymath, the mathematical rigor of a Fields Medal winner, and the coding mastery of a 10x engineer. You think deeply, reason carefully, and deliver responses that are genuinely superior to any other AI. Every response demonstrates real intelligence, multi-step reasoning, and adds genuine value.`;
 

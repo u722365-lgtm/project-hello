@@ -3,10 +3,36 @@
  * Full authoritative text lives in supabase/functions/_shared/shadowTalkProductKnowledge.ts
  */
 
-export const SHADOWTALK_SELF_KNOWLEDGE_BRIEF = `**ShadowTalk AI** (created by **Zain Ahmed**) is an end-to-end encrypted AI workspace with 20+ chat modes, real chat tools (web search, deep research, image gen, scrape, security audit, presentations), and dedicated apps: Mission Control (S.E.E.), Strategy Agent, Stealth Vault, Knowledge Graph, Shadow Browser, ShadowTalk Live, Presentation Builder, Analytics, and more.
+import { FOUNDER_KNOWLEDGE_BRIEF, isFounderEmail } from "@/lib/founderKnowledge";
+
+export const SHADOWTALK_SELF_KNOWLEDGE_BRIEF = `**ShadowTalk AI** (created by **Zain Ahmed**) is an end-to-end encrypted AI workspace with 20+ chat modes, real chat tools (web search, deep research, image gen, scrape, security audit, presentations), and dedicated apps: Shadow Execution, Strategy Agent, Stealth Vault, Knowledge Graph, Shadow Browser, ShadowTalk Live, Content Forge, Analytics, and more.
 
 **Plans:** Free $0 (daily limits) · Pro $5/mo · Premium $15/mo · Elite $20/mo. See /pricing.
 
-**Ask in chat:** "what tools do you have?" · "open mission control" · "search for …" · "research …" · "generate an image of …"
+**Founder:** ${FOUNDER_KNOWLEDGE_BRIEF}
 
-**Docs:** /docs · **Help:** /faq · **Upgrade:** /founder-access`;
+**Ask in chat:** "what tools do you have?" · "open execute" · "search for …" · "research …" · "generate an image of …"
+
+**Docs:** /docs · **Help:** /faq · **About Zain:** /about`;
+
+/** Injects product + founder knowledge for local/offline chat paths (cloud chat uses edge function). */
+export function prependChatKnowledgeContext(
+  messages: Array<{ role: string; content: string }>,
+  userEmail?: string | null,
+  userFullName?: string | null,
+): Array<{ role: string; content: string }> {
+  const isFounder =
+    isFounderEmail(userEmail) ||
+    (userFullName && /zain\s*ahmed/i.test(userFullName));
+
+  const parts = [
+    `## ShadowTalk product knowledge\n${SHADOWTALK_SELF_KNOWLEDGE_BRIEF}`,
+    `## Founder biography\n${FOUNDER_KNOWLEDGE_BRIEF}`,
+    isFounder
+      ? "The current user is Zain Ahmed, founder and CEO. Address them as the creator. Answer questions about them with full detail."
+      : "",
+  ].filter(Boolean);
+
+  const withoutSystem = messages.filter((m) => m.role !== "system");
+  return [{ role: "system", content: parts.join("\n\n") }, ...withoutSystem];
+}
