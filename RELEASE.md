@@ -2,31 +2,32 @@
 
 ## Shan Foods enterprise rollout (June 2026)
 
-**Before employees open the app — run once in Supabase:**
+**Lovable handles the backend.** ShadowTalk’s Supabase project (migrations, edge functions, auth) is managed by **Lovable Cloud** — you do **not** need to run `supabase db push` or `supabase functions deploy` locally. Push code to `main` on GitHub and Lovable syncs + deploys.
+
+### What you do in Lovable (one-time)
+
+1. **Sync from GitHub** — ensure Lovable is on `main` (latest enterprise commits)
+2. **Rebuild / publish** the app after sync
+3. **Lovable Cloud → Environment variables** (frontend):
+   - `VITE_ENTERPRISE_MODE=true` — work-email gate, no anonymous sessions
+   - `VITE_ENTERPRISE_DOMAINS=shanfoods.com,shan.com,shanfood.com` — optional extra domains
+4. **Lovable Cloud → Secrets** (backend — usually auto-set by Lovable):
+   - `LOVABLE_API_KEY` — required for chat AI (typically provided automatically)
+   - `ENTERPRISE_EMAIL_DOMAINS` — optional; defaults already include Shan domains in code
+
+### Employee onboarding
+
+1. Employees open your Lovable-published URL → `/chatbot`
+2. Sign in with `@shanfoods.com` (magic link) — or invite users via Lovable/Supabase Auth if you use invites
+3. Auto **enterprise** tier, invite-colleague sharing, onboarding tour + help
+4. iPhone: Share → Add to Home Screen for best experience
+
+### Manual Supabase CLI (only if self-hosting outside Lovable)
 
 ```bash
 supabase db push
-supabase functions deploy chat
-supabase functions deploy check-subscription
-supabase functions deploy self-heal
-supabase functions deploy user-provider-keys
+supabase functions deploy chat check-subscription self-heal
 ```
-
-**Secrets (Dashboard → Edge Functions):**
-
-- `LOVABLE_API_KEY` — required for chat AI
-- `ENTERPRISE_EMAIL_DOMAINS` — optional; defaults include `shanfoods.com`, `shan.com`, `shanfood.com`
-
-**Lovable build env (recommended for Shan deployment):**
-
-- `VITE_ENTERPRISE_MODE=true` — work-email sign-in gate, no anonymous sessions, hides upgrade/referral nags
-- `VITE_ENTERPRISE_DOMAINS=shanfoods.com,shan.com,shanfood.com` — optional extra domains
-
-**Employee onboarding:**
-
-1. Send magic-link invites to `@shanfoods.com` emails (Auth → Users → Invite)
-2. Employees land on `/chatbot` — auto **enterprise** tier, unlimited features, first-visit tour + help button
-3. iPhone: Share → Add to Home Screen for best experience
 
 **Smoke test:**
 
