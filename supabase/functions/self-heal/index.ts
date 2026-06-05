@@ -1,14 +1,10 @@
-import { createClient } from "npm:@supabase/supabase-js@2";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
-
-const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 interface ErrorPayload {
   kind: string;
@@ -24,12 +20,17 @@ interface ErrorPayload {
   user_agent?: string;
 }
 
-async function embed(text: string): Promise<number[] | null> {
+function env(name: string): string {
+  return Deno.env.get(name) ?? "";
+}
+
+async function embed(text: string, apiKey: string): Promise<number[] | null> {
+  if (!apiKey) return null;
   try {
     const res = await fetch("https://ai.gateway.lovable.dev/v1/embeddings", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -45,7 +46,11 @@ async function embed(text: string): Promise<number[] | null> {
   }
 }
 
-async function analyze(error: ErrorPayload, sourceContext: string): Promise<{
+async function analyze(
+  error: ErrorPayload,
+  sourceContext: string,
+  apiKey: string,
+): Promise<{
   diagnosis: string;
   patch_strategy: string;
   target_files: string[];
@@ -53,6 +58,17 @@ async function analyze(error: ErrorPayload, sourceContext: string): Promise<{
   runtime_handler: Record<string, unknown> | null;
   confidence: number;
 }> {
+  const fallback = {
+    diagnosis: `Captured ${error.kind} error: ${error.message.slice(0, 200)}`,
+    patch_strategy: "manual_only",
+    target_files: error.source_file ? [error.source_file] : [],
+    patch_diff: null,
+    runtime_handler: null,
+    confidence: 0.3,
+  };
+
+  if (!apiKey) return fallback;
+
   const prompt = `You are ShadowTalk's autonomous self-healing engine. Diagnose this error and propose a fix.
 
 ERROR:
@@ -77,42 +93,89 @@ Respond as STRICT JSON:
 
 Pick "runtime_recover" for transient network/API errors. Pick "source_patch" only when the bug is clearly in code shown above. Pick "manual_only" if unsure.`;
 
-  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${LOVABLE_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "google/gemini-2.5-flash",
-      messages: [{ role: "user", content: prompt }],
-      response_format: { type: "json_object" },
-    }),
-  });
+  try {
+    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [{ role: "user", content: prompt }],
+        response_format: { type: "json_object" },
+      }),
+    });
 
-  if (!res.ok) {
-    throw new Error(`AI gateway ${res.status}: ${await res.text()}`);
+    if (!res.ok) {
+      console.warn("[self-heal] AI gateway:", res.status);
+      return fallback;
+    }
+
+    const data = await res.json();
+    const content = data?.choices?.[0]?.message?.content ?? "{}";
+    const parsed = JSON.parse(content);
+    return {
+      diagnosis: String(parsed.diagnosis ?? fallback.diagnosis),
+      patch_strategy: ["runtime_recover", "source_patch", "config_change", "manual_only"].includes(parsed.patch_strategy)
+        ? parsed.patch_strategy
+        : "manual_only",
+      target_files: Array.isArray(parsed.target_files) ? parsed.target_files.slice(0, 10) : [],
+      patch_diff: parsed.patch_diff ?? null,
+      runtime_handler: parsed.runtime_handler ?? null,
+      confidence: Math.max(0, Math.min(1, Number(parsed.confidence) || 0)),
+    };
+  } catch (e) {
+    console.warn("[self-heal] analyze failed:", e instanceof Error ? e.message : e);
+    return fallback;
   }
-  const data = await res.json();
-  const content = data?.choices?.[0]?.message?.content ?? "{}";
-  const parsed = JSON.parse(content);
-  return {
-    diagnosis: String(parsed.diagnosis ?? "Unable to diagnose"),
-    patch_strategy: ["runtime_recover", "source_patch", "config_change", "manual_only"].includes(parsed.patch_strategy)
-      ? parsed.patch_strategy
-      : "manual_only",
-    target_files: Array.isArray(parsed.target_files) ? parsed.target_files.slice(0, 10) : [],
-    patch_diff: parsed.patch_diff ?? null,
-    runtime_handler: parsed.runtime_handler ?? null,
-    confidence: Math.max(0, Math.min(1, Number(parsed.confidence) || 0)),
-  };
+}
+
+async function resolveUserId(authHeader: string | null, supabaseUrl: string, anonKey: string): Promise<string | null> {
+  if (!authHeader?.startsWith("Bearer ") || !supabaseUrl || !anonKey) return null;
+  try {
+    const anon = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const token = authHeader.replace("Bearer ", "");
+    const { data, error } = await anon.auth.getUser(token);
+    if (error || !data?.user?.id) return null;
+    return data.user.id;
+  } catch {
+    return null;
+  }
 }
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const payload = (await req.json()) as ErrorPayload;
+    const supabaseUrl = env("SUPABASE_URL");
+    const serviceRole = env("SUPABASE_SERVICE_ROLE_KEY");
+    const anonKey = env("SUPABASE_ANON_KEY");
+    const lovableKey = env("LOVABLE_API_KEY");
+
+    if (!supabaseUrl || !serviceRole) {
+      return new Response(
+        JSON.stringify({
+          ok: false,
+          warning: "Self-heal storage not configured",
+          error: "Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY",
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    let payload: ErrorPayload;
+    try {
+      payload = (await req.json()) as ErrorPayload;
+    } catch {
+      return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     if (!payload?.message || !payload?.fingerprint) {
       return new Response(JSON.stringify({ error: "message and fingerprint required" }), {
         status: 400,
@@ -120,25 +183,27 @@ Deno.serve(async (req) => {
       });
     }
 
-    const admin = createClient(SUPABASE_URL, SERVICE_ROLE);
-
-    // Auth (optional)
-    let userId: string | null = null;
-    const auth = req.headers.get("Authorization");
-    if (auth?.startsWith("Bearer ")) {
-      const anon = createClient(SUPABASE_URL, Deno.env.get("SUPABASE_ANON_KEY")!, {
-        global: { headers: { Authorization: auth } },
-      });
-      const { data } = await anon.auth.getClaims(auth.replace("Bearer ", ""));
-      userId = data?.claims?.sub ?? null;
-    }
+    const admin = createClient(supabaseUrl, serviceRole);
+    const userId = await resolveUserId(req.headers.get("Authorization"), supabaseUrl, anonKey);
 
     // Upsert error by fingerprint
-    const { data: existing } = await admin
+    const { data: existing, error: existingErr } = await admin
       .from("shadowtalk_errors")
       .select("id, occurrences")
       .eq("fingerprint", payload.fingerprint)
       .maybeSingle();
+
+    if (existingErr) {
+      console.warn("[self-heal] shadowtalk_errors lookup:", existingErr.message);
+      return new Response(
+        JSON.stringify({
+          ok: false,
+          warning: "Self-heal tables may not be migrated yet",
+          error: existingErr.message,
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
 
     let errorId: string;
     if (existing) {
@@ -170,36 +235,44 @@ Deno.serve(async (req) => {
         })
         .select("id")
         .single();
-      if (insErr) throw insErr;
+      if (insErr) {
+        console.warn("[self-heal] insert error:", insErr.message);
+        return new Response(
+          JSON.stringify({ ok: false, warning: "Could not store error", error: insErr.message }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
       errorId = inserted.id;
     }
 
-    // RAG: find relevant source
+    // RAG: find relevant source (optional)
     const queryText = `${payload.message}\n${payload.source_file ?? ""}\n${payload.stack ?? ""}`;
-    const queryEmbed = await embed(queryText);
+    const queryEmbed = await embed(queryText, lovableKey);
     let sourceContext = "";
     if (queryEmbed) {
-      const { data: chunks } = await admin.rpc("match_source_chunks", {
-        query_embedding: queryEmbed,
-        match_count: 6,
-      });
-      if (chunks?.length) {
-        sourceContext = chunks
-          .map((c: { file_path: string; content: string }) => `--- ${c.file_path} ---\n${c.content}`)
-          .join("\n\n")
-          .slice(0, 12000);
+      try {
+        const { data: chunks, error: rpcErr } = await admin.rpc("match_source_chunks", {
+          query_embedding: queryEmbed,
+          match_count: 6,
+        });
+        if (!rpcErr && chunks?.length) {
+          sourceContext = chunks
+            .map((c: { file_path: string; content: string }) => `--- ${c.file_path} ---\n${c.content}`)
+            .join("\n\n")
+            .slice(0, 12000);
+        }
+      } catch {
+        /* vector index optional */
       }
     }
 
-    // AI diagnosis
-    const analysis = await analyze(payload, sourceContext);
+    const analysis = await analyze(payload, sourceContext, lovableKey);
 
-    // Store proposal
     const { data: proposal, error: propErr } = await admin
       .from("shadowtalk_fix_proposals")
       .insert({
         error_id: errorId,
-        model: "google/gemini-2.5-flash",
+        model: lovableKey ? "google/gemini-2.5-flash" : "fallback",
         diagnosis: analysis.diagnosis,
         patch_strategy: analysis.patch_strategy,
         target_files: analysis.target_files,
@@ -210,12 +283,22 @@ Deno.serve(async (req) => {
       })
       .select()
       .single();
-    if (propErr) throw propErr;
 
-    await admin
-      .from("shadowtalk_errors")
-      .update({ status: "proposed" })
-      .eq("id", errorId);
+    if (propErr) {
+      console.warn("[self-heal] proposal insert:", propErr.message);
+      await admin.from("shadowtalk_errors").update({ status: "failed" }).eq("id", errorId);
+      return new Response(
+        JSON.stringify({
+          ok: true,
+          error_id: errorId,
+          proposal: null,
+          warning: "Error logged; proposal storage failed",
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    await admin.from("shadowtalk_errors").update({ status: "proposed" }).eq("id", errorId);
 
     return new Response(JSON.stringify({ ok: true, error_id: errorId, proposal }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -223,8 +306,8 @@ Deno.serve(async (req) => {
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     console.error("[self-heal]", msg);
-    return new Response(JSON.stringify({ error: msg }), {
-      status: 500,
+    return new Response(JSON.stringify({ ok: false, error: msg }), {
+      status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }

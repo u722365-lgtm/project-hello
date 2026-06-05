@@ -98,8 +98,21 @@ export function capture(err: Omit<CapturedError, "fingerprint" | "capturedAt" | 
 }
 
 let flushing = false;
+let consecutiveFailures = 0;
+const MAX_FAILURES = 5;
+const FAILURE_COOLDOWN_MS = 5 * 60_000;
+
+function shouldSkipCaptureUrl(url: string): boolean {
+  const u = url.toLowerCase();
+  return (
+    u.includes("/functions/v1/self-heal") ||
+    u.includes("/functions/v1/index-source")
+  );
+}
+
 export async function flush(): Promise<void> {
   if (flushing) return;
+  if (consecutiveFailures >= MAX_FAILURES) return;
   flushing = true;
   try {
     const queue = readQueue();
@@ -108,22 +121,33 @@ export async function flush(): Promise<void> {
     writeQueue(queue);
 
     try {
-      const { error } = await supabase.functions.invoke("self-heal", { body: next });
-      if (error) {
-        // Re-queue on failure
+      const { data, error } = await supabase.functions.invoke("self-heal", { body: next });
+      if (error || data?.ok === false) {
+        consecutiveFailures += 1;
+        if (consecutiveFailures < MAX_FAILURES) {
+          const q = readQueue();
+          q.unshift(next);
+          writeQueue(q);
+        }
+        if (consecutiveFailures >= MAX_FAILURES) {
+          setTimeout(() => {
+            consecutiveFailures = 0;
+          }, FAILURE_COOLDOWN_MS);
+        }
+      } else {
+        consecutiveFailures = 0;
+      }
+    } catch {
+      consecutiveFailures += 1;
+      if (consecutiveFailures < MAX_FAILURES) {
         const q = readQueue();
         q.unshift(next);
         writeQueue(q);
       }
-    } catch {
-      const q = readQueue();
-      q.unshift(next);
-      writeQueue(q);
     }
   } finally {
     flushing = false;
-    // Chain next
-    if (readQueue().length > 0) {
+    if (readQueue().length > 0 && consecutiveFailures < MAX_FAILURES) {
       setTimeout(() => void flush(), 1500);
     }
   }
@@ -162,7 +186,13 @@ export function installGlobalErrorCapture() {
   console.error = (...args: unknown[]) => {
     try {
       const msg = args.map((a) => (a instanceof Error ? a.message : String(a))).join(" ").slice(0, 1000);
-      if (msg && !msg.includes("[self-heal]")) {
+      if (
+        msg &&
+        !msg.includes("[self-heal]") &&
+        !msg.includes("self-heal") &&
+        !msg.includes("shadowtalk_fix_proposals") &&
+        !msg.includes("shadowtalk_errors")
+      ) {
         capture({ kind: "console", message: msg, context: { level: "error" } });
       }
     } catch {
@@ -186,7 +216,7 @@ export function installGlobalErrorCapture() {
     const url = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
     try {
       const res = await origFetch(input as RequestInfo, init);
-      if (!res.ok && res.status >= 400) {
+      if (!res.ok && res.status >= 400 && !shouldSkipCaptureUrl(url)) {
         let body = "";
         try {
           body = (await res.clone().text()).slice(0, 500);
