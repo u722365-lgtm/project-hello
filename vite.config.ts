@@ -19,6 +19,10 @@ export default defineConfig(({ mode }) => {
     server: {
       host: "::",
       port: 8080,
+      // Prevent browsers from caching mismatched .vite/deps chunks (duplicate React crash)
+      headers: {
+        "Cache-Control": "no-store",
+      },
     },
     define: {
       'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(supabaseUrl),
@@ -33,8 +37,7 @@ export default defineConfig(({ mode }) => {
          output: {
            // Chunk splitting for better caching
            manualChunks: {
-             // Vendor chunks
-             'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+             // NOTE: Do NOT split react/react-dom — causes duplicate React instances
              'ui-vendor': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-tabs'],
              'query-vendor': ['@tanstack/react-query'],
              'chart-vendor': ['recharts'],
@@ -172,22 +175,35 @@ export default defineConfig(({ mode }) => {
     ].filter(Boolean),
     resolve: {
       // Single React instance — prevents "Cannot read properties of null (reading 'useState')"
-      dedupe: ["react", "react-dom", "react-router-dom", "framer-motion"],
+      dedupe: [
+        "react",
+        "react-dom",
+        "react/jsx-runtime",
+        "react/jsx-dev-runtime",
+        "react-router-dom",
+        "framer-motion",
+      ],
       alias: {
         "@": path.resolve(__dirname, "./src"),
         react: path.resolve(__dirname, "node_modules/react"),
         "react-dom": path.resolve(__dirname, "node_modules/react-dom"),
+        "react/jsx-runtime": path.resolve(__dirname, "node_modules/react/jsx-runtime.js"),
+        "react/jsx-dev-runtime": path.resolve(__dirname, "node_modules/react/jsx-dev-runtime.js"),
       },
     },
     optimizeDeps: {
+      // Fresh dep graph on each dev server start — avoids mixed ?v= chunk hashes on Lovable
+      force: mode === "development",
       include: [
         "react",
         "react-dom",
         "react/jsx-runtime",
+        "react/jsx-dev-runtime",
         "react-dom/client",
         "react-router-dom",
         "framer-motion",
         "@tanstack/react-query",
+        "react-helmet-async",
       ],
     },
   };
