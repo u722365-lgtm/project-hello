@@ -117,18 +117,56 @@ export async function renderShareCardPng(title: string, subtitle?: string): Prom
   ctx.fillText("ShadowTalk AI", 72, 88);
 
   ctx.fillStyle = "#f8fafc";
-  ctx.font = "bold 52px system-ui, sans-serif";
-  const titleLines = wrapCanvasText(ctx, title, 1056, 52);
-  titleLines.slice(0, 3).forEach((line, i) => {
-    ctx.fillText(line, 72, 160 + i * 62);
+  const titleFontSize = 52;
+  const titleLineHeight = 62;
+  ctx.font = `bold ${titleFontSize}px system-ui, sans-serif`;
+  const titleStartY = 160;
+  const subtitleFontSize = 32;
+  const subtitleLineHeight = 42;
+  const subtitleGapY = 28;
+  // Keep some breathing room so text doesn't collide with the watermark.
+  const contentBottomY = 520;
+
+  const titleLines = wrapCanvasText(ctx, title, 1056);
+
+  // Draw as many title lines as possible while keeping enough room for subtitle (if any).
+  let titleDrawnCount = titleLines.length;
+  if (subtitle) {
+    // Try to fit subtitle too (subtitle is capped at 3 lines by design).
+    const desiredSubtitleLines = 3;
+    titleDrawnCount = Math.min(titleDrawnCount, 6);
+    for (let c = titleDrawnCount; c >= 1; c--) {
+      const subtitleStartY = titleStartY + c * titleLineHeight + subtitleGapY;
+      const maxSubtitleLinesThatFit = Math.floor((contentBottomY - subtitleStartY) / subtitleLineHeight);
+      if (maxSubtitleLinesThatFit >= 1) {
+        // If we can fit all desired subtitle lines, stop early.
+        if (maxSubtitleLinesThatFit >= desiredSubtitleLines) {
+          titleDrawnCount = c;
+          break;
+        }
+        titleDrawnCount = c;
+        break;
+      }
+    }
+  } else {
+    titleDrawnCount = Math.min(titleDrawnCount, Math.floor((contentBottomY - titleStartY) / titleLineHeight));
+  }
+
+  titleLines.slice(0, titleDrawnCount).forEach((line, i) => {
+    ctx.fillText(line, 72, titleStartY + i * titleLineHeight);
   });
 
   if (subtitle) {
+    const subtitleStartY = titleStartY + titleDrawnCount * titleLineHeight + subtitleGapY;
     ctx.fillStyle = "#94a3b8";
-    ctx.font = "32px system-ui, sans-serif";
-    const subLines = wrapCanvasText(ctx, subtitle, 1056, 32);
-    subLines.slice(0, 2).forEach((line, i) => {
-      ctx.fillText(line, 72, 360 + i * 42);
+    ctx.font = `bold ${subtitleFontSize}px system-ui, sans-serif`;
+    const subLines = wrapCanvasText(ctx, subtitle, 1056);
+    const maxSubtitleLines = Math.min(
+      subLines.length,
+      Math.floor((contentBottomY - subtitleStartY) / subtitleLineHeight),
+    );
+    subLines.slice(0, maxSubtitleLines).forEach((line, i) => {
+      ctx.fillText(line, 72, subtitleStartY + i * subtitleLineHeight);
     });
   }
 
@@ -145,7 +183,6 @@ function wrapCanvasText(
   ctx: CanvasRenderingContext2D,
   text: string,
   maxWidth: number,
-  fontSize: number,
 ): string[] {
   const words = text.split(/\s+/);
   const lines: string[] = [];
