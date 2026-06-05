@@ -200,6 +200,7 @@ const AnimatedRoutes = () => {
           <Route path="/templates" element={<PageTransition><TemplatesPage /></PageTransition>} />
           <Route path="/downloads" element={<PageTransition><DownloadsPage /></PageTransition>} />
           <Route path="/download" element={<Navigate to="/downloads" replace />} />
+          <Route path="/sessions" element={<PageTransition><SessionsPage /></PageTransition>} />
           <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
         </Routes>
       </AnimatePresence>
