@@ -30,6 +30,8 @@ export const CommandPaletteContext = createContext<{ open: () => void }>({ open:
  import AuthPage from "./pages/AuthPage";
  import NotFound from "./pages/NotFound";
  import SessionsPage from "./pages/SessionsPage";
+ import SelfHealingPage from "./pages/SelfHealingPage";
+ import { SelfHealingProvider } from "./components/selfHealing/SelfHealingProvider";
  
  // Lazy loaded pages - code splitting for better performance
  const PricingPage = lazy(() => import("./pages/PricingPage"));
@@ -208,6 +210,7 @@ const AnimatedRoutes = () => {
           <Route path="/downloads" element={<PageTransition><DownloadsPage /></PageTransition>} />
           <Route path="/download" element={<Navigate to="/downloads" replace />} />
           <Route path="/sessions" element={<PageTransition><SessionsPage /></PageTransition>} />
+          <Route path="/self-healing" element={<PageTransition><SelfHealingPage /></PageTransition>} />
           <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
         </Routes>
       </AnimatePresence>
