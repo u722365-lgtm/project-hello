@@ -348,7 +348,6 @@ const ChatbotPage = () => {
     if (user || offlineSession) {
       loadConversations();
       checkSubscription();
-      if (isElite) requestPermission();
     }
   }, [user]);
 

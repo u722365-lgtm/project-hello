@@ -13,39 +13,56 @@ export const usePushNotifications = () => {
     }
   }, []);
 
-  const requestPermission = useCallback(async () => {
-    if (!isSupported) {
-      toast({ 
-        title: 'Not Supported', 
-        description: 'Push notifications are not supported in your browser', 
-        variant: 'destructive' 
-      });
-      return false;
-    }
-
-    try {
-      const result = await Notification.requestPermission();
-      setPermission(result);
-      
-      if (result === 'granted') {
-        toast({ 
-          title: 'Notifications Enabled', 
-          description: 'You will receive notifications when back online' 
-        });
-        return true;
-      } else {
-        toast({ 
-          title: 'Notifications Blocked', 
-          description: 'Enable notifications in browser settings', 
-          variant: 'destructive' 
-        });
+  const requestPermission = useCallback(
+    async ({ silent = false }: { silent?: boolean } = {}) => {
+      if (!isSupported) {
+        if (!silent) {
+          toast({
+            title: 'Not Supported',
+            description: 'Push notifications are not supported in your browser',
+            variant: 'destructive',
+          });
+        }
         return false;
       }
-    } catch (error) {
-      console.error('Error requesting notification permission:', error);
-      return false;
-    }
-  }, [isSupported, toast]);
+
+      try {
+        // Avoid re-prompting when already decided.
+        if (Notification.permission === "denied") {
+          setPermission("denied");
+          return false;
+        }
+        if (Notification.permission === "granted") {
+          setPermission("granted");
+          return true;
+        }
+
+        const result = await Notification.requestPermission();
+        setPermission(result);
+
+        if (silent) return result === "granted";
+
+        if (result === 'granted') {
+          toast({
+            title: 'Notifications Enabled',
+            description: 'You will receive notifications when back online',
+          });
+          return true;
+        }
+
+        toast({
+          title: 'Notifications Blocked',
+          description: 'Enable notifications in browser settings',
+          variant: 'destructive',
+        });
+        return false;
+      } catch (error) {
+        console.error('Error requesting notification permission:', error);
+        return false;
+      }
+    },
+    [isSupported, toast],
+  );
 
   const sendNotification = useCallback((title: string, options?: NotificationOptions) => {
     if (!isSupported || permission !== 'granted') return null;

@@ -32,6 +32,7 @@ export const CommandPaletteContext = createContext<{ open: () => void }>({ open:
  import SessionsPage from "./pages/SessionsPage";
  import SelfHealingPage from "./pages/SelfHealingPage";
  import { SelfHealingProvider } from "./components/selfHealing/SelfHealingProvider";
+import { NotificationPermissionRequester } from "@/components/notifications/NotificationPermissionRequester";
  
  // Lazy loaded pages - code splitting for better performance
  const PricingPage = lazy(() => import("./pages/PricingPage"));
@@ -301,6 +302,7 @@ const App = () => {
                      <GlobalScrollReveal />
                      <PersistedAuthRedirect />
                      <WorkspacePathRemember />
+                      <NotificationPermissionRequester />
                      <AnimatedRoutes />
                      <BackToHomeButton />
                    </SitePageShell>
