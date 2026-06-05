@@ -98,7 +98,7 @@ export const useSEEFromChat = () => {
         .single();
 
       const updatedMission = updatedRow
-        ? ({ ...updatedRow, steps: (updatedRow.steps as Mission["steps"]) || [] } as Mission)
+        ? ({ ...updatedRow, steps: (updatedRow.steps as unknown as Mission["steps"]) || [] } as Mission)
         : mission;
 
       if (finalResult) {

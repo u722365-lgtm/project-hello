@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   Zap, Users, Star, Gift, TrendingUp,
-  Copy, Check, Rocket, Loader2
+  Copy, Check, Rocket, Loader2, Crown, Sparkles
 } from "lucide-react";
 import { usePowerReferrers } from "@/hooks/usePowerReferrers";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";

@@ -36,15 +36,15 @@ const SiteAnimate = ({
   ...rest
 }: SiteAnimateProps) => {
   const { profile, viewport, hoverLift, reduced } = useSiteMotion();
-  const Component = motionTags[as];
+  const Component = motionTags[as] as React.ComponentType<Record<string, unknown>>;
   const motionVariants = variantForPreset(profile, preset);
   const defaultHover = interactive || preset === "card" ? hoverLift : undefined;
   const defaultTap = whileTap ?? (interactive ? tapScale(profile) : undefined);
 
   if (reduced) {
-    const Tag = as as keyof JSX.IntrinsicElements;
+    const Tag = as as unknown as React.ElementType;
     return (
-      <Tag className={className} {...(rest as HTMLAttributes<HTMLElement>)}>
+      <Tag className={className} {...(rest as unknown as Record<string, unknown>)}>
         {children as ReactNode}
       </Tag>
     );

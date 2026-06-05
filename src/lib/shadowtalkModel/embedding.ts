@@ -1,18 +1,20 @@
-let pipelinePromise: Promise<((text: string, opts?: { pooling: string; normalize: boolean }) => Promise<{ data: Float32Array | number[] }>) | null> | null = null;
+type EmbedFn = (text: string, opts?: { pooling: string; normalize: boolean }) => Promise<{ data: Float32Array | number[] }>;
 
-async function getEmbedPipeline() {
+let pipelinePromise: Promise<EmbedFn | null> | null = null;
+
+async function getEmbedPipeline(): Promise<EmbedFn | null> {
   if (!pipelinePromise) {
     pipelinePromise = (async () => {
       const { pipeline } = await import("@huggingface/transformers");
       const device = typeof navigator !== "undefined" && "gpu" in navigator ? "webgpu" : "wasm";
       try {
-        return await pipeline("feature-extraction", "mixedbread-ai/mxbai-embed-xsmall-v1", {
+        return (await pipeline("feature-extraction", "mixedbread-ai/mxbai-embed-xsmall-v1", {
           device,
-        });
+        })) as unknown as EmbedFn;
       } catch {
-        return await pipeline("feature-extraction", "mixedbread-ai/mxbai-embed-xsmall-v1", {
+        return (await pipeline("feature-extraction", "mixedbread-ai/mxbai-embed-xsmall-v1", {
           device: "wasm",
-        });
+        })) as unknown as EmbedFn;
       }
     })();
   }

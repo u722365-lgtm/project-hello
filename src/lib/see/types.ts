@@ -5,6 +5,7 @@ export type MissionToolName =
   | "data_extraction"
   | "email_composer"
   | "send_email"
+  | "send_whatsapp"
   | "read_emails"
   | "get_calendar"
   | "create_event"

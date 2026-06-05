@@ -34,7 +34,7 @@ const LandingAnimate = ({
   ...rest
 }: LandingAnimateProps) => {
   const { profile, viewport, hoverLift } = useLandingMotionContext();
-  const Component = motionTags[as];
+  const Component = motionTags[as] as React.ComponentType<Record<string, unknown>>;
   const motionVariants = variantForPreset(profile, preset);
   const defaultHover =
     interactive || preset === "card" ? hoverLift : undefined;

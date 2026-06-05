@@ -326,7 +326,7 @@ Structure your response:
           },
           useRAG: false,
           useBusinessContext: true,
-          taskType: 'reasoning',
+          // taskType: 'reasoning',
           maxTokens: depth === 'deep' ? 2500 : depth === 'quick' ? 600 : 1500,
           temperature: 0.5,
         }

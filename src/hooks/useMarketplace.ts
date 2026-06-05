@@ -10,7 +10,7 @@ export type { MarketplaceAgent, InstalledMarketplaceAgent };
 
 async function incrementDownload(agentId: string) {
   try {
-    await supabase.rpc("increment_marketplace_download", { p_agent_id: agentId });
+    await (supabase.rpc as unknown as (fn: string, args: Record<string, unknown>) => Promise<unknown>)("increment_marketplace_download", { p_agent_id: agentId });
   } catch {
     /* RPC may be unavailable until migration is applied */
   }
