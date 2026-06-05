@@ -168,7 +168,7 @@ const ChatbotPage = () => {
   const { trackChatMessage, trackConversationCreated } = useUsageTracking();
   const { getOfflineSession } = useOfflineAuth();
   const toolOrchestrator = useToolOrchestrator();
-  const { dispatchDetectionAsync, goToExecute } = useAgenticToolDispatch();
+  const { dispatchDetectionAsync, continueFromCritic, goToExecute } = useAgenticToolDispatch();
   const {
     captureChatSend,
     capture: captureAutoImprove,
@@ -1197,19 +1197,28 @@ const ChatbotPage = () => {
       return;
     }
 
-    const toolOutcome = await dispatchDetectionAsync(msgContent, {
-      openDeepResearch: (q) => {
+    const toolDispatchUi = {
+      openDeepResearch: (q?: string) => {
         setShowDeepResearch(true);
         if (q) setMessage(q);
       },
       openImageGenerator: () => setShowImageGenerator(true),
-      openAgenticRunner: (g) => goToExecute(g, "general"),
+      openAgenticRunner: (g: string) => goToExecute(g, "general"),
       openBrowser: () => setShowShadowBrowser(true),
       openShadowLive: () => setShowShadowTalkLive(true),
       openMissionControl: () => goToExecute(msgContent, "general"),
-      openShadowExecution: (g, mode) => goToExecute(g, mode),
-      setPendingMessage: (text) => setMessage(text),
-      appendAssistantMessage: (content, toolExecution) => {
+      openShadowExecution: (g: string, mode?: import("@/lib/execution/types").DeliverableType) =>
+        goToExecute(g, mode),
+      setPendingMessage: (text: string) => setMessage(text),
+      appendAssistantMessage: (
+        content: string,
+        toolExecution?: {
+          tool: string;
+          status: "complete" | "confirm" | "running";
+          params?: Record<string, string>;
+          result?: string;
+        },
+      ) => {
         setMessages((prev) => [
           ...prev,
           {
@@ -1222,7 +1231,12 @@ const ChatbotPage = () => {
         ]);
         if (user) void saveMessage(content, "assistant", conversationId).catch(() => {});
       },
-    });
+    };
+
+    const { outcome: toolOutcome, executedStep } = await dispatchDetectionAsync(
+      msgContent,
+      toolDispatchUi,
+    );
 
     if (toolOutcome.handled && toolOutcome.cognitiveLoop) {
       setCognitiveQuery(toolOutcome.query ?? msgContent);
@@ -1247,6 +1261,29 @@ const ChatbotPage = () => {
               subtitle: buildChatShareSubtitle(msgContent),
             });
             recordChatShareBannerShown();
+          }
+
+          if (executedStep && assistantReply) {
+            const criticFollowUp = await continueFromCritic(
+              msgContent,
+              executedStep,
+              assistantReply,
+              toolDispatchUi,
+            );
+            if (criticFollowUp?.outcome.handled && criticFollowUp.outcome.cognitiveLoop) {
+              setCognitiveQuery(criticFollowUp.outcome.query ?? msgContent);
+              setShowCognitiveLoop(true);
+              setIsLoading(false);
+              return;
+            }
+            const followFlags =
+              criticFollowUp && !criticFollowUp.outcome.handled
+                ? criticFollowUp.outcome.chatFlags
+                : undefined;
+            if (followFlags?.webSearch || followFlags?.deepResearch) {
+              const followReply = await runChatCompletion(chatMessages, conversationId, followFlags);
+              learnFromTurn(msgContent, followReply, conversationId);
+            }
           }
         } catch (err) {
           if (!(err instanceof DOMException && err.name === "AbortError")) {

@@ -4,6 +4,11 @@ import type { ToolDetectionResult } from "@/hooks/useToolOrchestrator";
 import { useToolOrchestrator } from "@/hooks/useToolOrchestrator";
 import { useAutonomousPlanner } from "@/hooks/useAutonomousPlanner";
 import {
+  plannerStepToDetection,
+  type PlannerPlan,
+  type PlannerStep,
+} from "@/lib/autonomy/llmToolPlanner";
+import {
   buildExecutePath,
   inferDeliverableType,
 } from "@/lib/execution/inferFromChat";
@@ -40,6 +45,12 @@ export type ToolDispatchOutcome =
       };
     };
 
+export interface AsyncDispatchResult {
+  outcome: ToolDispatchOutcome;
+  plan: PlannerPlan | null;
+  executedStep: PlannerStep | null;
+}
+
 const MIN_CONFIDENCE = 50;
 
 const EXECUTION_TOOLS = new Set(["shadow_execution", "mission_control", "strategy_agent"]);
@@ -63,7 +74,7 @@ function resolveExecuteMode(
 export function useAgenticToolDispatch() {
   const navigate = useNavigate();
   const { detectTool, executeCalculator } = useToolOrchestrator();
-  const { resolveDetection } = useAutonomousPlanner();
+  const { resolveDetection, runCritic } = useAutonomousPlanner();
 
   const goToExecute = useCallback(
     (goal: string, mode?: DeliverableType) => {
@@ -260,14 +271,52 @@ export function useAgenticToolDispatch() {
     [detectTool, dispatchFromDetection],
   );
 
-  /** LLM planner first, regex fallback; returns cognitiveLoop flag for debate panel */
+  /** LLM planner first, regex fallback; returns plan + step for critic chain */
   const dispatchDetectionAsync = useCallback(
-    async (message: string, ui: ToolDispatchUI, signal?: AbortSignal): Promise<ToolDispatchOutcome> => {
-      const { detection } = await resolveDetection(message, signal);
-      return dispatchFromDetection(detection, message, ui);
+    async (message: string, ui: ToolDispatchUI, signal?: AbortSignal): Promise<AsyncDispatchResult> => {
+      const { detection, plan } = await resolveDetection(message, signal);
+      const outcome = dispatchFromDetection(detection, message, ui);
+      const executedStep = plan?.steps?.[0] ?? null;
+      return { outcome, plan, executedStep };
     },
     [resolveDetection, dispatchFromDetection],
   );
 
-  return { dispatchDetection, dispatchDetectionAsync, dispatchFromDetection, detectTool, goToExecute };
+  /** Critic phase — if unsatisfied, dispatch the suggested next tool step */
+  const continueFromCritic = useCallback(
+    async (
+      message: string,
+      executedStep: PlannerStep,
+      outcomeSummary: string,
+      ui: ToolDispatchUI,
+      signal?: AbortSignal,
+    ): Promise<AsyncDispatchResult | null> => {
+      const verdict = await runCritic(message, executedStep, outcomeSummary, signal);
+      if (verdict.satisfied) {
+        if (verdict.summary) {
+          ui.appendAssistantMessage(`**Planner review:** ${verdict.summary}`, {
+            tool: executedStep.tool,
+            status: "complete",
+          });
+        }
+        return null;
+      }
+
+      const next = verdict.nextStep ?? null;
+      if (!next) return null;
+
+      const outcome = dispatchFromDetection(plannerStepToDetection(next, message), message, ui);
+      return { outcome, plan: null, executedStep: next };
+    },
+    [runCritic, dispatchFromDetection],
+  );
+
+  return {
+    dispatchDetection,
+    dispatchDetectionAsync,
+    continueFromCritic,
+    dispatchFromDetection,
+    detectTool,
+    goToExecute,
+  };
 }
