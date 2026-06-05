@@ -1,7 +1,7 @@
 /** Heuristic: when to invoke multi-agent cognitive loop instead of single-model chat */
 
 const COGNITIVE_SIGNALS =
-  /\b(trade-?off|pros?\s+and\s+cons|multi-?perspective|multiple\s+angles|debate|devil'?s\s+advocate|should\s+we|ethical|legal\s+implications|risk\s+vs|compare\s+approaches|board\s+decision|stakeholders?)\b/i;
+  /\b(trade-?offs?|pros?\s+and\s+cons|multi-?perspective|multiple\s+angles|debate|devil'?s\s+advocate|should\s+we|ethical|legal\s+implications|risk\s+vs|compare\s+approaches|board\s+decision|stakeholders?)\b/i;
 
 const HARD_PROBLEM =
   /\b(architecture\s+decision|build\s+vs\s+buy|hire\s+vs|pivot|fundraising|acquisition|compliance\s+strategy|go-?to-?market\s+strategy)\b/i;
