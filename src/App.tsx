@@ -285,6 +285,7 @@ const App = () => {
             <AuthProvider>
               <StealthKillSwitchProvider>
               <SecurityProvider>
+              <SelfHealingProvider>
               <ShadowMemoryProvider>
               <AutoImproveProvider>
               <ThemeTemplateProvider>
@@ -321,6 +322,7 @@ const App = () => {
               </ThemeTemplateProvider>
               </AutoImproveProvider>
               </ShadowMemoryProvider>
+              </SelfHealingProvider>
               </SecurityProvider>
               </StealthKillSwitchProvider>
             </AuthProvider>
