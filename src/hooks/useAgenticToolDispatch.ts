@@ -197,13 +197,15 @@ export function useAgenticToolDispatch() {
           return { handled: true };
 
         case "document_generator":
-        case "presentation_builder":
-          navigate(
+        case "presentation_builder": {
+          const path =
             tool === "presentation_builder"
-              ? "/presentations"
-              : "/workspace",
-          );
+              ? "/forge?mode=slides"
+              : "/forge?mode=documents";
+          const topic = params.topic || params.query || message.trim();
+          navigate(topic ? `${path}&topic=${encodeURIComponent(topic)}&auto=1` : path);
           return { handled: true };
+        }
 
         case "code_canvas":
           navigate("/ide");

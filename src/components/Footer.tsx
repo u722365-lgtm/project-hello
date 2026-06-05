@@ -29,7 +29,7 @@ const Footer = () => {
       title: "Tools",
       links: [
         { name: "Mission Control", href: "/missioncontrol" },
-        { name: "Presentations", href: "/presentations" },
+        { name: "Content Forge", href: "/forge" },
         { name: "Privacy Score", href: "/privacy-score" },
         { name: "Developers", href: "/developers" },
         { name: "Billing", href: "/billing" },

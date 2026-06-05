@@ -31,7 +31,7 @@ const pages = [
   { name: "Code IDE", href: "/ide", icon: Code, desc: "Monaco editor & live preview" },
   { name: "Marketplace", href: "/marketplace", icon: Store, desc: "Agent marketplace" },
   { name: "Mission Control", href: "/missioncontrol", icon: Target, desc: "Manage missions" },
-  { name: "Presentations", href: "/presentations", icon: Presentation, desc: "Build presentations" },
+  { name: "Content Forge", href: "/forge", icon: Presentation, desc: "Slides, documents & Beast Mode" },
   { name: "Developers", href: "/developers", icon: Terminal, desc: "Developer tools" },
   { name: "Privacy Score", href: "/privacy-score", icon: ShieldCheck, desc: "Check your privacy" },
   { name: "Docs", href: "/docs", icon: BookOpen, desc: "Documentation" },
@@ -101,7 +101,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ open, onOpenChange }) =
   const core = pages.filter(p =>
     ["/chatbot", "/ide", "/workspace", "/strategy", "/pricing", "/marketplace", "/missioncontrol"].includes(p.href),
   );
-  const tools = pages.filter(p => ["/presentations", "/developers", "/research", "/knowledge", "/strategy-lab", "/command-center", "/security-audit", "/data-insights"].includes(p.href));
+  const tools = pages.filter(p => ["/forge", "/presentations", "/developers", "/research", "/knowledge", "/strategy-lab", "/command-center", "/security-audit", "/data-insights"].includes(p.href));
   const rest = pages.filter(p => !core.includes(p) && !tools.includes(p));
 
   return (

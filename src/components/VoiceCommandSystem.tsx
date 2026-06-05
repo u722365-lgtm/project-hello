@@ -15,7 +15,7 @@ const VOICE_ROUTES = [
   { path: "/ide", names: ["ide", "code ide", "code editor", "open ide"] },
   { path: "/marketplace", names: ["marketplace", "market place", "store", "agents"] },
   { path: "/missioncontrol", names: ["mission control", "missions", "mission"] },
-  { path: "/presentations", names: ["presentations", "slides", "presentation builder"] },
+  { path: "/forge", names: ["content forge", "presentations", "slides", "presentation builder", "documents", "beast mode"] },
   { path: "/developers", names: ["developers", "developer tools", "dev tools"] },
   { path: "/privacy-score", names: ["privacy score", "privacy", "privacy check"] },
   { path: "/docs", names: ["docs", "documentation", "documents"] },

@@ -83,7 +83,12 @@ interface WebsitePlan {
   qualityChecklist: Record<string, boolean | string>;
 }
 
-const PresentationBuilderPage = () => {
+interface PresentationBuilderPageProps {
+  /** When true, renders inside Content Forge without duplicate Navigation shell */
+  embedded?: boolean;
+}
+
+const PresentationBuilderPage = ({ embedded = false }: PresentationBuilderPageProps) => {
   const [searchParams] = useSearchParams();
   const [topic, setTopic] = useState("");
   const [websiteUrl, setWebsiteUrl] = useState("");
@@ -732,15 +737,12 @@ const PresentationBuilderPage = () => {
     );
   };
 
-  return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-      <div className="pt-16">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="h-[calc(100vh-64px)]">
+  const tabsShell = (
+        <Tabs value={activeTab} onValueChange={setActiveTab} className={embedded ? "h-full" : "h-[calc(100vh-64px)]"}>
           <div className="border-b border-border px-4 py-2 flex items-center justify-between bg-card/50 backdrop-blur">
             <div className="flex items-center gap-3">
               <Presentation className="w-5 h-5 text-primary" />
-              <span className="font-bold text-sm">ShadowTalk Presentations</span>
+              <span className="font-bold text-sm">{embedded ? "Slide Studio" : "ShadowTalk Presentations"}</span>
               {presentation && <Badge variant="secondary" className="text-xs">{presentation.slides.length} slides</Badge>}
             </div>
             <TabsList className="h-8">
@@ -1024,7 +1026,16 @@ const PresentationBuilderPage = () => {
             )}
           </TabsContent>
         </Tabs>
-      </div>
+  );
+
+  if (embedded) {
+    return <div className="h-full bg-background">{tabsShell}</div>;
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Navigation />
+      <div className="pt-16">{tabsShell}</div>
     </div>
   );
 };

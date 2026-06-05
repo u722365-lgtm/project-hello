@@ -63,7 +63,7 @@ export const CommandPaletteContext = createContext<{ open: () => void }>({ open:
   const MarketplacePage = lazy(() => import("./pages/MarketplacePage"));
   const DevelopersPage = lazy(() => import("./pages/DevelopersPage"));
     const PrivacyScorePage = lazy(() => import("./pages/PrivacyScorePage"));
-  const PresentationBuilderPage = lazy(() => import("./pages/PresentationBuilderPage"));
+  const ContentForgePage = lazy(() => import("./pages/ContentForgePage"));
    const MissionControlPage = lazy(() => import("./pages/MissionControlPage"));
  const ExecutePage = lazy(() => import("./pages/ExecutePage"));
    const ReferralPage = lazy(() => import("./pages/ReferralPage"));
@@ -172,7 +172,8 @@ const AnimatedRoutes = () => {
           <Route path="/marketplace" element={<PageTransition><MarketplacePage /></PageTransition>} />
           <Route path="/developers" element={<PageTransition><DevelopersPage /></PageTransition>} />
           <Route path="/privacy-score" element={<PageTransition><PrivacyScorePage /></PageTransition>} />
-          <Route path="/presentations" element={<PageTransition><PresentationBuilderPage /></PageTransition>} />
+          <Route path="/forge" element={<PageTransition><ContentForgePage /></PageTransition>} />
+          <Route path="/presentations" element={<Navigate to="/forge?mode=slides" replace />} />
           <Route path="/missioncontrol" element={<PageTransition><MissionControlPage /></PageTransition>} />
           <Route path="/referral" element={<PageTransition><ReferralPage /></PageTransition>} />
           <Route path="/research" element={<PageTransition><DeepResearchPage /></PageTransition>} />
