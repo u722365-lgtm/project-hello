@@ -18,6 +18,7 @@ interface ChatEmptyStateProps {
   userDisplayName: string;
   onSelectPrompt: (text: string) => void;
   apiConnectedLabel?: string | null;
+  composerDockStyle?: React.CSSProperties;
   children: React.ReactNode;
 }
 
@@ -25,6 +26,7 @@ export function ChatEmptyState({
   userDisplayName,
   onSelectPrompt,
   apiConnectedLabel,
+  composerDockStyle,
   children,
 }: ChatEmptyStateProps) {
   const { staggerList, staggerItem, spring, reduced } = useSettingsMotion();
@@ -89,7 +91,8 @@ export function ChatEmptyState({
 
       <motion.div
         variants={staggerItem}
-        className="shadowtalk-chat-input-shell shadowtalk-chat-input-shell--empty w-full"
+        className="shadowtalk-chat-input-dock shadowtalk-chat-input-shell shadowtalk-chat-input-shell--empty w-full"
+        style={composerDockStyle}
       >
         {children}
       </motion.div>

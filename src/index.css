@@ -505,9 +505,31 @@
     @apply w-full max-w-[720px] mx-auto px-4 pb-6 pt-2;
   }
 
+  /* iOS Safari: dynamic viewport + safe areas */
+  html {
+    height: -webkit-fill-available;
+  }
+
+  body {
+    min-height: 100dvh;
+    min-height: -webkit-fill-available;
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .safe-top {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
   /* ShadowTalk branded chat workspace */
   .shadowtalk-chat-shell {
-    @apply min-h-screen relative text-foreground;
+    @apply relative text-foreground;
+    min-height: 100dvh;
+    min-height: -webkit-fill-available;
     background: hsl(var(--background));
   }
 
@@ -549,6 +571,14 @@
   .shadowtalk-chat-main {
     position: relative;
     z-index: 1;
+    height: 100dvh;
+    height: -webkit-fill-available;
+    min-height: 0;
+  }
+
+  .shadowtalk-chat-messages-scroll {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
   }
 
   .shadowtalk-chat-top-label {
@@ -580,8 +610,10 @@
   }
 
   .shadowtalk-chat-input-dock {
-    @apply w-full max-w-[720px] mx-auto px-4 pb-6 pt-2;
+    @apply w-full max-w-[720px] mx-auto px-4 pt-2;
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
     background: linear-gradient(to top, hsl(var(--background) / 0.95), transparent);
+    transition: transform 0.2s ease-out;
   }
 
   .shadowtalk-composer {

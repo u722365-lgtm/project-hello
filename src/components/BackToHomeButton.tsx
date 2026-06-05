@@ -8,13 +8,23 @@ export function BackToHomeButton({ className }: { className?: string }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isHome = useMemo(() => {
-    const path = (location.pathname || "/").replace(/\/+$/, "") || "/";
-    return path === "/home";
-  }, [location.pathname]);
+  const path = useMemo(
+    () => (location.pathname || "/").replace(/\/+$/, "") || "/",
+    [location.pathname],
+  );
+  const isHome = path === "/home";
+  const isChat = path === "/chatbot";
+
+  if (isChat) return null;
 
   return (
-    <div className={cn("fixed left-4 bottom-4 z-50", className)}>
+    <div
+      className={cn(
+        "fixed left-4 z-50 safe-bottom",
+        className,
+      )}
+      style={{ bottom: "calc(1rem + env(safe-area-inset-bottom, 0px))" }}
+    >
       <Button
         type="button"
         variant="outline"

@@ -151,7 +151,8 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
             <a 
               href={message.imageUrl} 
               download={`shadowtalk-${Date.now()}.png`}
-              className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md text-white text-[12px] font-medium px-4 py-2 rounded-full hover:bg-black/80 transition-all opacity-0 group-hover/image:opacity-100 translate-y-2 group-hover/image:translate-y-0 shadow-lg"
+              className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md text-white text-[12px] font-medium px-4 py-2 rounded-full hover:bg-black/80 transition-all opacity-100 sm:opacity-0 sm:group-hover/image:opacity-100 translate-y-0 sm:translate-y-2 sm:group-hover/image:translate-y-0 shadow-lg"
+              aria-label="Download image"
             >
               Download
             </a>

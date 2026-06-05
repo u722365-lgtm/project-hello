@@ -1,20 +1,30 @@
 import { useState, useEffect, useCallback } from "react";
-import { Download, X, Smartphone } from "lucide-react";
+import { useLocation } from "react-router-dom";
+import { Download, X, Smartphone, Share } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLandingMotionContext } from "@/components/landing/LandingMotionProvider";
+import { isIosDevice, isIosStandalone } from "@/lib/iosDevice";
 
 const PWABanner = () => {
+  const location = useLocation();
   const [showBanner, setShowBanner] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [hasInteracted, setHasInteracted] = useState(false);
+  const [iosHint, setIosHint] = useState(false);
   const { hoverLift, profile } = useLandingMotionContext();
 
   useEffect(() => {
+    if (location.pathname === "/chatbot") return;
+
     const dismissed = localStorage.getItem("pwa-banner-dismissed");
     const sessionDismissed = sessionStorage.getItem("pwa-banner-session-dismissed");
 
     if (dismissed === "true" || sessionDismissed === "true") {
+      return;
+    }
+
+    if (isIosStandalone()) {
       return;
     }
 
@@ -26,13 +36,8 @@ const PWABanner = () => {
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
 
-    const isInStandaloneMode = window.matchMedia("(display-mode: standalone)").matches;
-    if (isInStandaloneMode) {
-      return;
-    }
-
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    if (isIOS && !isInStandaloneMode) {
+    if (isIosDevice()) {
+      setIosHint(true);
       const timer = setTimeout(() => setShowBanner(true), 5000);
       return () => clearTimeout(timer);
     }
@@ -40,7 +45,7 @@ const PWABanner = () => {
     return () => {
       window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
     };
-  }, []);
+  }, [location.pathname]);
 
   useEffect(() => {
     if (showBanner && !hasInteracted) {
@@ -87,6 +92,8 @@ const PWABanner = () => {
     localStorage.setItem("pwa-banner-dismissed", "true");
   }, []);
 
+  if (location.pathname === "/chatbot") return null;
+
   return (
     <AnimatePresence>
       {showBanner && (
@@ -99,7 +106,8 @@ const PWABanner = () => {
             stiffness: profile.reduced ? 500 : 320,
             damping: 26,
           }}
-          className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-80 z-40"
+          className="fixed left-4 right-4 md:left-auto md:right-4 md:w-80 z-40 safe-bottom"
+          style={{ bottom: "max(1rem, env(safe-area-inset-bottom, 0px))" }}
         >
           <motion.div
             className="bg-gradient-card border border-border rounded-lg p-4 shadow-glow"
@@ -112,20 +120,28 @@ const PWABanner = () => {
                 animate={profile.reduced ? undefined : { y: [0, -3, 0] }}
                 transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
               >
-                <Smartphone className="h-5 w-5 text-primary" />
+                {iosHint ? (
+                  <Share className="h-5 w-5 text-primary" />
+                ) : (
+                  <Smartphone className="h-5 w-5 text-primary" />
+                )}
               </motion.div>
               <div className="flex-1 min-w-0">
                 <h3 className="font-semibold text-sm mb-1">Install Our App</h3>
                 <p className="text-xs text-muted-foreground mb-3">
-                  Get instant access, offline mode, and a native app experience
+                  {iosHint
+                    ? "Tap Share, then Add to Home Screen for full-screen chat on iPhone"
+                    : "Get instant access, offline mode, and a native app experience"}
                 </p>
                 <div className="flex space-x-2">
-                  <motion.div className="flex-1" whileHover={hoverLift} whileTap={{ scale: 0.97 }}>
-                    <Button size="sm" onClick={handleInstall} className="btn-glow w-full">
-                      <Download className="h-3 w-3 mr-1" />
-                      Install
-                    </Button>
-                  </motion.div>
+                  {!iosHint && (
+                    <motion.div className="flex-1" whileHover={hoverLift} whileTap={{ scale: 0.97 }}>
+                      <Button size="sm" onClick={handleInstall} className="btn-glow w-full">
+                        <Download className="h-3 w-3 mr-1" />
+                        Install
+                      </Button>
+                    </motion.div>
+                  )}
                   <motion.div whileTap={{ scale: 0.9 }}>
                     <Button variant="ghost" size="sm" onClick={handleClose} className="px-2" title="Dismiss for now">
                       <X className="h-3 w-3" />

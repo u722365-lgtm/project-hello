@@ -76,7 +76,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
   }, [showSuggestions]);
 
   return (
-    <div ref={scrollContainerRef} className="flex-1 overflow-y-auto custom-scrollbar scroll-smooth">
+    <div ref={scrollContainerRef} className="flex-1 overflow-y-auto custom-scrollbar scroll-smooth shadowtalk-chat-messages-scroll">
       <div
         className={`mx-auto px-4 sm:px-6 py-6 sm:py-10 ${
           isGemini ? 'max-w-[720px] space-y-6 sm:space-y-8' : 'max-w-4xl space-y-8 sm:space-y-12'

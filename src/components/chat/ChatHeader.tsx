@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { 
   Bot, ArrowLeft, LogOut, Settings, Download, Lock, Crown, Star, Zap, Menu, 
   Search, Image, Play, Eye, Wand2, Compass, FileText, Mic, AudioLines, MoreVertical,
@@ -89,20 +91,7 @@ interface ChatHeaderProps {
   onToolsMenuOpenChange?: (open: boolean) => void;
 }
 
-const ToolsHubMenu = ({
-  open,
-  onOpenChange,
-  onOpenDeepResearch,
-  onOpenGoogleIntegration,
-  onOpenAgenticRunner,
-  onOpenVisualReasoning,
-  onOpenCreativeSynthesis,
-  onOpenShadowTalkLive,
-  onOpenBrowser,
-  onOpenCanvas,
-}: {
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
+type ToolsHubHandlers = {
   onOpenDeepResearch: () => void;
   onOpenGoogleIntegration?: () => void;
   onOpenAgenticRunner: () => void;
@@ -111,66 +100,104 @@ const ToolsHubMenu = ({
   onOpenShadowTalkLive: () => void;
   onOpenBrowser: () => void;
   onOpenCanvas: (type: "document" | "code") => void;
-}) => (
-  <DropdownMenu open={open} onOpenChange={onOpenChange}>
-    <DropdownMenuTrigger asChild>
-      <Button variant="ghost" size="icon" className="sr-only" aria-hidden tabIndex={-1}>
-        <LayoutGrid className="h-5 w-5" />
-      </Button>
-    </DropdownMenuTrigger>
-    <DropdownMenuContent align="end" side="bottom" className="w-72 p-2 bg-[#1e1f20]/98 backdrop-blur-3xl border border-white/10 rounded-[24px] shadow-2xl">
-      <div className="px-3 py-3 mb-1">
-        <h3 className="text-[11px] font-bold text-muted-foreground/40 uppercase tracking-widest flex items-center gap-2">
-          <Sparkles className="h-3 w-3" /> Tools
-        </h3>
-      </div>
-      <div className="grid grid-cols-2 gap-1 mb-2">
-        <DropdownMenuItem onClick={onOpenDeepResearch} className="flex-col items-start gap-2 p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-transparent hover:border-white/10 transition-all cursor-pointer">
-          <Search className="h-4 w-4 text-blue-400" />
-          <span className="text-[12px] font-semibold">Deep Research</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={onOpenGoogleIntegration} className="flex-col items-start gap-2 p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-transparent hover:border-white/10 transition-all cursor-pointer">
-          <Mail className="h-4 w-4 text-red-400" />
-          <span className="text-[12px] font-semibold">Google Workspace</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={onOpenAgenticRunner} className="flex-col items-start gap-2 p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-transparent hover:border-white/10 transition-all cursor-pointer">
-          <Play className="h-4 w-4 text-green-400" />
-          <span className="text-[12px] font-semibold">Agentic Runner</span>
-        </DropdownMenuItem>
-      </div>
-      <DropdownMenuSeparator className="bg-white/5 my-2" />
-      <div className="space-y-1">
-        <DropdownMenuItem onClick={onOpenVisualReasoning} className="gap-3 rounded-xl py-2.5 px-3">
-          <Eye className="h-4 w-4 text-purple-400" />
-          <span className="text-[13px] font-medium">Visual Reasoning</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={onOpenCreativeSynthesis} className="gap-3 rounded-xl py-2.5 px-3">
-          <Wand2 className="h-4 w-4 text-pink-400" />
-          <span className="text-[13px] font-medium">Creative Studio</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={onOpenShadowTalkLive} className="gap-3 rounded-xl py-2.5 px-3">
-          <Mic className="h-4 w-4 text-blue-400" />
-          <span className="text-[13px] font-medium">ShadowTalk Live</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={onOpenBrowser} className="gap-3 rounded-xl py-2.5 px-3">
-          <Compass className="h-4 w-4 text-cyan-400" />
-          <span className="text-[13px] font-medium">AI Browser</span>
-        </DropdownMenuItem>
-      </div>
-      <DropdownMenuSeparator className="bg-white/5 my-2" />
-      <div className="space-y-1">
-        <DropdownMenuItem onClick={() => onOpenCanvas("document")} className="gap-3 rounded-xl py-2.5 px-3">
-          <FileText className="h-4 w-4 text-amber-400" />
-          <span className="text-[13px] font-medium">New Artifact</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onOpenCanvas("code")} className="gap-3 rounded-xl py-2.5 px-3">
-          <Zap className="h-4 w-4 text-primary" />
-          <span className="text-[13px] font-medium">Code Canvas</span>
-        </DropdownMenuItem>
-      </div>
-    </DropdownMenuContent>
-  </DropdownMenu>
+  onClose?: () => void;
+};
+
+const runTool = (fn: () => void, onClose?: () => void) => () => {
+  fn();
+  onClose?.();
+};
+
+const ToolsHubMenuContent = ({
+  onOpenDeepResearch,
+  onOpenGoogleIntegration,
+  onOpenAgenticRunner,
+  onOpenVisualReasoning,
+  onOpenCreativeSynthesis,
+  onOpenShadowTalkLive,
+  onOpenBrowser,
+  onOpenCanvas,
+  onClose,
+}: ToolsHubHandlers) => (
+  <div className="p-2">
+    <div className="px-3 py-3 mb-1">
+      <h3 className="text-[11px] font-bold text-muted-foreground/40 uppercase tracking-widest flex items-center gap-2">
+        <Sparkles className="h-3 w-3" /> Tools
+      </h3>
+    </div>
+    <div className="grid grid-cols-2 gap-2 mb-2">
+      <button type="button" onClick={runTool(onOpenDeepResearch, onClose)} className="flex flex-col items-start gap-2 p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-transparent hover:border-white/10 transition-all text-left">
+        <Search className="h-4 w-4 text-blue-400" />
+        <span className="text-[12px] font-semibold">Deep Research</span>
+      </button>
+      <button type="button" onClick={runTool(() => onOpenGoogleIntegration?.(), onClose)} className="flex flex-col items-start gap-2 p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-transparent hover:border-white/10 transition-all text-left">
+        <Mail className="h-4 w-4 text-red-400" />
+        <span className="text-[12px] font-semibold">Google Workspace</span>
+      </button>
+      <button type="button" onClick={runTool(onOpenAgenticRunner, onClose)} className="flex flex-col items-start gap-2 p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-transparent hover:border-white/10 transition-all text-left">
+        <Play className="h-4 w-4 text-green-400" />
+        <span className="text-[12px] font-semibold">Agentic Runner</span>
+      </button>
+    </div>
+    <div className="space-y-1">
+      {[
+        { icon: Eye, label: "Visual Reasoning", color: "text-purple-400", fn: onOpenVisualReasoning },
+        { icon: Wand2, label: "Creative Studio", color: "text-pink-400", fn: onOpenCreativeSynthesis },
+        { icon: Mic, label: "ShadowTalk Live", color: "text-blue-400", fn: onOpenShadowTalkLive },
+        { icon: Compass, label: "AI Browser", color: "text-cyan-400", fn: onOpenBrowser },
+        { icon: FileText, label: "New Artifact", color: "text-amber-400", fn: () => onOpenCanvas("document") },
+        { icon: Zap, label: "Code Canvas", color: "text-primary", fn: () => onOpenCanvas("code") },
+      ].map(({ icon: Icon, label, color, fn }) => (
+        <button
+          key={label}
+          type="button"
+          onClick={runTool(fn, onClose)}
+          className="flex w-full items-center gap-3 rounded-xl py-2.5 px-3 hover:bg-white/5 text-left"
+        >
+          <Icon className={`h-4 w-4 ${color}`} />
+          <span className="text-[13px] font-medium">{label}</span>
+        </button>
+      ))}
+    </div>
+  </div>
 );
+
+const ToolsHubMenu = ({
+  open,
+  onOpenChange,
+  useMobileSheet,
+  ...handlers
+}: ToolsHubHandlers & {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  useMobileSheet?: boolean;
+}) => {
+  if (useMobileSheet) {
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent side="bottom" className="rounded-t-2xl pb-[env(safe-area-inset-bottom)] max-h-[85dvh] overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle className="text-left">Tools</SheetTitle>
+          </SheetHeader>
+          <ToolsHubMenuContent {...handlers} onClose={() => onOpenChange?.(false)} />
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
+  return (
+    <DropdownMenu open={open} onOpenChange={onOpenChange}>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="sr-only" aria-hidden tabIndex={-1}>
+          <LayoutGrid className="h-5 w-5" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" side="bottom" className="w-72 p-0 bg-[#1e1f20]/98 backdrop-blur-3xl border border-white/10 rounded-[24px] shadow-2xl">
+        <ToolsHubMenuContent {...handlers} onClose={() => onOpenChange?.(false)} />
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
 
 export const ChatHeader = ({
   userPlan,
@@ -205,14 +232,26 @@ export const ChatHeader = ({
 }: ChatHeaderProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   
   const userInitials = user?.email ? user.email.charAt(0).toUpperCase() : "G";
   const showUpgrade = userPlan === "free" || userPlan === "pro";
 
+  const toolsHandlers = {
+    onOpenDeepResearch,
+    onOpenGoogleIntegration,
+    onOpenAgenticRunner,
+    onOpenVisualReasoning,
+    onOpenCreativeSynthesis,
+    onOpenShadowTalkLive,
+    onOpenBrowser,
+    onOpenCanvas,
+  };
+
   if (variant === "minimal") {
     return (
       <>
-        <div className="flex items-center justify-between px-4 py-3 md:px-8 bg-transparent relative z-20 shrink-0">
+        <div className="flex items-center justify-between px-4 py-3 md:px-8 bg-transparent relative z-20 shrink-0 safe-top">
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
@@ -248,14 +287,8 @@ export const ChatHeader = ({
         <ToolsHubMenu
           open={toolsMenuOpen}
           onOpenChange={onToolsMenuOpenChange}
-          onOpenDeepResearch={onOpenDeepResearch}
-          onOpenGoogleIntegration={onOpenGoogleIntegration}
-          onOpenAgenticRunner={onOpenAgenticRunner}
-          onOpenVisualReasoning={onOpenVisualReasoning}
-          onOpenCreativeSynthesis={onOpenCreativeSynthesis}
-          onOpenShadowTalkLive={onOpenShadowTalkLive}
-          onOpenBrowser={onOpenBrowser}
-          onOpenCanvas={onOpenCanvas}
+          useMobileSheet={isMobile}
+          {...toolsHandlers}
         />
       </>
     );

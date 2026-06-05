@@ -39,6 +39,7 @@ import { ChatMainPanel } from "@/components/chat/ChatMainPanel";
 import { SETTINGS_SPRING } from "@/lib/settingsMotion";
 import { useChatSidebarCollapse } from "@/hooks/useChatSidebarCollapse";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useIosKeyboard } from "@/hooks/useIosKeyboard";
 import { ChatMobileNavDrawer } from "@/components/chat/ChatMobileNavDrawer";
 import { useShadowMemoryContext } from "@/contexts/ShadowMemoryContext";
 import { useIntelligenceHub } from "@/hooks/useIntelligenceHub";
@@ -236,6 +237,9 @@ const ChatbotPage = () => {
   const { collapsed: sidebarCollapsed, toggle: toggleSidebar, width: sidebarWidth } =
     useChatSidebarCollapse();
   const isMobile = useIsMobile();
+  const keyboardOffset = useIosKeyboard();
+  const inputDockStyle =
+    keyboardOffset > 0 ? { paddingBottom: keyboardOffset } : undefined;
   const historyPanelLeft = isMobile ? 0 : sidebarWidth;
   const [isListening, setIsListening] = useState(false);
   const { isSpeaking, speakingMessageId, speakMessage } = useChatSpeech();
@@ -1743,11 +1747,11 @@ const ChatbotPage = () => {
   };
 
   return (
-    <div className="shadowtalk-chat-shell min-h-screen neural-bg settings-scroll-smooth">
+    <div className="shadowtalk-chat-shell neural-bg settings-scroll-smooth">
       <SEOHead meta={PAGE_SEO.chatbot} />
       <ChatAmbientBackground />
       <motion.div
-        className="shadowtalk-chat-main flex h-screen w-full relative overflow-hidden"
+        className="shadowtalk-chat-main flex w-full relative overflow-hidden"
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={SETTINGS_SPRING}
@@ -1915,9 +1919,9 @@ const ChatbotPage = () => {
               {isEmptyChat ? (
                 <motion.div
                   key="home"
-                  initial={{ opacity: 0, scale: 0.98, filter: "blur(6px)" }}
+                  initial={{ opacity: 0, scale: 0.98, filter: isMobile ? "blur(0px)" : "blur(6px)" }}
                   animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-                  exit={{ opacity: 0, scale: 0.99, filter: "blur(4px)" }}
+                  exit={{ opacity: 0, scale: 0.99, filter: isMobile ? "blur(0px)" : "blur(4px)" }}
                   transition={SETTINGS_SPRING}
                   className="flex-1 flex flex-col justify-center"
                 >
@@ -1929,6 +1933,7 @@ const ChatbotPage = () => {
                         ? `${aiConfig.preferredProvider} API connected`
                         : null
                     }
+                    composerDockStyle={inputDockStyle}
                   >
                     <ChatInput {...chatInputProps} isEmptyState />
                   </ChatEmptyState>
@@ -2016,6 +2021,7 @@ const ChatbotPage = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={SETTINGS_SPRING}
                 className="shadowtalk-chat-input-dock"
+                style={inputDockStyle}
               >
                 <div className="shadowtalk-chat-input-shell w-full">
                   <ChatInput {...chatInputProps} />
