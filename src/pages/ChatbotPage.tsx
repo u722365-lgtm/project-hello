@@ -47,6 +47,9 @@ import { useSEEFromChat } from "@/hooks/useSEEFromChat";
 import { SEEMissionPanel } from "@/components/chat/SEEMissionPanel";
 import { resolveAutonomousRoute } from "@/lib/autonomy/autonomousRouter";
 import { trackAgenticEvent } from "@/lib/agenticMetrics";
+import { upsertGoalsFromMessage, syncGoalToAiMemories } from "@/lib/autonomy/goalPersistence";
+import { selfHealedFetch } from "@/lib/selfHealing/selfHealedFetch";
+import { CognitiveLoopPanel } from "@/components/chat/CognitiveLoopPanel";
 import { useGemmaOffline } from "@/hooks/useGemmaOffline";
 import { useMarketplace } from "@/hooks/useMarketplace";
 import { resolveAgentRuntime } from "@/lib/marketplace/resolveAgentConfig";
@@ -165,7 +168,7 @@ const ChatbotPage = () => {
   const { trackChatMessage, trackConversationCreated } = useUsageTracking();
   const { getOfflineSession } = useOfflineAuth();
   const toolOrchestrator = useToolOrchestrator();
-  const { dispatchDetection, goToExecute } = useAgenticToolDispatch();
+  const { dispatchDetectionAsync, goToExecute } = useAgenticToolDispatch();
   const {
     captureChatSend,
     capture: captureAutoImprove,
@@ -236,6 +239,8 @@ const ChatbotPage = () => {
   const [toolsMenuOpen, setToolsMenuOpen] = useState(false);
   const [chatShareOffer, setChatShareOffer] = useState<{ title: string; subtitle?: string } | null>(null);
   const [chatShareDialogOpen, setChatShareDialogOpen] = useState(false);
+  const [showCognitiveLoop, setShowCognitiveLoop] = useState(false);
+  const [cognitiveQuery, setCognitiveQuery] = useState("");
   const referralCode = useUserReferralCode();
   const [guestArchivedIds, setGuestArchivedIdsState] = useState<Set<string>>(() =>
     getGuestArchivedIds(),
@@ -963,7 +968,7 @@ const ChatbotPage = () => {
           await raiseChatHttpError((end as unknown as { status?: number }).status ?? 500, (end as unknown as { body?: string }).body);
         }
       } else {
-        const resp = await fetch(chatUrl, {
+        const resp = await selfHealedFetch(chatUrl, {
           method: "POST",
           headers: getChatFetchHeaders(session?.access_token),
           signal: controller.signal,
@@ -1114,6 +1119,12 @@ const ChatbotPage = () => {
 
     void captureChatSend(msgContent, chatMode, personality, Boolean(userMessage.attachment));
 
+    if (user) {
+      for (const g of upsertGoalsFromMessage(msgContent)) {
+        void syncGoalToAiMemories(user.id, g);
+      }
+    }
+
     const execHint = detectShadowExecutionFromChat(msgContent);
     const route = resolveAutonomousRoute(msgContent, execHint, { preferSeeRouting });
 
@@ -1186,7 +1197,7 @@ const ChatbotPage = () => {
       return;
     }
 
-    const toolOutcome = dispatchDetection(msgContent, {
+    const toolOutcome = await dispatchDetectionAsync(msgContent, {
       openDeepResearch: (q) => {
         setShowDeepResearch(true);
         if (q) setMessage(q);
@@ -1213,8 +1224,15 @@ const ChatbotPage = () => {
       },
     });
 
+    if (toolOutcome.handled && toolOutcome.cognitiveLoop) {
+      setCognitiveQuery(toolOutcome.query ?? msgContent);
+      setShowCognitiveLoop(true);
+      setIsLoading(false);
+      return;
+    }
+
     if (toolOutcome.handled) {
-      const flags = (toolOutcome as unknown as { chatFlags?: { webSearch?: boolean; searchQuery?: string; deepResearch?: boolean; researchQuery?: string; decodeImage?: boolean; imageDataUrl?: string } }).chatFlags;
+      const flags = toolOutcome.chatFlags;
       if (flags?.webSearch || flags?.deepResearch) {
         try {
           const assistantReply = await runChatCompletion(
@@ -1799,6 +1817,34 @@ const ChatbotPage = () => {
         </ChatMainPanel>
       {showImageGenerator && <ImageGenerator onClose={() => setShowImageGenerator(false)} onImageGenerated={(url) => setMessages(prev => [...prev, { id: crypto.randomUUID(), type: 'ai', content: '🎨 Generated image', timestamp: new Date(), imageUrl: url }])} />}
       {showDeepResearch && <DeepResearchPanel isOpen={showDeepResearch} onClose={() => setShowDeepResearch(false)} onInsertToChat={(c) => setMessages(prev => [...prev, { id: crypto.randomUUID(), type: 'ai', content: c, timestamp: new Date() }])} />}
+      {showCognitiveLoop && (
+        <CognitiveLoopPanel
+          isOpen={showCognitiveLoop}
+          onClose={() => setShowCognitiveLoop(false)}
+          initialQuery={cognitiveQuery}
+          onResult={(result) => {
+            setMessages((prev) => [
+              ...prev,
+              {
+                id: crypto.randomUUID(),
+                type: "ai",
+                content: result,
+                timestamp: new Date(),
+                toolExecution: {
+                  tool: "cognitive_loop",
+                  status: "complete",
+                  result: "Multi-agent synthesis",
+                },
+              },
+            ]);
+            if (user && currentConversationId) {
+              void saveMessage(result, "assistant", currentConversationId).catch(() => {});
+            }
+            learnFromTurn(cognitiveQuery, result, currentConversationId ?? "");
+            setShowCognitiveLoop(false);
+          }}
+        />
+      )}
       {showOfflineTools && (
         <OfflineToolsPanel
           isOpen={showOfflineTools}

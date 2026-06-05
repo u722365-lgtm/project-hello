@@ -36,6 +36,8 @@ export const CommandPaletteContext = createContext<{ open: () => void }>({ open:
  import { SelfHealingProvider } from "./components/selfHealing/SelfHealingProvider";
 import { NotificationPermissionRequester } from "@/components/notifications/NotificationPermissionRequester";
 import { AutonomousAgentEngine } from "@/components/autonomy/AutonomousAgentEngine";
+import { MissionSchedulerEngine } from "@/components/autonomy/MissionSchedulerEngine";
+import { GoalPursuitEngine } from "@/components/autonomy/GoalPursuitEngine";
  
  // Lazy loaded pages - code splitting for better performance
  const PricingPage = lazy(() => import("./pages/PricingPage"));
@@ -315,6 +317,8 @@ const App = () => {
                       <JourneyTracker />
                       <AutoImproveEngine />
                       <AutonomousAgentEngine />
+                      <MissionSchedulerEngine />
+                      <GoalPursuitEngine />
                       <PWABanner />
                       <CookieConsent />
                       <CustomerSupportWidget />

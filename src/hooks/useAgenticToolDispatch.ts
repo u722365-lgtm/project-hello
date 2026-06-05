@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import type { ToolDetectionResult } from "@/hooks/useToolOrchestrator";
 import { useToolOrchestrator } from "@/hooks/useToolOrchestrator";
+import { useAutonomousPlanner } from "@/hooks/useAutonomousPlanner";
 import {
   buildExecutePath,
   inferDeliverableType,
@@ -26,8 +27,18 @@ export interface ToolDispatchUI {
 }
 
 export type ToolDispatchOutcome =
-  | { handled: true }
-  | { handled: false; chatFlags?: { webSearch?: boolean; searchQuery?: string; deepResearch?: boolean; researchQuery?: string; decodeImage?: boolean; imageDataUrl?: string } };
+  | { handled: true; cognitiveLoop?: boolean; query?: string }
+  | {
+      handled: false;
+      chatFlags?: {
+        webSearch?: boolean;
+        searchQuery?: string;
+        deepResearch?: boolean;
+        researchQuery?: string;
+        decodeImage?: boolean;
+        imageDataUrl?: string;
+      };
+    };
 
 const MIN_CONFIDENCE = 50;
 
@@ -52,6 +63,7 @@ function resolveExecuteMode(
 export function useAgenticToolDispatch() {
   const navigate = useNavigate();
   const { detectTool, executeCalculator } = useToolOrchestrator();
+  const { resolveDetection } = useAutonomousPlanner();
 
   const goToExecute = useCallback(
     (goal: string, mode?: DeliverableType) => {
@@ -69,7 +81,7 @@ export function useAgenticToolDispatch() {
       ui: ToolDispatchUI,
       autoRoute: boolean,
     ): ToolDispatchOutcome => {
-      const goal = params?.goal ?? params?.prompt ?? message;
+      const goal = params?.goal ?? params?.prompt ?? params?.topic ?? message;
       const mode = resolveExecuteMode(tool, message, params);
       const label =
         mode === "strategy_report"
@@ -96,9 +108,8 @@ export function useAgenticToolDispatch() {
     [goToExecute],
   );
 
-  const dispatchDetection = useCallback(
-    (message: string, ui: ToolDispatchUI): ToolDispatchOutcome => {
-      const detection = detectTool(message);
+  const dispatchFromDetection = useCallback(
+    (detection: ToolDetectionResult, message: string, ui: ToolDispatchUI): ToolDispatchOutcome => {
       if (!detection.tool || detection.confidence < MIN_CONFIDENCE) {
         return { handled: false };
       }
@@ -222,12 +233,11 @@ export function useAgenticToolDispatch() {
           return { handled: true };
 
         case "cognitive_loop":
-          goToExecute(message, "general");
-          ui.appendAssistantMessage("Opening **Shadow Execution** for multi-agent style goals.", {
-            tool: "shadow_execution",
-            status: "complete",
-          });
-          return { handled: true };
+          ui.appendAssistantMessage(
+            "This needs **multi-agent debate** — legal, technical, and business specialists will analyze it together.",
+            { tool: "cognitive_loop", status: "running", params: { query: message } },
+          );
+          return { handled: true, cognitiveLoop: true, query: message };
 
         default:
           if (!detection.autoExecute) {
@@ -240,8 +250,24 @@ export function useAgenticToolDispatch() {
           return { handled: false };
       }
     },
-    [detectTool, dispatchExecutionTool, executeCalculator, goToExecute, navigate],
+    [dispatchExecutionTool, executeCalculator, goToExecute, navigate],
   );
 
-  return { dispatchDetection, detectTool, goToExecute };
+  const dispatchDetection = useCallback(
+    (message: string, ui: ToolDispatchUI): ToolDispatchOutcome => {
+      return dispatchFromDetection(detectTool(message), message, ui);
+    },
+    [detectTool, dispatchFromDetection],
+  );
+
+  /** LLM planner first, regex fallback; returns cognitiveLoop flag for debate panel */
+  const dispatchDetectionAsync = useCallback(
+    async (message: string, ui: ToolDispatchUI, signal?: AbortSignal): Promise<ToolDispatchOutcome> => {
+      const { detection } = await resolveDetection(message, signal);
+      return dispatchFromDetection(detection, message, ui);
+    },
+    [resolveDetection, dispatchFromDetection],
+  );
+
+  return { dispatchDetection, dispatchDetectionAsync, dispatchFromDetection, detectTool, goToExecute };
 }

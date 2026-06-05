@@ -62,8 +62,14 @@ export function startAutoRecoverySync() {
 /** Check whether a given error message matches any applied auto-recovery handler */
 export function findHandlerFor(message: string): RuntimeHandler | null {
   const map = loadApplied();
+  const lower = message.toLowerCase();
   for (const h of Object.values(map)) {
-    if (h.pattern && message.includes(h.pattern)) return h;
+    if (h.pattern && lower.includes(h.pattern.toLowerCase())) return h;
+  }
+  // Generic transient network / 5xx recovery when any retry handler was approved
+  if (/\b(failed to fetch|network|502|503|504|timeout)\b/i.test(message)) {
+    const retry = Object.values(map).find((h) => h.action === "retry");
+    if (retry) return retry;
   }
   return null;
 }
@@ -80,7 +86,12 @@ export async function withSelfHeal<T>(
     const handler = findHandlerFor(msg);
     if (handler?.action === "retry") {
       await new Promise((r) => setTimeout(r, 800));
-      return fn();
+      try {
+        return await fn();
+      } catch {
+        await new Promise((r) => setTimeout(r, 1600));
+        return fn();
+      }
     }
     if (handler?.action === "fallback" && opts.fallback) {
       return opts.fallback();
