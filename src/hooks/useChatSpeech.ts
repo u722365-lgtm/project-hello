@@ -6,7 +6,7 @@ export function useChatSpeech() {
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [speakingMessageId, setSpeakingMessageId] = useState<string | null>(null);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<any>(null);
 
   const stopListening = useCallback(() => {
     recognitionRef.current?.stop();
@@ -17,8 +17,8 @@ export function useChatSpeech() {
   /** Dictation: fills the chat input from the microphone */
   const startDictation = useCallback(
     (onTranscript: (text: string) => void) => {
-      const SpeechRecognitionCtor =
-        window.SpeechRecognition || (window as unknown as { webkitSpeechRecognition?: typeof SpeechRecognition }).webkitSpeechRecognition;
+      const w = window as any;
+      const SpeechRecognitionCtor = w.SpeechRecognition || w.webkitSpeechRecognition;
 
       if (!SpeechRecognitionCtor) {
         toast({

@@ -98,7 +98,7 @@ export const GeminiLiveMode = ({ isOpen, onClose, onInsertToChat }: GeminiLiveMo
       source.connect(analyserRef.current);
       
       // Check for speech recognition support
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       if (!SpeechRecognition) {
         throw new Error("Speech recognition not supported");
       }
