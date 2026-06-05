@@ -171,9 +171,24 @@ export default defineConfig(({ mode }) => {
       })
     ].filter(Boolean),
     resolve: {
+      // Single React instance — prevents "Cannot read properties of null (reading 'useState')"
+      dedupe: ["react", "react-dom", "react-router-dom", "framer-motion"],
       alias: {
         "@": path.resolve(__dirname, "./src"),
+        react: path.resolve(__dirname, "node_modules/react"),
+        "react-dom": path.resolve(__dirname, "node_modules/react-dom"),
       },
+    },
+    optimizeDeps: {
+      include: [
+        "react",
+        "react-dom",
+        "react/jsx-runtime",
+        "react-dom/client",
+        "react-router-dom",
+        "framer-motion",
+        "@tanstack/react-query",
+      ],
     },
   };
 });

@@ -1,4 +1,4 @@
- import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect, lazy, Suspense, createContext } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -21,8 +21,10 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import BootScreen from "@/components/BootScreen";
 import { shouldSkipBootScreen } from "@/lib/skipBootScreen";
 import CommandPalette from "@/components/CommandPalette";
-import { createContext, useContext } from "react";
 import { BackToHomeButton } from "@/components/BackToHomeButton";
+import { useReferralCapture } from "./hooks/useReferralTracking";
+import PersistedAuthRedirect from "@/components/PersistedAuthRedirect";
+import WorkspacePathRemember from "@/components/WorkspacePathRemember";
 
 export const CommandPaletteContext = createContext<{ open: () => void }>({ open: () => {} });
  // Critical path pages - loaded immediately
@@ -106,9 +108,6 @@ const ShadowMemoryTracker = lazy(() => import("./components/ShadowMemoryTracker"
 const JourneyTracker = lazy(() => import("./components/JourneyTracker").then(m => ({ default: m.JourneyTracker })));
 const VoiceCommandSystem = lazy(() => import("./components/VoiceCommandSystem"));
 const OnboardingFlow = lazy(() => import("./components/OnboardingFlow"));
-import { useReferralCapture } from "./hooks/useReferralTracking";
-import PersistedAuthRedirect from "@/components/PersistedAuthRedirect";
-import WorkspacePathRemember from "@/components/WorkspacePathRemember";
 // ElevenLabs Agent ID is now configured via the backend secret ELEVENLABS_AGENT_ID
 
  // Configure React Query with production-ready settings
