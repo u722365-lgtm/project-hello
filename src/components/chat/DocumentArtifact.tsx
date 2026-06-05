@@ -7,8 +7,7 @@ import remarkGfm from 'remark-gfm';
 import { useToast } from '@/hooks/use-toast';
 import { downloadAsWordDoc } from '@/lib/kimiDocumentGeneration';
 import { DOCUMENT_PROSE_CLASS, polishProfessionalMarkdown } from '@/lib/professionalDocument';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
+import { downloadProfessionalPdf } from '@/lib/professionalPdfExport';
 
 interface DocumentArtifactProps {
   title: string;
@@ -60,7 +59,6 @@ export const DocumentArtifact: React.FC<DocumentArtifactProps> = ({ title, conte
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState(() => polishProfessionalMarkdown(content, { tone: 'professional' }));
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isExporting, setIsExporting] = useState(false);
   const [showTOC, setShowTOC] = useState(false);
   const [activeView, setActiveView] = useState<'rendered' | 'raw'>('rendered');
   const docRef = useRef<HTMLDivElement>(null);
@@ -106,40 +104,15 @@ export const DocumentArtifact: React.FC<DocumentArtifactProps> = ({ title, conte
     toast({ title: 'Downloaded as Text' });
   };
 
-  const handleDownloadPdf = async () => {
-    if (!docRef.current) return;
-    setIsExporting(true);
+  const handleDownloadPdf = () => {
     try {
-      const canvas = await html2canvas(docRef.current, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#0f0f17',
-      });
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-      
-      let heightLeft = pdfHeight;
-      let position = 0;
-      const pageHeight = pdf.internal.pageSize.getHeight();
-
-      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
-      heightLeft -= pageHeight;
-
-      while (heightLeft > 0) {
-        position -= pageHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
-        heightLeft -= pageHeight;
-      }
-
-      pdf.save(`${title.replace(/\s+/g, '_').toLowerCase()}.pdf`);
+      downloadProfessionalPdf(
+        editedContent,
+        `${title.replace(/\s+/g, '_').toLowerCase()}.pdf`,
+      );
       toast({ title: 'Downloaded as PDF' });
     } catch {
       toast({ title: 'PDF export failed', variant: 'destructive' });
-    } finally {
-      setIsExporting(false);
     }
   };
 
@@ -267,7 +240,7 @@ export const DocumentArtifact: React.FC<DocumentArtifactProps> = ({ title, conte
                   <button onClick={() => { downloadAsWordDoc(editedContent, title.replace(/\s+/g, '_').toLowerCase()); toast({ title: 'Downloaded as Word' }); }} className="w-full text-left px-3 py-2 text-xs hover:bg-muted/50 transition-colors flex items-center gap-2">
                     <FileDown className="h-3 w-3" /> Word (.doc)
                   </button>
-                  <button onClick={handleDownloadPdf} disabled={isExporting} className="w-full text-left px-3 py-2 text-xs hover:bg-muted/50 transition-colors flex items-center gap-2 rounded-b-lg">
+                  <button onClick={handleDownloadPdf} className="w-full text-left px-3 py-2 text-xs hover:bg-muted/50 transition-colors flex items-center gap-2 rounded-b-lg">
                     <FileDown className="h-3 w-3" /> PDF Document
                   </button>
                 </div>

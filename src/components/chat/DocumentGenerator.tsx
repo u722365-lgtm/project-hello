@@ -15,7 +15,6 @@ import { buildChatRequestBody , stringifyChatBody} from "@/lib/chatRequest";
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import jsPDF from "jspdf";
 import {
   KIMI_DOCUMENT_TYPES,
   KIMI_LENGTHS,
@@ -27,6 +26,7 @@ import {
   type KimiLengthType,
 } from "@/lib/kimiDocumentGeneration";
 import { DOCUMENT_PROSE_CLASS } from "@/lib/professionalDocument";
+import { downloadProfessionalPdf } from "@/lib/professionalPdfExport";
 
 export interface DocumentGeneratorProps {
   isOpen: boolean;
@@ -182,46 +182,7 @@ export const DocumentGenerator = ({
   };
 
   const downloadAsPDF = () => {
-    const pdf = new jsPDF();
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-    const margin = 25;
-    const maxWidth = pageWidth - margin * 2;
-    let y = margin;
-
-    for (const line of generatedContent.split("\n")) {
-      const trimmed = line.trim();
-      if (trimmed.startsWith("# ")) {
-        pdf.setFontSize(20);
-        pdf.setFont("helvetica", "bold");
-        for (const w of pdf.splitTextToSize(trimmed.replace(/^# /, ""), maxWidth)) {
-          if (y > pageHeight - margin) { pdf.addPage(); y = margin; }
-          pdf.text(w, margin, y);
-          y += 9;
-        }
-      } else if (trimmed.startsWith("## ")) {
-        pdf.setFontSize(16);
-        pdf.setFont("helvetica", "bold");
-        for (const w of pdf.splitTextToSize(trimmed.replace(/^## /, ""), maxWidth)) {
-          if (y > pageHeight - margin) { pdf.addPage(); y = margin; }
-          pdf.text(w, margin, y);
-          y += 7.5;
-        }
-      } else if (trimmed === "") {
-        y += 3;
-      } else {
-        pdf.setFontSize(11);
-        pdf.setFont("helvetica", "normal");
-        const clean = trimmed.replace(/\*\*(.*?)\*\*/g, "$1").replace(/\*(.*?)\*/g, "$1");
-        for (const w of pdf.splitTextToSize(clean, maxWidth)) {
-          if (y > pageHeight - margin) { pdf.addPage(); y = margin; }
-          pdf.text(w, margin, y);
-          y += 6;
-        }
-      }
-      y += 1;
-    }
-    pdf.save(`${docType}-${Date.now()}.pdf`);
+    downloadProfessionalPdf(generatedContent, `${docType}-${Date.now()}.pdf`);
     toast({ title: "PDF downloaded" });
   };
 
