@@ -6,6 +6,10 @@ vi.mock('@/hooks/use-toast', () => ({
   useToast: () => ({ toast: vi.fn() }),
 }));
 
+vi.mock('@/hooks/useUserReferralCode', () => ({
+  useUserReferralCode: () => null,
+}));
+
 describe('MessageBubble', () => {
   const baseProps = {
     message: {
