@@ -57,7 +57,7 @@ export const useE2EE = () => {
       const raw = base64ToArray(stored);
       const key = await crypto.subtle.importKey(
         "raw",
-        raw,
+        raw.buffer.slice(raw.byteOffset, raw.byteOffset + raw.byteLength) as ArrayBuffer,
         { name: "AES-GCM", length: 256 },
         false,
         ["encrypt", "decrypt"]

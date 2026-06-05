@@ -76,11 +76,11 @@ export function KnowledgeHubPanel() {
           <ScrollArea className="h-[calc(100vh-18rem)]">
             <div className="space-y-3 pr-4">
               {kbResults.map((r) => (
-                <Card key={r.id}>
+                <Card key={r.article.id}>
                   <CardHeader className="py-3">
                     <CardTitle className="text-sm flex items-center gap-2">
                       <FileText className="h-4 w-4 text-primary" />
-                      {r.title}
+                      {r.article.title}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="text-xs text-muted-foreground pb-3">

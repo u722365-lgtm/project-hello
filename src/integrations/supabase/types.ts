@@ -2547,6 +2547,170 @@ export type Database = {
         }
         Relationships: []
       }
+      shadowtalk_errors: {
+        Row: {
+          column_number: number | null
+          context: Json | null
+          created_at: string
+          fingerprint: string
+          first_seen_at: string
+          id: string
+          kind: string
+          last_seen_at: string
+          line_number: number | null
+          message: string
+          occurrences: number
+          route: string | null
+          source_file: string | null
+          stack: string | null
+          status: string
+          url: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          column_number?: number | null
+          context?: Json | null
+          created_at?: string
+          fingerprint: string
+          first_seen_at?: string
+          id?: string
+          kind: string
+          last_seen_at?: string
+          line_number?: number | null
+          message: string
+          occurrences?: number
+          route?: string | null
+          source_file?: string | null
+          stack?: string | null
+          status?: string
+          url?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          column_number?: number | null
+          context?: Json | null
+          created_at?: string
+          fingerprint?: string
+          first_seen_at?: string
+          id?: string
+          kind?: string
+          last_seen_at?: string
+          line_number?: number | null
+          message?: string
+          occurrences?: number
+          route?: string | null
+          source_file?: string | null
+          stack?: string | null
+          status?: string
+          url?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      shadowtalk_fix_proposals: {
+        Row: {
+          applied_at: string | null
+          applied_by: string | null
+          confidence: number
+          created_at: string
+          diagnosis: string
+          error_id: string
+          github_pr_url: string | null
+          id: string
+          model: string
+          patch_diff: string | null
+          patch_strategy: string
+          rolled_back_at: string | null
+          runtime_handler: Json | null
+          status: string
+          target_files: Json | null
+          updated_at: string
+        }
+        Insert: {
+          applied_at?: string | null
+          applied_by?: string | null
+          confidence?: number
+          created_at?: string
+          diagnosis: string
+          error_id: string
+          github_pr_url?: string | null
+          id?: string
+          model: string
+          patch_diff?: string | null
+          patch_strategy: string
+          rolled_back_at?: string | null
+          runtime_handler?: Json | null
+          status?: string
+          target_files?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          applied_at?: string | null
+          applied_by?: string | null
+          confidence?: number
+          created_at?: string
+          diagnosis?: string
+          error_id?: string
+          github_pr_url?: string | null
+          id?: string
+          model?: string
+          patch_diff?: string | null
+          patch_strategy?: string
+          rolled_back_at?: string | null
+          runtime_handler?: Json | null
+          status?: string
+          target_files?: Json | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shadowtalk_fix_proposals_error_id_fkey"
+            columns: ["error_id"]
+            isOneToOne: false
+            referencedRelation: "shadowtalk_errors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shadowtalk_source_chunks: {
+        Row: {
+          chunk_index: number
+          content: string
+          content_hash: string
+          embedding: string | null
+          file_path: string
+          id: string
+          indexed_at: string
+          language: string | null
+          symbols: string[] | null
+        }
+        Insert: {
+          chunk_index: number
+          content: string
+          content_hash: string
+          embedding?: string | null
+          file_path: string
+          id?: string
+          indexed_at?: string
+          language?: string | null
+          symbols?: string[] | null
+        }
+        Update: {
+          chunk_index?: number
+          content?: string
+          content_hash?: string
+          embedding?: string | null
+          file_path?: string
+          id?: string
+          indexed_at?: string
+          language?: string | null
+          symbols?: string[] | null
+        }
+        Relationships: []
+      }
       sponsor_partners: {
         Row: {
           affiliate_url: string | null
@@ -3615,6 +3779,15 @@ export type Database = {
       is_workspace_member: {
         Args: { _user_id: string; _workspace_id: string }
         Returns: boolean
+      }
+      match_source_chunks: {
+        Args: { match_count?: number; query_embedding: string }
+        Returns: {
+          content: string
+          file_path: string
+          id: string
+          similarity: number
+        }[]
       }
     }
     Enums: {
