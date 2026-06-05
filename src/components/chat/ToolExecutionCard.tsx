@@ -22,6 +22,7 @@ const TOOL_META: Record<string, { label: string; icon: React.ElementType; color:
   deep_research: { label: 'Deep Research', icon: Search, color: 'text-blue-400' },
   image_generator: { label: 'Image Generator', icon: Image, color: 'text-violet-400' },
   image_decoder: { label: 'Image Analysis', icon: Eye, color: 'text-purple-400' },
+  image_edit: { label: 'Image Editor', icon: Wand2, color: 'text-pink-400' },
   agentic_runner: { label: 'Task Runner', icon: Play, color: 'text-green-400' },
   creative_synthesis: { label: 'Creative Studio', icon: Wand2, color: 'text-pink-400' },
   shadow_browser: { label: 'Web Browser', icon: Globe, color: 'text-cyan-400' },

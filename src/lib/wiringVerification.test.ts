@@ -44,6 +44,8 @@ describe("feature wiring verification", () => {
       "continueFromCritic",
       "selfHealedFetch",
       "upsertGoalsFromMessage",
+      "callChatImageEdit",
+      "buildVisionUserMessage",
     ];
     for (const token of modals) {
       expect(chat).toContain(token);

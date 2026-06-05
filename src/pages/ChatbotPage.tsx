@@ -49,6 +49,12 @@ import { resolveAutonomousRoute } from "@/lib/autonomy/autonomousRouter";
 import { trackAgenticEvent } from "@/lib/agenticMetrics";
 import { upsertGoalsFromMessage, syncGoalToAiMemories } from "@/lib/autonomy/goalPersistence";
 import { selfHealedFetch } from "@/lib/selfHealing/selfHealedFetch";
+import { detectChatImageIntent } from "@/lib/chatImageIntent";
+import {
+  buildVisionUserMessage,
+  callChatImageAnalyze,
+  callChatImageEdit,
+} from "@/lib/chatImageApi";
 import { CognitiveLoopPanel } from "@/components/chat/CognitiveLoopPanel";
 import { useGemmaOffline } from "@/hooks/useGemmaOffline";
 import { useMarketplace } from "@/hooks/useMarketplace";
@@ -783,9 +789,14 @@ const ChatbotPage = () => {
     }
   };
 
+  type ChatCompletionMessage = {
+    role: string;
+    content: string | Array<{ type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }>;
+  };
+
   const runChatCompletion = useCallback(
     async (
-      chatMessages: Array<{ role: string; content: string }>,
+      chatMessages: ChatCompletionMessage[],
       conversationId: string,
       chatFlags?: {
         webSearch?: boolean;
@@ -804,8 +815,13 @@ const ChatbotPage = () => {
         user?.email,
         user?.user_metadata?.full_name as string | undefined,
       );
+      const lastUserMsg = [...chatMessages].reverse().find((m) => m.role === "user");
       const lastUser =
-        [...chatMessages].reverse().find((m) => m.role === "user")?.content?.trim() ?? "";
+        typeof lastUserMsg?.content === "string"
+          ? lastUserMsg.content.trim()
+          : Array.isArray(lastUserMsg?.content)
+            ? (lastUserMsg.content.find((p) => p.type === "text") as { text?: string } | undefined)?.text?.trim() ?? ""
+            : "";
 
       if (aiProvider === "shadowtalk" && sovereignModel.enabled && lastUser) {
         const learned = await sovereignModel.getLearnedSystemPrompt(lastUser);
@@ -819,9 +835,11 @@ const ChatbotPage = () => {
         content: m.content,
       }));
 
+      const hasMultimodalImage = chatMessages.some((m) => Array.isArray(m.content));
       const route = decideRoute(routerMessages, navigator.onLine);
       const useLocal =
-        route.target === "local" || (aiProvider === "shadowtalk" && isAnyLocalModelReady());
+        !hasMultimodalImage &&
+        (route.target === "local" || (aiProvider === "shadowtalk" && isAnyLocalModelReady()));
       if (useLocal) {
         if (!isAnyLocalModelReady()) {
           prewarmFastestLocalPath();
@@ -1140,6 +1158,104 @@ const ChatbotPage = () => {
       for (const g of upsertGoalsFromMessage(msgContent)) {
         void syncGoalToAiMemories(user.id, g);
       }
+    }
+
+    const imageAttachment =
+      userMessage.attachment?.type === "image" ? userMessage.attachment : null;
+
+    if (imageAttachment) {
+      const imageIntent = detectChatImageIntent(msgContent);
+
+      if (imageIntent === "edit" || imageIntent === "analyze") {
+        const statusId = crypto.randomUUID();
+        const isEdit = imageIntent === "edit";
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: statusId,
+            type: "ai",
+            content: isEdit ? "✏️ Editing your image…" : "🔍 Analyzing your image…",
+            timestamp: new Date(),
+            toolExecution: {
+              tool: isEdit ? "image_edit" : "image_decoder",
+              status: "running",
+            },
+          },
+        ]);
+
+        try {
+          const result = isEdit
+            ? await callChatImageEdit(
+                imageAttachment.data,
+                msgContent.trim() || "Enhance this image",
+              )
+            : await callChatImageAnalyze(imageAttachment.data);
+
+          const reply =
+            result.content ||
+            (isEdit ? "Here is your edited image." : "Analysis complete.");
+
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === statusId
+                ? {
+                    ...m,
+                    content: reply,
+                    imageUrl: result.imageUrl,
+                    toolExecution: {
+                      tool: isEdit ? "image_edit" : "image_decoder",
+                      status: "complete",
+                      result: isEdit ? "Edited" : "Analyzed",
+                    },
+                  }
+                : m,
+            ),
+          );
+          if (user) void saveMessage(reply, "assistant", conversationId).catch(() => {});
+          learnFromTurn(msgContent || "[image]", reply, conversationId);
+        } catch (err) {
+          const errMsg = err instanceof Error ? err.message : "Image processing failed.";
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === statusId
+                ? {
+                    ...m,
+                    content: `Could not process the image: ${errMsg}`,
+                    toolExecution: {
+                      tool: isEdit ? "image_edit" : "image_decoder",
+                      status: "error",
+                    },
+                  }
+                : m,
+            ),
+          );
+          toast({ title: "Image failed", description: errMsg, variant: "destructive" });
+        } finally {
+          setIsLoading(false);
+        }
+        return;
+      }
+
+      chatMessages[chatMessages.length - 1] = buildVisionUserMessage(
+        msgContent,
+        imageAttachment.data,
+      );
+
+      try {
+        const assistantReply = await runChatCompletion(chatMessages, conversationId);
+        if (aiProvider === "shadowtalk" && sovereignModel.enabled) {
+          void sovereignModel.learnFromTurn(msgContent, assistantReply);
+        }
+        learnFromTurn(msgContent || "[image]", assistantReply ?? "", conversationId);
+      } catch (err) {
+        if (!(err instanceof DOMException && err.name === "AbortError")) {
+          const errMsg = formatChatFetchError(err);
+          toast({ title: "Message failed", description: errMsg, variant: "destructive" });
+        }
+      } finally {
+        setIsLoading(false);
+      }
+      return;
     }
 
     const execHint = detectShadowExecutionFromChat(msgContent);
