@@ -562,7 +562,7 @@ const ChatbotPage = () => {
 
     const { error } = await supabase
       .from("conversations")
-      .update({ archived_at: archivedAt })
+      .update({ archived_at: archivedAt } as never)
       .eq("id", conversationId)
       .eq("user_id", user.id);
 
@@ -595,7 +595,7 @@ const ChatbotPage = () => {
 
     const { error } = await supabase
       .from("conversations")
-      .update({ archived_at: null })
+      .update({ archived_at: null } as never)
       .eq("id", conversationId)
       .eq("user_id", user.id);
 
@@ -914,7 +914,7 @@ const ChatbotPage = () => {
           },
         );
         if (!end.ok) {
-          await raiseChatHttpError(end.status, end.body);
+          await raiseChatHttpError((end as unknown as { status?: number }).status ?? 500, (end as unknown as { body?: string }).body);
         }
       } else {
         const resp = await fetch(chatUrl, {
@@ -1124,12 +1124,13 @@ const ChatbotPage = () => {
     });
 
     if (toolOutcome.handled) {
-      if (toolOutcome.chatFlags?.webSearch || toolOutcome.chatFlags?.deepResearch) {
+      const flags = (toolOutcome as unknown as { chatFlags?: { webSearch?: boolean; searchQuery?: string; deepResearch?: boolean; researchQuery?: string; decodeImage?: boolean; imageDataUrl?: string } }).chatFlags;
+      if (flags?.webSearch || flags?.deepResearch) {
         try {
           const assistantReply = await runChatCompletion(
             chatMessages,
             conversationId,
-            toolOutcome.chatFlags,
+            flags,
           );
           if (assistantReply && isShareWorthyReply(assistantReply) && shouldShowChatShareBanner()) {
             setChatShareOffer({

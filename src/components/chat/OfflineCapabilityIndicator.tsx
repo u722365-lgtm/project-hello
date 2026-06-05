@@ -57,7 +57,7 @@ export const OfflineCapabilityIndicator: React.FC<OfflineCapabilityIndicatorProp
     loadStage,
     activeModel,
     availableModels,
-    performanceTier,
+    capabilities,
     contextTokens,
     maxContextTokens,
     initializeSovereignEngine: loadModel,
@@ -185,7 +185,7 @@ export const OfflineCapabilityIndicator: React.FC<OfflineCapabilityIndicatorProp
               </p>
             </div>
             <Badge variant="outline" className="capitalize">
-              {performanceTier}
+              {(capabilities as { tier?: string } | undefined)?.tier ?? "standard"}
             </Badge>
           </div>
 

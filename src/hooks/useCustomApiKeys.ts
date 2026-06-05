@@ -67,7 +67,7 @@ export function useCustomApiKeys() {
       .maybeSingle();
 
     if (data?.setting_value && typeof data.setting_value === "object") {
-      setAiConfig({ ...DEFAULT_AI_CONFIG, ...(data.setting_value as AiConfig) });
+      setAiConfig({ ...DEFAULT_AI_CONFIG, ...(data.setting_value as unknown as AiConfig) });
     }
   }, [user]);
 

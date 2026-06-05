@@ -56,10 +56,10 @@ export async function probeWebGPU(): Promise<WebGPUProbe> {
     }
 
     try {
-      const gpu = navigator.gpu as GPU | undefined;
-      const adapter = await gpu?.requestAdapter({
+      const gpu = (navigator as Navigator & { gpu?: { requestAdapter: (opts: { powerPreference: string }) => Promise<Record<string, unknown>> } }).gpu;
+      const adapter = (await gpu?.requestAdapter({
         powerPreference: "high-performance",
-      });
+      })) as { limits?: { maxBufferSize?: number }; requestAdapterInfo?: () => Promise<{ description?: string; device?: string; vendor?: string }> } | undefined;
       if (!adapter) {
         probeCache = empty;
         return empty;
@@ -139,8 +139,8 @@ export async function configureTransformersEnv(): Promise<void> {
 
     const cores = navigator.hardwareConcurrency ?? 4;
     const wasmThreads = cores > 1 ? Math.min(4, cores) : 1;
-    env.backends.onnx.wasm = {
-      ...env.backends.onnx.wasm,
+    (env.backends.onnx as unknown as { wasm: Record<string, unknown> }).wasm = {
+      ...(env.backends.onnx as unknown as { wasm: Record<string, unknown> }).wasm,
       numThreads: wasmThreads,
     };
   } catch (e) {

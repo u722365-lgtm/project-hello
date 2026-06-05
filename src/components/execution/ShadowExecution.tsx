@@ -148,7 +148,7 @@ export function ShadowExecution({
 
   const parsedActive = parseMissionResult(activeMission?.result);
   const strategyResult = parsedActive.strategy;
-  const strategyIdea = (activeMission?.business_idea as BusinessIdea | undefined) ?? businessIdea;
+  const strategyIdea = (activeMission?.business_idea as unknown as BusinessIdea | undefined) ?? businessIdea;
 
   const filteredTemplates =
     templateFilter === "all"
@@ -159,7 +159,7 @@ export function ShadowExecution({
     setActiveMission(m);
     setActiveTab("deliverable");
     if (m.deliverable_type === "strategy_report" && m.business_idea) {
-      setBusinessIdea(m.business_idea as BusinessIdea);
+      setBusinessIdea(m.business_idea as unknown as BusinessIdea);
       setDeliverableType("strategy_report");
     }
   };

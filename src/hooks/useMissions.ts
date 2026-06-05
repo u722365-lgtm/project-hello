@@ -104,15 +104,18 @@ export const useMissions = () => {
       if (error) throw error;
       
       // Cast steps from Json to MissionStep[]
-      const typedMissions = (data || []).map(m => ({
-        ...m,
-        steps: (m.steps as unknown as MissionStep[]) || [],
-        result: m.result as Record<string, unknown> | undefined,
-        deliverable_type: (m.deliverable_type as MissionDeliverableType) || "general",
-        business_idea: m.business_idea as Record<string, unknown> | null | undefined,
-        used_fallback: Boolean(m.used_fallback),
-        deliverable_markdown: m.deliverable_markdown ?? null,
-      })) as Mission[];
+      const typedMissions = (data || []).map((row) => {
+        const m = row as Record<string, unknown>;
+        return {
+          ...row,
+          steps: (m.steps as unknown as MissionStep[]) || [],
+          result: m.result as Record<string, unknown> | undefined,
+          deliverable_type: ((m.deliverable_type as MissionDeliverableType) || "general"),
+          business_idea: m.business_idea as Record<string, unknown> | null | undefined,
+          used_fallback: Boolean(m.used_fallback),
+          deliverable_markdown: (m.deliverable_markdown as string | null) ?? null,
+        };
+      }) as Mission[];
       
       setMissions(typedMissions);
     } catch (error) {
@@ -183,13 +186,14 @@ export const useMissions = () => {
 
       if (error) throw error;
 
+      const d = data as Record<string, unknown>;
       const newMission = {
         ...data,
-        steps: (data.steps as unknown as MissionStep[]) || [],
-        result: data.result as Record<string, unknown> | undefined,
-        deliverable_type: (data.deliverable_type as MissionDeliverableType) || "general",
-        business_idea: data.business_idea as Record<string, unknown> | null | undefined,
-        used_fallback: Boolean(data.used_fallback),
+        steps: (d.steps as unknown as MissionStep[]) || [],
+        result: d.result as Record<string, unknown> | undefined,
+        deliverable_type: ((d.deliverable_type as MissionDeliverableType) || "general"),
+        business_idea: d.business_idea as Record<string, unknown> | null | undefined,
+        used_fallback: Boolean(d.used_fallback),
       } as Mission;
       
       setMissions(prev => [newMission, ...prev]);

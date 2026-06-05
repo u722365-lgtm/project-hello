@@ -37,6 +37,10 @@ const BYOK_LABELS: Record<Exclude<AIProvider, "lovable">, { title: string; hint:
     title: "Kimi / Moonshot API key",
     hint: "Use your Moonshot console key for Kimi-class models.",
   },
+  shadowtalk: {
+    title: "ShadowTalk key",
+    hint: "Built-in ShadowTalk routing. No external key needed.",
+  },
 };
 
 type Props = {

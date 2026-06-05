@@ -159,7 +159,7 @@ export const useMissionExecutor = () => {
       const results = resultsRef.current;
       const steps = stepsRef.current;
       const dtype = (mission.deliverable_type || "general") as DeliverableType;
-      const businessIdea = mission.business_idea as BusinessIdea | undefined;
+      const businessIdea = mission.business_idea as unknown as BusinessIdea | undefined;
 
       const deliverable = await synthesizeDeliverable({
         deliverableType: dtype,

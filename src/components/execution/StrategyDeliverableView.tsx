@@ -53,11 +53,15 @@ export function StrategyDeliverableView({ businessIdea, result }: StrategyDelive
         />
       </TabsContent>
       <TabsContent value="swot">
-        <SWOTAnalysis swot={result.swot} />
+        <SWOTAnalysis swot={result.swot} businessName={businessIdea.name} />
       </TabsContent>
       <TabsContent value="charts">
         <div ref={chartsRef}>
-          <StrategyCharts result={result} />
+          <StrategyCharts
+            financialProjections={result.financialProjections}
+            competitors={result.research.competitors}
+            costs={result.research.costs}
+          />
         </div>
       </TabsContent>
       <TabsContent value="export">

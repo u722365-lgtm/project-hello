@@ -6,7 +6,7 @@ type LandingSectionHeaderProps = {
   badge?: string;
   badgeIcon?: LucideIcon;
   title: React.ReactNode;
-  subtitle?: string;
+  subtitle?: React.ReactNode;
   className?: string;
 };
 

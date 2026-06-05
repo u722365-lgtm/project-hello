@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { stringifyChatBody } from "@/lib/chatRequest";
+import { consumeChatSSE } from "@/lib/agenticChatStream";
 
 interface TaskStep {
   id: string;

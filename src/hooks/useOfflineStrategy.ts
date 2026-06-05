@@ -81,7 +81,7 @@ WEAKNESSES:
 
     const response = await generateResponse(
       [{ role: 'user', content: prompt }],
-      { maxTokens: 800, temperature: 0.6, taskType: 'reasoning' }
+      { maxTokens: 800, temperature: 0.6 }
     );
 
     // Parse response
@@ -156,7 +156,7 @@ Be realistic with numbers.`;
 
     const response = await generateResponse(
       [{ role: 'user', content: prompt }],
-      { maxTokens: 600, temperature: 0.5, taskType: 'reasoning' }
+      { maxTokens: 600, temperature: 0.5 }
     );
 
     // Extract numbers and lists

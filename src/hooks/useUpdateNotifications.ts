@@ -49,8 +49,14 @@ export function useUpdateNotifications() {
   const initialized = useRef(false);
 
   const handleGuestUpdates = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("app_updates")
+    const { data, error } = await (supabase
+      .from("app_updates" as never) as unknown as {
+        select: (cols: string) => {
+          order: (col: string, opts: { ascending: boolean }) => {
+            limit: (n: number) => Promise<{ data: AppUpdateRow[] | null; error: unknown }>;
+          };
+        };
+      })
       .select("id, source, version, title, message, action_url, published_at")
       .order("published_at", { ascending: false })
       .limit(1);

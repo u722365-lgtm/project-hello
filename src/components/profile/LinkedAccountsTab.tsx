@@ -142,12 +142,15 @@ export const LinkedAccountsTab = ({ userId, email }: LinkedAccountsTabProps) => 
       await upsertVaultConnection(provider);
       toast({ title: "Connected", description: `${provider} is now linked to ShadowTalk.` });
       await refresh();
-    } else if (!result.error.includes("closed")) {
-      toast({
-        title: "Connection failed",
-        description: result.error,
-        variant: "destructive",
-      });
+    } else {
+      const err = (result as { ok: false; error: string }).error;
+      if (!err.includes("closed")) {
+        toast({
+          title: "Connection failed",
+          description: err,
+          variant: "destructive",
+        });
+      }
     }
     setConnecting(null);
   };

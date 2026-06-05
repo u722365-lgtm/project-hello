@@ -5,8 +5,8 @@ import { useToolOrchestrator } from "@/hooks/useToolOrchestrator";
 import {
   buildExecutePath,
   inferDeliverableType,
-  type DeliverableType,
 } from "@/lib/execution/inferFromChat";
+import type { DeliverableType } from "@/lib/execution/types";
 
 export interface ToolDispatchUI {
   openDeepResearch: (query?: string) => void;

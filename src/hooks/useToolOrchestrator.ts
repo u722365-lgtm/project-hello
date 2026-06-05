@@ -48,6 +48,7 @@ export type ToolType =
   | 'marketplace'
   | 'privacy_score'
   | 'presentation_builder'
+  | 'ide'
   | 'music_generator';
 
 export interface ToolDetectionResult {

@@ -86,7 +86,7 @@ class SmolLMEngine {
         },
       });
 
-      this.engine = engine as typeof this.engine;
+      this.engine = engine as unknown as typeof this.engine;
       report({ progress: 1, text: "Offline AI ready" });
       localStorage.setItem("shadowtalk_tier_a_model", TIER_A_MODEL_ID);
       return true;

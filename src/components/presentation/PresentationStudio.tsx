@@ -98,7 +98,7 @@ export const PresentationStudio = ({
       setPhase("done");
       savePresentationToSession(deck, style);
       const meta = data.metadata as Record<string, unknown> | undefined;
-      if (meta?.themeAutoSwitched && meta.effectiveStyle && meta.effectiveStyle in THEMES) {
+      if (meta?.themeAutoSwitched && typeof meta.effectiveStyle === "string" && meta.effectiveStyle in THEMES) {
         setStyle(meta.effectiveStyle as ThemeKey);
       }
       toast({

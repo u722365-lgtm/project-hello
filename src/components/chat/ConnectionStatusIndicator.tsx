@@ -24,6 +24,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { Badge } from '@/components/ui/badge';
 import { useSovereignAI } from '@/hooks/useSovereignAI';
 
 export const ConnectionStatusIndicator: React.FC = () => {
