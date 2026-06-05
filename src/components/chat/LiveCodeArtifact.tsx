@@ -329,7 +329,7 @@ export const LiveCodeArtifact = ({
       <div className={cn(
         "flex",
         viewMode === 'split' ? 'flex-row' : 'flex-col',
-        isExpanded ? 'h-[calc(100vh-120px)]' : 'h-[400px]'
+        isExpanded ? 'h-[calc(100dvh-120px)]' : 'h-[min(400px,60dvh)]'
       )}>
         {/* Editor */}
         <AnimatePresence mode="wait">

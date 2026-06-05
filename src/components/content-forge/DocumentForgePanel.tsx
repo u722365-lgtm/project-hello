@@ -182,8 +182,8 @@ export function DocumentForgePanel({
   };
 
   return (
-    <div className="flex h-full overflow-hidden">
-      <div className="w-80 border-r border-border p-4 space-y-4 overflow-y-auto shrink-0 bg-card/30">
+    <div className="responsive-split-row h-full overflow-hidden">
+      <div className="responsive-side-panel border-r border-b md:border-b-0 p-4 space-y-4 overflow-y-auto max-h-[42dvh] md:max-h-none bg-card/30">
         <div className="flex items-center gap-2 pb-2 border-b border-border/50">
           <FileText className="h-4 w-4 text-primary" />
           <div>

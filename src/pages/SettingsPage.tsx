@@ -147,8 +147,8 @@ export default function SettingsPage() {
 
       <LayoutGroup>
         <div className="container mx-auto px-4 py-6 sm:py-8 max-w-7xl relative">
-          <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
-            <aside className="lg:w-[292px] shrink-0 space-y-4">
+          <div className="flex flex-col md:flex-row gap-6 md:gap-8">
+            <aside className="md:w-[240px] lg:w-[292px] shrink-0 space-y-4">
               <div className="md:hidden">
                 <SettingsSearch
                   onNavigate={(s) => {
@@ -159,7 +159,7 @@ export default function SettingsPage() {
               </div>
               <motion.div
                 layout
-                className="hidden lg:block rounded-2xl border border-border/50 glass-strong p-4 shadow-elevated"
+                className="hidden md:block rounded-2xl border border-border/50 glass-strong p-4 shadow-elevated"
                 transition={spring}
               >
                 <SettingsSearch
@@ -171,7 +171,7 @@ export default function SettingsPage() {
                 />
                 <SettingsNav sections={SECTIONS} activeId={section} onSelect={selectSection} />
               </motion.div>
-              <div className="lg:hidden">
+              <div className="md:hidden">
                 <SettingsNav sections={SECTIONS} activeId={section} onSelect={selectSection} />
               </div>
             </aside>

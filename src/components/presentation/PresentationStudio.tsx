@@ -153,8 +153,8 @@ export const PresentationStudio = ({
         </Button>
       </div>
 
-      <div className="flex-1 flex overflow-hidden">
-        <div className="w-80 border-r border-border p-4 space-y-4 overflow-y-auto">
+      <div className="flex-1 responsive-split-row overflow-hidden min-h-0">
+        <div className="responsive-side-panel border-r border-b md:border-b-0 p-4 space-y-4 overflow-y-auto max-h-[42dvh] md:max-h-none">
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Topic</label>
             <Input value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="Pitch deck, training, report..." />

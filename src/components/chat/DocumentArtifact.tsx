@@ -290,7 +290,7 @@ export const DocumentArtifact: React.FC<DocumentArtifactProps> = ({ title, conte
       </AnimatePresence>
 
       {/* Content */}
-      <div className={`${isExpanded ? 'overflow-y-auto max-h-[calc(100vh-120px)]' : 'max-h-[500px] overflow-y-auto'} custom-scrollbar`}>
+      <div className={`${isExpanded ? 'overflow-y-auto max-h-[calc(100dvh-120px)]' : 'max-h-[min(500px,70dvh)] overflow-y-auto'} custom-scrollbar`}>
         {isEditing ? (
           <textarea
             value={editedContent}

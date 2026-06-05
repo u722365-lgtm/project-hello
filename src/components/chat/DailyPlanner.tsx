@@ -259,9 +259,9 @@ import { stringifyChatBody } from "@/lib/chatRequest";
          </div>
        </div>
  
-       <div className="flex-1 flex overflow-hidden">
+       <div className="flex-1 responsive-split-row overflow-hidden min-h-0">
          {/* Left Panel - Greeting & Stats */}
-         <div className="w-80 border-r border-border p-4 space-y-4 overflow-y-auto">
+         <div className="responsive-side-panel border-r border-b md:border-b-0 p-4 space-y-4 overflow-y-auto max-h-[42dvh] md:max-h-none">
            {/* Greeting */}
            <div className="p-4 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20">
              <div className="flex items-center gap-2 mb-2">

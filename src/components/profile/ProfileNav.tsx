@@ -30,7 +30,7 @@ export function ProfileNav({ tabs, activeId, onSelect }: ProfileNavProps) {
   return (
     <LayoutGroup id="profile-nav">
       <nav
-        className="lg:hidden -mx-1 overflow-x-auto pb-2 scrollbar-none snap-x snap-mandatory"
+        className="md:hidden -mx-1 overflow-x-auto pb-2 scrollbar-none snap-x snap-mandatory"
         aria-label="Profile sections"
       >
         <div className="flex gap-2 min-w-min px-1">
@@ -63,7 +63,7 @@ export function ProfileNav({ tabs, activeId, onSelect }: ProfileNavProps) {
         </div>
       </nav>
 
-      <nav className="hidden lg:block w-full" aria-label="Profile sections">
+      <nav className="hidden md:block w-full" aria-label="Profile sections">
         <motion.ul
           className="space-y-0.5"
           initial="hidden"

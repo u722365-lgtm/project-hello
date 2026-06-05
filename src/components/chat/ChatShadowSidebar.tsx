@@ -111,7 +111,7 @@ export function ChatShadowSidebar({
         className={cn(
           "shrink-0 flex flex-col border-r border-sidebar-border/80 relative z-30 overflow-hidden",
           "bg-gradient-to-b from-sidebar/98 via-sidebar/95 to-background/90 backdrop-blur-2xl",
-          mobileDrawer ? "flex h-full" : "hidden md:flex h-screen",
+          mobileDrawer ? "flex h-full min-h-0" : "hidden md:flex h-full min-h-0",
         )}
         style={{ width }}
       >

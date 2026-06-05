@@ -525,6 +525,52 @@
     padding-top: env(safe-area-inset-top, 0px);
   }
 
+  /* Global responsive shell utilities */
+  .app-shell-height {
+    height: 100dvh;
+    height: -webkit-fill-available;
+    min-height: 0;
+  }
+
+  .app-min-height {
+    min-height: 100dvh;
+    min-height: -webkit-fill-available;
+  }
+
+  .responsive-split-row {
+    @apply flex flex-col min-h-0 min-w-0;
+  }
+
+  @screen md {
+    .responsive-split-row {
+      @apply flex-row;
+    }
+  }
+
+  .responsive-side-panel {
+    @apply w-full shrink-0 min-w-0 border-border;
+  }
+
+  @screen md {
+    .responsive-side-panel {
+      @apply w-80;
+    }
+  }
+
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
   /* ShadowTalk branded chat workspace */
   .shadowtalk-chat-shell {
     @apply relative text-foreground;
@@ -653,6 +699,20 @@
   @media (max-width: 639px) {
     .shadowtalk-composer__textarea {
       padding-right: 8.75rem;
+    }
+  }
+
+  @media (max-width: 474px) {
+    .shadowtalk-composer__textarea {
+      padding-right: 7.25rem;
+    }
+
+    .shadowtalk-chat-empty {
+      @apply px-4;
+    }
+
+    .shadowtalk-chat-input-dock {
+      @apply px-3;
     }
   }
 

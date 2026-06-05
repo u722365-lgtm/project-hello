@@ -296,9 +296,9 @@ export const MultiModelOrchestrator = ({
         <Button variant="ghost" onClick={onClose}>Close</Button>
       </div>
 
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 responsive-split-row overflow-hidden min-h-0">
         {/* Strategy Selection */}
-        <div className="w-80 border-r border-border p-4 flex flex-col gap-4">
+        <div className="responsive-side-panel border-r border-b md:border-b-0 p-4 flex flex-col gap-4 max-h-[42dvh] md:max-h-none overflow-y-auto">
           <h3 className="font-medium text-sm">Orchestration Strategy</h3>
           <div className="space-y-2">
             {ORCHESTRATION_STRATEGIES.map((strategy) => (

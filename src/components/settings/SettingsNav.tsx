@@ -29,7 +29,7 @@ export function SettingsNav({ sections, activeId, onSelect }: SettingsNavProps) 
   return (
     <LayoutGroup id="settings-nav">
       <nav
-        className="lg:hidden -mx-1 mb-2 overflow-x-auto pb-2 scrollbar-none snap-x snap-mandatory"
+        className="md:hidden -mx-1 mb-2 overflow-x-auto pb-2 scrollbar-none snap-x snap-mandatory"
         aria-label="Settings sections"
       >
         <div className="flex gap-2 min-w-min px-1">
@@ -62,7 +62,7 @@ export function SettingsNav({ sections, activeId, onSelect }: SettingsNavProps) 
         </div>
       </nav>
 
-      <nav className="hidden lg:block w-full" aria-label="Settings sections">
+      <nav className="hidden md:block w-full" aria-label="Settings sections">
         <motion.ul
           className="space-y-0.5"
           initial="hidden"

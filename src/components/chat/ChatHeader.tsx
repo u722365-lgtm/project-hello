@@ -251,14 +251,25 @@ export const ChatHeader = ({
   if (variant === "minimal") {
     return (
       <>
-        <div className="flex items-center justify-between px-4 py-3 md:px-8 bg-transparent relative z-20 shrink-0 safe-top">
+        {showUpgrade && (
+          <div className="flex md:hidden items-center justify-end px-3 py-1.5 shrink-0 safe-top">
+            <Button
+              onClick={() => navigate("/pricing")}
+              className="rounded-full h-8 px-3 gap-1 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-medium shadow-sm touch-target"
+            >
+              <Sparkles className="h-3 w-3" />
+              Upgrade
+            </Button>
+          </div>
+        )}
+        <div className="hidden md:flex items-center justify-between px-4 py-3 md:px-8 bg-transparent relative z-20 shrink-0 safe-top">
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="icon"
               onClick={onToggleSidebar}
-              className="h-10 w-10 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/20 md:hidden"
-              aria-label="Menu"
+              className="h-10 w-10 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/20"
+              aria-label="Open history"
             >
               <Menu className="h-5 w-5" />
             </Button>
@@ -266,7 +277,7 @@ export const ChatHeader = ({
               variant="ghost"
               size="icon"
               onClick={() => onToolsMenuOpenChange?.(true)}
-              className="h-10 w-10 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/20 md:hidden"
+              className="h-10 w-10 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/20"
               aria-label="Tools"
             >
               <LayoutGrid className="h-5 w-5 text-primary" />
@@ -307,14 +318,14 @@ export const ChatHeader = ({
           <Menu className="h-[22px] w-[22px]" />
         </Button>
         
-        <div className="hidden xs:block h-4 w-px bg-white/10 mx-1" />
+        <div className="hidden sm:block h-4 w-px bg-white/10 mx-1" />
         
         <ProviderSelector
           provider={aiProvider}
           onProviderChange={onProviderChange}
           hasKeyForProvider={hasKeyForProvider}
         />
-        <div className="hidden xs:block h-4 w-px bg-white/10 mx-1" />
+        <div className="hidden sm:block h-4 w-px bg-white/10 mx-1" />
         <BunkerModeToggle />
       </div>
 

@@ -92,7 +92,7 @@ export const CognitiveLoopPanel = ({ isOpen, onClose, onResult, initialQuery }: 
         <Button variant="ghost" onClick={onClose}>Close</Button>
       </div>
 
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 responsive-split-row overflow-hidden min-h-0">
         {/* Main Panel */}
         <div className="flex-1 flex flex-col p-6 gap-6">
           {/* Query Input */}
@@ -253,7 +253,7 @@ export const CognitiveLoopPanel = ({ isOpen, onClose, onResult, initialQuery }: 
         </div>
 
         {/* Sidebar - Available Agents */}
-        <div className="w-80 border-l border-border p-4 hidden lg:block">
+        <div className="responsive-side-panel border-l border-t md:border-t-0 p-4 hidden md:block max-h-[40dvh] md:max-h-none overflow-y-auto">
           <h3 className="font-medium mb-4 flex items-center gap-2">
             <Bot className="h-4 w-4" />
             Specialist Agents

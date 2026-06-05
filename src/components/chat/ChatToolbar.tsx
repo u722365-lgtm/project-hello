@@ -58,7 +58,7 @@ export function ChatToolbar({
         variants={headerReveal}
         initial="hidden"
         animate="visible"
-        className={`flex items-center gap-1 px-4 md:px-6 py-2 border-b border-border/40 glass-subtle shrink-0 ${className}`}
+        className={`hidden md:flex items-center gap-1 px-4 md:px-6 py-2 border-b border-border/40 glass-subtle shrink-0 overflow-x-auto scrollbar-none ${className}`}
       >
         <OfflineModeIndicator compact />
         <div className="ml-auto flex items-center gap-1">

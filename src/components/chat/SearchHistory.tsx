@@ -111,7 +111,7 @@ export const SearchHistory = ({ onSelectQuery }: SearchHistoryProps) => {
           </SheetTitle>
         </SheetHeader>
         
-        <ScrollArea className="h-[calc(100vh-120px)]">
+        <ScrollArea className="h-[calc(100dvh-120px)]">
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />

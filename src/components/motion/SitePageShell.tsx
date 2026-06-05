@@ -15,14 +15,14 @@ const SitePageShell = ({ children }: SitePageShellProps) => {
   const scaleX = useSpring(scrollYProgress, { stiffness: 120, damping: 28, restDelta: 0.001 });
 
   if (isLandingPage) {
-    return <div className="site-page relative min-h-screen">{children}</div>;
+    return <div className="site-page relative app-min-height">{children}</div>;
   }
 
   const showAmbient = !reduced && intensity !== "minimal";
   const showProgress = !reduced && intensity !== "minimal";
 
   return (
-    <div className="site-page relative min-h-screen overflow-x-hidden">
+    <div className="site-page relative app-min-height overflow-x-hidden">
       {showProgress && (
         <motion.div
           className="site-scroll-progress landing-scroll-progress fixed top-0 left-0 right-0 h-[2px] origin-left z-[100] pointer-events-none"

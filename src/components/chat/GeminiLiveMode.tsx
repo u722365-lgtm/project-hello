@@ -415,7 +415,7 @@ export const GeminiLiveMode = ({ isOpen, onClose, onInsertToChat }: GeminiLiveMo
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 flex">
+          <div className="flex-1 responsive-split-row min-h-0">
             {/* Left: Video/Visual Area */}
             <div className="flex-1 relative flex items-center justify-center">
               {!isConnected ? (
@@ -557,7 +557,7 @@ export const GeminiLiveMode = ({ isOpen, onClose, onInsertToChat }: GeminiLiveMo
 
             {/* Right: Transcript */}
             {isConnected && showTranscript && (
-              <div className="w-80 border-l border-white/10 flex flex-col">
+              <div className="responsive-side-panel border-l border-t md:border-t-0 border-white/10 flex flex-col max-h-[40dvh] md:max-h-none">
                 <div className="p-3 border-b border-white/10">
                   <h3 className="text-sm font-medium text-white/80">Transcript</h3>
                 </div>

@@ -52,7 +52,7 @@ const ContentForgePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="app-min-height bg-background flex flex-col">
       <SEOHead
         meta={{
           ...PAGE_SEO.presentations,
@@ -62,7 +62,7 @@ const ContentForgePage = () => {
         }}
       />
       <Navigation />
-      <div className="pt-16 flex flex-col h-screen">
+      <div className="pt-16 flex flex-col flex-1 min-h-0 app-shell-height">
         <div className="border-b border-border px-4 py-3 bg-card/60 backdrop-blur shrink-0">
           <div className="max-w-6xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center gap-3">

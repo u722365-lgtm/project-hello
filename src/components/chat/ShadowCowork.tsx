@@ -1519,7 +1519,7 @@ export const ShadowCowork = ({ isOpen, onClose, onInsertToChat }: ShadowCoworkPr
             
             {/* Agent Panel - Right Side */}
             {showAgent && (
-              <div className="w-80 border-l border-border shrink-0 h-full">
+              <div className="responsive-side-panel border-l border-t md:border-t-0 border-border shrink-0 h-auto md:h-full max-h-[40dvh] md:max-h-none overflow-y-auto">
                 <AutonomousAgent
                   files={files}
                   selectedFile={selectedFile}

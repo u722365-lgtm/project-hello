@@ -362,9 +362,9 @@ const ProfilePage = () => {
       />
 
       <div className="container mx-auto px-4 py-6 sm:py-8 max-w-6xl">
-        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
-          <aside className="lg:w-[280px] shrink-0">
-            <div className="lg:rounded-2xl lg:border lg:border-border/50 lg:glass-strong lg:p-4 lg:shadow-elevated">
+        <div className="flex flex-col md:flex-row gap-6 md:gap-8">
+          <aside className="md:w-[240px] lg:w-[280px] shrink-0">
+            <div className="md:rounded-2xl md:border md:border-border/50 md:glass-strong md:p-4 md:shadow-elevated">
               <ProfileNav tabs={PROFILE_TAB_SECTIONS} activeId={currentTab} onSelect={selectTab} />
             </div>
           </aside>

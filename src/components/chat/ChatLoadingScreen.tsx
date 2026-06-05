@@ -8,7 +8,7 @@ export function ChatLoadingScreen() {
   const { loadingPulse, staggerList, staggerItem } = useSettingsMotion();
 
   return (
-    <div className="shadowtalk-chat-shell min-h-screen neural-bg flex flex-col items-center justify-center gap-8">
+    <div className="shadowtalk-chat-shell app-min-height neural-bg flex flex-col items-center justify-center gap-8">
       <ChatAmbientBackground />
       <motion.div variants={loadingPulse} animate="animate" className="relative z-10">
         <ShadowTalkLogo size={80} variant="icon" ambient animated />
