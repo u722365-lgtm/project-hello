@@ -42,6 +42,11 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { ChatMobileNavDrawer } from "@/components/chat/ChatMobileNavDrawer";
 import { useShadowMemoryContext } from "@/contexts/ShadowMemoryContext";
 import { useIntelligenceHub } from "@/hooks/useIntelligenceHub";
+import { useAutoImproveContext } from "@/contexts/AutoImproveContext";
+import { useSEEFromChat } from "@/hooks/useSEEFromChat";
+import { SEEMissionPanel } from "@/components/chat/SEEMissionPanel";
+import { resolveAutonomousRoute } from "@/lib/autonomy/autonomousRouter";
+import { trackAgenticEvent } from "@/lib/agenticMetrics";
 import { useGemmaOffline } from "@/hooks/useGemmaOffline";
 import { useMarketplace } from "@/hooks/useMarketplace";
 import { resolveAgentRuntime } from "@/lib/marketplace/resolveAgentConfig";
@@ -161,6 +166,25 @@ const ChatbotPage = () => {
   const { getOfflineSession } = useOfflineAuth();
   const toolOrchestrator = useToolOrchestrator();
   const { dispatchDetection, goToExecute } = useAgenticToolDispatch();
+  const {
+    captureChatSend,
+    capture: captureAutoImprove,
+    applyChatDefaultsOnce,
+    preferSeeRouting,
+    getChatDefaults,
+  } = useAutoImproveContext();
+  const { extractMemories, extractKnowledge, getMemoryContext } = useIntelligenceHub();
+  const {
+    chatMission,
+    activeMission,
+    isExecuting: isMissionExecuting,
+    pendingApproval,
+    launchMissionFromChat,
+    approveChatMissionStep,
+    rejectPendingStep,
+    cancelExecution,
+    dismissChatMission,
+  } = useSEEFromChat();
   const gemmaOffline = useGemmaOffline();
   const sovereignModel = useShadowTalkModel();
   const { getAgentById, agents: marketplaceAgents, loading: marketplaceCatalogLoading } = useMarketplace();
@@ -276,7 +300,20 @@ const ChatbotPage = () => {
     setAiProvider(chatPreferences.defaultProvider);
     setPersonality(chatPreferences.defaultPersonality as Personality);
     setChatMode(chatPreferences.defaultMode);
-  }, [chatPrefsLoading, chatPreferences]);
+    applyChatDefaultsOnce((defaults) => {
+      if (defaults.mode) setChatMode(defaults.mode as ChatMode);
+      if (defaults.personality) setPersonality(defaults.personality as Personality);
+    });
+  }, [chatPrefsLoading, chatPreferences, applyChatDefaultsOnce]);
+
+  const learnFromTurn = useCallback(
+    (userMsg: string, assistantReply: string | undefined, conversationId: string) => {
+      if (!assistantReply?.trim() || !user) return;
+      void extractMemories(userMsg, assistantReply);
+      void extractKnowledge(userMsg, assistantReply, conversationId);
+    },
+    [extractMemories, extractKnowledge, user],
+  );
 
   useEffect(() => {
     const prompt = searchParams.get("q");
@@ -826,11 +863,15 @@ const ChatbotPage = () => {
       }
 
       const { data: { session } } = await supabase.auth.getSession();
+      const learnedHint = getChatDefaults()?.systemHintAddon;
+      const memoryContext = getMemoryContext();
+      const businessMemory = [learnedHint, memoryContext].filter(Boolean).join("\n").trim();
       const requestBody = stringifyChatBody({
         messages: augmented,
         personality,
         mode: chatMode,
         ...buildChatProviderPayload(aiProvider, aiConfig, keys),
+        ...(businessMemory ? { businessMemory } : {}),
         ...(chatFlags?.webSearch
           ? { webSearch: true, searchQuery: chatFlags.searchQuery }
           : {}),
@@ -965,7 +1006,7 @@ const ChatbotPage = () => {
       }
       return assistantContent || undefined;
     },
-    [aiProvider, aiConfig, keys, chatMode, personality, user, gemmaOffline.chatLocal, sovereignModel],
+    [aiProvider, aiConfig, keys, chatMode, personality, user, gemmaOffline.chatLocal, sovereignModel, getChatDefaults, getMemoryContext],
   );
 
   const handleStopGeneration = () => {
@@ -1071,8 +1112,52 @@ const ChatbotPage = () => {
       }));
     chatMessages.push({ role: "user", content: msgContent });
 
+    void captureChatSend(msgContent, chatMode, personality, Boolean(userMessage.attachment));
+
     const execHint = detectShadowExecutionFromChat(msgContent);
-    if (execHint.use && execHint.autoRoute) {
+    const route = resolveAutonomousRoute(msgContent, execHint, { preferSeeRouting });
+
+    if (route.launchInChat) {
+      try {
+        trackAgenticEvent("mission_start", { source: "chat_autonomous", goal: msgContent.slice(0, 120) });
+        void captureAutoImprove("see_launch", { goal: msgContent.slice(0, 80) });
+        const state = await launchMissionFromChat(msgContent);
+        if (state) {
+          const intro =
+            state.status === "completed" && state.result
+              ? `**Autonomous mission complete.**\n\n${state.result}`
+              : state.status === "paused"
+                ? `**Mission paused** — approve the next step in the panel below, or open full execution.`
+                : state.status === "failed"
+                  ? `**Mission could not finish.** Open Shadow Execution to adjust the plan or retry.`
+                  : `**Autonomous mission running** — multi-step plan in progress for: *${state.goal.slice(0, 100)}${state.goal.length > 100 ? "…" : ""}*`;
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: crypto.randomUUID(),
+              type: "ai",
+              content: intro,
+              timestamp: new Date(),
+              toolExecution: {
+                tool: "shadow_execution",
+                status: state.status === "completed" ? "complete" : "running",
+                params: { goal: msgContent, mode: execHint.deliverableType },
+                result: state.result ?? "In progress",
+              },
+            },
+          ]);
+          if (user) void saveMessage(intro, "assistant", conversationId).catch(() => {});
+          if (state.result) learnFromTurn(msgContent, state.result, conversationId);
+          trackAgenticEvent("mission_complete", { source: "chat_autonomous" });
+          setIsLoading(false);
+          return;
+        }
+      } catch (err) {
+        console.warn("[Autonomy] In-chat mission failed, falling back:", err);
+      }
+    }
+
+    if (route.redirectToExecute) {
       goToExecute(msgContent, execHint.deliverableType);
       const label =
         execHint.deliverableType === "strategy_report"
@@ -1137,6 +1222,7 @@ const ChatbotPage = () => {
             conversationId,
             flags,
           );
+          learnFromTurn(msgContent, assistantReply, conversationId);
           if (assistantReply && isShareWorthyReply(assistantReply) && shouldShowChatShareBanner()) {
             setChatShareOffer({
               title: buildChatShareTitle(msgContent, assistantReply),
@@ -1246,6 +1332,7 @@ const ChatbotPage = () => {
       if (aiProvider === "shadowtalk" && sovereignModel.enabled) {
         void sovereignModel.learnFromTurn(msgContent, assistantReply);
       }
+      learnFromTurn(msgContent, assistantReply, conversationId);
       if (assistantReply && isShareWorthyReply(assistantReply) && shouldShowChatShareBanner()) {
         setChatShareOffer({
           title: buildChatShareTitle(msgContent, assistantReply),
@@ -1672,6 +1759,20 @@ const ChatbotPage = () => {
                 onOpenShareDialog={() => setChatShareDialogOpen(true)}
                 onDismiss={() => setChatShareOffer(null)}
               />
+              {(chatMission.mission || activeMission || isMissionExecuting) && (
+                <div className="px-4 md:px-6 pb-2 max-w-4xl mx-auto w-full">
+                  <SEEMissionPanel
+                    mission={chatMission.mission || activeMission}
+                    isExecuting={isMissionExecuting}
+                    pendingApproval={pendingApproval}
+                    onApprove={() => void approveChatMissionStep()}
+                    onReject={() => void rejectPendingStep()}
+                    onCancel={() => void cancelExecution()}
+                    onOpenFullControl={() => navigate("/execute")}
+                    compact
+                  />
+                </div>
+              )}
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
