@@ -164,6 +164,23 @@
 
   <body>
     <div id="root"></div>
+    <script>
+      (function () {
+        var host = location.hostname || "";
+        if (!host.endsWith("lovableproject.com") && !host.endsWith("lovable.app")) return;
+        window.addEventListener("error", function (e) {
+          var msg = (e && e.message) || "";
+          if (msg.indexOf("reading 'useState'") === -1 && msg.indexOf("Invalid hook call") === -1) return;
+          try {
+            if (sessionStorage.getItem("shadowtalk_vite_deps_reload_v1")) return;
+            sessionStorage.setItem("shadowtalk_vite_deps_reload_v1", "1");
+          } catch (err) { return; }
+          var u = new URL(location.href);
+          u.searchParams.set("vite_refresh", String(Date.now()));
+          location.replace(u.href);
+        }, true);
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

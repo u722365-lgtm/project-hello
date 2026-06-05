@@ -6,6 +6,7 @@
  import { initPerformanceMonitoring, deferNonCritical } from "./lib/performance";
  import { configureTransformersEnv, warmWebGPUProbe } from "./lib/webgpuRuntime";
  import { warmHardwareProfile, prewarmFastestLocalPath } from "./lib/hardwareIntelligence";
+ import { installViteChunkRecovery, clearViteChunkRecoveryFlag } from "./lib/viteChunkRecovery";
  
  // Environment validation
  const validateEnvironment = () => {
@@ -23,6 +24,8 @@
    }
  };
  
+ installViteChunkRecovery();
+
  // Initialize performance monitoring
  initPerformanceMonitoring();
  
@@ -74,3 +77,5 @@
      </HelmetProvider>
    </StrictMode>
  );
+
+ clearViteChunkRecoveryFlag();
