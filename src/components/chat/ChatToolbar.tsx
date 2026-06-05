@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { MessageSquarePlus, History, Eraser, Trash2, Settings } from "lucide-react";
 import { ChatEncryptionToggle } from "@/components/chat/ChatEncryptionToggle";
+import { OfflineModeIndicator } from "@/components/chat/OfflineModeIndicator";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useSettingsMotion } from "@/hooks/useSettingsMotion";
@@ -59,6 +60,7 @@ export function ChatToolbar({
         animate="visible"
         className={`flex items-center gap-1 px-4 md:px-6 py-2 border-b border-border/40 glass-subtle shrink-0 ${className}`}
       >
+        <OfflineModeIndicator compact />
         <div className="ml-auto flex items-center gap-1">
         {onEnableEncryption && onDisableEncryption && (
           <ChatEncryptionToggle

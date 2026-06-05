@@ -25,6 +25,7 @@ import { SettingsLoading } from "@/components/settings/SettingsLoading";
 import { useSettingsMotion } from "@/hooks/useSettingsMotion";
 import { useSettingsSectionNav } from "@/hooks/useSettingsSectionNav";
 import { isLearningEnabled, setLearningEnabled } from "@/lib/autoImprove/learningConsent";
+import { isAutonomousModeEnabled, setAutonomousModeEnabled } from "@/lib/autonomy/config";
 import { settingsHapticTick } from "@/lib/settingsFeedback";
 import type { SettingsSectionId } from "@/lib/settingsTypes";
 import { useState } from "react";
@@ -48,6 +49,7 @@ export default function SettingsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { user, loading: authLoading } = useAuth();
   const [learningEnabled, setLearningEnabledState] = useState(isLearningEnabled());
+  const [autonomyEnabled, setAutonomyEnabledState] = useState(isAutonomousModeEnabled());
   const { headerReveal, shouldAnimateAmbient, heroCollapse, sectionPanel, spring } =
     useSettingsMotion();
   const mainRef = useRef<HTMLDivElement>(null);
@@ -220,6 +222,11 @@ export default function SettingsPage() {
                       onLearningChange={(v) => {
                         setLearningEnabled(v);
                         setLearningEnabledState(v);
+                      }}
+                      autonomyEnabled={autonomyEnabled}
+                      onAutonomyChange={(v) => {
+                        setAutonomousModeEnabled(v);
+                        setAutonomyEnabledState(v);
                       }}
                     />
                   </motion.div>

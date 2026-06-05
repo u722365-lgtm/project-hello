@@ -22,6 +22,11 @@ import { useModelManager } from "@/hooks/useModelManager";
 import { useOfflineChat } from "@/hooks/useOfflineChat";
 import { useOfflineRAG } from "@/hooks/useOfflineRAG";
 import { useToast } from "@/hooks/use-toast";
+import OfflineResearchPanel from "@/components/chat/OfflineResearchPanel";
+import OfflineStrategyAgent from "@/components/chat/OfflineStrategyAgent";
+import OfflineKnowledgeExplorer from "@/components/chat/OfflineKnowledgeExplorer";
+import OfflineAnalyticsPanel from "@/components/chat/OfflineAnalyticsPanel";
+import { OfflineDocumentUpload } from "@/components/chat/OfflineDocumentUpload";
 
 interface OfflineToolsPanelProps {
   isOpen: boolean;
@@ -54,6 +59,7 @@ export const OfflineToolsPanel = ({ isOpen, onClose, onInsertToChat }: OfflineTo
   const [codeToRun, setCodeToRun] = useState("console.log('Hello, World!');");
   const [codeLanguage, setCodeLanguage] = useState<"javascript" | "python">("javascript");
   const [templateCategory, setTemplateCategory] = useState<string | null>(null);
+  const [showDocUpload, setShowDocUpload] = useState(false);
 
   if (!isOpen) return null;
 
@@ -151,6 +157,18 @@ export const OfflineToolsPanel = ({ isOpen, onClose, onInsertToChat }: OfflineTo
             </TabsTrigger>
             <TabsTrigger value="models" className="gap-2">
               <Database className="h-4 w-4" /> Models
+            </TabsTrigger>
+            <TabsTrigger value="research" className="gap-2">
+              <Search className="h-4 w-4" /> Research
+            </TabsTrigger>
+            <TabsTrigger value="strategy" className="gap-2">
+              <Zap className="h-4 w-4" /> Strategy
+            </TabsTrigger>
+            <TabsTrigger value="knowledge" className="gap-2">
+              <Brain className="h-4 w-4" /> Knowledge
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="gap-2">
+              <Shield className="h-4 w-4" /> Analytics
             </TabsTrigger>
           </TabsList>
 
@@ -275,13 +293,7 @@ export const OfflineToolsPanel = ({ isOpen, onClose, onInsertToChat }: OfflineTo
                   <Button 
                     variant="outline" 
                     className="w-full gap-2"
-                    onClick={() => {
-                      // This will be handled by the OfflineDocumentUpload component
-                      toast({ 
-                        title: "Document Upload", 
-                        description: "Use the Document Vault button in the chat header to upload files." 
-                      });
-                    }}
+                    onClick={() => setShowDocUpload(true)}
                   >
                     <FolderOpen className="h-4 w-4" />
                     Open Document Vault
@@ -669,8 +681,27 @@ export const OfflineToolsPanel = ({ isOpen, onClose, onInsertToChat }: OfflineTo
                 </CardContent>
               </Card>
             </TabsContent>
+
+            <TabsContent value="research" className="mt-0">
+              <OfflineResearchPanel />
+            </TabsContent>
+
+            <TabsContent value="strategy" className="mt-0">
+              <OfflineStrategyAgent />
+            </TabsContent>
+
+            <TabsContent value="knowledge" className="mt-0">
+              <OfflineKnowledgeExplorer />
+            </TabsContent>
+
+            <TabsContent value="analytics" className="mt-0">
+              <OfflineAnalyticsPanel />
+            </TabsContent>
           </ScrollArea>
         </Tabs>
+        {showDocUpload && (
+          <OfflineDocumentUpload isOpen={showDocUpload} onClose={() => setShowDocUpload(false)} />
+        )}
       </div>
     </div>
   );

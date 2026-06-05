@@ -81,10 +81,17 @@ import {
   isConversationArchived,
   setGuestArchivedIds,
 } from "@/lib/chatArchive";
-import { CHAT_COMMAND_NAV_ROUTES } from "@/lib/chatCommandRoutes";
+import { CHAT_COMMAND_MODAL_ACTIONS, CHAT_COMMAND_NAV_ROUTES } from "@/lib/chatCommandRoutes";
 import { useChatSpeech } from "@/hooks/useChatSpeech";
 import { OfflineToolsPanel } from "@/components/chat/OfflineToolsPanel";
-import { useAutoBrowse } from "@/components/chat/BrowseActivityPanel";
+import { BrowseActivityPanel, useAutoBrowse } from "@/components/chat/BrowseActivityPanel";
+import { MultiModelOrchestrator } from "@/components/chat/MultiModelOrchestrator";
+import { CreativeSynthesis } from "@/components/chat/CreativeSynthesis";
+import { VisualReasoning } from "@/components/chat/VisualReasoning";
+import { ImageDecoder } from "@/components/chat/ImageDecoder";
+import { DailyPlanner } from "@/components/chat/DailyPlanner";
+import { IntelligenceHub } from "@/components/chat/IntelligenceHub";
+import { KnowledgeVault } from "@/components/chat/KnowledgeVault";
 import { ChatUpgradeNudge } from "@/components/monetization/ChatUpgradeNudge";
 import { UpgradePrompt } from "@/components/monetization/UpgradePrompt";
 import { useSubscriptionNudge } from "@/hooks/useSubscriptionNudge";
@@ -241,6 +248,16 @@ const ChatbotPage = () => {
   const [chatShareDialogOpen, setChatShareDialogOpen] = useState(false);
   const [showCognitiveLoop, setShowCognitiveLoop] = useState(false);
   const [cognitiveQuery, setCognitiveQuery] = useState("");
+  const [showMultiModel, setShowMultiModel] = useState(false);
+  const [showCreativeSynthesis, setShowCreativeSynthesis] = useState(false);
+  const [showVisualReasoning, setShowVisualReasoning] = useState(false);
+  const [showImageDecoder, setShowImageDecoder] = useState(false);
+  const [showDailyPlanner, setShowDailyPlanner] = useState(false);
+  const [showIntelligenceHub, setShowIntelligenceHub] = useState(false);
+  const [showKnowledgeVault, setShowKnowledgeVault] = useState(false);
+  const [showBrowseActivity, setShowBrowseActivity] = useState(false);
+  const { browseSession, startBrowseSession, closeBrowseSession } = useAutoBrowse();
+  const pushPermissionAskedRef = useRef(false);
   const referralCode = useUserReferralCode();
   const [guestArchivedIds, setGuestArchivedIdsState] = useState<Set<string>>(() =>
     getGuestArchivedIds(),
@@ -1249,12 +1266,23 @@ const ChatbotPage = () => {
       const flags = toolOutcome.chatFlags;
       if (flags?.webSearch || flags?.deepResearch) {
         try {
+          if (flags.webSearch) {
+            void startBrowseSession(flags.searchQuery ?? msgContent).then(() =>
+              setShowBrowseActivity(true),
+            );
+          }
           const assistantReply = await runChatCompletion(
             chatMessages,
             conversationId,
             flags,
           );
           learnFromTurn(msgContent, assistantReply, conversationId);
+          if (user && !pushPermissionAskedRef.current && typeof Notification !== "undefined") {
+            pushPermissionAskedRef.current = true;
+            if (Notification.permission === "default") {
+              void requestPermission().catch(() => {});
+            }
+          }
           if (assistantReply && isShareWorthyReply(assistantReply) && shouldShowChatShareBanner()) {
             setChatShareOffer({
               title: buildChatShareTitle(msgContent, assistantReply),
@@ -1475,13 +1503,28 @@ const ChatbotPage = () => {
     }
   };
 
+  const insertAssistantToChat = useCallback(
+    (content: string) => {
+      setMessages((prev) => [
+        ...prev,
+        { id: crypto.randomUUID(), type: "ai", content, timestamp: new Date() },
+      ]);
+      if (user && currentConversationId) {
+        void saveMessage(content, "assistant", currentConversationId).catch(() => {});
+      }
+    },
+    [user, currentConversationId],
+  );
+
   const handleCommandAction = (action: string) => {
     setShowCommandPalette(false);
 
-    const navPath = CHAT_COMMAND_NAV_ROUTES[action];
-    if (navPath) {
-      navigate(navPath);
-      return;
+    if (!CHAT_COMMAND_MODAL_ACTIONS.has(action)) {
+      const navPath = CHAT_COMMAND_NAV_ROUTES[action];
+      if (navPath) {
+        navigate(navPath);
+        return;
+      }
     }
 
     switch (action) {
@@ -1502,15 +1545,39 @@ const ChatbotPage = () => {
         return;
       case "missions":
       case "agentic":
-      case "cognitive-loop":
         navigate("/execute");
         return;
       case "offline-tools":
       case "offline":
         setShowOfflineTools(true);
         return;
+      case "multi-model":
+        setShowMultiModel(true);
+        return;
+      case "creative":
+        setShowCreativeSynthesis(true);
+        return;
       case "vision":
-        setShowCommandPalette(true);
+      case "camera":
+        setShowVisualReasoning(true);
+        return;
+      case "image-decoder":
+        setShowImageDecoder(true);
+        return;
+      case "planner":
+        setShowDailyPlanner(true);
+        return;
+      case "cognitive-loop":
+        setCognitiveQuery(message.trim() || "Analyze this decision from multiple expert perspectives.");
+        setShowCognitiveLoop(true);
+        return;
+      case "memory":
+      case "memory-panel":
+      case "intelligence-hub":
+        setShowIntelligenceHub(true);
+        return;
+      case "knowledge-vault-modal":
+        setShowKnowledgeVault(true);
         return;
       case "bunker": {
         const enabled = localStorage.getItem("shadowtalk_bunker_mode") === "true";
@@ -1691,14 +1758,14 @@ const ChatbotPage = () => {
             onOpenStealthVault={() => navigate("/security?tab=vault")}
             onOpenAgentWorkflows={() => navigate("/workspace?tab=agents")}
             onOpenModelFineTuning={() => navigate("/personal-llm")}
-            onOpenWhiteLabelBranding={() => navigate("/enterprise-license")}
-            onOpenGeminiAnalytics={() => navigate("/insights?tab=usage")}
+            onOpenWhiteLabelBranding={() => navigate("/enterprise")}
+            onOpenGeminiAnalytics={() => navigate("/settings?section=models")}
             onOpenCanvas={() => navigate("/ide")}
             onOpenDeepResearch={() => setShowDeepResearch(true)}
             onOpenGoogleIntegration={() => navigate("/profile?tab=linked")}
             onOpenAgenticRunner={() => navigate("/execute")}
-            onOpenVisualReasoning={() => setShowCommandPalette(true)}
-            onOpenCreativeSynthesis={() => navigate("/forge?mode=studio")}
+            onOpenVisualReasoning={() => setShowVisualReasoning(true)}
+            onOpenCreativeSynthesis={() => setShowCreativeSynthesis(true)}
             onOpenImageGenerator={() => setShowImageGenerator(true)}
             onOpenShadowTalkLive={() => setShowShadowTalkLive(true)}
             onOpenBrowser={() => setShowShadowBrowser(true)}
@@ -1890,6 +1957,80 @@ const ChatbotPage = () => {
             setMessage(text);
             setShowOfflineTools(false);
             toast({ title: "Inserted into chat", description: "Edit the prompt and send when ready." });
+          }}
+        />
+      )}
+      {showMultiModel && (
+        <MultiModelOrchestrator
+          isOpen={showMultiModel}
+          onClose={() => setShowMultiModel(false)}
+          onResult={(result) => {
+            insertAssistantToChat(result);
+            setShowMultiModel(false);
+          }}
+          initialPrompt={message}
+        />
+      )}
+      {showCreativeSynthesis && (
+        <CreativeSynthesis
+          isOpen={showCreativeSynthesis}
+          onClose={() => setShowCreativeSynthesis(false)}
+          onInsertToChat={(c) => {
+            insertAssistantToChat(c);
+            setShowCreativeSynthesis(false);
+          }}
+          initialPrompt={message}
+        />
+      )}
+      {showVisualReasoning && (
+        <VisualReasoning
+          isOpen={showVisualReasoning}
+          onClose={() => setShowVisualReasoning(false)}
+          onInsertToChat={(c) => {
+            insertAssistantToChat(c);
+            setShowVisualReasoning(false);
+          }}
+        />
+      )}
+      {showImageDecoder && (
+        <ImageDecoder
+          onClose={() => setShowImageDecoder(false)}
+          onDecoded={(analysis) => {
+            insertAssistantToChat(analysis);
+            setShowImageDecoder(false);
+          }}
+          initialImage={selectedFile?.type === "image" ? selectedFile.data : undefined}
+          autoAnalyze={Boolean(selectedFile?.type === "image")}
+        />
+      )}
+      {showDailyPlanner && (
+        <DailyPlanner
+          isOpen={showDailyPlanner}
+          onClose={() => setShowDailyPlanner(false)}
+          onPlanGenerated={(plan) => {
+            insertAssistantToChat(plan);
+            setShowDailyPlanner(false);
+          }}
+        />
+      )}
+      {showIntelligenceHub && (
+        <IntelligenceHub isOpen={showIntelligenceHub} onClose={() => setShowIntelligenceHub(false)} />
+      )}
+      {showKnowledgeVault && (
+        <KnowledgeVault isOpen={showKnowledgeVault} onClose={() => setShowKnowledgeVault(false)} />
+      )}
+      {showBrowseActivity && browseSession && (
+        <BrowseActivityPanel
+          isOpen={showBrowseActivity}
+          onClose={() => {
+            setShowBrowseActivity(false);
+            closeBrowseSession();
+          }}
+          session={browseSession}
+          onResultReady={(result) => {
+            insertAssistantToChat(result);
+            setShowBrowseActivity(false);
+            closeBrowseSession();
           }}
         />
       )}

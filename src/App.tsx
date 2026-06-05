@@ -35,9 +35,13 @@ export const CommandPaletteContext = createContext<{ open: () => void }>({ open:
  import SelfHealingPage from "./pages/SelfHealingPage";
  import { SelfHealingProvider } from "./components/selfHealing/SelfHealingProvider";
 import { NotificationPermissionRequester } from "@/components/notifications/NotificationPermissionRequester";
+import { UpdateNotificationProvider } from "@/components/notifications/UpdateNotificationProvider";
 import { AutonomousAgentEngine } from "@/components/autonomy/AutonomousAgentEngine";
 import { MissionSchedulerEngine } from "@/components/autonomy/MissionSchedulerEngine";
 import { GoalPursuitEngine } from "@/components/autonomy/GoalPursuitEngine";
+import { SelfHealingErrorBoundary } from "@/components/selfHealing/SelfHealingErrorBoundary";
+import { NetworkTransitionOverlay } from "@/components/chat/NetworkTransitionOverlay";
+import { PushIntelligencePanel } from "@/components/chat/PushIntelligencePanel";
  
  // Lazy loaded pages - code splitting for better performance
  const PricingPage = lazy(() => import("./pages/PricingPage"));
@@ -110,6 +114,9 @@ const CustomerSupportWidget = lazy(() => import("./components/CustomerSupportWid
 const ShadowMemoryTracker = lazy(() => import("./components/ShadowMemoryTracker"));
 const JourneyTracker = lazy(() => import("./components/JourneyTracker").then(m => ({ default: m.JourneyTracker })));
 const VoiceCommandSystem = lazy(() => import("./components/VoiceCommandSystem"));
+const OfflineBootstrapBanner = lazy(() =>
+  import("./components/offline/OfflineBootstrapBanner").then((m) => ({ default: m.OfflineBootstrapBanner })),
+);
 const OnboardingFlow = lazy(() => import("./components/OnboardingFlow"));
 // ElevenLabs Agent ID is now configured via the backend secret ELEVENLABS_AGENT_ID
 
@@ -202,6 +209,7 @@ const AnimatedRoutes = () => {
           <Route path="/wallet" element={<PageTransition><SovereignWalletPage /></PageTransition>} />
           <Route path="/ghost-ads" element={<PageTransition><GhostAdsPage /></PageTransition>} />
           <Route path="/offline-license" element={<PageTransition><EnterpriseLicensePage /></PageTransition>} />
+          <Route path="/enterprise-license" element={<Navigate to="/offline-license" replace />} />
           <Route path="/transparency" element={<PageTransition><TransparencyPage /></PageTransition>} />
           <Route path="/studio" element={<Navigate to="/forge?mode=studio" replace />} />
           <Route path="/command-center" element={<PageTransition><CommandCenterPage /></PageTransition>} />
@@ -299,6 +307,10 @@ const App = () => {
               <Toaster />
               <Sonner />
                <BrowserRouter>
+                 <UpdateNotificationProvider />
+                 <NetworkTransitionOverlay />
+                 <PushIntelligencePanel />
+                 <SelfHealingErrorBoundary>
                  <SiteMotionProvider>
                    <SitePageShell>
                      <GlobalScrollReveal />
@@ -309,9 +321,11 @@ const App = () => {
                      <BackToHomeButton />
                    </SitePageShell>
                  </SiteMotionProvider>
+                 </SelfHealingErrorBoundary>
                  <CommandPalette open={cmdOpen} onOpenChange={setCmdOpen} />
                   {deferredChrome && (
                     <Suspense fallback={null}>
+                      <OfflineBootstrapBanner />
                       <OnboardingFlow />
                       <ShadowMemoryTracker />
                       <JourneyTracker />
@@ -319,6 +333,7 @@ const App = () => {
                       <AutonomousAgentEngine />
                       <MissionSchedulerEngine />
                       <GoalPursuitEngine />
+                      <VoiceCommandSystem />
                       <PWABanner />
                       <CookieConsent />
                       <CustomerSupportWidget />

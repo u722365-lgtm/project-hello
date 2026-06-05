@@ -39,6 +39,8 @@ interface SettingsSectionPanelsProps {
   onSelectSection: (id: string) => void;
   learningEnabled: boolean;
   onLearningChange: (enabled: boolean) => void;
+  autonomyEnabled: boolean;
+  onAutonomyChange: (enabled: boolean) => void;
 }
 
 const ACCOUNT_LINKS = [
@@ -75,6 +77,8 @@ export function SettingsSectionPanels({
   onSelectSection,
   learningEnabled,
   onLearningChange,
+  autonomyEnabled,
+  onAutonomyChange,
 }: SettingsSectionPanelsProps) {
   if (section === "home") {
     return <SettingsHomeGrid sections={sections} onSelect={onSelectSection} />;
@@ -181,6 +185,23 @@ export function SettingsSectionPanels({
               >
                 <p className="text-sm font-medium">Enable adaptive learning</p>
                 <Switch checked={learningEnabled} onCheckedChange={onLearningChange} />
+              </motion.div>
+            </SettingsShellCard>
+          </AnimatedCard>
+        </SettingsStaggerItem>
+        <SettingsStaggerItem>
+          <AnimatedCard>
+            <SettingsShellCard
+              title="Autonomous agent"
+              description="In-chat missions, scheduled runs, goal pursuit, and proactive signals"
+              icon={Sparkles}
+            >
+              <motion.div
+                className="flex items-center justify-between p-4 rounded-xl bg-muted/20 border border-border/40"
+                whileTap={{ scale: 0.995 }}
+              >
+                <p className="text-sm font-medium">Enable autonomous mode</p>
+                <Switch checked={autonomyEnabled} onCheckedChange={onAutonomyChange} />
               </motion.div>
             </SettingsShellCard>
           </AnimatedCard>
