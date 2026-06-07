@@ -219,6 +219,8 @@ const AnimatedRoutes = () => {
           <Route path="/compliance" element={<PageTransition><ComplianceDashboardPage /></PageTransition>} />
           <Route path="/personal-llm" element={<PageTransition><PersonalLLMPage /></PageTransition>} />
           <Route path="/templates" element={<PageTransition><TemplatesPage /></PageTransition>} />
+          <Route path="/theme" element={<Navigate to="/templates?tab=custom" replace />} />
+          <Route path="/themes" element={<Navigate to="/templates" replace />} />
           <Route path="/downloads" element={<PageTransition><DownloadsPage /></PageTransition>} />
           <Route path="/download" element={<Navigate to="/downloads" replace />} />
           <Route path="/sessions" element={<PageTransition><SessionsPage /></PageTransition>} />
