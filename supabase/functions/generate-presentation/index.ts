@@ -89,7 +89,7 @@ serve(async (req) => {
       ? `\n\nAUDIENCE ADAPTATION (CRITICAL): The audience is YOUNG CHILDREN / elementary students.\n- Use simple, playful language at a 2nd–4th grade reading level.\n- Replace technical percentages with simple fractions or "out of X".\n- Add emoji, friendly illustrations, animated transitions.\n- Make topics relatable to their daily lives (toys, games, friends, families).\n- Avoid scary topics; spin negatives into learning opportunities.`
       : "";
 
-    // Single powerful call with Manus-level instructions
+    // Single powerful call with Manus-level instructions (remediation guide v2)
     // The prompt forces the model to THINK like Manus: research first, then code
     const systemPrompt = `You are MANUS-LEVEL presentation designer and researcher. You follow a strict 4-phase internal process:
 
