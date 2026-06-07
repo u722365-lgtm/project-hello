@@ -35,5 +35,5 @@ export function prependChatKnowledgeContext<T extends { role: string; content: u
   ].filter(Boolean);
 
   const withoutSystem = messages.filter((m) => m.role !== "system");
-  return [{ role: "system", content: parts.join("\n\n") }, ...withoutSystem];
+  return [{ role: "system", content: parts.join("\n\n") } as unknown as T, ...withoutSystem];
 }
