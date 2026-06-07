@@ -844,8 +844,11 @@ const ChatbotPage = () => {
 
       const routerMessages: RouterMessage[] = augmented.map((m) => ({
         role: m.role as RouterMessage["role"],
-        content: m.content,
+        content: typeof m.content === "string"
+          ? m.content
+          : (m.content.find((p) => p.type === "text") as { text?: string } | undefined)?.text ?? "",
       }));
+
 
       const hasMultimodalImage = chatMessages.some((m) => Array.isArray(m.content));
       const route = decideRoute(routerMessages, navigator.onLine);
@@ -1156,13 +1159,17 @@ const ChatbotPage = () => {
       setDailyChats(incrementDailyMessageCount());
     }
 
-    const chatMessages = messages
+    const chatMessages: Array<{
+      role: string;
+      content: string | Array<{ type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }>;
+    }> = messages
       .filter((m) => m.id !== "welcome")
       .map((m) => ({
         role: m.type === "user" ? "user" : "assistant",
         content: m.content,
       }));
     chatMessages.push({ role: "user", content: msgContent });
+
 
     void captureChatSend(msgContent, chatMode, personality, Boolean(userMessage.attachment));
 

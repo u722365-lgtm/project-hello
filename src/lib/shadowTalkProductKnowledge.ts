@@ -16,11 +16,12 @@ export const SHADOWTALK_SELF_KNOWLEDGE_BRIEF = `**ShadowTalk AI** (created by **
 **Docs:** /docs · **Help:** /faq · **About Zain:** /about`;
 
 /** Injects product + founder knowledge for local/offline chat paths (cloud chat uses edge function). */
-export function prependChatKnowledgeContext(
-  messages: Array<{ role: string; content: string }>,
+export function prependChatKnowledgeContext<T extends { role: string; content: unknown }>(
+  messages: T[],
   userEmail?: string | null,
   userFullName?: string | null,
-): Array<{ role: string; content: string }> {
+): T[] {
+
   const isFounder =
     isFounderEmail(userEmail) ||
     (userFullName && /zain\s*ahmed/i.test(userFullName));
@@ -34,5 +35,5 @@ export function prependChatKnowledgeContext(
   ].filter(Boolean);
 
   const withoutSystem = messages.filter((m) => m.role !== "system");
-  return [{ role: "system", content: parts.join("\n\n") }, ...withoutSystem];
+  return [{ role: "system", content: parts.join("\n\n") } as unknown as T, ...withoutSystem];
 }

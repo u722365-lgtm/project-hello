@@ -31,19 +31,20 @@ export interface ToolDispatchUI {
   }) => void;
 }
 
-export type ToolDispatchOutcome =
-  | { handled: true; cognitiveLoop?: boolean; query?: string }
-  | {
-      handled: false;
-      chatFlags?: {
-        webSearch?: boolean;
-        searchQuery?: string;
-        deepResearch?: boolean;
-        researchQuery?: string;
-        decodeImage?: boolean;
-        imageDataUrl?: string;
-      };
-    };
+export type ToolDispatchOutcome = {
+  handled: boolean;
+  cognitiveLoop?: boolean;
+  query?: string;
+  chatFlags?: {
+    webSearch?: boolean;
+    searchQuery?: string;
+    deepResearch?: boolean;
+    researchQuery?: string;
+    decodeImage?: boolean;
+    imageDataUrl?: string;
+  };
+};
+
 
 export interface AsyncDispatchResult {
   outcome: ToolDispatchOutcome;
