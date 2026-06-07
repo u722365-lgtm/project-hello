@@ -72,7 +72,9 @@ export function capture(err: Omit<CapturedError, "fingerprint" | "capturedAt" | 
   fingerprint?: string;
 }) {
   try {
+    if (!err?.message || typeof err.message !== "string") return;
     if (shouldIgnoreCapturedError(err.message, err.source_file)) return;
+
 
     const route = typeof window !== "undefined" ? window.location.pathname : undefined;
     const url = typeof window !== "undefined" ? window.location.href : undefined;
