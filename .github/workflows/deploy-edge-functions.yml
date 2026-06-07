@@ -18,17 +18,15 @@ jobs:
         with:
           version: latest
 
-      - name: Deploy generate-presentation
+      - name: Deploy edge functions
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-        run: supabase functions deploy generate-presentation --project-ref axsudmhjpfzffcicfvuj
-
-      - name: Deploy chat
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-        run: supabase functions deploy chat --project-ref axsudmhjpfzffcicfvuj
-
-      - name: Deploy document-ai
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-        run: supabase functions deploy document-ai --project-ref axsudmhjpfzffcicfvuj
+        run: |
+          if [ -z "$SUPABASE_ACCESS_TOKEN" ]; then
+            echo "SUPABASE_ACCESS_TOKEN not configured — skipping edge function deploy."
+            echo "Add the secret in GitHub repo settings to enable automatic deploys."
+            exit 0
+          fi
+          supabase functions deploy generate-presentation --project-ref axsudmhjpfzffcicfvuj
+          supabase functions deploy chat --project-ref axsudmhjpfzffcicfvuj
+          supabase functions deploy document-ai --project-ref axsudmhjpfzffcicfvuj
