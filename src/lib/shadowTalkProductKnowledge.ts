@@ -11,7 +11,9 @@ export const SHADOWTALK_SELF_KNOWLEDGE_BRIEF = `**ShadowTalk AI** (created by **
 
 **Founder:** ${FOUNDER_KNOWLEDGE_BRIEF}
 
-**Ask in chat:** "what tools do you have?" · "open execute" · "search for …" · "research …" · "generate an image of …"
+**ShadowTalk Live:** Real-time voice mode — say "open live mode" or tap the mic in the composer.
+
+**Ask in chat:** "what tools do you have?" · "open live mode" · "open execute" · "search for …" · "research …" · "generate an image of …"
 
 **Docs:** /docs · **Help:** /faq · **About Zain:** /about`;
 

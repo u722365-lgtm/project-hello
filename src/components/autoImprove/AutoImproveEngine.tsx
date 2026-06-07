@@ -9,6 +9,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UiUxSuggestionPanel } from "@/components/autoImprove/UiUxSuggestionPanel";
+import { useEnterpriseExperience } from "@/hooks/useEnterpriseExperience";
 
 /**
  * Background engine: runs analysis on route changes, syncs cloud memories/insights, surfaces improvement toasts.
@@ -16,6 +17,7 @@ import { UiUxSuggestionPanel } from "@/components/autoImprove/UiUxSuggestionPane
 export const AutoImproveEngine = () => {
   const location = useLocation();
   const { user } = useAuth();
+  const enterprise = useEnterpriseExperience();
   const {
     runAnalysis,
     pendingImprovements,
@@ -44,6 +46,10 @@ export const AutoImproveEngine = () => {
       console.warn("[AutoImprove] daily insights", e)
     );
   }, [user?.id]);
+
+  if (enterprise.isEnterpriseUser || enterprise.isEnterpriseDeployment) {
+    return null;
+  }
 
   return (
     <AnimatePresence>

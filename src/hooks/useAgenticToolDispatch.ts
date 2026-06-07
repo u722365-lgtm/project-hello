@@ -227,6 +227,10 @@ export function useAgenticToolDispatch() {
 
         case "shadow_live":
           ui.openShadowLive();
+          ui.appendAssistantMessage(
+            "Opening **ShadowTalk Live** — real-time voice. Allow microphone access when prompted, then speak naturally.",
+            { tool: "shadow_live", status: "complete", params },
+          );
           return { handled: true };
 
         case "document_generator":
