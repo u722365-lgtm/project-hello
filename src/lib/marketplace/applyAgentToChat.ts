@@ -1,11 +1,11 @@
 import type { MarketplaceAgentRuntime } from "./types";
 
-export function prependAgentSystemPrompt(
-  messages: Array<{ role: string; content: string }>,
+export function prependAgentSystemPrompt<T extends { role: string; content: unknown }>(
+  messages: T[],
   runtime: MarketplaceAgentRuntime | null,
-): Array<{ role: string; content: string }> {
+): T[] {
   if (!runtime?.systemPrompt) return messages;
 
   const withoutSystem = messages.filter((m) => m.role !== "system");
-  return [{ role: "system", content: runtime.systemPrompt }, ...withoutSystem];
+  return [{ role: "system", content: runtime.systemPrompt } as unknown as T, ...withoutSystem];
 }
