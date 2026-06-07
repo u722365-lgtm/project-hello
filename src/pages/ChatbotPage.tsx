@@ -1156,13 +1156,17 @@ const ChatbotPage = () => {
       setDailyChats(incrementDailyMessageCount());
     }
 
-    const chatMessages = messages
+    const chatMessages: Array<{
+      role: string;
+      content: string | Array<{ type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }>;
+    }> = messages
       .filter((m) => m.id !== "welcome")
       .map((m) => ({
         role: m.type === "user" ? "user" : "assistant",
         content: m.content,
       }));
     chatMessages.push({ role: "user", content: msgContent });
+
 
     void captureChatSend(msgContent, chatMode, personality, Boolean(userMessage.attachment));
 
