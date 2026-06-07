@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { postProcessSlide } from "./slideQuality";
+import { shadowtalkBrokenDeck } from "./fixtures/shadowtalkBrokenDeck";
+import { postProcessSlide, postProcessPresentation } from "./slideQuality";
 
 const theme = {
   bg: "#09090B",
@@ -103,5 +104,30 @@ describe("postProcessSlide remediation", () => {
     );
     expect(slide.speakerNotes).toMatch(/thank you/i);
     expect(stripTags(slide.html).toLowerCase()).not.toMatch(/thank you for joining/);
+  });
+
+  it("remediates full ShadowTalk deck end-to-end", () => {
+    const remediated = postProcessPresentation({ ...shadowtalkBrokenDeck }, theme);
+    const total = remediated.slides.length;
+
+    remediated.slides.forEach((slide, i) => {
+      expect(slide.html).toContain("flex-direction:column");
+      expect(slide.html).toContain("max-width:640px");
+      expect(slide.html).not.toMatch(/<h[1-6][^>]*position\s*:\s*absolute/i);
+      const plain = stripTags(slide.html).toLowerCase();
+      expect(plain).not.toMatch(/good morning/);
+      expect(plain).not.toMatch(/today we're going to/);
+      if (i === total - 1) {
+        expect(plain).not.toMatch(/thank you for joining/);
+        expect(slide.speakerNotes).toMatch(/thank you/i);
+      }
+    });
+
+    const workflow = remediated.slides[3];
+    expect(workflow.html).toContain("Plan");
+    expect(workflow.html).toContain("Execute");
+
+    const stats = remediated.slides[2];
+    expect(stats.html).toMatch(/font-weight:800|<rect[^>]*y=/);
   });
 });

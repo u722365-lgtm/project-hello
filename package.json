@@ -11,6 +11,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest --run",
+    "remediate:deck": "node scripts/remediate-shadowtalk-deck.mjs",
     "desktop:install": "cd electron && npm install",
     "desktop:build": "npm run build && npx cap copy electron",
     "desktop:verify": "npm run desktop:install && npm run desktop:build && cd electron && npm run build",
