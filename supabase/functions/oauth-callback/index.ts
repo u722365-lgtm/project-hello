@@ -1,5 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 type OAuthProvider = "google" | "github" | "slack" | "notion";
 
@@ -120,7 +119,7 @@ const VAULT_TYPES: Record<OAuthProvider, string> = {
   notion: "storage",
 };
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   try {
     const url = new URL(req.url);
     const code = url.searchParams.get("code");

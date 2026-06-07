@@ -81,3 +81,7 @@ project_id = "axsudmhjpfzffcicfvuj"
     verify_jwt = false
   [functions.index-source]
     verify_jwt = false
+  [functions.oauth-initiate]
+    verify_jwt = false
+  [functions.oauth-callback]
+    verify_jwt = false
