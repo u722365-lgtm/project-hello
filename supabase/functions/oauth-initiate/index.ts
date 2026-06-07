@@ -1,5 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsOptions } from "../_shared/cors.ts";
 import { requireAuth } from "../_shared/auth.ts";
 
@@ -78,7 +76,32 @@ function buildAuthUrl(provider: OAuthProvider, userId: string, scopeKey: string)
   return null;
 }
 
-serve(async (req) => {
+function renderMisusePage(): string {
+  const appUrl = Deno.env.get("APP_URL") || "https://www.shadowtalk-ai.com/profile?tab=linked";
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ShadowTalk — Connect accounts</title>
+  <meta http-equiv="refresh" content="3;url=${appUrl}">
+  <style>
+    body { font-family: system-ui, sans-serif; background: #0a0a0a; color: #fff; min-height: 100vh; display: flex; align-items: center; justify-content: center; margin: 0; padding: 1.5rem; }
+    .box { text-align: center; max-width: 420px; }
+    p { color: #a1a1aa; line-height: 1.5; }
+    a { color: #a78bfa; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>Open ShadowTalk to connect</h1>
+    <p>This link must be started from the app (Profile → Linked accounts). Redirecting you back…</p>
+    <p><a href="${appUrl}">Continue in ShadowTalk</a></p>
+  </div>
+</body>
+</html>`;
+}
+
+Deno.serve(async (req) => {
   const origin = req.headers.get("origin");
 
   if (req.method === "OPTIONS") {
@@ -87,21 +110,44 @@ serve(async (req) => {
 
   const corsHeaders = getCorsHeaders(origin);
 
+  if (req.method === "GET") {
+    return new Response(renderMisusePage(), {
+      status: 200,
+      headers: { ...corsHeaders, "Content-Type": "text/html; charset=utf-8" },
+    });
+  }
+
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   try {
     const auth = await requireAuth(req, corsHeaders);
     if (!auth.authenticated) return auth.response;
 
-    const { provider, scope } = await req.json() as { provider?: string; scope?: string };
-    const oauthProvider = provider as OAuthProvider;
+    let body: { provider?: string; scope?: string };
+    try {
+      body = (await req.json()) as { provider?: string; scope?: string };
+    } catch {
+      return new Response(
+        JSON.stringify({ error: "Invalid JSON body", message: "Send { provider, scope? }" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
 
-    if (!["google", "github", "slack", "notion"].includes(oauthProvider)) {
+    const oauthProvider = body.provider as OAuthProvider;
+
+    if (!oauthProvider || !["google", "github", "slack", "notion"].includes(oauthProvider)) {
       return new Response(
         JSON.stringify({ error: "Provider not supported", message: "Use google, github, slack, or notion" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
-    const scopeKey = scope || (oauthProvider === "google" ? "both" : "default");
+    const scopeKey = body.scope || (oauthProvider === "google" ? "both" : "default");
     const authUrl = buildAuthUrl(oauthProvider, auth.userId, scopeKey);
 
     if (!authUrl) {
@@ -110,7 +156,7 @@ serve(async (req) => {
           error: "OAuth not configured",
           message: `${oauthProvider} OAuth credentials are not set on the server`,
         }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
@@ -124,7 +170,7 @@ serve(async (req) => {
         error: "Internal server error",
         message: error instanceof Error ? error.message : "Unknown error",
       }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
 });

@@ -33,6 +33,8 @@ export function shouldIgnoreCapturedError(message: string, sourceFile?: string):
     blob.includes("self-heal") ||
     blob.includes("shadowtalk_errors") ||
     blob.includes("shadowtalk_fix_proposals") ||
-    blob.includes("index-source")
+    blob.includes("index-source") ||
+    blob.includes("oauth-initiate") ||
+    blob.includes("oauth-callback")
   );
 }
