@@ -581,11 +581,13 @@
     display: none;
   }
 
-  /* ShadowTalk branded chat workspace */
+  /* ShadowTalk branded chat workspace — fixed viewport, no document growth */
   .shadowtalk-chat-shell {
-    @apply relative text-foreground;
-    min-height: 100dvh;
-    min-height: -webkit-fill-available;
+    @apply relative text-foreground overflow-hidden;
+    height: 100dvh;
+    height: -webkit-fill-available;
+    max-height: 100dvh;
+    max-height: -webkit-fill-available;
     background: hsl(var(--background));
   }
 
@@ -627,9 +629,11 @@
   .shadowtalk-chat-main {
     position: relative;
     z-index: 1;
-    height: 100dvh;
-    height: -webkit-fill-available;
+    flex: 1 1 auto;
+    height: 100%;
     min-height: 0;
+    max-height: 100%;
+    overflow: hidden;
   }
 
   .shadowtalk-chat-messages-scroll {

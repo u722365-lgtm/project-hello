@@ -79,8 +79,15 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
     }
   }, [showSuggestions]);
 
+  // Scroll inside the messages panel only — never grow the page
+  useEffect(() => {
+    const el = scrollContainerRef.current;
+    if (!el || showSuggestions) return;
+    el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+  }, [messages, isLoading, showSuggestions]);
+
   return (
-    <div ref={scrollContainerRef} className="flex-1 overflow-y-auto custom-scrollbar scroll-smooth shadowtalk-chat-messages-scroll">
+    <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto custom-scrollbar scroll-smooth shadowtalk-chat-messages-scroll">
       <div
         className={`mx-auto px-3 xs:px-4 sm:px-6 py-4 xs:py-6 sm:py-10 w-full min-w-0 ${
           isGemini ? 'max-w-[720px] space-y-5 sm:space-y-8' : 'max-w-4xl space-y-6 sm:space-y-12'
