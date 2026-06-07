@@ -200,11 +200,12 @@ Deno.serve(async (req) => {
     const payload = body as unknown as ErrorPayload;
 
     if (!payload?.message || !payload?.fingerprint) {
-      return new Response(JSON.stringify({ error: "message and fingerprint required" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ ok: false, warning: "message and fingerprint required" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
+
 
     const admin = createClient(supabaseUrl, serviceRole);
     const userId = await resolveUserId(req.headers.get("Authorization"), supabaseUrl, anonKey);
