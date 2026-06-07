@@ -844,8 +844,11 @@ const ChatbotPage = () => {
 
       const routerMessages: RouterMessage[] = augmented.map((m) => ({
         role: m.role as RouterMessage["role"],
-        content: m.content,
+        content: typeof m.content === "string"
+          ? m.content
+          : (m.content.find((p) => p.type === "text") as { text?: string } | undefined)?.text ?? "",
       }));
+
 
       const hasMultimodalImage = chatMessages.some((m) => Array.isArray(m.content));
       const route = decideRoute(routerMessages, navigator.onLine);
