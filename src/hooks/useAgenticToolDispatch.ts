@@ -31,19 +31,20 @@ export interface ToolDispatchUI {
   }) => void;
 }
 
-export type ToolDispatchOutcome =
-  | { handled: true; cognitiveLoop?: boolean; query?: string }
-  | {
-      handled: false;
-      chatFlags?: {
-        webSearch?: boolean;
-        searchQuery?: string;
-        deepResearch?: boolean;
-        researchQuery?: string;
-        decodeImage?: boolean;
-        imageDataUrl?: string;
-      };
-    };
+export type ToolDispatchOutcome = {
+  handled: boolean;
+  cognitiveLoop?: boolean;
+  query?: string;
+  chatFlags?: {
+    webSearch?: boolean;
+    searchQuery?: string;
+    deepResearch?: boolean;
+    researchQuery?: string;
+    decodeImage?: boolean;
+    imageDataUrl?: string;
+  };
+};
+
 
 export interface AsyncDispatchResult {
   outcome: ToolDispatchOutcome;
@@ -226,6 +227,10 @@ export function useAgenticToolDispatch() {
 
         case "shadow_live":
           ui.openShadowLive();
+          ui.appendAssistantMessage(
+            "Opening **ShadowTalk Live** — real-time voice. Allow microphone access when prompted, then speak naturally.",
+            { tool: "shadow_live", status: "complete", params },
+          );
           return { handled: true };
 
         case "document_generator":

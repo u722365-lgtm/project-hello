@@ -11,6 +11,13 @@ import {
 } from "../_shared/custom-ai-provider.ts";
 import { SHADOWTALK_SELF_KNOWLEDGE } from "../_shared/shadowTalkProductKnowledge.ts";
 import { FOUNDER_KNOWLEDGE, buildFounderSessionPrompt } from "../_shared/founderKnowledge.ts";
+import {
+  getKimiDocumentSystemPrompt,
+  KIMI_CHAT_DOCUMENT_APPENDIX,
+  type KimiDocumentType,
+  type KimiLengthType,
+  type KimiToneType,
+} from "../_shared/kimiDocumentPrompts.ts";
 
 // ============================================================================
 // SPRINT 1: CHAT INTELLIGENCE ENGINE
@@ -418,7 +425,8 @@ serve(async (req) => {
       messages, personality, generateImage, imagePrompt, imageEdit, originalImage, editPrompt,
       mode, modePrompt, userContext, businessMemory, analyzeTask, getEcoActions, location, securityAudit, 
       webSearch, searchQuery, deepResearch, researchQuery, agentWorkflow, decodeImage, imageToAnalyze,
-      isResearch, industry, agenticReact, aiProvider, useCustomApiKey
+      isResearch, industry, agenticReact, aiProvider, useCustomApiKey,
+      documentGeneration, documentType, documentTone, documentLength, documentResearchContext,
     } = validation.data;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const customAi = resolveCustomAi(body as Record<string, unknown>);
@@ -1714,6 +1722,17 @@ When a user asks you to write, create, draft, or generate any document (email, a
     
     if (modePrompt && mode !== 'general') {
       systemPrompt += `\n\n## Current Mode: ${mode?.toUpperCase() || 'GENERAL'}\n${modePrompt}`;
+    }
+
+    if (documentGeneration || mode === "document") {
+      const docType = (documentType as KimiDocumentType) || "report";
+      const docTone = (documentTone as KimiToneType) || "professional";
+      const docLength = (documentLength as KimiLengthType) || "medium";
+      systemPrompt += `\n\n${getKimiDocumentSystemPrompt(docType, docTone, docLength)}`;
+      systemPrompt += `\n${KIMI_CHAT_DOCUMENT_APPENDIX}`;
+      if (documentResearchContext?.trim()) {
+        systemPrompt += `\n\n## RESEARCH BRIEF (use as evidence; cite with [n])\n${documentResearchContext.trim().slice(0, 12000)}`;
+      }
     }
 
     // === SPRINT 1: USE ROUTER V2 MODEL DECISION ===

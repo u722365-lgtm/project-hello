@@ -1,4 +1,5 @@
 import { motion, useScroll, useSpring } from "framer-motion";
+import { useLocation } from "react-router-dom";
 import { useSiteMotion } from "@/components/motion/SiteMotionProvider";
 
 type SitePageShellProps = {
@@ -10,9 +11,19 @@ type SitePageShellProps = {
  * Skips duplicate chrome on /home (Index uses LandingPageShell).
  */
 const SitePageShell = ({ children }: SitePageShellProps) => {
+  const { pathname } = useLocation();
   const { scrollYProgress } = useScroll();
   const { reduced, isMobile, intensity, isLandingPage } = useSiteMotion();
   const scaleX = useSpring(scrollYProgress, { stiffness: 120, damping: 28, restDelta: 0.001 });
+  const isChatWorkspace = pathname === "/chatbot";
+
+  if (isChatWorkspace) {
+    return (
+      <div className="site-page relative flex h-[100dvh] max-h-[100dvh] min-h-0 flex-col overflow-hidden">
+        {children}
+      </div>
+    );
+  }
 
   if (isLandingPage) {
     return <div className="site-page relative app-min-height">{children}</div>;

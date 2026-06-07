@@ -1,7 +1,9 @@
-import { buildChatRequestBody , stringifyChatBody} from "@/lib/chatRequest";
+import { buildChatRequestBody } from "@/lib/chatRequest";
 import { supabase } from "@/integrations/supabase/client";
 import type { PresentationData } from "@/components/presentation/types";
 import type { ThemeKey } from "@/components/presentation/types";
+import { THEMES as THEME_MAP } from "@/components/presentation/types";
+import { postProcessPresentation } from "@/lib/presentation/slideQuality";
 
 export type KimiPresentationMode = "adaptive" | "visual";
 
@@ -66,7 +68,18 @@ export async function generateKimiPresentation(
   if (data?.error) throw new Error(data.error);
   if (!data?.slides?.length) throw new Error("No slides were generated. Try again.");
 
-  return data as PresentationData;
+  const presentation = data as PresentationData;
+  const themeColors = THEME_MAP[style] || THEME_MAP.corporate;
+  postProcessPresentation(presentation, {
+    bg: themeColors.bg,
+    accent: themeColors.accent,
+    accentEnd: themeColors.accentEnd ?? themeColors.accent,
+    text: themeColors.text,
+    secondaryBg: themeColors.secondaryBg,
+    cardBg: themeColors.secondaryBg,
+    mutedText: themeColors.text,
+  });
+  return presentation;
 }
 
 export function savePresentationToSession(presentation: PresentationData, style: ThemeKey): void {

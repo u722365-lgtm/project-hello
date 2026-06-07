@@ -199,7 +199,7 @@ const Navigation = ({ landingAnimated = false }: NavigationProps) => {
             </DropdownMenu>
           </LandingStagger>
 
-          <LandingStagger className="hidden md:flex items-center space-x-1.5" inView={false}>
+          <LandingStagger className="hidden lg:flex items-center space-x-1.5" inView={false}>
             <LandingAnimate preset="pop" index={0} inView={false} as="div">
               <TrustBadge />
             </LandingAnimate>

@@ -42,6 +42,7 @@ Upgrade paths: **/pricing**, **/founder-access**, Profile → subscription.
 - **Personalities:** friendly, sarcastic, professional, creative, meticulous, curious, diplomatic, witty, pragmatic, inquisitive (and spicy where enabled).
 - **Chat modes (Mode selector):** general, code, translate, summarize, debug, brainstorm, image, explain, creative, music, math, camera, organize, academic, email, proofread, research, ppag (eco/planetary actions), hsca (security audit), uncensored arena (elite, security training with accepted terms).
 - **Panels from chat/header:** Image Generator, Deep Research, Shadow Browser, ShadowTalk Live (voice), Analytics, Command Palette, Code Canvas.
+- **ShadowTalk Live:** Real-time voice — user says "open live mode" / "launch ShadowTalk Live" or taps the mic; opens the voice panel (not a separate app).
 - **Usage tracking** for insights and limits.
 
 ### What users can trigger from chat (natural language)
@@ -49,6 +50,7 @@ Upgrade paths: **/pricing**, **/founder-access**, Profile → subscription.
 |--------|----------|
 | Web search | Real web-search edge function → results in chat |
 | Deep research | Research stream with sources |
+| Live mode / voice | Opens ShadowTalk Live panel (real-time voice) — NEVER say live mode does not exist |
 | Image generation | generateImage via chat API |
 | Image analysis | Attach image + ask to analyze (decodeImage) |
 | Security audit URL | website-security-scan |

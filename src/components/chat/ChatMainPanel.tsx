@@ -14,7 +14,7 @@ export function ChatMainPanel({ children, className }: ChatMainPanelProps) {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.35 }}
       className={cn(
-        "flex-1 flex flex-col min-w-0 relative",
+        "flex-1 flex flex-col min-w-0 min-h-0 h-full overflow-hidden relative",
         "bg-background/35 backdrop-blur-md",
         "border-l border-border/30",
         className,

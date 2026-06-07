@@ -16,7 +16,6 @@ import remarkGfm from "remark-gfm";
 import {
   KIMI_DOCUMENT_TYPES,
   KIMI_LENGTHS,
-  streamKimiDocument,
   downloadAsWordDoc,
   inferDocumentTypeFromMessage,
   type KimiDocumentType,
@@ -25,6 +24,13 @@ import {
 } from "@/lib/kimiDocumentGeneration";
 import { DOCUMENT_PROSE_CLASS } from "@/lib/professionalDocument";
 import { downloadProfessionalPdf } from "@/lib/professionalPdfExport";
+import {
+  runUnifiedDocumentPipeline,
+  shouldEnableResearch,
+  type DocumentPipelinePhase,
+} from "@/lib/unifiedDocumentPipeline";
+import { DocumentGenerationProgress } from "@/components/content-forge/DocumentGenerationProgress";
+import { Switch } from "@/components/ui/switch";
 
 const TONES: { value: KimiToneType; label: string }[] = [
   { value: "professional", label: "Professional" },
@@ -64,7 +70,9 @@ export function DocumentForgePanel({
   const [tone, setTone] = useState<KimiToneType>("professional");
   const [length, setLength] = useState<KimiLengthType>("medium");
   const [topic, setTopic] = useState(initialPrompt || "");
+  const [audience, setAudience] = useState("");
   const [additionalContext, setAdditionalContext] = useState("");
+  const [enableResearch, setEnableResearch] = useState<boolean | undefined>(undefined);
   const [generatedContent, setGeneratedContent] = useState("");
   const [previousContent, setPreviousContent] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -72,6 +80,7 @@ export function DocumentForgePanel({
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<"preview" | "raw">("preview");
   const [wordCount, setWordCount] = useState(0);
+  const [pipelinePhase, setPipelinePhase] = useState<DocumentPipelinePhase>("idle");
 
   useEffect(() => {
     if (initialPrompt) {
@@ -106,26 +115,36 @@ export function DocumentForgePanel({
     abortRef.current = new AbortController();
     setIsGenerating(true);
     setGeneratedContent("");
+    setPipelinePhase("planning");
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      const content = await streamKimiDocument({
+      const result = await runUnifiedDocumentPipeline({
         topic,
         docType,
         tone,
         length,
+        audience: audience || undefined,
         additionalContext,
+        enableResearch,
         accessToken: session?.access_token,
         signal: abortRef.current.signal,
+        onPhase: setPipelinePhase,
         onChunk: setGeneratedContent,
       });
 
       const label = KIMI_DOCUMENT_TYPES.find((d) => d.type === docType)?.label ?? "Document";
-      toast({ title: "Document ready", description: `Your ${label} is ready to export.` });
-      onDocumentReady?.(content, docType);
-      return content;
+      toast({
+        title: "Document ready",
+        description: result.researchBrief
+          ? `${label} drafted with research-backed evidence.`
+          : `Your ${label} is ready to export.`,
+      });
+      onDocumentReady?.(result.content, docType);
+      return result.content;
     } catch (error) {
       if ((error as Error).name === "AbortError") return;
+      setPipelinePhase("error");
       toast({
         title: "Generation failed",
         description: "Could not generate document. Try again or use a shorter length.",
@@ -134,6 +153,7 @@ export function DocumentForgePanel({
       return null;
     } finally {
       setIsGenerating(false);
+      setPipelinePhase("idle");
     }
   };
 
@@ -242,12 +262,33 @@ export function DocumentForgePanel({
         </div>
 
         <div className="space-y-1.5">
+          <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Audience</label>
+          <Input
+            value={audience}
+            onChange={(e) => setAudience(e.target.value)}
+            placeholder="e.g. Board of directors, legal team..."
+            className="text-sm h-9"
+          />
+        </div>
+
+        <div className="space-y-1.5">
           <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Requirements</label>
           <Textarea
             value={additionalContext}
             onChange={(e) => setAdditionalContext(e.target.value)}
-            placeholder="Audience, citations, sections..."
+            placeholder="Sections, citations, standards to reuse..."
             className="min-h-[80px] text-sm resize-none"
+          />
+        </div>
+
+        <div className="flex items-center justify-between rounded-lg border border-border/60 px-3 py-2">
+          <div>
+            <p className="text-xs font-medium">Research first</p>
+            <p className="text-[10px] text-muted-foreground">Gather web evidence before drafting</p>
+          </div>
+          <Switch
+            checked={enableResearch ?? shouldEnableResearch(docType, length)}
+            onCheckedChange={(v) => setEnableResearch(v)}
           />
         </div>
 
@@ -337,11 +378,13 @@ export function DocumentForgePanel({
               ) : (
                 <pre className="text-xs font-mono whitespace-pre-wrap bg-muted/50 p-4 rounded-lg border">{generatedContent}</pre>
               )
+            ) : isGenerating ? (
+              <DocumentGenerationProgress phase={pipelinePhase} topic={topic} />
             ) : (
               <div className="flex flex-col items-center justify-center h-[60vh] text-muted-foreground text-center">
                 <FileText className="h-12 w-12 opacity-30 mb-4" />
-                <p className="font-medium text-sm">Client-ready documents — up to ~10,000 words</p>
-                <p className="text-xs mt-1 max-w-sm">TOC · tables · citations · export to Word or PDF</p>
+                <p className="font-medium text-sm">Kimi + Manus unified pipeline</p>
+                <p className="text-xs mt-1 max-w-sm">Plan → research → draft → polish → Word/PDF export</p>
               </div>
             )}
           </div>

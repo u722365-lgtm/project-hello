@@ -27,11 +27,12 @@ export function OfflineBootstrapBanner() {
   return (
     <AnimatePresence>
       <motion.div
-        initial={{ opacity: 0, y: -8 }}
+        initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -8 }}
-        className="mx-4 mt-2 rounded-2xl border border-primary/25 bg-primary/5 backdrop-blur-md p-4 shadow-lg"
+        exit={{ opacity: 0, y: 8 }}
+        className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[60] w-[min(92vw,640px)] rounded-2xl border border-primary/25 bg-background/90 backdrop-blur-md p-4 shadow-2xl"
       >
+
         {phase === "needs_consent" && (
           <div className="flex flex-col sm:flex-row sm:items-center gap-4">
             <div className="flex items-start gap-3 flex-1">

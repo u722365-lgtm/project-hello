@@ -156,7 +156,8 @@ const AnimatedRoutes = () => {
           <Route path="/home" element={<PageTransition><Index /></PageTransition>} />
           <Route path="/auth" element={<PageTransition><AuthPage /></PageTransition>} />
           <Route path="/pricing" element={<PageTransition><PricingPage /></PageTransition>} />
-          <Route path="/chatbot" element={<PageTransition><ChatbotPage /></PageTransition>} />
+          {/* Chat workspace: no PageTransition — avoids opacity-0 flash and flex height collapse */}
+          <Route path="/chatbot" element={<ChatbotPage />} />
           <Route path="/admin" element={<PageTransition><AdminPage /></PageTransition>} />
           <Route path="/docs" element={<PageTransition><DocsPage /></PageTransition>} />
           <Route path="/changelog" element={<PageTransition><ChangelogPage /></PageTransition>} />
@@ -218,6 +219,8 @@ const AnimatedRoutes = () => {
           <Route path="/compliance" element={<PageTransition><ComplianceDashboardPage /></PageTransition>} />
           <Route path="/personal-llm" element={<PageTransition><PersonalLLMPage /></PageTransition>} />
           <Route path="/templates" element={<PageTransition><TemplatesPage /></PageTransition>} />
+          <Route path="/theme" element={<Navigate to="/templates?tab=custom" replace />} />
+          <Route path="/themes" element={<Navigate to="/templates" replace />} />
           <Route path="/downloads" element={<PageTransition><DownloadsPage /></PageTransition>} />
           <Route path="/download" element={<Navigate to="/downloads" replace />} />
           <Route path="/sessions" element={<PageTransition><SessionsPage /></PageTransition>} />

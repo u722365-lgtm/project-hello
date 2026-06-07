@@ -32,8 +32,11 @@ export async function connectIntegration(
   });
 
   const data = (await resp.json()) as { authUrl?: string; error?: string; message?: string };
-  if (!resp.ok || !data.authUrl) {
-    return { ok: false, error: data.message || data.error || "Could not start OAuth" };
+  if (!data.authUrl) {
+    return {
+      ok: false,
+      error: data.message || data.error || (resp.ok ? "Could not start OAuth" : `OAuth service error (${resp.status})`),
+    };
   }
 
   return openOAuthPopup(data.authUrl, provider);

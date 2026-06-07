@@ -75,6 +75,12 @@ export const ChatRequestSchema = z.object({
   isResearch: z.boolean().optional(), // Flag for research/strategy agent mode
   industry: z.string().max(50).optional(), // Industry specialization context
   researchQuery: z.string().max(500).optional(),
+  /** Kimi-style dedicated document generation (Content Forge pipeline) */
+  documentGeneration: z.boolean().optional(),
+  documentType: z.string().max(50).optional(),
+  documentTone: z.string().max(50).optional(),
+  documentLength: z.string().max(50).optional(),
+  documentResearchContext: z.string().max(50000).optional(),
   decodeImage: z.boolean().optional(),
   imageToAnalyze: z.string().optional(),
   agentWorkflow: z.object({

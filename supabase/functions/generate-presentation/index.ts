@@ -1,5 +1,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { requireAuth } from "../_shared/auth.ts";
+import {
+  SLIDE_ANTI_OVERLAP_RULES,
+  SLIDE_CONTENT_RULES,
+  SLIDE_MASTER_TEMPLATE_RULES,
+  SLIDE_VISUAL_RULES,
+  postProcessPresentation,
+} from "../_shared/slideQuality.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -129,19 +136,28 @@ CRITICAL VISUAL STANDARDS:
    - Color-coded phases
 
 LAYOUT RULES:
-- Root: <div style="width:960px;height:540px;overflow:hidden;position:relative;background:${t.bg};color:${t.text};font-family:'Inter','Segoe UI',system-ui,sans-serif;">
+- Root: <div style='width:960px;height:540px;overflow:hidden;position:relative;background:${t.bg};color:${t.text};font-family:Inter,system-ui,sans-serif;display:flex;flex-direction:column;box-sizing:border-box;padding:48px 56px;'>
 - ALL styles MUST be inline. Use SINGLE QUOTES for HTML attributes.
 - NO <style> tags, NO CSS classes, NO external resources
-- Use flexbox (display:flex) and grid (display:grid) for layouts
-- Generous padding (40-60px) and consistent spacing
+- Use flexbox column layout: header (title+subtitle) → main (bullets/diagrams) → footer (source)
+- NEVER position:absolute on text elements — overlap is a critical failure
 - Every slide MUST be visually UNIQUE
 
+${SLIDE_MASTER_TEMPLATE_RULES}
+
+${SLIDE_ANTI_OVERLAP_RULES}
+
+${SLIDE_CONTENT_RULES}
+
+${SLIDE_VISUAL_RULES}
+
 CONTENT QUALITY:
-- Bold, provocative titles
+- Bold, provocative titles (on slide); conversational script (in speakerNotes ONLY)
 - Specific data with precise numbers and sources
 - Real company names and research citations
-- Short punchy descriptions (2-3 lines max per card)
-- Speaker notes: 4-6 sentences with delivery cues
+- On-slide: bullets and visuals only — max 6 bullets, max 14 words each
+- speakerNotes: full presenter script (4-6 sentences with delivery cues)
+- If citing a workflow/diagram, include inline <svg> on that slide
 
 SLIDE COUNT (STRICT): You MUST output EXACTLY ${count} slides — no more, no less.
 
@@ -257,21 +273,22 @@ OUTPUT FORMAT:
       }
     }
 
-    // Validate and fix slides
+    // Validate, scaffold, and post-process slides (fix overlap, scripts, dense text)
     if (presentation.slides) {
       presentation.slides = presentation.slides.map((slide: Slide) => {
         if (!slide.html) {
           const isAccent = slide.layout === 'title' || slide.layout === 'closing';
           const bg = isAccent ? `background:linear-gradient(135deg,${t.accent},${t.accentEnd});color:#fff;` : `background:${t.bg};color:${t.text};`;
-          slide.html = `<div style="width:960px;height:540px;overflow:hidden;position:relative;${bg}font-family:'Inter',system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;text-align:center;"><h2 style="margin:0;font-size:36px;font-weight:700;">${slide.title}</h2></div>`;
+          slide.html = `<div style="width:960px;height:540px;overflow:hidden;position:relative;${bg}font-family:'Inter',system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 56px;text-align:center;box-sizing:border-box;"><h1 style="margin:0 0 12px 0;font-size:40px;font-weight:800;line-height:1.15;">${slide.title}</h1>${slide.subtitle ? `<p style="margin:0;font-size:18px;opacity:0.85;max-width:640px;">${slide.subtitle}</p>` : ""}</div>`;
         }
         if (!slide.content || Object.keys(slide.content).length === 0) {
           if (slide.layout === 'title') slide.content = { tagline: slide.subtitle || "", presenter: "ShadowTalk AI", date: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) };
           else if (slide.layout === 'closing') slide.content = { heading: slide.subtitle || "", cta: "Get Started", nextSteps: ["Review findings", "Schedule follow-up"] };
-          else slide.content = { heading: slide.subtitle || slide.title, paragraphs: [slide.speakerNotes || ""] };
+          else slide.content = { heading: slide.subtitle || slide.title, bullets: [] };
         }
         return slide;
       });
+      postProcessPresentation(presentation, t);
     }
 
     // STRICT slide-count enforcement — trim or pad to exactly `count` slides

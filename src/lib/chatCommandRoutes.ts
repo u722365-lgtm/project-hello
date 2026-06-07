@@ -24,6 +24,8 @@ export const CHAT_COMMAND_NAV_ROUTES: Record<string, string> = {
   "code-ide": "/ide",
   marketplace: "/marketplace",
   "privacy-score": "/security?tab=score",
+  theme: "/templates?tab=custom",
+  templates: "/templates",
 };
 
 /** Open in-chat modals instead of navigating away */

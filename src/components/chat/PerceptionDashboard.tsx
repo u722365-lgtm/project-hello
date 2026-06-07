@@ -6,6 +6,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useGooglePerception, PerceptionEvent } from "@/hooks/useGooglePerception";
+import { connectIntegration } from "@/lib/integrationOAuth";
+import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface PerceptionDashboardProps {
@@ -27,6 +29,8 @@ const URGENCY_COLORS: Record<string, string> = {
 };
 
 export const PerceptionDashboard = ({ onEventSelect, onProactiveSuggestion }: PerceptionDashboardProps) => {
+  const { toast } = useToast();
+  const [connecting, setConnecting] = useState(false);
   const {
     isConnected,
     isMonitoring,
@@ -216,13 +220,24 @@ export const PerceptionDashboard = ({ onEventSelect, onProactiveSuggestion }: Pe
                 Enable real-time perception of your Gmail, Calendar, and Drive to get proactive AI assistance.
               </p>
               <Button
+                disabled={connecting}
                 onClick={() => {
-                  // Trigger OAuth flow via existing Google integration
-                  window.location.href = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/oauth-initiate?provider=google&scope=https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/drive.readonly`;
+                  setConnecting(true);
+                  void connectIntegration("google", "both").then((result) => {
+                    if (result.ok) {
+                      toast({ title: "Google connected", description: "Gmail, Calendar, and Drive are linked." });
+                    } else {
+                      toast({
+                        title: "Could not connect Google",
+                        description: result.error,
+                        variant: "destructive",
+                      });
+                    }
+                  }).finally(() => setConnecting(false));
                 }}
                 className="gap-2"
               >
-                <Mail className="h-4 w-4" />
+                {connecting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
                 Connect Google
               </Button>
             </div>

@@ -429,10 +429,6 @@ const ChatbotPage = () => {
     }
   }, [user]);
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
   const conversationIsArchived = (conv: Conversation) =>
     isConversationArchived(conv.id, conv.archived_at, guestArchivedIds);
 
@@ -844,8 +840,11 @@ const ChatbotPage = () => {
 
       const routerMessages: RouterMessage[] = augmented.map((m) => ({
         role: m.role as RouterMessage["role"],
-        content: m.content,
+        content: typeof m.content === "string"
+          ? m.content
+          : (m.content.find((p) => p.type === "text") as { text?: string } | undefined)?.text ?? "",
       }));
+
 
       const hasMultimodalImage = chatMessages.some((m) => Array.isArray(m.content));
       const route = decideRoute(routerMessages, navigator.onLine);
@@ -1156,13 +1155,17 @@ const ChatbotPage = () => {
       setDailyChats(incrementDailyMessageCount());
     }
 
-    const chatMessages = messages
+    const chatMessages: Array<{
+      role: string;
+      content: string | Array<{ type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }>;
+    }> = messages
       .filter((m) => m.id !== "welcome")
       .map((m) => ({
         role: m.type === "user" ? "user" : "assistant",
         content: m.content,
       }));
     chatMessages.push({ role: "user", content: msgContent });
+
 
     void captureChatSend(msgContent, chatMode, personality, Boolean(userMessage.attachment));
 
@@ -1756,8 +1759,9 @@ const ChatbotPage = () => {
 
   if (authLoading) {
     return (
-      <div className="flex h-[100dvh] items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="shadowtalk-chat-shell neural-bg flex h-[100dvh] flex-col items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" aria-label="Loading chat" />
+        <p className="mt-3 text-sm text-muted-foreground">Starting ShadowTalk…</p>
       </div>
     );
   }
@@ -1776,11 +1780,11 @@ const ChatbotPage = () => {
   }
 
   return (
-    <div className="shadowtalk-chat-shell neural-bg settings-scroll-smooth">
+    <div className="shadowtalk-chat-shell neural-bg settings-scroll-smooth flex h-full min-h-0 flex-col overflow-hidden">
       <SEOHead meta={PAGE_SEO.chatbot} />
       <ChatAmbientBackground />
       <motion.div
-        className="shadowtalk-chat-main flex w-full relative overflow-hidden"
+        className="shadowtalk-chat-main flex w-full min-h-0 flex-1 relative overflow-hidden"
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={SETTINGS_SPRING}
@@ -1951,7 +1955,7 @@ const ChatbotPage = () => {
               requiredPlan="premium"
             />
           )}
-          <div className={`flex-1 overflow-hidden relative flex flex-col ${isEmptyChat ? "justify-center" : ""}`}>
+          <div className={`flex-1 min-h-0 overflow-hidden relative flex flex-col ${isEmptyChat ? "justify-center" : ""}`}>
             <AnimatePresence mode="wait">
               {isEmptyChat ? (
                 <motion.div
@@ -2063,7 +2067,7 @@ const ChatbotPage = () => {
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={SETTINGS_SPRING}
-                className="shadowtalk-chat-input-dock"
+                className="shadowtalk-chat-input-dock shrink-0"
                 style={inputDockStyle}
               >
                 <div className="shadowtalk-chat-input-shell w-full">

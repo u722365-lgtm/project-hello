@@ -1,7 +1,7 @@
 import { useRef, useMemo } from "react";
 import DOMPurify from "dompurify";
 import { Slide, ThemeKey, THEMES } from "@/components/presentation/types";
-import { Image } from "lucide-react";
+import { postProcessSlide } from "@/lib/presentation/slideQuality";
 
 interface SlideRendererProps {
   slide: Slide;
@@ -13,10 +13,35 @@ const SlideRenderer = ({ slide, theme, scale = 1 }: SlideRendererProps) => {
   const t = THEMES[theme];
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const processedSlide = useMemo(
+    () =>
+      postProcessSlide(
+        {
+          title: slide.title,
+          subtitle: slide.subtitle,
+          layout: slide.layout,
+          html: slide.html || "",
+          speakerNotes: slide.speakerNotes,
+          content: slide.content,
+        },
+        {
+          bg: t.bg,
+          accent: t.accent,
+          accentEnd: t.accentEnd,
+          text: t.text,
+          secondaryBg: t.secondaryBg,
+          cardBg: t.secondaryBg,
+          mutedText: t.text,
+        },
+        0,
+      ),
+    [slide, t],
+  );
+
   // Always compute sanitized HTML (hooks must be unconditional)
   const sanitizedHtml = useMemo(() => {
-    if (!slide.html) return null;
-    return DOMPurify.sanitize(slide.html, {
+    if (!processedSlide.html) return null;
+    return DOMPurify.sanitize(processedSlide.html, {
       ALLOWED_TAGS: [
         'div', 'span', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
         'ul', 'ol', 'li', 'strong', 'em', 'b', 'i', 'br', 'hr',
@@ -33,7 +58,7 @@ const SlideRenderer = ({ slide, theme, scale = 1 }: SlideRendererProps) => {
       FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'form', 'input', 'button', 'link', 'meta'],
       FORBID_ATTR: ['onerror', 'onclick', 'onload', 'onmouseover'],
     });
-  }, [slide.html]);
+  }, [processedSlide.html]);
 
   // Render custom HTML slide if available
   if (sanitizedHtml) {

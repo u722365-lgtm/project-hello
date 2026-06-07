@@ -236,6 +236,10 @@ const TOOL_PATTERNS: Array<{
     patterns: [
       /\b(voice\s+chat|talk\s+to\s+ai|live\s+conversation|speak\s+with)/i,
       /\bstart\s+(?:a\s+)?(?:voice|live)\s+(?:call|chat|session)/i,
+      /\b(?:launch|open|start|enable)\s+(?:your\s+)?(?:live\s+mode|shadowtalk\s+live)/i,
+      /\b(?:can\s+you\s+)?(?:launch|open|start)\s+(?:the\s+)?live\s+mode/i,
+      /\blive\s+mode\b/i,
+      /\bshadowtalk\s+live\b/i,
       /\bvoice\s+mode/i,
     ],
     priority: 4,

@@ -13,7 +13,7 @@ export const CONTENT_FORGE_MODES: {
   {
     id: "documents",
     label: "Documents",
-    description: "Long-form reports · Word · PDF",
+    description: "Kimi + Manus pipeline · research · Word · PDF",
   },
   {
     id: "beast",
