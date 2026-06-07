@@ -1759,8 +1759,9 @@ const ChatbotPage = () => {
 
   if (authLoading) {
     return (
-      <div className="flex h-[100dvh] items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="shadowtalk-chat-shell neural-bg flex h-[100dvh] flex-col items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" aria-label="Loading chat" />
+        <p className="mt-3 text-sm text-muted-foreground">Starting ShadowTalk…</p>
       </div>
     );
   }

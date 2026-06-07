@@ -116,19 +116,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     let mounted = true;
 
     const bootstrap = async () => {
-      const restored = await restoreOrCreateSession();
-      if (!mounted) return;
-      applySession(restored);
-      if (mounted) {
-        setLoading(false);
-        initDone.current = true;
-      }
-      if (restored?.user) {
-        void Promise.all([checkSubscription(), checkAndAssignAdminRole()]);
-      } else {
-        setUserPlan('free');
-        setSubscribed(false);
-        setSubscriptionEnd(null);
+      let restored: Session | null = null;
+      try {
+        restored = await restoreOrCreateSession();
+        if (!mounted) return;
+        applySession(restored);
+        if (restored?.user) {
+          void Promise.all([checkSubscription(), checkAndAssignAdminRole()]);
+        } else {
+          setUserPlan('free');
+          setSubscribed(false);
+          setSubscriptionEnd(null);
+        }
+      } catch (error) {
+        console.warn('[Auth] Session bootstrap failed:', error);
+        if (mounted) {
+          applySession(null);
+          setUserPlan('free');
+          setSubscribed(false);
+          setSubscriptionEnd(null);
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+          initDone.current = true;
+        }
       }
     };
 

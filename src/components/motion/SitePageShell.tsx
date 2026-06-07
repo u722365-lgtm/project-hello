@@ -19,7 +19,7 @@ const SitePageShell = ({ children }: SitePageShellProps) => {
 
   if (isChatWorkspace) {
     return (
-      <div className="site-page relative h-[100dvh] max-h-[100dvh] overflow-hidden">
+      <div className="site-page relative flex h-[100dvh] max-h-[100dvh] min-h-0 flex-col overflow-hidden">
         {children}
       </div>
     );
