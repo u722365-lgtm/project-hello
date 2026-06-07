@@ -11,56 +11,97 @@ const theme = {
   mutedText: "#A1A1AA",
 };
 
-describe("postProcessSlide", () => {
-  it("moves speaker script off the slide into notes", () => {
+function stripTags(html: string): string {
+  return html.replace(/<[^>]+>/g, " ");
+}
+
+describe("postProcessSlide remediation", () => {
+  it("removes speaker scripts and uses master flex layout", () => {
     const slide = postProcessSlide(
       {
         title: "Welcome",
         subtitle: "Disrupting fragmented AI workflows.",
         layout: "title",
-        html: `<div style="position:absolute;top:40px;"><h1>Welcome</h1><p>Good morning everyone. Today we're going to talk about ShadowTalk AI and how it changes productivity.</p></div>`,
+        html: `<div style="position:absolute;"><p>Good morning everyone. Today we're going to talk about ShadowTalk.</p></div>`,
         speakerNotes: "",
       },
       theme,
       0,
+      10,
     );
     expect(slide.speakerNotes).toMatch(/good morning/i);
     expect(slide.html).toContain("flex-direction:column");
+    expect(slide.html).toContain("max-width:640px");
     expect(stripTags(slide.html).toLowerCase()).not.toMatch(/good morning/);
   });
 
-  it("converts dense paragraphs to bullets", () => {
+  it("converts dense text to icon bullets with narrow content width", () => {
     const slide = postProcessSlide(
       {
         title: "Market problem",
         subtitle: "Hidden costs of fragmented AI.",
         layout: "bullets",
-        html: `<div><h2>Market problem</h2><p>The irony of the AI revolution is that while it promises efficiency teams still switch apps constantly. Workers lose focus and context. Enterprises pay twice for overlapping tools. Adoption stalls without unified workflows.</p></div>`,
-        speakerNotes: "Delivery notes here.",
+        html: `<div><p>Teams switch apps 36 times per hour. Workers lose focus. Enterprises pay twice for overlapping tools. Adoption stalls without unified workflows.</p></div>`,
+        speakerNotes: "",
       },
       theme,
       1,
+      10,
     );
     expect(slide.html).toContain("<ul");
-    expect(slide.html).toContain("flex-direction:column");
+    expect(slide.html).toContain("<svg");
+    expect(slide.html).toContain("max-width:640px");
   });
 
-  it("injects workflow diagram when text references one", () => {
+  it("injects workflow diagram when mission flow is referenced", () => {
     const slide = postProcessSlide(
       {
         title: "Agentic workflow",
-        subtitle: "Unleashing true agentic intelligence.",
+        subtitle: "How a mission unfolds.",
         layout: "process",
-        html: `<div><h2>Agentic workflow</h2><p>This workflow diagram illustrates how a mission unfolds from plan to deliver.</p></div>`,
+        html: `<div><p>This workflow diagram illustrates how a mission unfolds from plan to deliver.</p></div>`,
         speakerNotes: "",
       },
       theme,
       3,
+      10,
     );
+    expect(slide.html).toContain("Plan");
+    expect(slide.html).toContain("Execute");
     expect(slide.html).toContain("<svg");
   });
-});
 
-function stripTags(html: string): string {
-  return html.replace(/<[^>]+>/g, " ");
-}
+  it("adds stat cards and bar chart for numeric claims", () => {
+    const slide = postProcessSlide(
+      {
+        title: "Market opportunity",
+        subtitle: "Productivity gains",
+        layout: "stats",
+        html: `<div><p>The market reached $207.9 billion in 2023 with 25% increase in productivity and 2.5 times more output.</p></div>`,
+        speakerNotes: "",
+      },
+      theme,
+      4,
+      10,
+    );
+    expect(slide.html).toContain("font-weight:800");
+    expect(slide.html).toMatch(/<rect[^>]*y=/);
+  });
+
+  it("keeps closing slide minimal with script in notes", () => {
+    const slide = postProcessSlide(
+      {
+        title: "Thank you",
+        subtitle: "Let's discuss.",
+        layout: "closing",
+        html: `<div><p>Thank you for joining me today. I hope this presentation has given you a clear understanding of ShadowTalk.</p></div>`,
+        speakerNotes: "",
+      },
+      theme,
+      9,
+      10,
+    );
+    expect(slide.speakerNotes).toMatch(/thank you/i);
+    expect(stripTags(slide.html).toLowerCase()).not.toMatch(/thank you for joining/);
+  });
+});

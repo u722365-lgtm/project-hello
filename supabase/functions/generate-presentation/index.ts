@@ -3,6 +3,8 @@ import { requireAuth } from "../_shared/auth.ts";
 import {
   SLIDE_ANTI_OVERLAP_RULES,
   SLIDE_CONTENT_RULES,
+  SLIDE_MASTER_TEMPLATE_RULES,
+  SLIDE_VISUAL_RULES,
   postProcessPresentation,
 } from "../_shared/slideQuality.ts";
 
@@ -141,9 +143,13 @@ LAYOUT RULES:
 - NEVER position:absolute on text elements — overlap is a critical failure
 - Every slide MUST be visually UNIQUE
 
+${SLIDE_MASTER_TEMPLATE_RULES}
+
 ${SLIDE_ANTI_OVERLAP_RULES}
 
 ${SLIDE_CONTENT_RULES}
+
+${SLIDE_VISUAL_RULES}
 
 CONTENT QUALITY:
 - Bold, provocative titles (on slide); conversational script (in speakerNotes ONLY)
