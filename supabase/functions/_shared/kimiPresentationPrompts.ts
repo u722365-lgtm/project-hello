@@ -59,9 +59,11 @@ REQUIRED LAYOUTS (use at least 4 different types across the deck):
 - bullets or two_column for content
 
 HTML RULES:
-- Root: <div style='width:960px;height:540px;overflow:hidden;position:relative;...'>
+- Root: flex column layout — display:flex; flex-direction:column; padding:48px 56px; box-sizing:border-box
+- NEVER position:absolute on titles, subtitles, or body text (overlap = failure)
+- On-slide: bullets + visuals only. Speaker scripts go in speakerNotes ONLY
 - SINGLE quotes for HTML attributes inside JSON strings
-- Inline SVG icons on cards (24–32px)
+- Inline SVG icons/diagrams on cards (24–32px); include SVG when text references a diagram
 - NO external URLs, NO <script>, NO <style> tags
 
 OUTPUT JSON:
