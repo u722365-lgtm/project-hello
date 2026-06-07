@@ -584,11 +584,22 @@
   /* ShadowTalk branded chat workspace — fixed viewport, no document growth */
   .shadowtalk-chat-shell {
     @apply relative text-foreground overflow-hidden;
+    position: fixed;
+    inset: 0;
     height: 100dvh;
     height: -webkit-fill-available;
     max-height: 100dvh;
     max-height: -webkit-fill-available;
     background: hsl(var(--background));
+  }
+
+  /* Lock document scroll while chat workspace is mounted, so the chat shell
+     stays pinned to the viewport and the page can't grow as messages stream in. */
+  html:has(.shadowtalk-chat-shell),
+  body:has(.shadowtalk-chat-shell) {
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow: hidden;
   }
 
   .shadowtalk-chat-shell .shadowtalk-chat-glow {
