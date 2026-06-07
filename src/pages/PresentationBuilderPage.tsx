@@ -131,7 +131,7 @@ const PresentationBuilderPage = ({ embedded = false }: PresentationBuilderPagePr
     if (urlSlides) setSlideCount(urlSlides);
     const urlStyle = searchParams.get("style");
     if (urlStyle && urlStyle in THEMES) setStyle(urlStyle as ThemeKey);
-    if (searchParams.get("generate") === "1" && urlTopic) {
+    if ((searchParams.get("generate") === "1" || searchParams.get("auto") === "1") && urlTopic) {
       const timer = setTimeout(() => generatePresentation(), 500);
       return () => clearTimeout(timer);
     }

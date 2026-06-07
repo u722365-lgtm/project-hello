@@ -34,11 +34,14 @@ serve(async (req) => {
       rewrite: "Rewrite the following text to be clearer, more professional, and well-structured. Preserve the original meaning. Return ONLY the rewritten text, no explanations.",
       summarize: "Summarize the following text concisely. Capture all key points in a brief format. Return ONLY the summary.",
       expand: "Expand the following text with more detail, examples, and depth. Maintain the same tone and style. Return ONLY the expanded text.",
+      shorten: "Shorten the following text by roughly 25–35% while preserving every key point and recommendation. Return ONLY the shortened text.",
       translate: `Translate the following text to ${language || "English"}. Return ONLY the translation.`,
       fix_grammar: "Fix all grammar, spelling, and punctuation errors in the following text. Return ONLY the corrected text.",
       make_formal: "Rewrite the following text in a formal, professional tone. Return ONLY the rewritten text.",
       make_casual: "Rewrite the following text in a casual, conversational tone. Return ONLY the rewritten text.",
       bullet_points: "Convert the following text into a well-organized bullet point list. Return ONLY the bullet points.",
+      add_toc: "Add a ## Table of Contents section immediately after the document title listing all major ## section headings as bullet points. Return ONLY the full updated document.",
+      polish_professional: "Apply McKinsey-grade professional polish: tighten prose, fix markdown hierarchy, ensure consistent headings and spacing. Return ONLY the polished document.",
       custom: instruction || "Improve the following text. Return ONLY the improved text.",
     };
 

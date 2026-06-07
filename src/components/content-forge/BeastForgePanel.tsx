@@ -15,11 +15,11 @@ import GenerationProgress, { type GenerationPhase } from "@/components/presentat
 import {
   KIMI_DOCUMENT_TYPES,
   KIMI_LENGTHS,
-  streamKimiDocument,
   type KimiDocumentType,
   type KimiToneType,
   type KimiLengthType,
 } from "@/lib/kimiDocumentGeneration";
+import { runUnifiedDocumentPipeline } from "@/lib/unifiedDocumentPipeline";
 import {
   generateKimiPresentation,
   savePresentationToSession,
@@ -68,7 +68,7 @@ export function BeastForgePanel({ initialTopic = "", onComplete }: BeastForgePan
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      const doc = await streamKimiDocument({
+      const { content: doc } = await runUnifiedDocumentPipeline({
         topic,
         docType,
         tone,
