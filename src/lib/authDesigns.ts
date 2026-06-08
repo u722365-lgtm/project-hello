@@ -78,6 +78,8 @@ export function getAuthDesign(id: string | null | undefined): AuthDesignMeta | u
   return AUTH_DESIGNS.find((d) => d.id === id);
 }
 
+export const DEFAULT_AUTH_DESIGN: AuthDesignId = "glass-monolith";
+
 export function getStoredAuthDesignChoice(): AuthDesignId | null {
   try {
     const v = localStorage.getItem(AUTH_DESIGN_STORAGE_KEY);
@@ -85,6 +87,10 @@ export function getStoredAuthDesignChoice(): AuthDesignId | null {
   } catch {
     return null;
   }
+}
+
+export function getActiveAuthDesignId(): AuthDesignId {
+  return getStoredAuthDesignChoice() ?? DEFAULT_AUTH_DESIGN;
 }
 
 export function setStoredAuthDesignChoice(id: AuthDesignId): void {

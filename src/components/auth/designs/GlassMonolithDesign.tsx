@@ -8,11 +8,22 @@ type Props = {
   compact?: boolean;
   showBack?: boolean;
   onBack?: () => void;
+  backLabel?: string;
 };
 
-export function GlassMonolithDesign({ children, compact, showBack, onBack }: Props) {
+export function GlassMonolithDesign({
+  children,
+  compact,
+  showBack,
+  onBack,
+  backLabel = "Back to Home",
+}: Props) {
   return (
-    <div className="relative flex min-h-full items-center justify-center overflow-hidden bg-gradient-to-br from-zinc-950 via-zinc-900 to-slate-950 p-4">
+    <div
+      className={`relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-zinc-950 via-zinc-900 to-slate-950 p-4 sm:p-6 ${
+        compact ? "min-h-full" : "min-h-screen"
+      }`}
+    >
       <motion.div
         className="pointer-events-none absolute left-1/4 top-1/4 h-56 w-56 rounded-full bg-violet-500/25 blur-[90px]"
         animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
@@ -26,8 +37,13 @@ export function GlassMonolithDesign({ children, compact, showBack, onBack }: Pro
 
       <div className="relative z-10 w-full">
         {showBack && onBack && !compact && (
-          <Button variant="ghost" size="sm" onClick={onBack} className="absolute -top-12 left-0 text-muted-foreground">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onBack}
+            className="absolute -top-12 left-0 text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" /> {backLabel}
           </Button>
         )}
         <motion.div
