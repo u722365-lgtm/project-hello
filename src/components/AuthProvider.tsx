@@ -9,6 +9,7 @@ import {
   restoreOrCreateSession,
 } from '@/lib/persistentAuth';
 import { resolvePlanFromCheckSubscription } from '@/lib/resolveUserPlan';
+import { applyReferralOnSignup } from '@/lib/referral/applyReferralOnSignup';
 
 type UserPlan = 'free' | 'pro' | 'premium' | 'lifetime' | 'elite' | 'enterprise';
 
@@ -163,6 +164,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           applySession(nextSession);
           if (nextSession?.user) {
             clearExplicitSignOut();
+            if (event === 'SIGNED_IN') {
+              void applyReferralOnSignup();
+            }
             setTimeout(() => {
               void checkSubscription();
               void checkAndAssignAdminRole();

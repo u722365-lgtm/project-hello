@@ -15,6 +15,7 @@ type AdminLayoutProps = {
   onSectionChange: (id: string) => void;
   adminEmail?: string | null;
   pendingFeedback?: number;
+  pendingGrowthActions?: number;
   sidebarCollapsed: boolean;
   onToggleSidebar: () => void;
   children: ReactNode;
@@ -82,12 +83,14 @@ function SidebarNav({
   onSectionChange,
   collapsed,
   pendingFeedback,
+  pendingGrowthActions = 0,
   onNavigateItem,
 }: {
   activeSection: string;
   onSectionChange: (id: string) => void;
   collapsed: boolean;
   pendingFeedback: number;
+  pendingGrowthActions?: number;
   onNavigateItem?: () => void;
 }) {
   const { variants } = useAdminMotion();
@@ -123,7 +126,13 @@ function SidebarNav({
                   item={item}
                   isActive={activeSection === item.id}
                   collapsed={collapsed}
-                  badge={item.badgeKey === "pendingFeedback" ? pendingFeedback : undefined}
+                  badge={
+                    item.badgeKey === "pendingFeedback"
+                      ? pendingFeedback
+                      : item.badgeKey === "pendingGrowthActions"
+                        ? pendingGrowthActions
+                        : undefined
+                  }
                   onClick={() => pick(item)}
                 />
               </motion.div>
@@ -140,6 +149,7 @@ export function AdminLayout({
   onSectionChange,
   adminEmail,
   pendingFeedback = 0,
+  pendingGrowthActions = 0,
   sidebarCollapsed,
   onToggleSidebar,
   children,
@@ -208,6 +218,7 @@ export function AdminLayout({
           onSectionChange={onSectionChange}
           collapsed={sidebarCollapsed}
           pendingFeedback={pendingFeedback}
+          pendingGrowthActions={pendingGrowthActions}
         />
 
         <div className="shrink-0 border-t border-border p-2">
@@ -251,6 +262,7 @@ export function AdminLayout({
                   onSectionChange={onSectionChange}
                   collapsed={false}
                   pendingFeedback={pendingFeedback}
+                  pendingGrowthActions={pendingGrowthActions}
                   onNavigateItem={() => setMobileOpen(false)}
                 />
               </SheetContent>

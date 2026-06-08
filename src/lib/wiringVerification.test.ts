@@ -99,4 +99,12 @@ describe("feature wiring verification", () => {
     expect(app).toContain("ShadowHealEngine");
     expect(readSrc("components/shadowHeal/ShadowHealEngine.tsx")).toContain("startShadowHealEngine");
   });
+
+  it("ShadowScale growth engine and admin Growth Command wired", () => {
+    expect(readSrc("App.tsx")).toContain("ShadowScaleEngine");
+    expect(readSrc("components/shadowScale/ShadowScaleEngine.tsx")).toContain("startShadowScaleEngine");
+    expect(readSrc("components/admin/GrowthCommandPanel.tsx")).toContain("Growth Command");
+    expect(readSrc("components/admin/adminNav.ts")).toContain("growth-command");
+    expect(readSrc("App.tsx")).toContain("AnnouncementBanner");
+  });
 });

@@ -106,6 +106,12 @@ const VoiceCommandSystem = lazy(() => import("./components/VoiceCommandSystem"))
 const ShadowHealEngine = lazy(() =>
   import("./components/shadowHeal/ShadowHealEngine").then((m) => ({ default: m.ShadowHealEngine })),
 );
+const ShadowScaleEngine = lazy(() =>
+  import("./components/shadowScale/ShadowScaleEngine").then((m) => ({ default: m.ShadowScaleEngine })),
+);
+const AnnouncementBanner = lazy(() =>
+  import("./components/AnnouncementBanner").then((m) => ({ default: m.AnnouncementBanner })),
+);
 const OfflineBootstrapBanner = lazy(() =>
   import("./components/offline/OfflineBootstrapBanner").then((m) => ({ default: m.OfflineBootstrapBanner })),
 );
@@ -314,6 +320,9 @@ const App = () => {
                      <PersistedAuthRedirect />
                      <WorkspacePathRemember />
                       <NotificationPermissionRequester />
+                     <Suspense fallback={null}>
+                       <AnnouncementBanner />
+                     </Suspense>
                      <AnimatedRoutes />
                      <BackToHomeButton />
                    </SitePageShell>
@@ -328,6 +337,7 @@ const App = () => {
                       <JourneyTracker />
                       <AutoImproveEngine />
                       <ShadowHealEngine />
+                      <ShadowScaleEngine />
                       <AutonomousAgentEngine />
                       <MissionSchedulerEngine />
                       <GoalPursuitEngine />

@@ -72,6 +72,7 @@ import { AdminDashboard } from '@/components/admin/AdminDashboard';
 import GoogleSearchConsoleSummary from '@/components/admin/GoogleSearchConsoleSummary';
 
 import { BusinessInsightsDashboard } from '@/components/admin/BusinessInsightsDashboard';
+import { GrowthCommandPanel } from '@/components/admin/GrowthCommandPanel';
 import { TimezoneInsights } from '@/components/admin/TimezoneInsights';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -168,6 +169,7 @@ const AdminPage = () => {
     eliteSubscribers: 0,
     totalFeedback: 0,
     pendingFeedback: 0,
+    pendingGrowthActions: 0,
   });
   const [loadingData, setLoadingData] = useState(true);
 
@@ -225,6 +227,11 @@ const AdminPage = () => {
       setFeedback(feedbackData || []);
 
       const uniqueUserIds = new Set(convData?.map(c => c.user_id) || []);
+      const { count: growthPending } = await supabase
+        .from('shadowscale_action_queue')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'pending');
+
       setStats({
         totalUsers: uniqueUserIds.size,
         totalConversations: convData?.length || 0,
@@ -234,6 +241,7 @@ const AdminPage = () => {
         eliteSubscribers: subData?.filter(s => s.subscription_tier === 'elite').length || 0,
         totalFeedback: feedbackData?.length || 0,
         pendingFeedback: feedbackData?.filter(f => f.status === 'pending').length || 0,
+        pendingGrowthActions: growthPending ?? 0,
       });
     } catch (error) {
       console.error('Error fetching admin data:', error);
@@ -356,6 +364,8 @@ const AdminPage = () => {
         return <AnnouncementManager />;
       case 'broadcast':
         return <BroadcastManager />;
+      case 'growth-command':
+        return <GrowthCommandPanel />;
       case 'export':
         return <AnalyticsExport />;
       default:
@@ -369,6 +379,7 @@ const AdminPage = () => {
       onSectionChange={setActiveSection}
       adminEmail={user?.email}
       pendingFeedback={stats.pendingFeedback}
+      pendingGrowthActions={stats.pendingGrowthActions}
       sidebarCollapsed={sidebarCollapsed}
       onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
     >

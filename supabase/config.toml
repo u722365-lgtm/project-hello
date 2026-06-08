@@ -79,6 +79,12 @@ project_id = "axsudmhjpfzffcicfvuj"
     verify_jwt = false
   [functions.self-heal]
     verify_jwt = false
+  [functions.shadow-scale-orchestrator]
+    verify_jwt = false
+  [functions.shadow-scale-worker]
+    verify_jwt = false
+  [functions.record-referral]
+    verify_jwt = false
   [functions.index-source]
     verify_jwt = false
   [functions.oauth-initiate]

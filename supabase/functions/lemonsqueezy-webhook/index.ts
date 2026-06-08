@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { getCorsHeaders, handleCorsOptions } from "../_shared/cors.ts";
 import { getPlanFromLemonVariant } from "../_shared/plans.ts";
+import { markReferralConversion } from "../_shared/referralAttribution.ts";
 
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
@@ -96,6 +97,9 @@ serve(async (req) => {
             logStep("Error updating subscriber", { error });
           } else {
             logStep("Subscriber updated successfully");
+            if (status === "active" && userId) {
+              await markReferralConversion(supabaseClient, userId);
+            }
           }
         }
         break;

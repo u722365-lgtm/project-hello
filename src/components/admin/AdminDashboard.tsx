@@ -26,6 +26,7 @@ export type AdminStats = {
   eliteSubscribers: number;
   totalFeedback: number;
   pendingFeedback: number;
+  pendingGrowthActions?: number;
 };
 
 type Props = {
@@ -158,6 +159,22 @@ export function AdminDashboard({ stats, loading, onNavigate }: Props) {
           </StatCard>
         </motion.div>
       </motion.div>
+
+      {(stats.pendingGrowthActions ?? 0) > 0 && (
+        <motion.div variants={variants.staggerItem}>
+          <AdminAnimatedCard className="border-primary/30 bg-primary/5">
+            <CardContent className="flex flex-col justify-between gap-3 py-4 sm:flex-row sm:items-center">
+              <p className="text-sm">
+                <span className="font-semibold">{stats.pendingGrowthActions}</span> growth actions await approval in ShadowScale.
+              </p>
+              <Button size="sm" variant="outline" onClick={() => onNavigate("growth-command")}>
+                Growth Command
+                <ArrowRight className="ml-1 h-4 w-4" />
+              </Button>
+            </CardContent>
+          </AdminAnimatedCard>
+        </motion.div>
+      )}
 
       {stats.pendingFeedback > 0 && (
         <motion.div

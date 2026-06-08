@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import {
   Zap, Users, Star, Gift, TrendingUp,
@@ -73,6 +74,31 @@ export const AutonomousReferralEngine = () => {
   const { referrers: powerUsers, isLoading } = usePowerReferrers();
   const [copied, setCopied] = useState<string | null>(null);
   const [activatedOffers, setActivatedOffers] = useState<Set<string>>(new Set());
+  const [queueOffers, setQueueOffers] = useState<ReferralOffer[]>([]);
+
+  useEffect(() => {
+    void (async () => {
+      const { data } = await supabase
+        .from("shadowscale_action_queue")
+        .select("id, payload, status")
+        .eq("action_type", "referral_campaign")
+        .in("status", ["pending", "approved", "done"])
+        .limit(10);
+      const mapped = (data ?? []).map((row, i) => {
+        const p = row.payload as { referral_code?: string; total_referrals?: number; message?: string };
+        return {
+          id: row.id,
+          name: `Scale offer: ${p.referral_code ?? "referrer"}`,
+          description: p.message ?? "ShadowScale referral campaign",
+          bonusCredits: 100 + (p.total_referrals ?? 0) * 10,
+          requirements: `${p.total_referrals ?? 0}+ referrals`,
+          expiresIn: "14 days",
+          tier: p.total_referrals && p.total_referrals >= 25 ? "platinum" : "gold",
+        } as ReferralOffer;
+      });
+      setQueueOffers(mapped);
+    })();
+  }, []);
 
   const totalPotentialReach = powerUsers.reduce((sum, u) => sum + u.potentialReach, 0);
   const activeReferrers = powerUsers.filter((u) => u.status === "active" || u.status === "champion").length;
@@ -86,13 +112,16 @@ export const AutonomousReferralEngine = () => {
     setTimeout(() => setCopied(null), 2000);
   };
 
-  const activateOffer = (offerId: string) => {
+  const activateOffer = async (offerId: string) => {
+    await supabase.from("shadowscale_action_queue").update({ status: "approved" }).eq("id", offerId);
     setActivatedOffers(prev => new Set([...prev, offerId]));
     toast({
-      title: "Offer Activated! 🚀",
-      description: "Personalized referral codes have been generated and sent.",
+      title: "Offer Activated",
+      description: "ShadowScale queued this referral campaign for execution.",
     });
   };
+
+  const displayOffers = queueOffers.length > 0 ? queueOffers : referralOffers;
 
   return (
     <div className="space-y-6">
@@ -222,7 +251,7 @@ export const AutonomousReferralEngine = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {referralOffers.map((offer) => {
+              {displayOffers.map((offer) => {
                 const isActivated = activatedOffers.has(offer.id);
                 return (
                   <div
