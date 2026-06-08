@@ -30,6 +30,8 @@ export const CommandPaletteContext = createContext<{ open: () => void }>({ open:
  // Critical path pages - loaded immediately
  import Index from "./pages/Index";
  import AuthPage from "./pages/AuthPage";
+ import AuthDesignGalleryPage from "./pages/AuthDesignGalleryPage";
+ import AuthDesignPreviewPage from "./pages/AuthDesignPreviewPage";
  import NotFound from "./pages/NotFound";
  import SessionsPage from "./pages/SessionsPage";
  import SelfHealingPage from "./pages/SelfHealingPage";
@@ -155,6 +157,8 @@ const AnimatedRoutes = () => {
           <Route path="/" element={<Navigate to="/chatbot" replace />} />
           <Route path="/home" element={<PageTransition><Index /></PageTransition>} />
           <Route path="/auth" element={<PageTransition><AuthPage /></PageTransition>} />
+          <Route path="/auth/designs" element={<PageTransition><AuthDesignGalleryPage /></PageTransition>} />
+          <Route path="/auth/preview/:designId" element={<PageTransition><AuthDesignPreviewPage /></PageTransition>} />
           <Route path="/pricing" element={<PageTransition><PricingPage /></PageTransition>} />
           {/* Chat workspace: no PageTransition — avoids opacity-0 flash and flex height collapse */}
           <Route path="/chatbot" element={<ChatbotPage />} />
