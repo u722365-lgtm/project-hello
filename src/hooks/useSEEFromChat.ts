@@ -6,6 +6,7 @@ import { inferDeliverableType } from "@/lib/execution/inferFromChat";
 import { useMissions, Mission } from "@/hooks/useMissions";
 import { useMissionExecutor } from "@/hooks/useMissionExecutor";
 import { useMissionQuota } from "@/hooks/useMissionQuota";
+import { shouldAutoApproveMissions } from "@/lib/anonymousAutonomousMode";
 
 export interface SEEChatMissionState {
   mission: Mission | null;
@@ -77,7 +78,7 @@ export const useSEEFromChat = () => {
       const title = goal.trim().slice(0, 56) + (goal.length > 56 ? "…" : "");
       const deliverable_type = inferDeliverableType(goal);
       const mission = await createMission(title, goal.trim(), {
-        auto_approve: options?.autoApprove ?? false,
+        auto_approve: options?.autoApprove ?? shouldAutoApproveMissions(),
         description: `Launched from chat · ${detection.reason}`,
         deliverable_type,
       });

@@ -127,6 +127,7 @@ import { ReferralNudgeBanner } from "@/components/growth/ReferralNudgeBanner";
 import { ShareResultDialog } from "@/components/growth/ShareResultDialog";
 import { ShareWinBanner } from "@/components/growth/ShareWinBanner";
 import { recordSuccessfulChatSession } from "@/lib/growth/sessionMilestones";
+import { isAnonymousAutonomousEnabled } from "@/lib/anonymousAutonomousMode";
 import {
   buildChatShareSubtitle,
   buildChatShareTitle,
@@ -186,7 +187,8 @@ function parseSseContentLines(
 const ChatbotPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user, userPlan, signOut, checkSubscription, isOffline, loading: authLoading } = useAuth();
+  const { user, userPlan, signOut, checkSubscription, isOffline, isAnonymous } = useAuth();
+  const guestUsage = useGuestUsage();
   const enterprise = useEnterpriseExperience();
   const { toast } = useToast();
   
@@ -1176,7 +1178,23 @@ const ChatbotPage = () => {
   const handleSendMessage = async () => {
     if ((!message.trim() && !selectedFile) || isLoading) return;
 
-    if (!isProOrHigher && nudge.shouldBlockSend) {
+    const isGuestLike = !user || isAnonymous;
+    if (isGuestLike && !isAnonymousAutonomousEnabled()) {
+      if (guestUsage.isLoaded && !guestUsage.canPerform("chats")) {
+        toast({
+          title: "Guest limit reached",
+          description: `You've used ${GUEST_LIMITS.chats} chats today. Sign in for unlimited access.`,
+          variant: "destructive",
+        });
+        navigate("/auth");
+        return;
+      }
+      if (guestUsage.isLoaded) {
+        guestUsage.trackGuestAction("chats");
+      }
+    }
+
+    if (!isProOrHigher && nudge.shouldBlockSend && !isAnonymousAutonomousEnabled()) {
       setUpgradeOpen(true);
       toast({
         title: CHAT_LIMIT_TOAST.title,
@@ -1811,15 +1829,6 @@ const ChatbotPage = () => {
     onProviderChange: handleProviderChange,
     hasKeyForProvider,
   };
-
-  if (authLoading) {
-    return (
-      <div className="shadowtalk-chat-shell neural-bg flex h-[100dvh] flex-col items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" aria-label="Loading chat" />
-        <p className="mt-3 text-sm text-muted-foreground">Starting ShadowTalk…</p>
-      </div>
-    );
-  }
 
   if (enterprise.needsWorkEmailSignIn) {
     return (

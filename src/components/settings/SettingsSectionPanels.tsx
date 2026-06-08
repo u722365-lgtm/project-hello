@@ -41,6 +41,10 @@ interface SettingsSectionPanelsProps {
   onLearningChange: (enabled: boolean) => void;
   autonomyEnabled: boolean;
   onAutonomyChange: (enabled: boolean) => void;
+  anonymousAutonomous: boolean;
+  onAnonymousAutonomousChange: (enabled: boolean) => void;
+  autoApproveMissions: boolean;
+  onAutoApproveMissionsChange: (enabled: boolean) => void;
 }
 
 const ACCOUNT_LINKS = [
@@ -79,6 +83,10 @@ export function SettingsSectionPanels({
   onLearningChange,
   autonomyEnabled,
   onAutonomyChange,
+  anonymousAutonomous,
+  onAnonymousAutonomousChange,
+  autoApproveMissions,
+  onAutoApproveMissionsChange,
 }: SettingsSectionPanelsProps) {
   if (section === "home") {
     return <SettingsHomeGrid sections={sections} onSelect={onSelectSection} />;
@@ -202,6 +210,26 @@ export function SettingsSectionPanels({
               >
                 <p className="text-sm font-medium">Enable autonomous mode</p>
                 <Switch checked={autonomyEnabled} onCheckedChange={onAutonomyChange} />
+              </motion.div>
+              <motion.div
+                className="flex items-center justify-between p-4 rounded-xl bg-muted/20 border border-border/40"
+                whileTap={{ scale: 0.995 }}
+              >
+                <div>
+                  <p className="text-sm font-medium">Anonymous & autonomous</p>
+                  <p className="text-xs text-muted-foreground">No sign-in required; missions stay on-device</p>
+                </div>
+                <Switch checked={anonymousAutonomous} onCheckedChange={onAnonymousAutonomousChange} />
+              </motion.div>
+              <motion.div
+                className="flex items-center justify-between p-4 rounded-xl bg-muted/20 border border-border/40"
+                whileTap={{ scale: 0.995 }}
+              >
+                <div>
+                  <p className="text-sm font-medium">Auto-run missions</p>
+                  <p className="text-xs text-muted-foreground">Skip approval prompts for agent steps</p>
+                </div>
+                <Switch checked={autoApproveMissions} onCheckedChange={onAutoApproveMissionsChange} />
               </motion.div>
             </SettingsShellCard>
           </AnimatedCard>
