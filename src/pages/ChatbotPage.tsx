@@ -79,6 +79,10 @@ import type { MarketplaceAgent, MarketplaceAgentRuntime } from "@/lib/marketplac
 import { runOfflineCompletion } from "@/lib/offline/runOfflineCompletion";
 import { prewarmFastestLocalPath, warmHardwareProfile } from "@/lib/hardwareIntelligence";
 import { runOllamaChat } from "@/lib/desktop/ollamaInference";
+import {
+  augmentMessagesWithLocalMemory,
+  indexSovereignMemory,
+} from "@/lib/desktop/sovereignMemoryRag";
 import { isSovereignModeEnabled } from "@/lib/desktop/sovereignMode";
 import { runLocalChat, isAnyLocalModelReady } from "@/lib/offline/localChat";
 import type { RouterMessage } from "@/lib/offline/hybridRouter";
@@ -858,6 +862,10 @@ const ChatbotPage = () => {
           prewarmFastestLocalPath();
         }
 
+        const localMessages = await augmentMessagesWithLocalMemory(routerMessages);
+        const lastUserText =
+          [...routerMessages].reverse().find((m) => m.role === "user")?.content ?? "";
+
         const aiMessageId = crypto.randomUUID();
         let assistantContent = "";
 
@@ -879,9 +887,13 @@ const ChatbotPage = () => {
 
         if (route.backend === "ollama") {
           try {
-            const ollama = await runOllamaChat(routerMessages, streamToken);
+            const ollama = await runOllamaChat(localMessages, streamToken);
             if (ollama.ok && (assistantContent || ollama.content)) {
               const final = assistantContent || ollama.content;
+              if (lastUserText) {
+                void indexSovereignMemory(lastUserText, { category: "chat", source: "user" });
+              }
+              void indexSovereignMemory(final, { category: "chat", source: "assistant" });
               if (user) {
                 await saveMessage(final, "assistant", conversationId);
               }
@@ -900,7 +912,7 @@ const ChatbotPage = () => {
         }
 
         const offline = await runOfflineCompletion({
-          messages: routerMessages,
+          messages: localMessages,
           personality,
           isOnline: navigator.onLine,
           onToken: streamToken,
@@ -911,6 +923,10 @@ const ChatbotPage = () => {
           if (!assistantContent) {
             streamToken(offline.content);
           }
+          if (lastUserText) {
+            void indexSovereignMemory(lastUserText, { category: "chat", source: "user" });
+          }
+          void indexSovereignMemory(offline.content, { category: "chat", source: "assistant" });
           if (user) {
             await saveMessage(offline.content, "assistant", conversationId);
           }
@@ -919,7 +935,13 @@ const ChatbotPage = () => {
 
         if (isAnyLocalModelReady()) {
           try {
-            const { content } = await runLocalChat(routerMessages, streamToken);
+            const { content } = await runLocalChat(localMessages, streamToken);
+            if (content) {
+              if (lastUserText) {
+                void indexSovereignMemory(lastUserText, { category: "chat", source: "user" });
+              }
+              void indexSovereignMemory(content, { category: "chat", source: "assistant" });
+            }
             if (content && user) {
               await saveMessage(content, "assistant", conversationId);
             }

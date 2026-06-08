@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Progress } from "@/components/ui/progress";
+import { Switch } from "@/components/ui/switch";
 import {
   Shield,
   Server,
@@ -15,8 +16,13 @@ import {
   CheckCircle2,
   AlertTriangle,
   ExternalLink,
+  Brain,
+  Trash2,
+  Upload,
+  FileDown,
 } from "lucide-react";
 import { useSovereignDesktop } from "@/hooks/useSovereignDesktop";
+import { useSovereignMemory } from "@/hooks/useSovereignMemory";
 import { useToast } from "@/hooks/use-toast";
 import { isShadowTalkDesktop, getDesktopAPI } from "@/lib/desktopBridge";
 import type { SovereignRoutingMode } from "@/lib/desktop/sovereignMode";
@@ -40,6 +46,7 @@ export function SovereignDesktopSettings() {
     downloadModel,
     isOllamaReady,
   } = useSovereignDesktop();
+  const memory = useSovereignMemory();
   const { toast } = useToast();
   const [urlDraft, setUrlDraft] = useState(ollamaUrl);
   const [modelDraft, setModelDraft] = useState(ollamaModel);
@@ -234,6 +241,56 @@ export function SovereignDesktopSettings() {
         {status?.error && (
           <p className="text-xs text-destructive">{status.error}</p>
         )}
+
+        <div className="border-t border-amber-500/20 pt-5 space-y-4">
+          <div className="flex items-center gap-2">
+            <Brain className="h-4 w-4 text-amber-500" />
+            <Label className="text-sm font-semibold">Local memory (RAG)</Label>
+            <Badge variant="outline">{memory.count} chunks</Badge>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Odysseus-style persistent memory on your machine. Chat turns are embedded with ONNX and
+            retrieved for on-device inference — never sent to the cloud.
+          </p>
+          <div className="flex items-center justify-between rounded-md border p-3">
+            <div>
+              <div className="text-sm font-medium">Index & retrieve memory</div>
+              <div className="text-xs text-muted-foreground">Inject relevant past context into sovereign chat</div>
+            </div>
+            <Switch checked={memory.enabled} onCheckedChange={memory.toggle} />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => void memory.exportToFile().then((p) => p && toast({ title: "Exported", description: p }))}
+            >
+              <FileDown className="h-3.5 w-3.5 mr-1" />
+              Export
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() =>
+                void memory.importFromFile().then((n) =>
+                  toast({ title: "Imported", description: `${n} memory chunks loaded.` }),
+                )
+              }
+            >
+              <Upload className="h-3.5 w-3.5 mr-1" />
+              Import
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => void memory.clear().then(() => toast({ title: "Memory cleared" }))}
+              disabled={memory.loading || memory.count === 0}
+            >
+              <Trash2 className="h-3.5 w-3.5 mr-1" />
+              Clear all
+            </Button>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
