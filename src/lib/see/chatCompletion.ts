@@ -1,3 +1,4 @@
+import { canRunLocalAgentCompletion, streamLocalAgentCompletion } from "@/lib/desktop/localAgentCompletion";
 import { stringifyChatBody } from "@/lib/chatRequest";
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
@@ -7,6 +8,10 @@ export async function streamChatCompletion(
   userContent: string,
   options?: { model?: string; mode?: string; signal?: AbortSignal }
 ): Promise<string> {
+  if (canRunLocalAgentCompletion()) {
+    return streamLocalAgentCompletion(userContent, { signal: options?.signal });
+  }
+
   const response = await fetch(CHAT_URL, {
     method: "POST",
     headers: {

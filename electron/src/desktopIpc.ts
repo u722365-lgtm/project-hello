@@ -29,6 +29,7 @@ const CHANNEL = {
   ollamaConfigure: 'st-desktop:ollamaConfigure',
   ollamaPull: 'st-desktop:ollamaPull',
   ollamaChat: 'st-desktop:ollamaChat',
+  fetchUrl: 'st-desktop:fetchUrl',
 } as const;
 
 export const CHAT_STREAM_CHUNK = 'st-desktop:chatStreamChunk';
@@ -191,6 +192,32 @@ export function registerDesktopIpc(): void {
       event.sender.send(OLLAMA_PULL_PROGRESS, { requestId, status, percent });
     });
     return { ...result, requestId };
+  });
+
+  ipcMain.handle(CHANNEL.fetchUrl, async (_event, url: string) => {
+    if (!url || typeof url !== "string" || !/^https?:\/\//i.test(url)) {
+      return { ok: false, status: 0, text: "", error: "Invalid URL" };
+    }
+    try {
+      const res = await fetch(url, {
+        headers: { "User-Agent": "ShadowTalk-Desktop/1.0" },
+        signal: AbortSignal.timeout(20_000),
+      });
+      const text = await res.text();
+      return {
+        ok: res.ok,
+        status: res.status,
+        text: text.slice(0, 80_000),
+        error: res.ok ? undefined : `HTTP ${res.status}`,
+      };
+    } catch (e) {
+      return {
+        ok: false,
+        status: 0,
+        text: "",
+        error: e instanceof Error ? e.message : "Fetch failed",
+      };
+    }
   });
 
   ipcMain.handle(

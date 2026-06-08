@@ -49,6 +49,7 @@ export interface ShadowTalkDesktopAPI {
     model: string,
     onProgress?: (status: string, percent?: number) => void,
   ) => Promise<{ ok: boolean; error?: string }>;
+  fetchUrl: (url: string) => Promise<{ ok: boolean; status: number; text: string; error?: string }>;
   ollamaChat: (
     payload: {
       messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>;

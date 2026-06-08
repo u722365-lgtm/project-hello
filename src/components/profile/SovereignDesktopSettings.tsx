@@ -23,6 +23,10 @@ import {
 } from "lucide-react";
 import { useSovereignDesktop } from "@/hooks/useSovereignDesktop";
 import { useSovereignMemory } from "@/hooks/useSovereignMemory";
+import {
+  isSovereignAgentsEnabled,
+  setSovereignAgentsEnabled,
+} from "@/lib/desktop/sovereignAgentMode";
 import { useToast } from "@/hooks/use-toast";
 import { isShadowTalkDesktop, getDesktopAPI } from "@/lib/desktopBridge";
 import type { SovereignRoutingMode } from "@/lib/desktop/sovereignMode";
@@ -47,6 +51,7 @@ export function SovereignDesktopSettings() {
     isOllamaReady,
   } = useSovereignDesktop();
   const memory = useSovereignMemory();
+  const [agentsEnabled, setAgentsEnabled] = useState(isSovereignAgentsEnabled());
   const { toast } = useToast();
   const [urlDraft, setUrlDraft] = useState(ollamaUrl);
   const [modelDraft, setModelDraft] = useState(ollamaModel);
@@ -241,6 +246,24 @@ export function SovereignDesktopSettings() {
         {status?.error && (
           <p className="text-xs text-destructive">{status.error}</p>
         )}
+
+        <div className="border-t border-amber-500/20 pt-5 space-y-4">
+          <div className="flex items-center justify-between rounded-md border p-3">
+            <div>
+              <div className="text-sm font-medium">Local agent runtime</div>
+              <div className="text-xs text-muted-foreground">
+                Mission Control, Content Forge, and presentations run via Ollama — no cloud edge functions
+              </div>
+            </div>
+            <Switch
+              checked={agentsEnabled}
+              onCheckedChange={(on) => {
+                setSovereignAgentsEnabled(on);
+                setAgentsEnabled(on);
+              }}
+            />
+          </div>
+        </div>
 
         <div className="border-t border-amber-500/20 pt-5 space-y-4">
           <div className="flex items-center gap-2">
