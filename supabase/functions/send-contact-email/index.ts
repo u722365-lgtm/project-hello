@@ -143,7 +143,7 @@ serve(async (req) => {
         Authorization: `Bearer ${resendKey}`,
       },
       body: JSON.stringify({
-        from: "ShadowTalk AI <noreply@shadowtalk.ai>",
+        from: Deno.env.get("RESEND_FROM") || "ShadowTalk AI <onboarding@resend.dev>",
         to: [...FEEDBACK_NOTIFICATION_EMAILS],
         subject: subjectLine,
         html: emailHtml,

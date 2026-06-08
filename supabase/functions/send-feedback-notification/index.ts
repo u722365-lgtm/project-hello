@@ -4,7 +4,12 @@ import { getCorsHeaders, handleCorsOptions } from "../_shared/cors.ts";
 import { FEEDBACK_NOTIFICATION_EMAILS } from "../_shared/feedbackRecipients.ts";
 
 const SENDGRID_API_KEY = Deno.env.get("SENDGRID_API_KEY");
-const RESEND_API_KEY = Deno.env.get("Resend_api_key");
+const RESEND_API_KEY =
+  Deno.env.get("RESEND_API_KEY") ||
+  Deno.env.get("Resend_api_key") ||
+  Deno.env.get("resend_api_key");
+const RESEND_FROM =
+  Deno.env.get("RESEND_FROM") || "ShadowTalk AI <onboarding@resend.dev>";
 
 
 interface FeedbackNotificationRequest {
@@ -166,15 +171,20 @@ Time: ${new Date().toLocaleString()}
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: "ShadowTalk AI <noreply@shadowtalk.ai>",
+          from: RESEND_FROM,
           to: adminEmails,
           subject: `${getCategoryLabel(category)} - New Feedback (${rating}⭐)`,
           html: emailHtml,
         }),
       });
 
-      emailResult = await resendResponse.json();
-      console.log("[FEEDBACK-NOTIFICATION] Resend response:", emailResult);
+      const resendBody = await resendResponse.json();
+      console.log("[FEEDBACK-NOTIFICATION] Resend response:", resendResponse.status, resendBody);
+      if (resendResponse.ok) {
+        emailResult = { success: true, provider: "resend", ...resendBody };
+      } else {
+        console.error("[FEEDBACK-NOTIFICATION] Resend failed:", resendBody);
+      }
     }
 
     if (!emailResult) {
@@ -193,6 +203,18 @@ Time: ${new Date().toLocaleString()}
         status: 200,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
+    }
+
+    if (!emailResult?.success) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Email delivery failed. Configure SENDGRID_API_KEY or verify RESEND_FROM domain.",
+          provider: emailProvider,
+          detail: emailResult,
+        }),
+        { status: 502, headers: { "Content-Type": "application/json", ...corsHeaders } },
+      );
     }
 
     return new Response(JSON.stringify({ success: true, emailResult, provider: emailProvider }), {
