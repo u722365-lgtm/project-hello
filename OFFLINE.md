@@ -15,6 +15,7 @@
 3. `runLocalChat()` uses **Gemma if loaded**, else **SmolLM** (browser WebGPU/WASM).
 4. `ChatbotPage` tries Ollama → browser models → cloud (cloud blocked in strict sovereign mode).
 5. **Local memory (RAG):** IndexedDB vector store + ONNX embeddings index chat on-device; retrieved chunks inject into sovereign/Ollama chat (Settings → Sovereign Desktop → Local memory).
+6. **Local agents (Phase 3):** Mission Control, Content Forge, and presentations route through Ollama + local tool executor; missions persist in IndexedDB when sovereign (`local-mission-*` IDs).
 
 **UI note:** Routing is automatic. The chat composer no longer shows a “Turbo” hardware badge — tier/path details are in **Settings → Offline AI** and engineering docs ([Detailed Documentation/03-hardware-turbo-routing.md](./Detailed%20Documentation/03-hardware-turbo-routing.md)).
 

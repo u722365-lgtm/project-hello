@@ -23,6 +23,14 @@ vi.mock("@/integrations/supabase/client", () => ({
   },
 }));
 
+vi.mock("@/lib/desktop/sovereignAgentMode", () => ({
+  shouldUseLocalMissionStore: vi.fn(() => false),
+}));
+
+vi.mock("@/lib/desktop/localMissionStore", () => ({
+  listDueLocalMissions: vi.fn(async () => []),
+}));
+
 describe("MissionSchedulerEngine", () => {
   beforeEach(() => {
     vi.useFakeTimers();

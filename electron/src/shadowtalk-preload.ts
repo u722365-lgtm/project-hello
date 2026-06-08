@@ -93,6 +93,9 @@ contextBridge.exposeInMainWorld('shadowtalkDesktop', {
     );
   },
 
+  fetchUrl: (url: string) =>
+    invoke<{ ok: boolean; status: number; text: string; error?: string }>("st-desktop:fetchUrl", url),
+
   ollamaChat: (
     payload: {
       messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>;
