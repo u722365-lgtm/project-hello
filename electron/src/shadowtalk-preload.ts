@@ -79,6 +79,45 @@ contextBridge.exposeInMainWorld('shadowtalkDesktop', {
       error?: string;
     }>('st-desktop:ollamaConfigure', opts),
 
+  ollamaBootstrap: (
+    options?: { pullDefaultModel?: boolean },
+    onProgress?: (status: string, percent?: number) => void,
+  ) => {
+    const requestId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const onProgressEvt = (_: unknown, data: { requestId: string; status: string; percent?: number }) => {
+      if (data.requestId === requestId) onProgress?.(data.status, data.percent);
+    };
+    ipcRenderer.on(OLLAMA_PULL_PROGRESS, onProgressEvt);
+    return invoke<{
+      bundledBinaryPresent: boolean;
+      managedProcess: boolean;
+      reachable: boolean;
+      models: string[];
+      defaultModel: string;
+      modelsPath: string;
+      seeding: boolean;
+      pulling: boolean;
+      message?: string;
+      error?: string;
+    }>('st-desktop:ollamaBootstrap', { ...options, requestId }).finally(() =>
+      ipcRenderer.removeListener(OLLAMA_PULL_PROGRESS, onProgressEvt),
+    );
+  },
+
+  ollamaBootstrapSnapshot: () =>
+    invoke<{
+      bundledBinaryPresent: boolean;
+      managedProcess: boolean;
+      reachable: boolean;
+      models: string[];
+      defaultModel: string;
+      modelsPath: string;
+      seeding: boolean;
+      pulling: boolean;
+      message?: string;
+      error?: string;
+    }>('st-desktop:ollamaBootstrapSnapshot'),
+
   ollamaPull: (
     model: string,
     onProgress?: (status: string, percent?: number) => void,

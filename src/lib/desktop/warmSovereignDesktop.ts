@@ -1,4 +1,4 @@
-import { isShadowTalkDesktop } from "@/lib/desktopBridge";
+import { getDesktopAPI, isShadowTalkDesktop } from "@/lib/desktopBridge";
 import { fetchOllamaStatus } from "@/lib/desktop/ollamaInference";
 import { updateOllamaCache } from "@/lib/desktop/sovereignMode";
 
@@ -6,6 +6,14 @@ import { updateOllamaCache } from "@/lib/desktop/sovereignMode";
 export async function warmSovereignDesktop(): Promise<void> {
   if (!isShadowTalkDesktop()) return;
   try {
+    const api = getDesktopAPI();
+    const bootstrap = api ? await api.ollamaBootstrapSnapshot() : null;
+    if (bootstrap?.reachable && bootstrap.models.length > 0) {
+      const status = await fetchOllamaStatus();
+      if (status) updateOllamaCache(status);
+      return;
+    }
+
     const status = await fetchOllamaStatus();
     if (status) updateOllamaCache(status);
   } catch {

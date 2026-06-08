@@ -18,7 +18,8 @@
     "desktop:start": "npm run desktop:install && npm run desktop:build && cd electron && npm run electron:start",
     "desktop:make": "npm run desktop:install && npm run desktop:build && cd electron && npm run electron:make",
     "desktop:make:publish": "npm run desktop:install && npm run desktop:build && cd electron && npm run electron:make:publish",
-    "desktop:stage": "node scripts/stage-desktop-downloads.mjs"
+    "desktop:stage": "node scripts/stage-desktop-downloads.mjs",
+    "desktop:stage-ollama": "node scripts/stage-ollama-bundle.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.73.0",

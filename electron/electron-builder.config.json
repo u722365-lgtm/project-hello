@@ -41,6 +41,11 @@
       "from": "resources/offline-models",
       "to": "offline-models",
       "filter": ["**/*"]
+    },
+    {
+      "from": "resources/ollama",
+      "to": "ollama",
+      "filter": ["**/*"]
     }
   ]
 }

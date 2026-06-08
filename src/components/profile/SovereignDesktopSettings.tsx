@@ -48,7 +48,10 @@ export function SovereignDesktopSettings() {
     updateRouting,
     updateOllamaEndpoint,
     downloadModel,
+    bootstrapDefaultModel,
+    bootstrap,
     isOllamaReady,
+    isBundledOllama,
   } = useSovereignDesktop();
   const memory = useSovereignMemory();
   const [agentsEnabled, setAgentsEnabled] = useState(isSovereignAgentsEnabled());
@@ -74,6 +77,22 @@ export function SovereignDesktopSettings() {
       toast({
         title: "Download failed",
         description: result.error ?? "Could not pull model from Ollama.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const onBootstrapBundled = async () => {
+    const result = await bootstrapDefaultModel();
+    if (result.ok) {
+      toast({
+        title: "Bundled AI ready",
+        description: "Ollama started and default model is available for sovereign chat.",
+      });
+    } else {
+      toast({
+        title: "Setup incomplete",
+        description: result.error ?? "Could not start bundled Ollama or pull the default model.",
         variant: "destructive",
       });
     }
@@ -112,6 +131,40 @@ export function SovereignDesktopSettings() {
           )}
         </div>
 
+        {(isBundledOllama || bootstrap?.bundledBinaryPresent) && (
+          <div className="rounded-md border border-emerald-500/30 bg-emerald-500/5 p-3 text-xs space-y-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Badge variant="outline" className="border-emerald-500/40 text-emerald-700 dark:text-emerald-400">
+                Tier D — Bundled Ollama
+              </Badge>
+              {bootstrap?.managedProcess && (
+                <Badge variant="secondary">Managed by ShadowTalk</Badge>
+              )}
+            </div>
+            <p className="text-muted-foreground">
+              {bootstrap?.message ??
+                (isBundledOllama
+                  ? "Installer includes a local Ollama runtime — no separate install required."
+                  : "Bundled runtime detected.")}
+            </p>
+            {bootstrap?.modelsPath && (
+              <p className="text-[10px] text-muted-foreground font-mono truncate">
+                Models: {bootstrap.modelsPath}
+              </p>
+            )}
+            {!isOllamaReady && (
+              <Button size="sm" onClick={() => void onBootstrapBundled()} disabled={pulling}>
+                {pulling ? (
+                  <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                ) : (
+                  <Download className="h-3.5 w-3.5 mr-1" />
+                )}
+                Set up bundled AI
+              </Button>
+            )}
+          </div>
+        )}
+
         <div className="grid sm:grid-cols-2 gap-3 text-xs">
           <div className="rounded-md border p-2">
             <div className="text-muted-foreground">Ollama server</div>
@@ -129,7 +182,7 @@ export function SovereignDesktopSettings() {
           </div>
         </div>
 
-        {!status?.reachable && (
+        {!status?.reachable && !isBundledOllama && (
           <div className="flex items-start gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-xs">
             <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-amber-600" />
             <div className="space-y-2">

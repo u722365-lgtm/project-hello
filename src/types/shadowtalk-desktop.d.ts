@@ -13,6 +13,25 @@ export interface ShadowTalkDesktopInfo {
   offlineModelPath?: string;
   /** Odysseus-style Ollama sidecar available on desktop */
   sovereignDesktopCapable?: boolean;
+  /** Tier D: installer shipped bundled Ollama binary */
+  ollamaBundled?: boolean;
+  ollamaManagedProcess?: boolean;
+  ollamaDefaultModel?: string;
+  ollamaModelsPath?: string;
+  ollamaReachable?: boolean;
+}
+
+export interface OllamaBootstrapState {
+  bundledBinaryPresent: boolean;
+  managedProcess: boolean;
+  reachable: boolean;
+  models: string[];
+  defaultModel: string;
+  modelsPath: string;
+  seeding: boolean;
+  pulling: boolean;
+  message?: string;
+  error?: string;
 }
 
 export interface OllamaStatusInfo {
@@ -49,6 +68,11 @@ export interface ShadowTalkDesktopAPI {
     model: string,
     onProgress?: (status: string, percent?: number) => void,
   ) => Promise<{ ok: boolean; error?: string }>;
+  ollamaBootstrap: (
+    options?: { pullDefaultModel?: boolean },
+    onProgress?: (status: string, percent?: number) => void,
+  ) => Promise<OllamaBootstrapState>;
+  ollamaBootstrapSnapshot: () => Promise<OllamaBootstrapState>;
   fetchUrl: (url: string) => Promise<{ ok: boolean; status: number; text: string; error?: string }>;
   ollamaChat: (
     payload: {
