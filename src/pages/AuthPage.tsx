@@ -136,8 +136,6 @@ const AuthPage = () => {
   const sanitizeInput = (input: string) => input.trim().slice(0, 255);
 
   const playWelcomeVoice = useCallback(async (userName: string) => {
-    setRobotReacting(true);
-    setRobotSpeaking(true);
     const displayName = userName.split("@")[0];
     const welcomeMessages = [
       `Welcome back, ${displayName}. Your secure workspace is ready.`,
@@ -145,7 +143,6 @@ const AuthPage = () => {
       `${displayName}, welcome to ShadowTalk. Your data fortress awaits.`,
     ];
     const msg = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)];
-    setRobotMessage(msg);
 
     try {
       const { fetchElevenLabsSpeech, playElevenLabsAudio } = await import(
@@ -163,10 +160,6 @@ const AuthPage = () => {
       }
     } catch (err) {
       console.error("Voice welcome error:", err);
-    } finally {
-      setRobotSpeaking(false);
-      setRobotReacting(false);
-      setRobotMessage("");
     }
   }, []);
 
@@ -363,26 +356,50 @@ const AuthPage = () => {
         animate="visible"
       >
             {/* Header */}
-            <div className="mb-8">
-              <div className="flex items-center gap-3 mb-4">
+            <motion.div
+              className="mb-8"
+              variants={authVariants.headerStagger}
+              initial="hidden"
+              animate="visible"
+            >
+              <div className="mb-4 flex items-center gap-3">
                 <motion.div
-                  className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center border border-primary/20"
-                  animate={shouldAnimateAmbient ? { boxShadow: ["0 0 0px hsl(var(--primary) / 0)", "0 0 24px hsl(var(--primary) / 0.25)", "0 0 0px hsl(var(--primary) / 0)"] } : undefined}
+                  variants={authVariants.headerItem}
+                  className="flex h-10 w-10 items-center justify-center rounded-xl border border-primary/20 bg-gradient-to-br from-primary/20 to-secondary/20"
+                  animate={
+                    shouldAnimateAmbient
+                      ? {
+                          boxShadow: [
+                            "0 0 0px hsl(var(--primary) / 0)",
+                            "0 0 24px hsl(var(--primary) / 0.25)",
+                            "0 0 0px hsl(var(--primary) / 0)",
+                          ],
+                          rotate: [0, 3, -3, 0],
+                        }
+                      : undefined
+                  }
                   transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                 >
                   <Lock className="h-5 w-5 text-primary" />
                 </motion.div>
-                <div className="flex items-center gap-2">
+                <motion.div variants={authVariants.headerItem} className="flex items-center gap-2">
                   {isOffline ? (
-                    <Badge variant="secondary" className="gap-1 bg-warning/10 text-warning border-warning/20 text-[10px]">
+                    <Badge variant="secondary" className="gap-1 border-warning/20 bg-warning/10 text-[10px] text-warning">
                       <WifiOff className="h-3 w-3" /> Offline
                     </Badge>
                   ) : (
-                    <Badge variant="secondary" className="gap-1 bg-success/10 text-success border-success/20 text-[10px]">
-                      <Wifi className="h-3 w-3" /> Secure
+                    <Badge variant="secondary" className="gap-1 border-success/20 bg-success/10 text-[10px] text-success">
+                      <motion.span
+                        animate={shouldAnimateAmbient ? { scale: [1, 1.15, 1] } : undefined}
+                        transition={{ duration: 2, repeat: Infinity }}
+                        className="inline-flex"
+                      >
+                        <Wifi className="h-3 w-3" />
+                      </motion.span>{" "}
+                      Secure
                     </Badge>
                   )}
-                </div>
+                </motion.div>
               </div>
               <AnimatePresence mode="wait">
                 <motion.div
@@ -408,18 +425,24 @@ const AuthPage = () => {
                   </p>
                 </motion.div>
               </AnimatePresence>
-            </div>
+            </motion.div>
 
             {/* Rate limit warning */}
             <AnimatePresence>
               {rateLimitMsg && (
                 <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20 flex items-center gap-2"
+                  initial={{ opacity: 0, height: 0, x: -8 }}
+                  animate={{ opacity: 1, height: "auto", x: 0 }}
+                  exit={{ opacity: 0, height: 0, x: 8 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  className="mb-4 flex items-center gap-2 rounded-lg border border-destructive/20 bg-destructive/10 p-3"
                 >
-                  <AlertTriangle className="h-4 w-4 text-destructive shrink-0" />
+                  <motion.div
+                    animate={shouldAnimateAmbient ? { rotate: [0, -8, 8, 0] } : undefined}
+                    transition={{ duration: 0.5, repeat: 3 }}
+                  >
+                    <AlertTriangle className="h-4 w-4 shrink-0 text-destructive" />
+                  </motion.div>
                   <span className="text-xs text-destructive">{rateLimitMsg}</span>
                 </motion.div>
               )}
@@ -593,11 +616,11 @@ const AuthPage = () => {
                   </motion.div>
 
                   <div className="grid grid-cols-2 gap-3">
-                    <motion.div variants={authVariants.oauthItem(0)} initial="hidden" animate="visible">
+                    <motion.div variants={authVariants.oauthItem(0)} initial="hidden" animate="visible" whileHover={reduced ? undefined : { y: -2 }}>
                     <Button
                       type="button"
                       variant="outline"
-                      className="w-full gap-2 h-11 border-border/30 bg-muted/10 hover:bg-muted/20 hover:border-primary/30"
+                      className="h-11 w-full gap-2 border-border/30 bg-muted/10 transition-shadow hover:border-primary/30 hover:bg-muted/20 hover:shadow-[0_8px_24px_hsl(var(--primary)/0.12)]"
                       onClick={handleGoogleSignIn}
                       disabled={googleLoading || isOffline}
                     >
@@ -612,11 +635,11 @@ const AuthPage = () => {
                       <span className="text-sm">Google</span>
                     </Button>
                     </motion.div>
-                    <motion.div variants={authVariants.oauthItem(1)} initial="hidden" animate="visible">
+                    <motion.div variants={authVariants.oauthItem(1)} initial="hidden" animate="visible" whileHover={reduced ? undefined : { y: -2 }}>
                     <Button
                       type="button"
                       variant="outline"
-                      className="w-full gap-2 h-11 border-border/30 bg-muted/10 hover:bg-muted/20 hover:border-primary/30"
+                      className="h-11 w-full gap-2 border-border/30 bg-muted/10 transition-shadow hover:border-primary/30 hover:bg-muted/20 hover:shadow-[0_8px_24px_hsl(var(--primary)/0.12)]"
                       onClick={handleAppleSignIn}
                       disabled={appleLoading || isOffline}
                     >
@@ -823,22 +846,42 @@ const AuthPage = () => {
 
             {/* Security footer */}
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
               className="mt-8 flex flex-wrap items-center justify-center gap-4 text-[10px] text-muted-foreground"
+              initial="hidden"
+              animate="visible"
             >
-              <span className="flex items-center gap-1"><Shield className="h-3 w-3 text-success" /> E2E Encrypted</span>
-              <span className="flex items-center gap-1"><Fingerprint className="h-3 w-3 text-primary" /> 2FA Ready</span>
-              <span className="flex items-center gap-1">
-                {isOffline ? (
-                  <><WifiOff className="h-3 w-3 text-warning" /> <span className="text-warning">Offline Mode</span></>
-                ) : hasOfflineCredentials ? (
-                  <><Zap className="h-3 w-3 text-success" /> <span className="text-success">Offline Ready</span></>
-                ) : (
-                  <><Zap className="h-3 w-3" /> Offline Not Set Up</>
-                )}
-              </span>
+              {[
+                { icon: <Shield className="h-3 w-3 text-success" />, label: "E2E Encrypted" },
+                { icon: <Fingerprint className="h-3 w-3 text-primary" />, label: "2FA Ready" },
+                {
+                  icon: isOffline ? (
+                    <WifiOff className="h-3 w-3 text-warning" />
+                  ) : (
+                    <Zap className={cn("h-3 w-3", hasOfflineCredentials && "text-success")} />
+                  ),
+                  label: isOffline
+                    ? "Offline Mode"
+                    : hasOfflineCredentials
+                      ? "Offline Ready"
+                      : "Offline Not Set Up",
+                  className: isOffline
+                    ? "text-warning"
+                    : hasOfflineCredentials
+                      ? "text-success"
+                      : undefined,
+                },
+              ].map((badge, index) => (
+                <motion.span
+                  key={badge.label}
+                  variants={authVariants.securityBadge(index)}
+                  initial="hidden"
+                  animate="visible"
+                  whileHover={reduced ? undefined : { scale: 1.06, y: -1 }}
+                  className={cn("flex items-center gap-1", badge.className)}
+                >
+                  {badge.icon} {badge.label}
+                </motion.span>
+              ))}
             </motion.div>
       </motion.div>
     </GlassMonolithDesign>

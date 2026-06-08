@@ -39,12 +39,13 @@ export function authPageEnter(profile: AuthMotionProfile): Variants {
     };
   }
   return {
-    hidden: { opacity: 0, y: profile.mobile ? 16 : 28, filter: "blur(10px)" },
+    hidden: { opacity: 0, y: profile.mobile ? 20 : 36, filter: "blur(14px)", scale: 0.98 },
     visible: {
       opacity: 1,
       y: 0,
       filter: "blur(0px)",
-      transition: { duration: authDuration(profile, 0.65), ease: AUTH_EASE },
+      scale: 1,
+      transition: { duration: authDuration(profile, 0.75), ease: AUTH_EASE },
     },
   };
 }
@@ -87,12 +88,14 @@ export function authStaggerItem(profile: AuthMotionProfile): Variants {
     };
   }
   return {
-    hidden: { opacity: 0, y: 14, x: -6 },
+    hidden: { opacity: 0, y: 22, x: -10, scale: 0.97, filter: "blur(6px)" },
     visible: {
       opacity: 1,
       y: 0,
       x: 0,
-      transition: { duration: authDuration(profile, 0.4), ease: AUTH_EASE },
+      scale: 1,
+      filter: "blur(0px)",
+      transition: { ...AUTH_SPRING, duration: authDuration(profile, 0.45) },
     },
   };
 }
@@ -106,18 +109,22 @@ export function authFormSwap(profile: AuthMotionProfile): Variants {
     };
   }
   return {
-    initial: { opacity: 0, x: -16, filter: "blur(6px)" },
+    initial: { opacity: 0, x: -28, y: 8, filter: "blur(10px)", scale: 0.98 },
     animate: {
       opacity: 1,
       x: 0,
+      y: 0,
       filter: "blur(0px)",
-      transition: { duration: authDuration(profile, 0.35), ease: AUTH_EASE },
+      scale: 1,
+      transition: { duration: authDuration(profile, 0.42), ease: AUTH_EASE },
     },
     exit: {
       opacity: 0,
-      x: 16,
-      filter: "blur(4px)",
-      transition: { duration: 0.22, ease: AUTH_EASE },
+      x: 28,
+      y: -6,
+      filter: "blur(8px)",
+      scale: 0.98,
+      transition: { duration: 0.28, ease: AUTH_EASE },
     },
   };
 }
@@ -172,4 +179,57 @@ export function authOAuthItem(profile: AuthMotionProfile, index: number): Varian
 export function authGridDrift(profile: AuthMotionProfile): Transition | false {
   if (profile.reduced) return false;
   return { duration: profile.mobile ? 40 : 28, repeat: Infinity, ease: "linear" };
+}
+
+export function authHeaderStagger(profile: AuthMotionProfile): Variants {
+  return {
+    hidden: {},
+    visible: {
+      transition: {
+        staggerChildren: authStagger(profile, 0.1),
+        delayChildren: profile.reduced ? 0 : 0.2,
+      },
+    },
+  };
+}
+
+export function authHeaderItem(profile: AuthMotionProfile): Variants {
+  if (profile.reduced) {
+    return { hidden: { opacity: 0 }, visible: { opacity: 1 } };
+  }
+  return {
+    hidden: { opacity: 0, y: 16, scale: 0.92 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: AUTH_SPRING_SNAPPY,
+    },
+  };
+}
+
+export function authSecurityBadge(profile: AuthMotionProfile, index: number): Variants {
+  if (profile.reduced) {
+    return { hidden: { opacity: 0 }, visible: { opacity: 1 } };
+  }
+  return {
+    hidden: { opacity: 0, y: 8, scale: 0.9 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        delay: 0.5 + index * 0.08,
+        ...AUTH_SPRING,
+      },
+    },
+  };
+}
+
+export function authGlassFloat(profile: AuthMotionProfile) {
+  if (profile.reduced) return undefined;
+  return {
+    y: profile.mobile ? [-4, 4, -4] : [-8, 8, -8],
+    transition: { duration: 6, repeat: Infinity, ease: "easeInOut" },
+  };
 }

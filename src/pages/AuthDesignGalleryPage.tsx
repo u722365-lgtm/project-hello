@@ -19,7 +19,9 @@ import { cn } from "@/lib/utils";
 export default function AuthDesignGalleryPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [selected, setSelected] = useState<AuthDesignId | null>(getStoredAuthDesignChoice());
+  const [selected, setSelected] = useState<AuthDesignId | null>(
+    getStoredAuthDesignChoice() ?? "glass-monolith",
+  );
 
   const handleSelect = (id: AuthDesignId) => {
     setSelected(id);
