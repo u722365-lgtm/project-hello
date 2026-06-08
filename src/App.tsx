@@ -103,6 +103,9 @@ const CustomerSupportWidget = lazy(() => import("./components/CustomerSupportWid
 const ShadowMemoryTracker = lazy(() => import("./components/ShadowMemoryTracker"));
 const JourneyTracker = lazy(() => import("./components/JourneyTracker").then(m => ({ default: m.JourneyTracker })));
 const VoiceCommandSystem = lazy(() => import("./components/VoiceCommandSystem"));
+const ShadowHealEngine = lazy(() =>
+  import("./components/shadowHeal/ShadowHealEngine").then((m) => ({ default: m.ShadowHealEngine })),
+);
 const OfflineBootstrapBanner = lazy(() =>
   import("./components/offline/OfflineBootstrapBanner").then((m) => ({ default: m.OfflineBootstrapBanner })),
 );
@@ -324,6 +327,7 @@ const App = () => {
                       <ShadowMemoryTracker />
                       <JourneyTracker />
                       <AutoImproveEngine />
+                      <ShadowHealEngine />
                       <AutonomousAgentEngine />
                       <MissionSchedulerEngine />
                       <GoalPursuitEngine />

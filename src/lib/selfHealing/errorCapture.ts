@@ -4,6 +4,7 @@ import {
   shouldIgnoreCapturedError,
 } from "@/lib/selfHealing/selfHealConfig";
 import { probeSelfHealEndpoint } from "@/lib/selfHealing/probeSelfHeal";
+import { applyRuntimeProposal } from "@/lib/selfHealing/autoRecover";
 
 const QUEUE_KEY = "shadowtalk_self_heal_queue";
 const SENT_KEY = "shadowtalk_self_heal_sent";
@@ -92,10 +93,10 @@ export function capture(err: Omit<CapturedError, "fingerprint" | "capturedAt" | 
       capturedAt: Date.now(),
     };
 
-    if (recentlySent(fp)) return;
-    markSent(fp);
-
     const queue = readQueue();
+    if (queue.some((q) => q.fingerprint === fp)) return;
+    if (recentlySent(fp)) return;
+
     queue.push(captured);
     writeQueue(queue);
 
@@ -134,6 +135,11 @@ export async function flush(): Promise<void> {
         }
       } else {
         consecutiveFailures = 0;
+        markSent(next.fingerprint);
+        const proposal = data?.proposal as
+          | { id?: string; runtime_handler?: unknown; patch_strategy?: string; status?: string }
+          | undefined;
+        if (proposal) applyRuntimeProposal(proposal);
       }
     } catch {
       consecutiveFailures += 1;

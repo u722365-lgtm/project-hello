@@ -30,3 +30,5 @@ jobs:
           supabase functions deploy generate-presentation --project-ref axsudmhjpfzffcicfvuj
           supabase functions deploy chat --project-ref axsudmhjpfzffcicfvuj
           supabase functions deploy document-ai --project-ref axsudmhjpfzffcicfvuj
+          supabase functions deploy self-heal --project-ref axsudmhjpfzffcicfvuj
+          supabase functions deploy shadow-heal-watchdog --project-ref axsudmhjpfzffcicfvuj

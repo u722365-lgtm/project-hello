@@ -1703,3 +1703,12 @@
     scroll-behavior: auto;
   }
 }
+
+/* Shadow Heal Engine — traffic mitigation under load */
+html.shadow-heal-reduce-motion *,
+html.shadow-heal-reduce-motion *::before,
+html.shadow-heal-reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}

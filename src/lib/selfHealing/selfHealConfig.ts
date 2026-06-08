@@ -34,6 +34,8 @@ export function shouldIgnoreCapturedError(message: string, sourceFile?: string):
     blob.includes("shadowtalk_errors") ||
     blob.includes("shadowtalk_fix_proposals") ||
     blob.includes("index-source") ||
+    blob.includes("shadow-heal-watchdog") ||
+    blob.includes("shadowtalk_heal_heartbeats") ||
     blob.includes("oauth-initiate") ||
     blob.includes("oauth-callback")
   );

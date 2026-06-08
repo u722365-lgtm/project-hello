@@ -93,4 +93,10 @@ describe("feature wiring verification", () => {
     expect(settings).toContain('href: "/sessions"');
     expect(settings).toContain('href: "/self-healing"');
   });
+
+  it("Shadow Heal Engine mounted for 24/7 healing", () => {
+    const app = readSrc("App.tsx");
+    expect(app).toContain("ShadowHealEngine");
+    expect(readSrc("components/shadowHeal/ShadowHealEngine.tsx")).toContain("startShadowHealEngine");
+  });
 });
