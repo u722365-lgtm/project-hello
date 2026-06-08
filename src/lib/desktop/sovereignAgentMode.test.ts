@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { setAnonymousAutonomousEnabled } from "@/lib/anonymousAutonomousMode";
 import {
   isSovereignAgentsEnabled,
   setSovereignAgentsEnabled,
@@ -22,6 +23,7 @@ vi.mock("@/lib/offline/localChat", () => ({
 describe("sovereignAgentMode", () => {
   beforeEach(() => {
     localStorage.clear();
+    setAnonymousAutonomousEnabled(false);
     setSovereignAgentsEnabled(true);
   });
 

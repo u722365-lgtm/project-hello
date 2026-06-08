@@ -10,7 +10,8 @@ import {
 import type { DeliverableType } from "@/lib/execution/types";
 import type { BusinessIdea } from "@/lib/strategy/types";
 import { updateLocalMission } from "@/lib/desktop/localMissionStore";
-import { shouldUseLocalAgent } from "@/lib/desktop/sovereignAgentMode";
+import { isAnonymousAutonomousEnabled } from "@/lib/anonymousAutonomousMode";
+import { shouldUseLocalAgent, shouldUseLocalMissionStore } from "@/lib/desktop/sovereignAgentMode";
 import { executeMissionTool } from "@/lib/see/missionToolExecutor";
 import type { MissionPlanStep } from "@/lib/see/types";
 import { trackAgenticEvent } from "@/lib/agenticMetrics";
@@ -263,7 +264,13 @@ export const useMissionExecutor = () => {
       const {
         data: { session },
       } = await supabase.auth.getSession();
-      if (!session && !isLocalMission && !shouldUseLocalAgent()) {
+      if (
+        !session &&
+        !isLocalMission &&
+        !shouldUseLocalAgent() &&
+        !shouldUseLocalMissionStore() &&
+        !isAnonymousAutonomousEnabled()
+      ) {
         toast({ title: "Sign in required", variant: "destructive" });
         return null;
       }

@@ -1,5 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import {
+  consumeLocalMissionQuota,
+  getLocalMissionQuotaInfo,
+  shouldUseAnonymousMissionStore,
+} from '@/lib/anonymousAutonomousMode';
 import { useFeatureGating, PlanTier } from './useFeatureGating';
 
 // =============================================================================
@@ -45,8 +50,29 @@ export const useMissionQuota = () => {
 
   const fetchQuota = useCallback(async () => {
     try {
+      if (shouldUseAnonymousMissionStore()) {
+        const local = getLocalMissionQuotaInfo();
+        setQuotaInfo({
+          used: local.used,
+          limit: local.limit,
+          remaining: local.remaining,
+          plan: 'free',
+          resetDate: local.resetDate,
+        });
+        return;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        setQuotaInfo({
+          used: 0,
+          limit: MISSION_LIMITS.free,
+          remaining: MISSION_LIMITS.free,
+          plan: 'free',
+          resetDate: getNextMonthStart(),
+        });
+        return;
+      }
 
       // Count missions this month that were marked as "completed" by user (success-fee)
       // Failed/cancelled missions with retry_count < MAX_FREE_RETRIES don't count
@@ -84,10 +110,13 @@ export const useMissionQuota = () => {
     fetchQuota();
   }, [fetchQuota]);
 
-  const canCreateMission = quotaInfo ? quotaInfo.remaining > 0 : false;
+  const canCreateMission = quotaInfo ? quotaInfo.remaining > 0 : shouldUseAnonymousMissionStore();
 
   const consumeMission = useCallback(async () => {
-    await fetchQuota(); // Refresh after consumption
+    if (shouldUseAnonymousMissionStore()) {
+      consumeLocalMissionQuota();
+    }
+    await fetchQuota();
   }, [fetchQuota]);
 
   return {

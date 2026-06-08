@@ -7,6 +7,7 @@ import type { Mission, MissionStep } from "@/hooks/useMissions";
 import { isAutonomousModeEnabled } from "@/lib/autonomy/config";
 import { trackAgenticEvent } from "@/lib/agenticMetrics";
 import { listDueLocalMissions } from "@/lib/desktop/localMissionStore";
+import { isAnonymousAutonomousEnabled } from "@/lib/anonymousAutonomousMode";
 import { shouldUseLocalMissionStore } from "@/lib/desktop/sovereignAgentMode";
 
 const POLL_MS = 60_000;
@@ -32,7 +33,7 @@ export function MissionSchedulerEngine() {
 
   useEffect(() => {
     if (!isAutonomousModeEnabled()) return;
-    if (!user && !shouldUseLocalMissionStore()) return;
+    if (!user && !shouldUseLocalMissionStore() && !isAnonymousAutonomousEnabled()) return;
 
     const tick = async () => {
       try {

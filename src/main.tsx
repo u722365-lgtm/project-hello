@@ -7,6 +7,7 @@
  import { configureTransformersEnv, warmWebGPUProbe } from "./lib/webgpuRuntime";
  import { warmHardwareProfile, prewarmFastestLocalPath } from "./lib/hardwareIntelligence";
  import { installViteChunkRecovery, clearViteChunkRecoveryFlag } from "./lib/viteChunkRecovery";
+import { applyAnonymousAutonomousDefaults } from "./lib/anonymousAutonomousMode";
  
  // Environment validation
  const validateEnvironment = () => {
@@ -29,8 +30,9 @@
  // Initialize performance monitoring
  initPerformanceMonitoring();
  
- // Validate environment on startup
- validateEnvironment();
+// Validate environment on startup
+validateEnvironment();
+applyAnonymousAutonomousDefaults();
  
  // Report errors to console in production (can be extended to error tracking)
  if (import.meta.env.PROD) {

@@ -39,6 +39,7 @@ import { StrategyStepTimeline } from "@/components/strategy/StrategyStepTimeline
 import { StrategyDeliverableView } from "@/components/execution/StrategyDeliverableView";
 import { ShareResultDialog } from "@/components/growth/ShareResultDialog";
 import { useUserReferralCode } from "@/hooks/useUserReferralCode";
+import { shouldUseAnonymousMissionStore } from "@/lib/anonymousAutonomousMode";
 import type { MissionPlanStep } from "@/lib/see/types";
 
 const industryOptions = [
@@ -113,7 +114,7 @@ export function ShadowExecution({
   };
 
   const handleRun = async () => {
-    if (!user) {
+    if (!user && !shouldUseAnonymousMissionStore()) {
       toast({ title: "Sign in required", variant: "destructive" });
       navigate("/auth");
       return;

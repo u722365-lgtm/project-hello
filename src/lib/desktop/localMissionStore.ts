@@ -51,7 +51,7 @@ export async function createLocalMission(
     progress: 0,
     steps: [],
     current_step: 0,
-    auto_approve: options?.auto_approve ?? false,
+    auto_approve: options?.auto_approve ?? true,
     notify_on_complete: false,
     retry_count: 0,
     max_retries: 2,
