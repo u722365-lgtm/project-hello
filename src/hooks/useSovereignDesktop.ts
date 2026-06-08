@@ -16,7 +16,8 @@ import {
   updateOllamaCache,
   type SovereignRoutingMode,
 } from "@/lib/desktop/sovereignMode";
-import type { OllamaStatusInfo } from "@/types/shadowtalk-desktop";
+import type { OllamaBootstrapState, OllamaStatusInfo } from "@/types/shadowtalk-desktop";
+import { getDesktopAPI } from "@/lib/desktopBridge";
 import { useHardwareIntelligence } from "@/hooks/useHardwareIntelligence";
 
 export function useSovereignDesktop() {
@@ -29,6 +30,7 @@ export function useSovereignDesktop() {
   const [pulling, setPulling] = useState(false);
   const [pullStatus, setPullStatus] = useState<string | null>(null);
   const [desktopInfo, setDesktopInfo] = useState<Awaited<ReturnType<typeof getDesktopInfo>>>(null);
+  const [bootstrap, setBootstrap] = useState<OllamaBootstrapState | null>(null);
 
   const refresh = useCallback(async () => {
     if (!isShadowTalkDesktop()) {
@@ -47,6 +49,12 @@ export function useSovereignDesktop() {
     const rec = recommendOllamaModel(recInput);
     setRecommended(rec);
     setCompatible(listCompatibleModels(recInput));
+
+    const api = getDesktopAPI();
+    if (api) {
+      const snap = await api.ollamaBootstrapSnapshot();
+      setBootstrap(snap);
+    }
 
     const ollamaStatus = await fetchOllamaStatus();
     if (ollamaStatus) {
@@ -98,6 +106,22 @@ export function useSovereignDesktop() {
     [recommended?.id, refresh],
   );
 
+  const bootstrapDefaultModel = useCallback(async () => {
+    const api = getDesktopAPI();
+    if (!api) return { ok: false as const, error: "Not on desktop" };
+    setPulling(true);
+    setPullStatus("Starting bundled Ollama…");
+    const result = await api.ollamaBootstrap({ pullDefaultModel: true }, (status, percent) => {
+      setPullStatus(percent != null ? `${status} (${percent}%)` : status);
+    });
+    setPulling(false);
+    setBootstrap(result);
+    if (result.reachable) {
+      await refresh();
+    }
+    return { ok: result.reachable && result.models.length > 0, error: result.error };
+  }, [refresh]);
+
   return {
     available,
     status,
@@ -107,12 +131,15 @@ export function useSovereignDesktop() {
     pulling,
     pullStatus,
     desktopInfo,
+    bootstrap,
     ollamaUrl: getStoredOllamaUrl(),
     ollamaModel: getStoredOllamaModel(),
     refresh,
     updateRouting,
     updateOllamaEndpoint,
     downloadModel,
+    bootstrapDefaultModel,
     isOllamaReady: Boolean(status?.reachable && status.models.length > 0),
+    isBundledOllama: Boolean(desktopInfo?.ollamaBundled ?? bootstrap?.bundledBinaryPresent),
   };
 }

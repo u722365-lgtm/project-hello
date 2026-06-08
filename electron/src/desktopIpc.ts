@@ -5,6 +5,11 @@ import { readFile, writeFile } from 'fs/promises';
 import { homedir } from 'os';
 import { join } from 'path';
 import {
+  bootstrapBundledOllama,
+  getOllamaBootstrapSnapshot,
+} from './ollamaManager';
+import { getBundledOllamaLayout } from './ollamaPaths';
+import {
   probeOllamaStatus,
   pullOllamaModel,
   setOllamaConfig,
@@ -29,6 +34,8 @@ const CHANNEL = {
   ollamaConfigure: 'st-desktop:ollamaConfigure',
   ollamaPull: 'st-desktop:ollamaPull',
   ollamaChat: 'st-desktop:ollamaChat',
+  ollamaBootstrap: 'st-desktop:ollamaBootstrap',
+  ollamaBootstrapSnapshot: 'st-desktop:ollamaBootstrapSnapshot',
   fetchUrl: 'st-desktop:fetchUrl',
 } as const;
 
@@ -87,6 +94,18 @@ export function registerDesktopIpc(): void {
     } catch {
       offlineModelBundled = false;
     }
+
+    const ollamaLayout = getBundledOllamaLayout(process.resourcesPath, process.platform, process.arch);
+    let ollamaBundled = false;
+    try {
+      await access(ollamaLayout.binary);
+      ollamaBundled = true;
+    } catch {
+      ollamaBundled = false;
+    }
+
+    const bootstrap = await getOllamaBootstrapSnapshot();
+
     return {
       platform: process.platform,
       arch: process.arch,
@@ -100,6 +119,11 @@ export function registerDesktopIpc(): void {
       offlineModelBundled,
       offlineModelPath: offlineModelBundled ? bundledDir : undefined,
       sovereignDesktopCapable: true,
+      ollamaBundled,
+      ollamaManagedProcess: bootstrap.managedProcess,
+      ollamaDefaultModel: bootstrap.defaultModel,
+      ollamaModelsPath: bootstrap.modelsPath,
+      ollamaReachable: bootstrap.reachable,
     };
   });
 
@@ -185,6 +209,21 @@ export function registerDesktopIpc(): void {
       return probeOllamaStatus();
     },
   );
+
+  ipcMain.handle(
+    CHANNEL.ollamaBootstrap,
+    async (event, options?: { pullDefaultModel?: boolean; requestId?: string }) => {
+      const requestId = options?.requestId ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      return bootstrapBundledOllama({
+        pullDefaultModel: options?.pullDefaultModel ?? false,
+        onProgress: (status, percent) => {
+          event.sender.send(OLLAMA_PULL_PROGRESS, { requestId, status, percent });
+        },
+      });
+    },
+  );
+
+  ipcMain.handle(CHANNEL.ollamaBootstrapSnapshot, async () => getOllamaBootstrapSnapshot());
 
   ipcMain.handle(CHANNEL.ollamaPull, async (event, model: string) => {
     const requestId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;

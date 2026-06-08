@@ -6,6 +6,7 @@ import electronIsDev from 'electron-is-dev';
 import unhandled from 'electron-unhandled';
 import { scheduleAutoUpdateCheck } from './autoUpdate';
 import { registerDesktopIpc } from './desktopIpc';
+import { bootstrapBundledOllama, stopManagedOllama } from './ollamaManager';
 import { ElectronCapacitorApp, setupContentSecurityPolicy, setupReloadWatcher } from './setup';
 
 // Graceful handling of unhandled errors.
@@ -51,7 +52,16 @@ registerDesktopIpc();
   // Initialize our app, build windows, and load content.
   await myCapacitorApp.init();
   scheduleAutoUpdateCheck();
+
+  void bootstrapBundledOllama({
+    pullDefaultModel: true,
+    onProgress: (status) => console.log('[Ollama]', status),
+  }).catch((e) => console.warn('[Ollama] bootstrap:', e));
 })();
+
+app.on('before-quit', () => {
+  stopManagedOllama();
+});
 
 // Handle when all of our windows are close (platforms have their own expectations).
 app.on('window-all-closed', function () {

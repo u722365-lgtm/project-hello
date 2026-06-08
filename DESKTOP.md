@@ -11,14 +11,18 @@ ShadowTalk ships as installable desktop software via **Capacitor + Electron** (`
 - **Launch at login** — optional auto-start (Profile → Preferences → Desktop app)
 - **Dedicated app data folder** — offline models, vault exports, and caches under Electron `userData`
 - **Larger default window** — 1280×860 workspace layout
+- **Bundled Ollama (Tier D)** — optional sovereign runtime in the installer; auto-starts on launch when staged
 
 ## Build installers
 
 ```bash
 npm install
 npm run desktop:install   # electron/ dependencies
+npm run desktop:stage-ollama   # optional: bundle Ollama binary for current OS
 npm run desktop:make      # build web app + package installers
 ```
+
+Set `STAGE_OLLAMA_MODEL=1` when staging to also pre-pull the default model (~4.5 GB for qwen2.5:7b). Without staging, desktop falls back to system Ollama from https://ollama.com/download.
 
 Verify compile without launching a window:
 
