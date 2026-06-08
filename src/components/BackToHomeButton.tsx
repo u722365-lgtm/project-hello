@@ -13,6 +13,7 @@ export function BackToHomeButton({ className }: { className?: string }) {
     [location.pathname],
   );
   const isHome = path === "/home";
+  // Chatbot uses ChatHeader "Back to Home" — avoid duplicate controls
   const isChat = path === "/chatbot";
 
   if (isChat) return null;
