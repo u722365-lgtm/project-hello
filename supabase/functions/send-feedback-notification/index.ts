@@ -1,8 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsOptions } from "../_shared/cors.ts";
-import { requireAuth } from "../_shared/auth.ts";
-import { checkRateLimit } from "../_shared/rate-limit.ts";
+import { FEEDBACK_NOTIFICATION_EMAILS } from "../_shared/feedbackRecipients.ts";
 
 const SENDGRID_API_KEY = Deno.env.get("SENDGRID_API_KEY");
 const RESEND_API_KEY = Deno.env.get("Resend_api_key");
@@ -62,7 +61,7 @@ const handler = async (req: Request): Promise<Response> => {
     const message = escapeHtml(String(rawBody.message || ""));
     const userEmail = rawBody.userEmail ? escapeHtml(String(rawBody.userEmail)) : undefined;
 
-    const adminEmail = "shadowtalk68@gmail.com";
+    const adminEmails = [...FEEDBACK_NOTIFICATION_EMAILS];
 
     const emailHtml = `
       <!DOCTYPE html>
@@ -135,7 +134,7 @@ Time: ${new Date().toLocaleString()}
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          personalizations: [{ to: [{ email: adminEmail }] }],
+          personalizations: [{ to: adminEmails.map((email) => ({ email })) }],
           from: { email: "noreply@shadowtalk.app", name: "ShadowTalk AI" },
           subject: `${getCategoryLabel(category)} - New Feedback (${rating}⭐)`,
           content: [
@@ -168,7 +167,7 @@ Time: ${new Date().toLocaleString()}
         },
         body: JSON.stringify({
           from: "ShadowTalk AI <noreply@shadowtalk.ai>",
-          to: [adminEmail],
+          to: adminEmails,
           subject: `${getCategoryLabel(category)} - New Feedback (${rating}⭐)`,
           html: emailHtml,
         }),
