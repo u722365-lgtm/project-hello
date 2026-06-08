@@ -65,3 +65,4 @@ public/downloads/*.AppImage
 # Sensitive files (auto-detected)
 .env
 
+artifacts/
