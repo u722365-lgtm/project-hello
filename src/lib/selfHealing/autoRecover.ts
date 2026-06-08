@@ -25,6 +25,22 @@ function saveApplied(map: Record<string, RuntimeHandler>) {
   localStorage.setItem(APPLIED_KEY, JSON.stringify(map));
 }
 
+export function applyRuntimeProposal(proposal: {
+  id?: string;
+  runtime_handler?: unknown;
+  patch_strategy?: string;
+  status?: string;
+}) {
+  if (!proposal?.runtime_handler) return;
+  if (proposal.patch_strategy && proposal.patch_strategy !== "runtime_recover") return;
+  if (proposal.status && proposal.status !== "approved") return;
+
+  const map = loadApplied();
+  const id = proposal.id ?? `proposal_${Date.now()}`;
+  map[id] = proposal.runtime_handler as RuntimeHandler;
+  saveApplied(map);
+}
+
 /** Subscribes to approved runtime fixes and applies them locally */
 export function startAutoRecoverySync() {
   if (typeof window === "undefined") return;
@@ -98,6 +114,10 @@ export async function withSelfHeal<T>(
       return opts.fallback();
     }
     if (handler?.action === "silence") {
+      return undefined as unknown as T;
+    }
+    if (handler?.action === "reload" && typeof window !== "undefined") {
+      window.setTimeout(() => window.location.reload(), 400);
       return undefined as unknown as T;
     }
     throw err;

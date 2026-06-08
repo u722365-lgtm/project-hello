@@ -28,7 +28,7 @@ export interface AdminNavItem {
   id: string;
   label: string;
   icon: LucideIcon;
-  badgeKey?: "pendingFeedback";
+  badgeKey?: "pendingFeedback" | "pendingGrowthActions";
   description?: string;
 }
 
@@ -43,6 +43,18 @@ export const adminNavGroups: AdminNavGroup[] = [
     items: [
       { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, description: "Stats and quick actions" },
       { id: "alerts", label: "System alerts", icon: Bell, description: "Platform alerts log" },
+    ],
+  },
+  {
+    title: "Growth & scale",
+    items: [
+      {
+        id: "growth-command",
+        label: "Growth Command",
+        icon: Sparkles,
+        description: "ShadowScale autonomous growth engine",
+        badgeKey: "pendingGrowthActions",
+      },
     ],
   },
   {
@@ -88,7 +100,8 @@ export const adminNavGroups: AdminNavGroup[] = [
 ];
 
 export const adminQuickActions = [
-  { section: "changelog", label: "Ship release", icon: Sparkles },
+  { section: "growth-command", label: "Growth Command", icon: Sparkles },
+  { section: "changelog", label: "Ship release", icon: History },
   { section: "broadcast", label: "Broadcast message", icon: Send },
   { section: "announcements", label: "New announcement", icon: Megaphone },
   { section: "feedback", label: "Review feedback", icon: MessageSquareHeart },

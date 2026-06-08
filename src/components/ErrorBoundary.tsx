@@ -45,17 +45,16 @@
  
    private reportError = async (error: Error, errorInfo: ErrorInfo) => {
      try {
-       const errorReport = {
-         errorId: this.state.errorId,
+       const { capture } = await import("@/lib/selfHealing/errorCapture");
+       capture({
+         kind: "react",
          message: error.message,
          stack: error.stack,
-         componentStack: errorInfo.componentStack,
-         url: window.location.href,
-         userAgent: navigator.userAgent,
-         timestamp: new Date().toISOString(),
-       };
-       
-       console.error('[ErrorBoundary] Production error report:', JSON.stringify(errorReport, null, 2));
+         context: {
+           errorId: this.state.errorId,
+           componentStack: errorInfo.componentStack?.slice(0, 2000),
+         },
+       });
      } catch (e) {
        console.error('[ErrorBoundary] Failed to report error:', e);
      }

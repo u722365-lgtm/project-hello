@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getCorsHeaders, handleCorsOptions } from "../_shared/cors.ts";
+import { FEEDBACK_NOTIFICATION_EMAILS } from "../_shared/feedbackRecipients.ts";
 
 function getResendApiKey(): string | undefined {
   return (
@@ -54,7 +55,7 @@ serve(async (req) => {
       console.error("[send-contact-email] RESEND_API_KEY not configured");
       return new Response(
         JSON.stringify({
-          error: "Email service is not configured. Please email shadowtalk68@gmail.com directly.",
+          error: `Email service is not configured. Please email ${FEEDBACK_NOTIFICATION_EMAILS[0]} directly.`,
         }),
         { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
@@ -142,8 +143,8 @@ serve(async (req) => {
         Authorization: `Bearer ${resendKey}`,
       },
       body: JSON.stringify({
-        from: "ShadowTalk AI <noreply@shadowtalk.ai>",
-        to: ["h23059476@gmail.com"],
+        from: Deno.env.get("RESEND_FROM") || "ShadowTalk AI <onboarding@resend.dev>",
+        to: [...FEEDBACK_NOTIFICATION_EMAILS],
         subject: subjectLine,
         html: emailHtml,
         reply_to: email,
@@ -156,7 +157,7 @@ serve(async (req) => {
     if (!response.ok) {
       return new Response(
         JSON.stringify({
-          error: "Failed to send email. Please try again or contact shadowtalk68@gmail.com.",
+          error: `Failed to send email. Please try again or contact ${FEEDBACK_NOTIFICATION_EMAILS[0]}.`,
         }),
         { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );

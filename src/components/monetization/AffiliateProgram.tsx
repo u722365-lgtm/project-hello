@@ -120,7 +120,7 @@ export function AffiliateProgram() {
       .eq('referrer_id', user.id);
 
     if (referrals) {
-      const active = referrals.filter(r => r.status === 'converted');
+      const active = referrals.filter(r => r.status === 'subscribed' || r.status === 'signed_up');
       const earnings = referrals.reduce((sum, r) => sum + (r.commission_amount || 0), 0);
       
       // Fetch real click count from affiliate_clicks
@@ -142,7 +142,7 @@ export function AffiliateProgram() {
     }
   };
 
-  const referralLink = `https://shadowtalk-ai.lovable.app?ref=${referralCode}`;
+  const referralLink = `https://www.shadowtalk-ai.com?ref=${referralCode}`;
 
   const copyLink = () => {
     navigator.clipboard.writeText(referralLink);

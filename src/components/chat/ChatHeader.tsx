@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { 
-  Bot, ArrowLeft, LogOut, Settings, Download, Lock, Crown, Star, Zap, Menu, 
+  Bot, ArrowLeft, Home, LogOut, Settings, Download, Lock, Crown, Star, Zap, Menu, 
   Search, Image, Play, Eye, Wand2, Compass, FileText, Mic, AudioLines, MoreVertical,
   LayoutGrid, Sparkles, MessageCircle, Briefcase, Heart, Laugh, Lightbulb,
   Scale, Target, HelpCircle, Share2, Plus, Pin, Mail
@@ -252,8 +252,19 @@ export const ChatHeader = ({
   if (variant === "minimal") {
     return (
       <>
-        {showUpgrade && (
-          <div className="flex md:hidden items-center justify-end px-3 py-1.5 shrink-0 safe-top">
+        <div className="flex md:hidden items-center justify-between px-3 py-1.5 shrink-0 safe-top">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => navigate("/home")}
+            className="gap-1.5 rounded-full border-border/60 bg-background/70 backdrop-blur-md shadow-sm h-8 px-3 text-xs"
+            aria-label="Back to home"
+          >
+            <Home className="h-3.5 w-3.5" />
+            Home
+          </Button>
+          {showUpgrade && (
             <Button
               onClick={() => navigate("/pricing")}
               className="rounded-full h-8 px-3 gap-1 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-medium shadow-sm touch-target"
@@ -261,10 +272,21 @@ export const ChatHeader = ({
               <Sparkles className="h-3 w-3" />
               Upgrade
             </Button>
-          </div>
-        )}
+          )}
+        </div>
         <div className="hidden md:flex items-center justify-between px-4 py-3 md:px-8 bg-transparent relative z-20 shrink-0 safe-top">
           <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/home")}
+              className="gap-2 rounded-full border-border/60 bg-background/70 backdrop-blur-md shadow-sm h-9 px-3"
+              aria-label="Back to home"
+            >
+              <Home className="h-4 w-4" />
+              <span className="text-sm">Back to Home</span>
+            </Button>
             <Button
               variant="ghost"
               size="icon"

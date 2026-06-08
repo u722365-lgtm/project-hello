@@ -95,7 +95,7 @@ export const ChatIconRail = ({
             <TooltipTrigger asChild>
               <button
                 type="button"
-                onClick={tap(() => navigate("/chatbot"))}
+                onClick={tap(() => navigate("/home"))}
                 className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/30 shadow-[0_0_16px_hsl(var(--primary)/0.15)]"
                 aria-label="ShadowTalk home"
               >

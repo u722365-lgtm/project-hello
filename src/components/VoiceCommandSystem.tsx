@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 // All navigable pages with aliases for voice matching
 const VOICE_ROUTES = [
   { path: "/chatbot", names: ["chatbot", "chat", "chat bot", "ai chat", "talk"] },
-  { path: "/", names: ["home", "landing", "main page", "homepage"] },
+  { path: "/home", names: ["home", "landing", "main page", "homepage", "marketing"] },
   { path: "/pricing", names: ["pricing", "plans", "prices", "subscription"] },
   { path: "/strategy", names: ["strategy", "strategy agent", "business strategy"] },
   { path: "/workspace", names: ["workspace", "ai workspace", "work space"] },
@@ -27,7 +27,8 @@ const VOICE_ROUTES = [
   { path: "/about", names: ["about", "about us", "about page"] },
   { path: "/shadow-memory", names: ["shadow memory", "memory", "activity log", "activity"] },
   { path: "/admin", names: ["admin", "admin panel", "administration"] },
-  { path: "/profile", names: ["profile", "my profile", "account", "settings"] },
+  { path: "/profile", names: ["profile", "my profile", "account"] },
+  { path: "/settings", names: ["settings", "preferences", "configuration"] },
   { path: "/billing", names: ["billing", "payments", "monetization"] },
   { path: "/founder-access", names: ["founder", "founder access", "founders"] },
   { path: "/research", names: ["research", "deep research", "deep search"] },

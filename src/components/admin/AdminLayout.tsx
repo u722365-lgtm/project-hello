@@ -1,18 +1,21 @@
 import { ReactNode, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ChevronLeft, ChevronRight, Menu, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { adminNavGroups, findAdminNavItem, type AdminNavItem } from "./adminNav";
-import type { LucideIcon } from "lucide-react";
+import { AdminAmbientBackground } from "./AdminAmbientBackground";
+import { useAdminMotion } from "@/hooks/useAdminMotion";
 
 type AdminLayoutProps = {
   activeSection: string;
   onSectionChange: (id: string) => void;
   adminEmail?: string | null;
   pendingFeedback?: number;
+  pendingGrowthActions?: number;
   sidebarCollapsed: boolean;
   onToggleSidebar: () => void;
   children: ReactNode;
@@ -31,28 +34,47 @@ function NavButton({
   badge?: number;
   onClick: () => void;
 }) {
+  const { reduced, springSnappy } = useAdminMotion();
   const Icon = item.icon;
+
   return (
-    <button
+    <motion.button
       type="button"
       onClick={onClick}
       title={collapsed ? item.label : item.description ?? item.label}
+      whileHover={reduced ? undefined : { x: collapsed ? 0 : 3, scale: 1.02 }}
+      whileTap={reduced ? undefined : { scale: 0.97 }}
       className={cn(
-        "w-full flex items-center gap-2.5 rounded-lg text-sm transition-colors",
+        "relative w-full flex items-center gap-2.5 rounded-lg text-sm transition-colors",
         collapsed ? "justify-center px-0 py-2.5" : "px-2.5 py-2",
-        isActive
-          ? "bg-primary/10 text-primary font-medium"
-          : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+        isActive ? "text-primary font-medium" : "text-muted-foreground hover:text-foreground",
       )}
     >
-      <Icon className={cn("h-4 w-4 shrink-0", isActive && "text-primary")} />
-      {!collapsed && <span className="truncate">{item.label}</span>}
-      {!collapsed && badge !== undefined && badge > 0 && (
-        <Badge variant="destructive" className="ml-auto h-5 min-w-5 px-1 text-[10px]">
-          {badge > 9 ? "9+" : badge}
-        </Badge>
+      {isActive && !reduced && (
+        <motion.span
+          layoutId="admin-nav-active"
+          className="absolute inset-0 rounded-lg bg-primary/12 border border-primary/25 shadow-[0_0_20px_hsl(var(--primary)/0.12)]"
+          transition={springSnappy}
+        />
       )}
-    </button>
+      {isActive && reduced && (
+        <span className="absolute inset-0 rounded-lg bg-primary/10" />
+      )}
+      <Icon className={cn("relative z-10 h-4 w-4 shrink-0", isActive && "text-primary")} />
+      {!collapsed && <span className="relative z-10 truncate">{item.label}</span>}
+      {!collapsed && badge !== undefined && badge > 0 && (
+        <motion.div
+          initial={reduced ? false : { scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={springSnappy}
+          className="relative z-10 ml-auto"
+        >
+          <Badge variant="destructive" className="h-5 min-w-5 px-1 text-[10px]">
+            {badge > 9 ? "9+" : badge}
+          </Badge>
+        </motion.div>
+      )}
+    </motion.button>
   );
 }
 
@@ -61,43 +83,64 @@ function SidebarNav({
   onSectionChange,
   collapsed,
   pendingFeedback,
+  pendingGrowthActions = 0,
   onNavigateItem,
 }: {
   activeSection: string;
   onSectionChange: (id: string) => void;
   collapsed: boolean;
   pendingFeedback: number;
+  pendingGrowthActions?: number;
   onNavigateItem?: () => void;
 }) {
+  const { variants } = useAdminMotion();
+
   const pick = (item: AdminNavItem) => {
     onSectionChange(item.id);
     onNavigateItem?.();
   };
 
   return (
-    <nav className="flex-1 overflow-y-auto py-2 px-2 space-y-4">
-      {adminNavGroups.map((group) => (
-        <div key={group.title}>
+    <motion.nav
+      className="flex-1 space-y-4 overflow-y-auto px-2 py-2"
+      variants={variants.navGroup}
+      initial="hidden"
+      animate="visible"
+    >
+      {adminNavGroups.map((group, groupIndex) => (
+        <motion.div key={group.title} variants={variants.navItem} custom={groupIndex}>
           {!collapsed && (
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-2 mb-1">
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.1 + groupIndex * 0.05 }}
+              className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
+            >
               {group.title}
-            </p>
+            </motion.p>
           )}
-          <div className="space-y-0.5">
+          <motion.div className="space-y-0.5" variants={variants.navGroup}>
             {group.items.map((item) => (
-              <NavButton
-                key={item.id}
-                item={item}
-                isActive={activeSection === item.id}
-                collapsed={collapsed}
-                badge={item.badgeKey === "pendingFeedback" ? pendingFeedback : undefined}
-                onClick={() => pick(item)}
-              />
+              <motion.div key={item.id} variants={variants.navItem}>
+                <NavButton
+                  item={item}
+                  isActive={activeSection === item.id}
+                  collapsed={collapsed}
+                  badge={
+                    item.badgeKey === "pendingFeedback"
+                      ? pendingFeedback
+                      : item.badgeKey === "pendingGrowthActions"
+                        ? pendingGrowthActions
+                        : undefined
+                  }
+                  onClick={() => pick(item)}
+                />
+              </motion.div>
             ))}
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       ))}
-    </nav>
+    </motion.nav>
   );
 }
 
@@ -106,6 +149,7 @@ export function AdminLayout({
   onSectionChange,
   adminEmail,
   pendingFeedback = 0,
+  pendingGrowthActions = 0,
   sidebarCollapsed,
   onToggleSidebar,
   children,
@@ -113,64 +157,103 @@ export function AdminLayout({
   const navigate = useNavigate();
   const current = findAdminNavItem(activeSection);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { variants, shouldAnimateAmbient, reduced, springSnappy } = useAdminMotion();
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="relative flex min-h-screen overflow-hidden bg-background">
+      <AdminAmbientBackground disabled={!shouldAnimateAmbient} />
+
       {/* Desktop sidebar */}
-      <aside
+      <motion.aside
+        initial={reduced ? false : { x: -20, opacity: 0 }}
+        animate={{ x: 0, opacity: 1, width: sidebarCollapsed ? 64 : 256 }}
+        transition={springSnappy}
         className={cn(
-          "hidden md:flex h-screen sticky top-0 border-r border-border bg-sidebar flex-col transition-all duration-300 z-40",
-          sidebarCollapsed ? "w-16" : "w-64",
+          "sticky top-0 z-40 hidden h-screen flex-col border-r border-border/80 bg-sidebar/95 backdrop-blur-xl md:flex",
         )}
       >
-        <div className="h-14 flex items-center justify-between px-3 border-b border-border shrink-0">
+        <motion.div
+          variants={variants.headerReveal}
+          initial="hidden"
+          animate="visible"
+          className="flex h-14 shrink-0 items-center justify-between border-b border-border px-3"
+        >
           {!sidebarCollapsed && (
-            <div className="flex items-center gap-2 min-w-0">
-              <Shield className="h-5 w-5 text-primary shrink-0" />
+            <motion.div
+              className="flex min-w-0 items-center gap-2"
+              initial={reduced ? false : { opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <motion.div
+                animate={
+                  shouldAnimateAmbient
+                    ? {
+                        boxShadow: [
+                          "0 0 0px hsl(var(--primary) / 0)",
+                          "0 0 20px hsl(var(--primary) / 0.35)",
+                          "0 0 0px hsl(var(--primary) / 0)",
+                        ],
+                      }
+                    : undefined
+                }
+                transition={{ duration: 3, repeat: Infinity }}
+                className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10"
+              >
+                <Shield className="h-5 w-5 text-primary shrink-0" />
+              </motion.div>
               <div className="min-w-0">
-                <span className="font-semibold text-sm block truncate">ShadowTalk Admin</span>
+                <span className="block truncate text-sm font-semibold">ShadowTalk Admin</span>
                 <span className="text-[10px] text-muted-foreground">Control panel</span>
               </div>
-            </div>
+            </motion.div>
           )}
           <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={onToggleSidebar}>
             {sidebarCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </Button>
-        </div>
+        </motion.div>
 
         <SidebarNav
           activeSection={activeSection}
           onSectionChange={onSectionChange}
           collapsed={sidebarCollapsed}
           pendingFeedback={pendingFeedback}
+          pendingGrowthActions={pendingGrowthActions}
         />
 
-        <div className="p-2 border-t border-border shrink-0">
-          <button
+        <div className="shrink-0 border-t border-border p-2">
+          <motion.button
             type="button"
             onClick={() => navigate("/chatbot")}
+            whileHover={reduced ? undefined : { x: 2 }}
+            whileTap={reduced ? undefined : { scale: 0.97 }}
             className={cn(
-              "w-full flex items-center gap-2.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors",
+              "flex w-full items-center gap-2.5 rounded-lg text-sm text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground",
               sidebarCollapsed ? "justify-center px-0 py-2.5" : "px-2.5 py-2",
             )}
           >
             <ArrowLeft className="h-4 w-4 shrink-0" />
             {!sidebarCollapsed && <span>Back to app</span>}
-          </button>
+          </motion.button>
         </div>
-      </aside>
+      </motion.aside>
 
-      <main className="flex-1 min-w-0 flex flex-col">
-        <header className="h-14 border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-30 flex items-center justify-between px-4 md:px-6 gap-3">
-          <div className="flex items-center gap-2 min-w-0">
+      <main className="relative z-10 flex min-w-0 flex-1 flex-col">
+        <motion.header
+          variants={variants.headerReveal}
+          initial="hidden"
+          animate="visible"
+          className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-border/80 bg-card/60 px-4 backdrop-blur-md md:px-6"
+        >
+          <div className="flex min-w-0 items-center gap-2">
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger asChild>
-                <Button variant="outline" size="icon" className="md:hidden h-9 w-9 shrink-0">
+                <Button variant="outline" size="icon" className="h-9 w-9 shrink-0 md:hidden">
                   <Menu className="h-4 w-4" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-72 p-0 flex flex-col">
-                <div className="h-14 flex items-center gap-2 px-4 border-b border-border">
+              <SheetContent side="left" className="flex w-72 flex-col p-0">
+                <div className="flex h-14 items-center gap-2 border-b border-border px-4">
                   <Shield className="h-5 w-5 text-primary" />
                   <span className="font-semibold">Admin</span>
                 </div>
@@ -179,23 +262,48 @@ export function AdminLayout({
                   onSectionChange={onSectionChange}
                   collapsed={false}
                   pendingFeedback={pendingFeedback}
+                  pendingGrowthActions={pendingGrowthActions}
                   onNavigateItem={() => setMobileOpen(false)}
                 />
               </SheetContent>
             </Sheet>
-            <div className="min-w-0">
-              <h1 className="text-lg font-semibold truncate">{current?.label ?? "Dashboard"}</h1>
-              {current?.description && (
-                <p className="text-xs text-muted-foreground truncate hidden sm:block">{current.description}</p>
-              )}
-            </div>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeSection}
+                initial={reduced ? false : { opacity: 0, y: 8, filter: "blur(4px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                exit={reduced ? undefined : { opacity: 0, y: -6, filter: "blur(4px)" }}
+                transition={{ duration: 0.25 }}
+                className="min-w-0"
+              >
+                <h1 className="truncate text-lg font-semibold">{current?.label ?? "Dashboard"}</h1>
+                {current?.description && (
+                  <p className="hidden truncate text-xs text-muted-foreground sm:block">{current.description}</p>
+                )}
+              </motion.div>
+            </AnimatePresence>
           </div>
-          <Badge variant="outline" className="border-primary/30 text-primary text-xs shrink-0 max-w-[180px] truncate">
-            {adminEmail}
-          </Badge>
-        </header>
+          <motion.div
+            animate={shouldAnimateAmbient ? { scale: [1, 1.03, 1] } : undefined}
+            transition={{ duration: 3, repeat: Infinity }}
+          >
+            <Badge
+              variant="outline"
+              className="max-w-[180px] shrink-0 truncate border-primary/30 text-xs text-primary"
+            >
+              {adminEmail}
+            </Badge>
+          </motion.div>
+        </motion.header>
 
-        <div className="flex-1 p-4 md:p-6 overflow-auto">{children}</div>
+        <motion.div
+          variants={variants.pageEnter}
+          initial="hidden"
+          animate="visible"
+          className="flex-1 overflow-auto p-4 md:p-6"
+        >
+          {children}
+        </motion.div>
       </main>
     </div>
   );

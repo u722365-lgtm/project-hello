@@ -32,7 +32,7 @@ const INTERNAL_ADS: Ad[] = [
     title: "Need More Credits?",
     description: "Buy credit packs and never run out of AI power",
     cta: "Buy Credits",
-    link: "/pricing#credits",
+    link: "/billing",
     type: "inline",
   },
   {
@@ -40,7 +40,7 @@ const INTERNAL_ADS: Ad[] = [
     title: "Earn While You Share",
     description: "Get 20% commission on every referral subscription",
     cta: "Start Earning",
-    link: "/profile#referral",
+    link: "/referral",
     type: "inline",
   },
   {

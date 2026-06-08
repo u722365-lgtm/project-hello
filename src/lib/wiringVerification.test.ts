@@ -81,4 +81,30 @@ describe("feature wiring verification", () => {
   it("ChatToolbar shows offline indicator", () => {
     expect(readSrc("components/chat/ChatToolbar.tsx")).toContain("OfflineModeIndicator");
   });
+
+  it("missioncontrol route preserves goal via MissionControlPage", () => {
+    const app = readSrc("App.tsx");
+    expect(app).toContain("MissionControlPage");
+    expect(readSrc("pages/MissionControlPage.tsx")).toContain("goal");
+  });
+
+  it("settings links sessions and self-healing diagnostics", () => {
+    const settings = readSrc("components/settings/SettingsSectionPanels.tsx");
+    expect(settings).toContain('href: "/sessions"');
+    expect(settings).toContain('href: "/self-healing"');
+  });
+
+  it("Shadow Heal Engine mounted for 24/7 healing", () => {
+    const app = readSrc("App.tsx");
+    expect(app).toContain("ShadowHealEngine");
+    expect(readSrc("components/shadowHeal/ShadowHealEngine.tsx")).toContain("startShadowHealEngine");
+  });
+
+  it("ShadowScale growth engine and admin Growth Command wired", () => {
+    expect(readSrc("App.tsx")).toContain("ShadowScaleEngine");
+    expect(readSrc("components/shadowScale/ShadowScaleEngine.tsx")).toContain("startShadowScaleEngine");
+    expect(readSrc("components/admin/GrowthCommandPanel.tsx")).toContain("Growth Command");
+    expect(readSrc("components/admin/adminNav.ts")).toContain("growth-command");
+    expect(readSrc("App.tsx")).toContain("AnnouncementBanner");
+  });
 });

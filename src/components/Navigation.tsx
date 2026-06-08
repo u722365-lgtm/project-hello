@@ -116,6 +116,7 @@ const Navigation = ({ landingAnimated = false }: NavigationProps) => {
     { name: "Compliance", href: "/compliance", icon: ShieldCheck, isLink: true },
     { name: "Competitive", href: "/competitive", icon: BarChart3, isLink: true },
     { name: "Admin", href: "/admin", icon: Settings, isLink: true },
+    { name: "Settings", href: "/settings", icon: Settings, isLink: true },
     { name: t("nav.profile"), href: "/profile", icon: User, isLink: true },
   ];
 

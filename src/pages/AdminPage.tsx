@@ -72,9 +72,13 @@ import { AdminDashboard } from '@/components/admin/AdminDashboard';
 import GoogleSearchConsoleSummary from '@/components/admin/GoogleSearchConsoleSummary';
 
 import { BusinessInsightsDashboard } from '@/components/admin/BusinessInsightsDashboard';
+import { GrowthCommandPanel } from '@/components/admin/GrowthCommandPanel';
 import { TimezoneInsights } from '@/components/admin/TimezoneInsights';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAdminMotion } from '@/hooks/useAdminMotion';
+import { AdminAnimatedCard } from '@/components/admin/AdminAnimatedCard';
+import { AdminAmbientBackground } from '@/components/admin/AdminAmbientBackground';
 
 // --- Types ---
 interface UserData {
@@ -147,6 +151,8 @@ const AdminPage = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { isAdmin, loading: adminLoading } = useAdminCheck();
+  const adminMotion = useAdminMotion();
+  const { variants, shouldAnimateAmbient } = adminMotion;
 
   const [activeSection, setActiveSection] = useState('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -163,6 +169,7 @@ const AdminPage = () => {
     eliteSubscribers: 0,
     totalFeedback: 0,
     pendingFeedback: 0,
+    pendingGrowthActions: 0,
   });
   const [loadingData, setLoadingData] = useState(true);
 
@@ -220,6 +227,11 @@ const AdminPage = () => {
       setFeedback(feedbackData || []);
 
       const uniqueUserIds = new Set(convData?.map(c => c.user_id) || []);
+      const { count: growthPending } = await supabase
+        .from('shadowscale_action_queue')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'pending');
+
       setStats({
         totalUsers: uniqueUserIds.size,
         totalConversations: convData?.length || 0,
@@ -229,6 +241,7 @@ const AdminPage = () => {
         eliteSubscribers: subData?.filter(s => s.subscription_tier === 'elite').length || 0,
         totalFeedback: feedbackData?.length || 0,
         pendingFeedback: feedbackData?.filter(f => f.status === 'pending').length || 0,
+        pendingGrowthActions: growthPending ?? 0,
       });
     } catch (error) {
       console.error('Error fetching admin data:', error);
@@ -271,11 +284,25 @@ const AdminPage = () => {
 
   if (authLoading || adminLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <Shield className="h-12 w-12 text-primary animate-pulse mx-auto" />
-          <p className="text-muted-foreground">Verifying admin access...</p>
-        </div>
+      <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background">
+        <AdminAmbientBackground disabled={!shouldAnimateAmbient} />
+        <motion.div
+          className="relative z-10 space-y-4 text-center"
+          variants={variants.pageEnter}
+          initial="hidden"
+          animate="visible"
+        >
+          <motion.div variants={variants.loadingPulse} animate="animate">
+            <Shield className="mx-auto h-12 w-12 text-primary" />
+          </motion.div>
+          <motion.p
+            className="text-muted-foreground"
+            animate={shouldAnimateAmbient ? { opacity: [0.5, 1, 0.5] } : undefined}
+            transition={{ duration: 1.8, repeat: Infinity }}
+          >
+            Verifying admin access...
+          </motion.p>
+        </motion.div>
       </div>
     );
   }
@@ -337,6 +364,8 @@ const AdminPage = () => {
         return <AnnouncementManager />;
       case 'broadcast':
         return <BroadcastManager />;
+      case 'growth-command':
+        return <GrowthCommandPanel />;
       case 'export':
         return <AnalyticsExport />;
       default:
@@ -350,16 +379,17 @@ const AdminPage = () => {
       onSectionChange={setActiveSection}
       adminEmail={user?.email}
       pendingFeedback={stats.pendingFeedback}
+      pendingGrowthActions={stats.pendingGrowthActions}
       sidebarCollapsed={sidebarCollapsed}
       onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
     >
       <AnimatePresence mode="wait">
         <motion.div
           key={activeSection}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.15 }}
+          variants={variants.sectionSwap}
+          initial="initial"
+          animate="animate"
+          exit="exit"
         >
           {renderContent()}
         </motion.div>
@@ -371,13 +401,13 @@ const AdminPage = () => {
 // --- Sub-components ---
 
 const StatCard = ({ title, icon: Icon, children, loading }: { title: string; icon: LucideIcon; children: React.ReactNode; loading: boolean }) => (
-  <Card className="bg-card border-border">
+  <AdminAnimatedCard>
     <CardHeader className="flex flex-row items-center justify-between pb-2">
       <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
       <Icon className="h-4 w-4 text-muted-foreground" />
     </CardHeader>
     <CardContent>{loading ? <Skeleton className="h-8 w-20" /> : children}</CardContent>
-  </Card>
+  </AdminAnimatedCard>
 );
 
 const DashboardOverview = ({
@@ -439,8 +469,10 @@ const FeedbackList = ({
   loadingData: boolean;
   onUpdateStatus: (id: string, status: string) => void;
   onDelete: (id: string) => void;
-}) => (
-  <Card>
+}) => {
+  const { variants, reduced } = useAdminMotion();
+  return (
+  <AdminAnimatedCard hover={false}>
     <CardHeader>
       <CardTitle className="flex items-center gap-2">
         <MessageSquareHeart className="h-5 w-5 text-primary" />
@@ -453,9 +485,19 @@ const FeedbackList = ({
       ) : feedback.length === 0 ? (
         <p className="text-muted-foreground text-center py-8">No feedback yet</p>
       ) : (
-        <div className="space-y-3">
+        <motion.div
+          className="space-y-3"
+          variants={variants.staggerList}
+          initial="hidden"
+          animate="visible"
+        >
           {feedback.map(item => (
-            <div key={item.id} className="p-4 rounded-lg border border-border bg-card/50 hover:bg-card transition-colors space-y-3">
+            <motion.div
+              key={item.id}
+              variants={variants.staggerItem}
+              whileHover={reduced ? undefined : { x: 4, scale: 1.005 }}
+              className="space-y-3 rounded-lg border border-border bg-card/50 p-4 transition-colors hover:bg-card"
+            >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-3">
                   {getCategoryIcon(item.category)}
@@ -492,16 +534,19 @@ const FeedbackList = ({
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
     </CardContent>
-  </Card>
-);
+  </AdminAnimatedCard>
+  );
+};
 
-const SubscribersList = ({ subscribers, loadingData }: { subscribers: SubscriberData[]; loadingData: boolean }) => (
-  <Card>
+const SubscribersList = ({ subscribers, loadingData }: { subscribers: SubscriberData[]; loadingData: boolean }) => {
+  const { variants, reduced } = useAdminMotion();
+  return (
+  <AdminAnimatedCard hover={false}>
     <CardHeader><CardTitle>Subscriber Management</CardTitle></CardHeader>
     <CardContent>
       {loadingData ? (
@@ -509,9 +554,19 @@ const SubscribersList = ({ subscribers, loadingData }: { subscribers: Subscriber
       ) : subscribers.length === 0 ? (
         <p className="text-muted-foreground text-center py-8">No subscribers yet</p>
       ) : (
-        <div className="space-y-2">
+        <motion.div
+          className="space-y-2"
+          variants={variants.staggerList}
+          initial="hidden"
+          animate="visible"
+        >
           {subscribers.map(sub => (
-            <div key={sub.id} className="flex items-center justify-between p-4 rounded-lg border border-border bg-card/50 hover:bg-card transition-colors">
+            <motion.div
+              key={sub.id}
+              variants={variants.staggerItem}
+              whileHover={reduced ? undefined : { x: 4 }}
+              className="flex items-center justify-between rounded-lg border border-border bg-card/50 p-4 transition-colors hover:bg-card"
+            >
               <div className="space-y-1">
                 <p className="font-medium">{sub.email}</p>
                 <p className="text-sm text-muted-foreground">Joined: {new Date(sub.created_at).toLocaleDateString()}</p>
@@ -528,16 +583,19 @@ const SubscribersList = ({ subscribers, loadingData }: { subscribers: Subscriber
                   <Badge variant="outline">Free</Badge>
                 )}
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
     </CardContent>
-  </Card>
-);
+  </AdminAnimatedCard>
+  );
+};
 
-const ConversationsList = ({ conversations, loadingData, onDelete }: { conversations: ConversationData[]; loadingData: boolean; onDelete: (id: string) => void }) => (
-  <Card>
+const ConversationsList = ({ conversations, loadingData, onDelete }: { conversations: ConversationData[]; loadingData: boolean; onDelete: (id: string) => void }) => {
+  const { variants, reduced } = useAdminMotion();
+  return (
+  <AdminAnimatedCard hover={false}>
     <CardHeader><CardTitle>Conversation Management</CardTitle></CardHeader>
     <CardContent>
       {loadingData ? (
@@ -545,9 +603,19 @@ const ConversationsList = ({ conversations, loadingData, onDelete }: { conversat
       ) : conversations.length === 0 ? (
         <p className="text-muted-foreground text-center py-8">No conversations yet</p>
       ) : (
-        <div className="space-y-2">
+        <motion.div
+          className="space-y-2"
+          variants={variants.staggerList}
+          initial="hidden"
+          animate="visible"
+        >
           {conversations.map(conv => (
-            <div key={conv.id} className="flex items-center justify-between p-4 rounded-lg border border-border bg-card/50 hover:bg-card transition-colors">
+            <motion.div
+              key={conv.id}
+              variants={variants.staggerItem}
+              whileHover={reduced ? undefined : { x: 4 }}
+              className="flex items-center justify-between rounded-lg border border-border bg-card/50 p-4 transition-colors hover:bg-card"
+            >
               <div className="space-y-1 flex-1">
                 <p className="font-medium">{conv.title || 'Untitled Conversation'}</p>
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -558,12 +626,13 @@ const ConversationsList = ({ conversations, loadingData, onDelete }: { conversat
               <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => onDelete(conv.id)}>
                 <Trash2 className="h-4 w-4" />
               </Button>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
     </CardContent>
-  </Card>
-);
+  </AdminAnimatedCard>
+  );
+};
 
 export default AdminPage;

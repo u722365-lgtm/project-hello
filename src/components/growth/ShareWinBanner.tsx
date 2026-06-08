@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { BRAND } from "@/lib/brand";
 import { buildViralShareBlurb } from "@/lib/growth/selfMarketing";
 import { getShareSocialUrls } from "@/lib/growth/shareGrowth";
+import { recordGrowthEvent } from "@/lib/shadowScale/growthEvents";
 type ShareWinBannerProps = {
   visible: boolean;
   title: string;
@@ -36,6 +37,7 @@ export function ShareWinBanner({
   });
 
   const tryNativeShare = async () => {
+    recordGrowthEvent("share", title.slice(0, 80));
     if (!navigator.share) {
       onOpenShareDialog();
       return;

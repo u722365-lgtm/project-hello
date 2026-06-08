@@ -152,7 +152,7 @@ export const SEEMissionPanel = ({
           size="sm"
           variant="outline"
           className="h-8 text-xs gap-1"
-          onClick={() => (onOpenFullControl ? onOpenFullControl() : navigate("/missioncontrol"))}
+          onClick={() => (onOpenFullControl ? onOpenFullControl() : navigate("/execute"))}
         >
           Open Mission Control
           <ChevronRight className="h-3 w-3" />
