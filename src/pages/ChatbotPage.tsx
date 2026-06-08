@@ -78,6 +78,8 @@ import { MarketplaceAgentBanner } from "@/components/chat/MarketplaceAgentBanner
 import type { MarketplaceAgent, MarketplaceAgentRuntime } from "@/lib/marketplace/types";
 import { runOfflineCompletion } from "@/lib/offline/runOfflineCompletion";
 import { prewarmFastestLocalPath, warmHardwareProfile } from "@/lib/hardwareIntelligence";
+import { runOllamaChat } from "@/lib/desktop/ollamaInference";
+import { isSovereignModeEnabled } from "@/lib/desktop/sovereignMode";
 import { runLocalChat, isAnyLocalModelReady } from "@/lib/offline/localChat";
 import type { RouterMessage } from "@/lib/offline/hybridRouter";
 import { decideRoute } from "@/lib/offline/hybridRouter";
@@ -852,7 +854,7 @@ const ChatbotPage = () => {
         !hasMultimodalImage &&
         (route.target === "local" || (aiProvider === "shadowtalk" && isAnyLocalModelReady()));
       if (useLocal) {
-        if (!isAnyLocalModelReady()) {
+        if (!isAnyLocalModelReady() && route.backend !== "ollama") {
           prewarmFastestLocalPath();
         }
 
@@ -874,6 +876,28 @@ const ChatbotPage = () => {
             ];
           });
         };
+
+        if (route.backend === "ollama") {
+          try {
+            const ollama = await runOllamaChat(routerMessages, streamToken);
+            if (ollama.ok && (assistantContent || ollama.content)) {
+              const final = assistantContent || ollama.content;
+              if (user) {
+                await saveMessage(final, "assistant", conversationId);
+              }
+              return final;
+            }
+            if (isSovereignModeEnabled()) {
+              throw new Error(ollama.error ?? "Ollama chat failed in sovereign mode");
+            }
+            console.warn("[Chat] Ollama path failed, trying browser/cloud:", ollama.error);
+          } catch (e) {
+            if (isSovereignModeEnabled()) {
+              throw e instanceof Error ? e : new Error("Ollama unavailable in sovereign mode");
+            }
+            console.warn("[Chat] Ollama path failed:", e);
+          }
+        }
 
         const offline = await runOfflineCompletion({
           messages: routerMessages,
@@ -901,8 +925,17 @@ const ChatbotPage = () => {
             }
             return assistantContent || content;
           } catch (e) {
+            if (isSovereignModeEnabled()) {
+              throw e instanceof Error ? e : new Error("Local chat failed in sovereign mode");
+            }
             console.warn("[Chat] Local turbo path failed, using cloud:", e);
           }
+        }
+
+        if (isSovereignModeEnabled()) {
+          throw new Error(
+            "Sovereign mode is on but no local model responded. Install Ollama, pull a model in Settings → Offline AI, then retry.",
+          );
         }
       }
 

@@ -51,6 +51,7 @@
    warmWebGPUProbe();
    warmHardwareProfile();
    prewarmFastestLocalPath();
+   void import("./lib/desktop/warmSovereignDesktop").then((m) => m.warmSovereignDesktop());
  });
 
  // Defer non-critical initialization

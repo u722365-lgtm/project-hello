@@ -12,6 +12,8 @@ import { useToast } from "@/hooks/use-toast";
 import { deleteModel, getModelStatus, isOpfsAvailable, type ModelStatus } from "@/lib/offline/opfsModelStore";
 import type { GemmaModelKey } from "@/lib/offline/gemmaEngine";
 import { useHardwareIntelligence } from "@/hooks/useHardwareIntelligence";
+import { SovereignDesktopSettings } from "@/components/profile/SovereignDesktopSettings";
+import { isShadowTalkDesktop } from "@/lib/desktopBridge";
 
 /**
  * Settings panel — Opt-in download of on-device Gemma + routing preferences.
@@ -109,6 +111,8 @@ export const OfflineAISettings = () => {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        {isShadowTalkDesktop() && <SovereignDesktopSettings />}
+
         {hwProfile && (
           <div className="rounded-md border border-primary/30 bg-primary/5 p-3 text-xs">
             <div className="font-medium text-foreground">Recommended speed path</div>

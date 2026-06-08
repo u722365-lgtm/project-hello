@@ -11,6 +11,17 @@ export interface ShadowTalkDesktopInfo {
   /** Tier C: installer shipped default MLC model cache */
   offlineModelBundled?: boolean;
   offlineModelPath?: string;
+  /** Odysseus-style Ollama sidecar available on desktop */
+  sovereignDesktopCapable?: boolean;
+}
+
+export interface OllamaStatusInfo {
+  reachable: boolean;
+  version?: string;
+  models: string[];
+  activeModel: string;
+  baseUrl: string;
+  error?: string;
 }
 
 export interface ShadowTalkDesktopAPI {
@@ -32,6 +43,21 @@ export interface ShadowTalkDesktopAPI {
     onChunk: (chunk: string) => void,
     onEnd: (result: { ok: boolean; status: number; body: string }) => void,
   ) => Promise<{ started: boolean }>;
+  ollamaStatus: (opts?: { baseUrl?: string; model?: string }) => Promise<OllamaStatusInfo>;
+  ollamaConfigure: (opts: { baseUrl?: string; model?: string }) => Promise<OllamaStatusInfo>;
+  ollamaPull: (
+    model: string,
+    onProgress?: (status: string, percent?: number) => void,
+  ) => Promise<{ ok: boolean; error?: string }>;
+  ollamaChat: (
+    payload: {
+      messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>;
+      baseUrl?: string;
+      model?: string;
+    },
+    onToken: (token: string) => void,
+    signal?: AbortSignal,
+  ) => Promise<{ content: string; ok: boolean; error?: string }>;
 }
 
 interface OpenDialogOptions {
