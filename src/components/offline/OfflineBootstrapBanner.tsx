@@ -75,7 +75,13 @@ export function OfflineBootstrapBanner() {
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 text-sm text-destructive">
               <AlertCircle className="h-4 w-4 shrink-0" />
-              <span>{error}</span>
+              <span>
+                {error}
+                <span className="block text-[11px] text-muted-foreground mt-1 font-normal">
+                  You are offline — cloud chat is unavailable until a local model installs. Skip to
+                  continue when back online.
+                </span>
+              </span>
             </div>
             <div className="flex gap-2">
               <Button size="sm" variant="outline" onClick={skipInstall}>
