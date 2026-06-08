@@ -1,0 +1,51 @@
+/** Simulates the pre-remediation ShadowTalk deck from QA (overlap, scripts, dense text). */
+export const shadowtalkBrokenDeck = {
+  title: "ShadowTalk AI: The Future of Autonomous Productivity is Here",
+  slides: [
+    {
+      id: "s1",
+      title: "ShadowTalk AI: The Future of Autonomous Productivity is Here",
+      subtitle: "Disrupting fragmented AI workflows.",
+      layout: "title",
+      content: {},
+      html: `<div style="position:absolute;top:40px;left:40px;width:880px;"><h1 style="position:absolute;font-size:48px;">ShadowTalk AI</h1><p style="position:absolute;top:120px;">Good morning everyone. Today we're going to explore how ShadowTalk transforms autonomous productivity for modern teams.</p></div>`,
+      speakerNotes: "",
+    },
+    {
+      id: "s2",
+      title: "The Productivity Crisis",
+      subtitle: "Hidden costs of fragmented AI.",
+      layout: "bullets",
+      content: {},
+      html: `<div style="width:900px;"><p style="position:absolute;top:80px;">Knowledge workers switch between apps 36 times per hour. Each switch erodes focus. Enterprises pay twice for overlapping AI tools. Adoption stalls without unified agentic workflows.</p></div>`,
+      speakerNotes: "",
+    },
+    {
+      id: "s3",
+      title: "Market Size",
+      subtitle: "Enterprise AI opportunity",
+      layout: "stats",
+      content: {},
+      html: `<div><p>The global enterprise AI market reached $207.9 billion in 2023. Teams report a 25% increase in productivity. High-performing teams deliver 2.5 times more output with unified agents.</p></div>`,
+      speakerNotes: "",
+    },
+    {
+      id: "s4",
+      title: "Agentic Workflow",
+      subtitle: "How a mission unfolds.",
+      layout: "process",
+      content: {},
+      html: `<div><p>This workflow diagram illustrates how a mission unfolds from plan to execute to deliver. ShadowTalk orchestrates each step autonomously.</p></div>`,
+      speakerNotes: "",
+    },
+    {
+      id: "s5",
+      title: "Thank You",
+      subtitle: "Let's build the future together.",
+      layout: "closing",
+      content: {},
+      html: `<div><p>Thank you for joining me today. I hope this presentation has given you a clear understanding of ShadowTalk AI.</p></div>`,
+      speakerNotes: "",
+    },
+  ],
+};

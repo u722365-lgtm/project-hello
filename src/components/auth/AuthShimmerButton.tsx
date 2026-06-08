@@ -17,13 +17,22 @@ export function AuthShimmerButton({
   return (
     <motion.div
       className="relative w-full"
-      whileHover={reduced || disabled ? undefined : { scale: 1.02 }}
+      initial={reduced ? false : { opacity: 0, y: 10, scale: 0.98 }}
+      animate={reduced ? undefined : { opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      whileHover={
+        reduced || disabled
+          ? undefined
+          : {
+              scale: 1.02,
+              transition: { type: "spring", stiffness: 450, damping: 28 },
+            }
+      }
       whileTap={reduced || disabled ? undefined : { scale: 0.98 }}
-      transition={{ type: "spring", stiffness: 450, damping: 28 }}
     >
       {!reduced && !disabled && (
         <motion.span
-          className="pointer-events-none absolute inset-0 rounded-md overflow-hidden"
+          className="pointer-events-none absolute inset-0 overflow-hidden rounded-md"
           aria-hidden
         >
           <motion.span
@@ -39,8 +48,8 @@ export function AuthShimmerButton({
       )}
       <Button
         className={cn(
-          "relative w-full h-11 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-medium shadow-[0_4px_20px_hsl(var(--primary)/0.3)] overflow-hidden",
-          className
+          "relative h-11 w-full overflow-hidden bg-gradient-to-r from-primary to-primary/80 font-medium text-primary-foreground shadow-[0_4px_20px_hsl(var(--primary)/0.3)] hover:from-primary/90 hover:to-primary/70",
+          className,
         )}
         disabled={disabled}
         {...props}

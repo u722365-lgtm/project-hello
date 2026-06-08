@@ -55,6 +55,9 @@ Thumbs.db
 *.temp
 .cache/
 
+# Bundled Ollama binaries (stage with npm run desktop:stage-ollama before desktop:make)
+electron/resources/ollama/bin/**
+
 # Desktop installers (large binaries — stage with npm run desktop:stage before deploy)
 public/downloads/*.exe
 public/downloads/*.dmg
@@ -65,3 +68,4 @@ public/downloads/*.AppImage
 # Sensitive files (auto-detected)
 .env
 
+artifacts/

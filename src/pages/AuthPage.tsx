@@ -5,15 +5,15 @@ import { lovable } from "@/integrations/lovable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import { ArrowLeft, Eye, EyeOff, WifiOff, Wifi, Loader2, Shield, Zap, Lock, CheckCircle2, XCircle, AlertTriangle, Fingerprint, Smartphone, Mail, KeyRound } from "lucide-react";
+import { Eye, EyeOff, WifiOff, Wifi, Loader2, Shield, Zap, Lock, CheckCircle2, XCircle, AlertTriangle, Fingerprint, Smartphone, Mail, KeyRound } from "lucide-react";
 import { useOfflineAuth } from "@/hooks/useOfflineAuth";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import shadowRobotImg from "@/assets/shadow-robot.png";
 import { useAuthMotion } from "@/hooks/useAuthMotion";
-import { AuthAmbientBackground } from "@/components/auth/AuthAmbientBackground";
+import { GlassMonolithDesign } from "@/components/auth/designs/GlassMonolithDesign";
+import { setStoredAuthDesignChoice } from "@/lib/authDesigns";
 import { AuthModeTabs, type AuthTabKey } from "@/components/auth/AuthModeTabs";
 import { AuthAnimatedField } from "@/components/auth/AuthAnimatedField";
 import { AuthShimmerButton } from "@/components/auth/AuthShimmerButton";
@@ -65,20 +65,6 @@ const passwordRules = [
   { test: (p: string) => /[^A-Za-z0-9]/.test(p), label: "One special character" },
 ];
 
-// Floating particles for robot section
-const FloatingParticle = ({ delay, x, y }: { delay: number; x: string; y: string }) => (
-  <motion.div
-    className="absolute w-1 h-1 rounded-full bg-primary/40"
-    style={{ left: x, top: y }}
-    animate={{
-      y: [0, -20, 0],
-      opacity: [0, 1, 0],
-      scale: [0, 1.5, 0],
-    }}
-    transition={{ duration: 3, delay, repeat: Infinity, ease: "easeInOut" }}
-  />
-);
-
 const AuthPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -103,16 +89,13 @@ const AuthPage = () => {
   const { isOffline, hasOfflineCredentials, saveCredentialsForOffline, verifyOfflineCredentials, getOfflineSession } = useOfflineAuth();
   const [googleLoading, setGoogleLoading] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
-  const [robotReacting, setRobotReacting] = useState(false);
-  const [robotMessage, setRobotMessage] = useState("");
-  const [robotSpeaking, setRobotSpeaking] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [robotTilt, setRobotTilt] = useState({ rotateX: 0, rotateY: 0 });
-  const [eyeGlow, setEyeGlow] = useState(0.3);
-  const robotContainerRef = useRef<HTMLDivElement>(null);
   const { checkLimit } = useRateLimiter(5, 60000);
   const authMotion = useAuthMotion();
-  const { reduced, variants: authVariants, gridDrift, shouldAnimateAmbient } = authMotion;
+  const { reduced, variants: authVariants, shouldAnimateAmbient } = authMotion;
+
+  useEffect(() => {
+    setStoredAuthDesignChoice("glass-monolith");
+  }, []);
 
   const strength = getPasswordStrength(password);
 
@@ -153,8 +136,6 @@ const AuthPage = () => {
   const sanitizeInput = (input: string) => input.trim().slice(0, 255);
 
   const playWelcomeVoice = useCallback(async (userName: string) => {
-    setRobotReacting(true);
-    setRobotSpeaking(true);
     const displayName = userName.split("@")[0];
     const welcomeMessages = [
       `Welcome back, ${displayName}. Your secure workspace is ready.`,
@@ -162,7 +143,6 @@ const AuthPage = () => {
       `${displayName}, welcome to ShadowTalk. Your data fortress awaits.`,
     ];
     const msg = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)];
-    setRobotMessage(msg);
 
     try {
       const { fetchElevenLabsSpeech, playElevenLabsAudio } = await import(
@@ -180,10 +160,6 @@ const AuthPage = () => {
       }
     } catch (err) {
       console.error("Voice welcome error:", err);
-    } finally {
-      setRobotSpeaking(false);
-      setRobotReacting(false);
-      setRobotMessage("");
     }
   }, []);
 
@@ -372,58 +348,58 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col lg:flex-row relative overflow-hidden">
-      <AuthAmbientBackground
-        animate={shouldAnimateAmbient}
-        gridTransition={gridDrift || undefined}
-        className="z-0"
-      />
-
-      {/* Left side — Login Form */}
-      <div className="flex-1 flex items-center justify-center p-6 lg:p-12 relative z-10">
-        <motion.div
-          className="w-full max-w-md"
-          variants={authVariants.pageEnter}
-          initial="hidden"
-          animate="visible"
-        >
-          <motion.div
-            initial={{ opacity: 0, x: -16 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: authMotion.duration(0.4), ease: [0.16, 1, 0.3, 1] }}
-          >
-            <Button variant="ghost" size="sm" onClick={() => navigate('/')} className="mb-8 text-muted-foreground hover:text-foreground">
-              <ArrowLeft className="h-4 w-4 mr-2" /> Back to Home
-            </Button>
-          </motion.div>
-
-          <motion.div
-            variants={authVariants.glassCard}
-            initial="hidden"
-            animate="visible"
-            className="rounded-2xl border border-border/30 bg-card/40 backdrop-blur-xl p-6 sm:p-8 shadow-[0_8px_40px_hsl(var(--primary)/0.08)]"
-          >
+    <GlassMonolithDesign showBack onBack={() => navigate("/")} backLabel="Back to Home">
+      <motion.div
+        className="w-full"
+        variants={authVariants.pageEnter}
+        initial="hidden"
+        animate="visible"
+      >
             {/* Header */}
-            <div className="mb-8">
-              <div className="flex items-center gap-3 mb-4">
+            <motion.div
+              className="mb-8"
+              variants={authVariants.headerStagger}
+              initial="hidden"
+              animate="visible"
+            >
+              <div className="mb-4 flex items-center gap-3">
                 <motion.div
-                  className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center border border-primary/20"
-                  animate={shouldAnimateAmbient ? { boxShadow: ["0 0 0px hsl(var(--primary) / 0)", "0 0 24px hsl(var(--primary) / 0.25)", "0 0 0px hsl(var(--primary) / 0)"] } : undefined}
+                  variants={authVariants.headerItem}
+                  className="flex h-10 w-10 items-center justify-center rounded-xl border border-primary/20 bg-gradient-to-br from-primary/20 to-secondary/20"
+                  animate={
+                    shouldAnimateAmbient
+                      ? {
+                          boxShadow: [
+                            "0 0 0px hsl(var(--primary) / 0)",
+                            "0 0 24px hsl(var(--primary) / 0.25)",
+                            "0 0 0px hsl(var(--primary) / 0)",
+                          ],
+                          rotate: [0, 3, -3, 0],
+                        }
+                      : undefined
+                  }
                   transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                 >
                   <Lock className="h-5 w-5 text-primary" />
                 </motion.div>
-                <div className="flex items-center gap-2">
+                <motion.div variants={authVariants.headerItem} className="flex items-center gap-2">
                   {isOffline ? (
-                    <Badge variant="secondary" className="gap-1 bg-warning/10 text-warning border-warning/20 text-[10px]">
+                    <Badge variant="secondary" className="gap-1 border-warning/20 bg-warning/10 text-[10px] text-warning">
                       <WifiOff className="h-3 w-3" /> Offline
                     </Badge>
                   ) : (
-                    <Badge variant="secondary" className="gap-1 bg-success/10 text-success border-success/20 text-[10px]">
-                      <Wifi className="h-3 w-3" /> Secure
+                    <Badge variant="secondary" className="gap-1 border-success/20 bg-success/10 text-[10px] text-success">
+                      <motion.span
+                        animate={shouldAnimateAmbient ? { scale: [1, 1.15, 1] } : undefined}
+                        transition={{ duration: 2, repeat: Infinity }}
+                        className="inline-flex"
+                      >
+                        <Wifi className="h-3 w-3" />
+                      </motion.span>{" "}
+                      Secure
                     </Badge>
                   )}
-                </div>
+                </motion.div>
               </div>
               <AnimatePresence mode="wait">
                 <motion.div
@@ -449,18 +425,24 @@ const AuthPage = () => {
                   </p>
                 </motion.div>
               </AnimatePresence>
-            </div>
+            </motion.div>
 
             {/* Rate limit warning */}
             <AnimatePresence>
               {rateLimitMsg && (
                 <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20 flex items-center gap-2"
+                  initial={{ opacity: 0, height: 0, x: -8 }}
+                  animate={{ opacity: 1, height: "auto", x: 0 }}
+                  exit={{ opacity: 0, height: 0, x: 8 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  className="mb-4 flex items-center gap-2 rounded-lg border border-destructive/20 bg-destructive/10 p-3"
                 >
-                  <AlertTriangle className="h-4 w-4 text-destructive shrink-0" />
+                  <motion.div
+                    animate={shouldAnimateAmbient ? { rotate: [0, -8, 8, 0] } : undefined}
+                    transition={{ duration: 0.5, repeat: 3 }}
+                  >
+                    <AlertTriangle className="h-4 w-4 shrink-0 text-destructive" />
+                  </motion.div>
                   <span className="text-xs text-destructive">{rateLimitMsg}</span>
                 </motion.div>
               )}
@@ -634,11 +616,11 @@ const AuthPage = () => {
                   </motion.div>
 
                   <div className="grid grid-cols-2 gap-3">
-                    <motion.div variants={authVariants.oauthItem(0)} initial="hidden" animate="visible">
+                    <motion.div variants={authVariants.oauthItem(0)} initial="hidden" animate="visible" whileHover={reduced ? undefined : { y: -2 }}>
                     <Button
                       type="button"
                       variant="outline"
-                      className="w-full gap-2 h-11 border-border/30 bg-muted/10 hover:bg-muted/20 hover:border-primary/30"
+                      className="h-11 w-full gap-2 border-border/30 bg-muted/10 transition-shadow hover:border-primary/30 hover:bg-muted/20 hover:shadow-[0_8px_24px_hsl(var(--primary)/0.12)]"
                       onClick={handleGoogleSignIn}
                       disabled={googleLoading || isOffline}
                     >
@@ -653,11 +635,11 @@ const AuthPage = () => {
                       <span className="text-sm">Google</span>
                     </Button>
                     </motion.div>
-                    <motion.div variants={authVariants.oauthItem(1)} initial="hidden" animate="visible">
+                    <motion.div variants={authVariants.oauthItem(1)} initial="hidden" animate="visible" whileHover={reduced ? undefined : { y: -2 }}>
                     <Button
                       type="button"
                       variant="outline"
-                      className="w-full gap-2 h-11 border-border/30 bg-muted/10 hover:bg-muted/20 hover:border-primary/30"
+                      className="h-11 w-full gap-2 border-border/30 bg-muted/10 transition-shadow hover:border-primary/30 hover:bg-muted/20 hover:shadow-[0_8px_24px_hsl(var(--primary)/0.12)]"
                       onClick={handleAppleSignIn}
                       disabled={appleLoading || isOffline}
                     >
@@ -864,361 +846,45 @@ const AuthPage = () => {
 
             {/* Security footer */}
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
               className="mt-8 flex flex-wrap items-center justify-center gap-4 text-[10px] text-muted-foreground"
+              initial="hidden"
+              animate="visible"
             >
-              <span className="flex items-center gap-1"><Shield className="h-3 w-3 text-success" /> E2E Encrypted</span>
-              <span className="flex items-center gap-1"><Fingerprint className="h-3 w-3 text-primary" /> 2FA Ready</span>
-              <span className="flex items-center gap-1">
-                {isOffline ? (
-                  <><WifiOff className="h-3 w-3 text-warning" /> <span className="text-warning">Offline Mode</span></>
-                ) : hasOfflineCredentials ? (
-                  <><Zap className="h-3 w-3 text-success" /> <span className="text-success">Offline Ready</span></>
-                ) : (
-                  <><Zap className="h-3 w-3" /> Offline Not Set Up</>
-                )}
-              </span>
+              {[
+                { icon: <Shield className="h-3 w-3 text-success" />, label: "E2E Encrypted" },
+                { icon: <Fingerprint className="h-3 w-3 text-primary" />, label: "2FA Ready" },
+                {
+                  icon: isOffline ? (
+                    <WifiOff className="h-3 w-3 text-warning" />
+                  ) : (
+                    <Zap className={cn("h-3 w-3", hasOfflineCredentials && "text-success")} />
+                  ),
+                  label: isOffline
+                    ? "Offline Mode"
+                    : hasOfflineCredentials
+                      ? "Offline Ready"
+                      : "Offline Not Set Up",
+                  className: isOffline
+                    ? "text-warning"
+                    : hasOfflineCredentials
+                      ? "text-success"
+                      : undefined,
+                },
+              ].map((badge, index) => (
+                <motion.span
+                  key={badge.label}
+                  variants={authVariants.securityBadge(index)}
+                  initial="hidden"
+                  animate="visible"
+                  whileHover={reduced ? undefined : { scale: 1.06, y: -1 }}
+                  className={cn("flex items-center gap-1", badge.className)}
+                >
+                  {badge.icon} {badge.label}
+                </motion.span>
+              ))}
             </motion.div>
-          </motion.div>
-        </motion.div>
-      </div>
-
-      {/* Right side — Shadow Robot Animation */}
-      <div className="hidden lg:flex flex-1 items-center justify-center relative overflow-hidden bg-gradient-to-br from-muted/30 via-background to-primary/5">
-        {/* Background effects */}
-        <div className="absolute inset-0">
-          {/* Radial glow behind robot */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/8 rounded-full blur-[120px]" />
-          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-secondary/5 rounded-full blur-[80px]" />
-
-          {/* Grid pattern */}
-          <div className="absolute inset-0 opacity-[0.03]" style={{
-            backgroundImage: `linear-gradient(hsl(var(--primary)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--primary)) 1px, transparent 1px)`,
-            backgroundSize: '40px 40px',
-          }} />
-
-          {/* Scan line */}
-          <motion.div
-            className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent"
-            animate={{ top: ['0%', '100%', '0%'] }}
-            transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-          />
-
-          {/* Floating particles */}
-          {Array.from({ length: 12 }).map((_, i) => (
-            <FloatingParticle
-              key={i}
-              delay={i * 0.4}
-              x={`${15 + Math.random() * 70}%`}
-              y={`${10 + Math.random() * 80}%`}
-            />
-          ))}
-        </div>
-
-        {/* Robot image with cursor-tracking reactions */}
-        <motion.div
-          ref={robotContainerRef}
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1, delay: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="relative z-10 cursor-pointer"
-          onMouseMove={(e) => {
-            if (!robotContainerRef.current) return;
-            const rect = robotContainerRef.current.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
-            const deltaX = (e.clientX - centerX) / (rect.width / 2);
-            const deltaY = (e.clientY - centerY) / (rect.height / 2);
-            setRobotTilt({ rotateY: deltaX * 15, rotateX: -deltaY * 10 });
-            setMousePos({ x: deltaX, y: deltaY });
-            const dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-            setEyeGlow(Math.max(0.3, 1 - dist * 0.5));
-          }}
-          onMouseEnter={() => setRobotReacting(true)}
-          onMouseLeave={() => {
-            setRobotReacting(false);
-            setRobotMessage("");
-            setRobotTilt({ rotateX: 0, rotateY: 0 });
-            setEyeGlow(0.3);
-          }}
-          onClick={() => {
-            const msgs = [
-              "🔒 Your secrets are safe with me.",
-              "👁️ I see you... but your data? Never.",
-              "⚡ Zero-knowledge. Zero compromise.",
-              "🛡️ Encrypting everything. Always.",
-              "🤖 I guard. You create.",
-              "🔐 AES-256-GCM active.",
-              "🧠 Processing... threat level: zero.",
-              "⚔️ 600,000 PBKDF2 iterations. Try me.",
-            ];
-            setRobotMessage(msgs[Math.floor(Math.random() * msgs.length)]);
-            setTimeout(() => setRobotMessage(""), 3000);
-          }}
-          style={{ perspective: 800 }}
-        >
-          {/* Outer scanning ring */}
-          <motion.div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[420px] h-[420px] rounded-full"
-            style={{
-              border: `1px solid hsl(var(--primary) / ${robotReacting ? 0.3 : 0.08})`,
-              transition: "border-color 0.5s",
-            }}
-            animate={{ rotate: 360 }}
-            transition={{ duration: robotReacting ? 6 : 30, repeat: Infinity, ease: "linear" }}
-          >
-            <motion.div
-              className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary"
-              animate={robotReacting ? { width: [6, 10, 6], height: [6, 10, 6], opacity: [0.6, 1, 0.6] } : { width: 6, height: 6, opacity: 0.4 }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-            />
-            <motion.div
-              className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 rounded-full bg-secondary"
-              animate={robotReacting ? { width: [4, 8, 4], height: [4, 8, 4], opacity: [0.4, 1, 0.4] } : { width: 4, height: 4, opacity: 0.3 }}
-              transition={{ duration: 2, repeat: Infinity }}
-            />
-          </motion.div>
-
-          {/* Inner ring */}
-          <motion.div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[360px] h-[360px] rounded-full"
-            style={{
-              border: `1px solid hsl(var(--primary) / ${robotReacting ? 0.2 : 0.05})`,
-              transition: "border-color 0.5s",
-            }}
-            animate={{ rotate: -360 }}
-            transition={{ duration: robotReacting ? 8 : 25, repeat: Infinity, ease: "linear" }}
-          >
-            <motion.div
-              className="absolute top-1/2 right-0 translate-x-1/2 -translate-y-1/2 rounded-full bg-accent"
-              animate={robotReacting ? { width: [4, 7, 4], height: [4, 7, 4] } : { width: 4, height: 4 }}
-              transition={{ duration: 1.8, repeat: Infinity }}
-            />
-          </motion.div>
-
-          {/* The robot — 3D tilts toward cursor */}
-          <motion.div
-            animate={{
-              rotateX: robotTilt.rotateX,
-              rotateY: robotTilt.rotateY,
-            }}
-            transition={{ type: "spring", stiffness: 150, damping: 15, mass: 0.5 }}
-            style={{ transformStyle: "preserve-3d" }}
-          >
-            <motion.img
-              src={shadowRobotImg}
-              alt="ShadowTalk AI Guardian"
-              className="w-[380px] h-[380px] object-contain relative z-10"
-              animate={robotSpeaking 
-                ? { y: [0, -4, 0], scale: [1, 1.03, 1] } 
-                : robotReacting 
-                  ? { y: [0, -6, 0] } 
-                  : { y: [0, -14, 0] }
-              }
-              transition={robotSpeaking ? {
-                duration: 0.8, repeat: Infinity, ease: "easeInOut",
-              } : robotReacting ? {
-                duration: 2, repeat: Infinity, ease: "easeInOut",
-              } : {
-                duration: 5, repeat: Infinity, ease: "easeInOut",
-              }}
-              style={{
-                filter: `drop-shadow(0 0 ${robotSpeaking ? 120 : robotReacting ? 80 : 40}px hsl(var(--primary) / ${robotSpeaking ? 1 : eyeGlow}))`,
-                transition: "filter 0.3s",
-              }}
-            />
-          </motion.div>
-
-          {/* Dynamic eye glow that follows cursor */}
-          <AnimatePresence>
-            {robotReacting && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: eyeGlow * 0.6 }}
-                exit={{ opacity: 0 }}
-                className="absolute z-20 pointer-events-none"
-                style={{
-                  top: `calc(38% + ${mousePos.y * 8}px)`,
-                  left: `calc(50% + ${mousePos.x * 12}px)`,
-                  transform: "translate(-50%, -50%)",
-                  width: 120,
-                  height: 40,
-                  background: `radial-gradient(ellipse, hsl(var(--primary) / 0.5) 0%, transparent 70%)`,
-                  borderRadius: "50%",
-                  transition: "top 0.1s, left 0.1s",
-                }}
-              />
-            )}
-          </AnimatePresence>
-
-          {/* Scan line effect on hover */}
-          <AnimatePresence>
-            {robotReacting && (
-              <motion.div
-                initial={{ top: "10%", opacity: 0 }}
-                animate={{ top: ["10%", "85%", "10%"], opacity: [0, 0.4, 0] }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                className="absolute left-[15%] right-[15%] h-[2px] z-20 pointer-events-none"
-                style={{
-                  background: `linear-gradient(90deg, transparent, hsl(var(--primary) / 0.6), transparent)`,
-                  boxShadow: `0 0 20px 4px hsl(var(--primary) / 0.3)`,
-                }}
-              />
-            )}
-          </AnimatePresence>
-
-          {/* Speech bubble */}
-          <AnimatePresence>
-            {robotMessage && (
-              <motion.div
-                initial={{ opacity: 0, y: 15, scale: 0.7 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -15, scale: 0.7 }}
-                transition={{ type: "spring", damping: 18, stiffness: 350 }}
-                className="absolute -top-6 left-1/2 -translate-x-1/2 z-30 backdrop-blur-xl rounded-2xl px-5 py-3 whitespace-nowrap"
-                style={{
-                  background: "hsl(var(--card) / 0.85)",
-                  border: "1px solid hsl(var(--primary) / 0.4)",
-                  boxShadow: "0 8px 32px hsl(var(--primary) / 0.15), 0 0 60px hsl(var(--primary) / 0.1)",
-                }}
-              >
-                <div className="flex items-center gap-2">
-                  {robotSpeaking && (
-                    <div className="flex items-center gap-0.5">
-                      {[0, 1, 2, 3].map((i) => (
-                        <motion.div
-                          key={i}
-                          className="w-0.5 bg-primary rounded-full"
-                          animate={{ height: [4, 12, 4] }}
-                          transition={{ duration: 0.5, delay: i * 0.1, repeat: Infinity }}
-                        />
-                      ))}
-                    </div>
-                  )}
-                  <span className="text-sm font-semibold text-foreground tracking-wide">{robotMessage}</span>
-                  {robotSpeaking && (
-                    <div className="flex items-center gap-0.5">
-                      {[0, 1, 2, 3].map((i) => (
-                        <motion.div
-                          key={i}
-                          className="w-0.5 bg-primary rounded-full"
-                          animate={{ height: [4, 12, 4] }}
-                          transition={{ duration: 0.5, delay: i * 0.15, repeat: Infinity }}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-                <div
-                  className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 rotate-45"
-                  style={{
-                    background: "hsl(var(--card) / 0.85)",
-                    borderBottom: "1px solid hsl(var(--primary) / 0.4)",
-                    borderRight: "1px solid hsl(var(--primary) / 0.4)",
-                  }}
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Hover hint */}
-          <AnimatePresence>
-            {robotReacting && !robotMessage && (
-              <motion.div
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: [0.4, 0.8, 0.4], y: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="absolute -bottom-4 left-1/2 -translate-x-1/2 z-30 text-[11px] text-primary font-mono tracking-widest"
-              >
-                [ CLICK TO INTERACT ]
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-
-        {/* Text overlay */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8 }}
-          className="absolute bottom-12 left-0 right-0 text-center z-10"
-        >
-          <h2 className="text-xl font-bold text-foreground mb-2">Your AI Guardian</h2>
-          <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-            Zero-knowledge architecture. Your data never leaves your control.
-          </p>
-
-          {/* Live security indicators */}
-          <div className="flex items-center justify-center gap-3 mt-4">
-            <motion.div
-              animate={{ opacity: [0.5, 1, 0.5] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className="flex items-center gap-1 text-[10px] font-mono text-success"
-            >
-              <div className="w-1.5 h-1.5 rounded-full bg-success" />
-              AES-256
-            </motion.div>
-            <motion.div
-              animate={{ opacity: [0.5, 1, 0.5] }}
-              transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-              className="flex items-center gap-1 text-[10px] font-mono text-primary"
-            >
-              <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-              PBKDF2
-            </motion.div>
-            <motion.div
-              animate={{ opacity: [0.5, 1, 0.5] }}
-              transition={{ duration: 2, repeat: Infinity, delay: 1 }}
-              className="flex items-center gap-1 text-[10px] font-mono text-secondary"
-            >
-              <div className="w-1.5 h-1.5 rounded-full bg-secondary" />
-              RLS
-            </motion.div>
-          </div>
-        </motion.div>
-      </div>
-
-      {/* Mobile robot peek (below form on small screens) */}
-      <div className="lg:hidden flex flex-col items-center justify-center py-8 relative overflow-hidden">
-        {shouldAnimateAmbient && (
-          <motion.div
-            className="absolute h-40 w-40 rounded-full blur-[80px] bg-primary/15"
-            animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
-            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-            aria-hidden
-          />
-        )}
-        <motion.img
-          src={shadowRobotImg}
-          alt="ShadowTalk AI Guardian"
-          className="relative z-10 w-36 h-36 object-contain"
-          animate={
-            shouldAnimateAmbient
-              ? {
-                  y: [0, -10, 0],
-                  filter: [
-                    "drop-shadow(0 0 20px hsl(var(--primary) / 0.2))",
-                    "drop-shadow(0 0 40px hsl(var(--primary) / 0.45))",
-                    "drop-shadow(0 0 20px hsl(var(--primary) / 0.2))",
-                  ],
-                }
-              : { y: [0, -6, 0] }
-          }
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.p
-          className="relative z-10 mt-3 text-[10px] font-mono tracking-widest text-primary/70"
-          animate={shouldAnimateAmbient ? { opacity: [0.4, 1, 0.4] } : undefined}
-          transition={{ duration: 2.5, repeat: Infinity }}
-        >
-          GUARDIAN ACTIVE
-        </motion.p>
-      </div>
-    </div>
+      </motion.div>
+    </GlassMonolithDesign>
   );
 };
 

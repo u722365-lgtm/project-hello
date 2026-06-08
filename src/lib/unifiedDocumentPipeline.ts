@@ -5,6 +5,11 @@
  * Manus: plan → research → draft → polish → deliver with reusable project context.
  */
 
+import { shouldUseLocalAgent } from "@/lib/desktop/sovereignAgentMode";
+import {
+  fetchLocalDocumentResearch,
+  streamLocalKimiDocument,
+} from "@/lib/desktop/localDocumentGeneration";
 import {
   CHAT_FUNCTION_URL,
   streamKimiDocument,
@@ -207,11 +212,10 @@ export async function runUnifiedDocumentPipeline(
   if (plan.enableResearch) {
     onPhase?.("researching");
     try {
-      researchBrief = await fetchDocumentResearch(
-        `${plan.topic} — ${plan.docType} for ${plan.audience}`,
-        accessToken,
-        { signal, onChunk: onResearchChunk },
-      );
+      const researchQuery = `${plan.topic} — ${plan.docType} for ${plan.audience}`;
+      researchBrief = shouldUseLocalAgent()
+        ? await fetchLocalDocumentResearch(researchQuery, { signal, onChunk: onResearchChunk })
+        : await fetchDocumentResearch(researchQuery, accessToken, { signal, onChunk: onResearchChunk });
     } catch (error) {
       console.warn("[DocumentPipeline] Research skipped:", error);
       researchBrief = undefined;
@@ -221,16 +225,26 @@ export async function runUnifiedDocumentPipeline(
   onPhase?.("drafting");
   const draftContext = buildDraftContext(plan, request.additionalContext, researchBrief);
 
-  const content = await streamKimiDocument({
-    topic: plan.topic,
-    docType: plan.docType,
-    tone: plan.tone,
-    length: plan.length,
-    additionalContext: draftContext,
-    accessToken,
-    signal,
-    onChunk: (chunk) => onChunk?.(chunk),
-  });
+  const content = shouldUseLocalAgent()
+    ? await streamLocalKimiDocument({
+        topic: plan.topic,
+        docType: plan.docType,
+        tone: plan.tone,
+        length: plan.length,
+        additionalContext: draftContext,
+        signal,
+        onChunk: (chunk) => onChunk?.(chunk),
+      })
+    : await streamKimiDocument({
+        topic: plan.topic,
+        docType: plan.docType,
+        tone: plan.tone,
+        length: plan.length,
+        additionalContext: draftContext,
+        accessToken,
+        signal,
+        onChunk: (chunk) => onChunk?.(chunk),
+      });
 
   onPhase?.("polishing");
 

@@ -4,6 +4,18 @@ import { access } from 'fs/promises';
 import { readFile, writeFile } from 'fs/promises';
 import { homedir } from 'os';
 import { join } from 'path';
+import {
+  bootstrapBundledOllama,
+  getOllamaBootstrapSnapshot,
+} from './ollamaManager';
+import { getBundledOllamaLayout } from './ollamaPaths';
+import {
+  probeOllamaStatus,
+  pullOllamaModel,
+  setOllamaConfig,
+  streamOllamaChat,
+  type ChatMessage,
+} from './ollamaSidecar';
 
 const CHANNEL = {
   getInfo: 'st-desktop:getInfo',
@@ -18,10 +30,20 @@ const CHANNEL = {
   setAutoLaunch: 'st-desktop:setAutoLaunch',
   revealInFolder: 'st-desktop:revealInFolder',
   chatStream: 'st-desktop:chatStream',
+  ollamaStatus: 'st-desktop:ollamaStatus',
+  ollamaConfigure: 'st-desktop:ollamaConfigure',
+  ollamaPull: 'st-desktop:ollamaPull',
+  ollamaChat: 'st-desktop:ollamaChat',
+  ollamaBootstrap: 'st-desktop:ollamaBootstrap',
+  ollamaBootstrapSnapshot: 'st-desktop:ollamaBootstrapSnapshot',
+  fetchUrl: 'st-desktop:fetchUrl',
 } as const;
 
 export const CHAT_STREAM_CHUNK = 'st-desktop:chatStreamChunk';
 export const CHAT_STREAM_END = 'st-desktop:chatStreamEnd';
+export const OLLAMA_CHAT_CHUNK = 'st-desktop:ollamaChatChunk';
+export const OLLAMA_CHAT_END = 'st-desktop:ollamaChatEnd';
+export const OLLAMA_PULL_PROGRESS = 'st-desktop:ollamaPullProgress';
 
 type ChatStreamPayload = {
   requestId: string;
@@ -72,6 +94,18 @@ export function registerDesktopIpc(): void {
     } catch {
       offlineModelBundled = false;
     }
+
+    const ollamaLayout = getBundledOllamaLayout(process.resourcesPath, process.platform, process.arch);
+    let ollamaBundled = false;
+    try {
+      await access(ollamaLayout.binary);
+      ollamaBundled = true;
+    } catch {
+      ollamaBundled = false;
+    }
+
+    const bootstrap = await getOllamaBootstrapSnapshot();
+
     return {
       platform: process.platform,
       arch: process.arch,
@@ -84,6 +118,12 @@ export function registerDesktopIpc(): void {
       shadowtalkDataPath: join(app.getPath('userData'), 'shadowtalk-data'),
       offlineModelBundled,
       offlineModelPath: offlineModelBundled ? bundledDir : undefined,
+      sovereignDesktopCapable: true,
+      ollamaBundled,
+      ollamaManagedProcess: bootstrap.managedProcess,
+      ollamaDefaultModel: bootstrap.defaultModel,
+      ollamaModelsPath: bootstrap.modelsPath,
+      ollamaReachable: bootstrap.reachable,
     };
   });
 
@@ -151,4 +191,105 @@ export function registerDesktopIpc(): void {
     void pumpChatSse(event.sender, requestId, url, headers, body);
     return { started: true as const };
   });
+
+  ipcMain.handle(
+    CHANNEL.ollamaStatus,
+    async (_event, opts?: { baseUrl?: string; model?: string }) => {
+      if (opts?.baseUrl || opts?.model) {
+        setOllamaConfig({ baseUrl: opts.baseUrl, model: opts.model });
+      }
+      return probeOllamaStatus();
+    },
+  );
+
+  ipcMain.handle(
+    CHANNEL.ollamaConfigure,
+    async (_event, opts: { baseUrl?: string; model?: string }) => {
+      setOllamaConfig(opts);
+      return probeOllamaStatus();
+    },
+  );
+
+  ipcMain.handle(
+    CHANNEL.ollamaBootstrap,
+    async (event, options?: { pullDefaultModel?: boolean; requestId?: string }) => {
+      const requestId = options?.requestId ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      return bootstrapBundledOllama({
+        pullDefaultModel: options?.pullDefaultModel ?? false,
+        onProgress: (status, percent) => {
+          event.sender.send(OLLAMA_PULL_PROGRESS, { requestId, status, percent });
+        },
+      });
+    },
+  );
+
+  ipcMain.handle(CHANNEL.ollamaBootstrapSnapshot, async () => getOllamaBootstrapSnapshot());
+
+  ipcMain.handle(CHANNEL.ollamaPull, async (event, model: string) => {
+    const requestId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const result = await pullOllamaModel(model, (status, percent) => {
+      event.sender.send(OLLAMA_PULL_PROGRESS, { requestId, status, percent });
+    });
+    return { ...result, requestId };
+  });
+
+  ipcMain.handle(CHANNEL.fetchUrl, async (_event, url: string) => {
+    if (!url || typeof url !== "string" || !/^https?:\/\//i.test(url)) {
+      return { ok: false, status: 0, text: "", error: "Invalid URL" };
+    }
+    try {
+      const res = await fetch(url, {
+        headers: { "User-Agent": "ShadowTalk-Desktop/1.0" },
+        signal: AbortSignal.timeout(20_000),
+      });
+      const text = await res.text();
+      return {
+        ok: res.ok,
+        status: res.status,
+        text: text.slice(0, 80_000),
+        error: res.ok ? undefined : `HTTP ${res.status}`,
+      };
+    } catch (e) {
+      return {
+        ok: false,
+        status: 0,
+        text: "",
+        error: e instanceof Error ? e.message : "Fetch failed",
+      };
+    }
+  });
+
+  ipcMain.handle(
+    CHANNEL.ollamaChat,
+    async (
+      event,
+      payload: {
+        requestId: string;
+        messages: ChatMessage[];
+        baseUrl?: string;
+        model?: string;
+      },
+    ) => {
+      const { requestId, messages, baseUrl, model } = payload;
+      if (baseUrl || model) {
+        setOllamaConfig({ baseUrl, model });
+      }
+
+      const controller = new AbortController();
+      const onAbort = () => controller.abort();
+      event.sender.once('destroyed', onAbort);
+
+      const result = await streamOllamaChat(
+        messages,
+        (token) => {
+          event.sender.send(OLLAMA_CHAT_CHUNK, { requestId, token });
+        },
+        controller.signal,
+      );
+
+      event.sender.removeListener('destroyed', onAbort);
+      event.sender.send(OLLAMA_CHAT_END, { requestId, ...result });
+      return { started: true as const };
+    },
+  );
 }

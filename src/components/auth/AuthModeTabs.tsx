@@ -13,7 +13,12 @@ interface AuthModeTabsProps {
 
 export function AuthModeTabs({ tabs, active, onChange, reduced }: AuthModeTabsProps) {
   return (
-    <div className="relative flex gap-1 p-1 bg-muted/30 rounded-xl mb-6 border border-border/20 overflow-hidden">
+    <motion.div
+      className="relative mb-6 flex gap-1 overflow-hidden rounded-xl border border-border/20 bg-muted/30 p-1"
+      initial={reduced ? false : { opacity: 0, y: 14, filter: "blur(4px)" }}
+      animate={reduced ? undefined : { opacity: 1, y: 0, filter: "blur(0px)" }}
+      transition={{ duration: 0.5, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
+    >
       {!reduced && (
         <motion.div
           className="absolute inset-0 opacity-30"
@@ -25,17 +30,22 @@ export function AuthModeTabs({ tabs, active, onChange, reduced }: AuthModeTabsPr
           transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
         />
       )}
-      {tabs.map((tab) => {
+      {tabs.map((tab, index) => {
         const isActive = active === tab.key;
         return (
-          <button
+          <motion.button
             key={tab.key}
             type="button"
             onClick={() => onChange(tab.key)}
             className={cn(
-              "relative flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-medium transition-colors z-10",
-              isActive ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+              "relative z-10 flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors",
+              isActive ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground",
             )}
+            initial={reduced ? false : { opacity: 0, y: 8 }}
+            animate={reduced ? undefined : { opacity: 1, y: 0 }}
+            transition={{ delay: 0.18 + index * 0.06, duration: 0.35 }}
+            whileHover={reduced ? undefined : { scale: isActive ? 1.02 : 1.04 }}
+            whileTap={reduced ? undefined : { scale: 0.97 }}
           >
             {isActive && !reduced && (
               <motion.span
@@ -47,13 +57,17 @@ export function AuthModeTabs({ tabs, active, onChange, reduced }: AuthModeTabsPr
             {isActive && reduced && (
               <span className="absolute inset-0 rounded-lg bg-primary shadow-sm" />
             )}
-            <span className="relative flex items-center gap-1.5">
+            <motion.span
+              className="relative flex items-center gap-1.5"
+              animate={reduced ? undefined : isActive ? { scale: [1, 1.05, 1] } : undefined}
+              transition={{ duration: 2, repeat: isActive ? Infinity : 0, repeatDelay: 3 }}
+            >
               {tab.icon}
               {tab.label}
-            </span>
-          </button>
+            </motion.span>
+          </motion.button>
         );
       })}
-    </div>
+    </motion.div>
   );
 }

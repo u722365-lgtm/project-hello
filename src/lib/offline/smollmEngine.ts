@@ -20,6 +20,7 @@ class SmolLMEngine {
   private engine: { chat: { completions: { create: (opts: unknown) => AsyncIterable<unknown> } } } | null =
     null;
   private loading = false;
+  private lastLoadError: string | null = null;
   private listeners = new Set<Listener>();
 
   get isReady() {
@@ -28,6 +29,10 @@ class SmolLMEngine {
 
   get isLoading() {
     return this.loading;
+  }
+
+  get loadError() {
+    return this.lastLoadError;
   }
 
   subscribe(fn: Listener) {
@@ -53,6 +58,7 @@ class SmolLMEngine {
     }
 
     this.loading = true;
+    this.lastLoadError = null;
     const report = (p: SmolLoadProgress) => {
       this.emit(p);
       onProgress?.(p);
@@ -92,7 +98,8 @@ class SmolLMEngine {
       return true;
     } catch (e) {
       console.error("[SmolLM]", e);
-      report({ progress: 0, text: e instanceof Error ? e.message : "Load failed" });
+      this.lastLoadError = e instanceof Error ? e.message : "Load failed";
+      report({ progress: 0, text: this.lastLoadError });
       return false;
     } finally {
       this.loading = false;

@@ -3,6 +3,8 @@ import { useAuth } from "@/components/AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 import { usePushIntelligence } from "@/hooks/usePushIntelligence";
 import { isAutonomousModeEnabled } from "@/lib/autonomy/config";
+import { isAnonymousAutonomousEnabled } from "@/lib/anonymousAutonomousMode";
+import { shouldUseLocalMissionStore } from "@/lib/desktop/sovereignAgentMode";
 
 /**
  * Background autonomous layer: proactive signals, stale-mission nudges, briefings.
@@ -12,7 +14,9 @@ export function AutonomousAgentEngine() {
   const { user } = useAuth();
   const { toast } = useToast();
   const shownSignalsRef = useRef(new Set<string>());
-  const enabled = Boolean(user) && isAutonomousModeEnabled();
+  const enabled =
+    isAutonomousModeEnabled() &&
+    (Boolean(user) || shouldUseLocalMissionStore() || isAnonymousAutonomousEnabled());
 
   const { signals, fetchBriefing } = usePushIntelligence({
     enabled,

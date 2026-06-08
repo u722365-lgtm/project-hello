@@ -26,6 +26,12 @@ import { useSettingsMotion } from "@/hooks/useSettingsMotion";
 import { useSettingsSectionNav } from "@/hooks/useSettingsSectionNav";
 import { isLearningEnabled, setLearningEnabled } from "@/lib/autoImprove/learningConsent";
 import { isAutonomousModeEnabled, setAutonomousModeEnabled } from "@/lib/autonomy/config";
+import {
+  isAnonymousAutonomousEnabled,
+  setAnonymousAutonomousEnabled,
+  setAutoApproveMissions,
+  shouldAutoApproveMissions,
+} from "@/lib/anonymousAutonomousMode";
 import { settingsHapticTick } from "@/lib/settingsFeedback";
 import type { SettingsSectionId } from "@/lib/settingsTypes";
 import { useState } from "react";
@@ -50,6 +56,8 @@ export default function SettingsPage() {
   const { user, loading: authLoading } = useAuth();
   const [learningEnabled, setLearningEnabledState] = useState(isLearningEnabled());
   const [autonomyEnabled, setAutonomyEnabledState] = useState(isAutonomousModeEnabled());
+  const [anonymousAutonomous, setAnonymousAutonomousState] = useState(isAnonymousAutonomousEnabled());
+  const [autoApproveMissions, setAutoApproveMissionsState] = useState(shouldAutoApproveMissions());
   const { headerReveal, shouldAnimateAmbient, heroCollapse, sectionPanel, spring } =
     useSettingsMotion();
   const mainRef = useRef<HTMLDivElement>(null);
@@ -227,6 +235,16 @@ export default function SettingsPage() {
                       onAutonomyChange={(v) => {
                         setAutonomousModeEnabled(v);
                         setAutonomyEnabledState(v);
+                      }}
+                      anonymousAutonomous={anonymousAutonomous}
+                      onAnonymousAutonomousChange={(v) => {
+                        setAnonymousAutonomousEnabled(v);
+                        setAnonymousAutonomousState(v);
+                      }}
+                      autoApproveMissions={autoApproveMissions}
+                      onAutoApproveMissionsChange={(v) => {
+                        setAutoApproveMissions(v);
+                        setAutoApproveMissionsState(v);
                       }}
                     />
                   </motion.div>

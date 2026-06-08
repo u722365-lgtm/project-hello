@@ -1,4 +1,4 @@
-# ShadowTalk Offline AI (Tiers A + B + C)
+# ShadowTalk Offline AI (Tiers A + B + C + D)
 
 ## Tiers
 
@@ -7,12 +7,16 @@
 | **A** | SmolLM2 135M (WebLLM) | ~130 MB | All users — opt-in install banner; auto-runs after consent |
 | **B** | Gemma 3n E2B/E4B (Transformers) | ~1.7–3.2 GB | Power users — Profile → Offline AI |
 | **C** | Same as A, bundled | ~130 MB in installer | Desktop `.dmg` / `.exe` when `electron/resources/offline-models` is populated |
+| **D** | Ollama + qwen2.5:7b (sovereign) | ~200 MB binary + ~4.5 GB model (optional) | Desktop installer when `electron/resources/ollama/bin` is staged |
 
 ## How routing works
 
 1. `decideRoute()` in `hybridRouter.ts` picks **local** vs **cloud** using `hardwareIntelligence` scores.
-2. `runLocalChat()` uses **Gemma if loaded**, else **SmolLM**.
-3. `ChatbotPage` calls local inference when route is `local`; otherwise cloud SSE.
+2. **Desktop + Ollama** (Sovereign): Electron main process proxies to `http://127.0.0.1:11434/v1` — see Settings → Offline AI → Sovereign Desktop.
+3. `runLocalChat()` uses **Gemma if loaded**, else **SmolLM** (browser WebGPU/WASM).
+4. `ChatbotPage` tries Ollama → browser models → cloud (cloud blocked in strict sovereign mode).
+5. **Local memory (RAG):** IndexedDB vector store + ONNX embeddings index chat on-device; retrieved chunks inject into sovereign/Ollama chat (Settings → Sovereign Desktop → Local memory).
+6. **Local agents (Phase 3):** Mission Control, Content Forge, and presentations route through Ollama + local tool executor; missions persist in IndexedDB when sovereign (`local-mission-*` IDs).
 
 **UI note:** Routing is automatic. The chat composer no longer shows a “Turbo” hardware badge — tier/path details are in **Settings → Offline AI** and engineering docs ([Detailed Documentation/03-hardware-turbo-routing.md](./Detailed%20Documentation/03-hardware-turbo-routing.md)).
 
@@ -30,6 +34,18 @@ npm run desktop:make
 ```
 
 Electron reports `offlineModelBundled` via `getInfo()` so the app can load without a second download when the cache is seeded.
+
+## Desktop build with bundled Ollama (Tier D)
+
+```bash
+npm run desktop:stage-ollama          # download Ollama binary for current OS
+STAGE_OLLAMA_MODEL=1 npm run desktop:stage-ollama   # optional: pre-pull default model
+npm run desktop:make
+```
+
+On first launch, ShadowTalk auto-starts bundled Ollama, seeds models into `userData/ollama-models`, and pulls `qwen2.5:7b` (fallback `phi3:mini`) when no models are installed. Settings → Offline AI → Sovereign Desktop shows bundled runtime status.
+
+`getInfo()` reports `ollamaBundled`, `ollamaManagedProcess`, and `ollamaDefaultModel`.
 
 ## CSP
 

@@ -78,6 +78,12 @@ import { MarketplaceAgentBanner } from "@/components/chat/MarketplaceAgentBanner
 import type { MarketplaceAgent, MarketplaceAgentRuntime } from "@/lib/marketplace/types";
 import { runOfflineCompletion } from "@/lib/offline/runOfflineCompletion";
 import { prewarmFastestLocalPath, warmHardwareProfile } from "@/lib/hardwareIntelligence";
+import { runOllamaChat } from "@/lib/desktop/ollamaInference";
+import {
+  augmentMessagesWithLocalMemory,
+  indexSovereignMemory,
+} from "@/lib/desktop/sovereignMemoryRag";
+import { isSovereignModeEnabled } from "@/lib/desktop/sovereignMode";
 import { runLocalChat, isAnyLocalModelReady } from "@/lib/offline/localChat";
 import type { RouterMessage } from "@/lib/offline/hybridRouter";
 import { decideRoute } from "@/lib/offline/hybridRouter";
@@ -121,6 +127,7 @@ import { ReferralNudgeBanner } from "@/components/growth/ReferralNudgeBanner";
 import { ShareResultDialog } from "@/components/growth/ShareResultDialog";
 import { ShareWinBanner } from "@/components/growth/ShareWinBanner";
 import { recordSuccessfulChatSession } from "@/lib/growth/sessionMilestones";
+import { isAnonymousAutonomousEnabled } from "@/lib/anonymousAutonomousMode";
 import {
   buildChatShareSubtitle,
   buildChatShareTitle,
@@ -180,7 +187,8 @@ function parseSseContentLines(
 const ChatbotPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user, userPlan, signOut, checkSubscription, isOffline, loading: authLoading } = useAuth();
+  const { user, userPlan, signOut, checkSubscription, isOffline, isAnonymous } = useAuth();
+  const guestUsage = useGuestUsage();
   const enterprise = useEnterpriseExperience();
   const { toast } = useToast();
   
@@ -852,9 +860,13 @@ const ChatbotPage = () => {
         !hasMultimodalImage &&
         (route.target === "local" || (aiProvider === "shadowtalk" && isAnyLocalModelReady()));
       if (useLocal) {
-        if (!isAnyLocalModelReady()) {
+        if (!isAnyLocalModelReady() && route.backend !== "ollama") {
           prewarmFastestLocalPath();
         }
+
+        const localMessages = await augmentMessagesWithLocalMemory(routerMessages);
+        const lastUserText =
+          [...routerMessages].reverse().find((m) => m.role === "user")?.content ?? "";
 
         const aiMessageId = crypto.randomUUID();
         let assistantContent = "";
@@ -875,8 +887,34 @@ const ChatbotPage = () => {
           });
         };
 
+        if (route.backend === "ollama") {
+          try {
+            const ollama = await runOllamaChat(localMessages, streamToken);
+            if (ollama.ok && (assistantContent || ollama.content)) {
+              const final = assistantContent || ollama.content;
+              if (lastUserText) {
+                void indexSovereignMemory(lastUserText, { category: "chat", source: "user" });
+              }
+              void indexSovereignMemory(final, { category: "chat", source: "assistant" });
+              if (user) {
+                await saveMessage(final, "assistant", conversationId);
+              }
+              return final;
+            }
+            if (isSovereignModeEnabled()) {
+              throw new Error(ollama.error ?? "Ollama chat failed in sovereign mode");
+            }
+            console.warn("[Chat] Ollama path failed, trying browser/cloud:", ollama.error);
+          } catch (e) {
+            if (isSovereignModeEnabled()) {
+              throw e instanceof Error ? e : new Error("Ollama unavailable in sovereign mode");
+            }
+            console.warn("[Chat] Ollama path failed:", e);
+          }
+        }
+
         const offline = await runOfflineCompletion({
-          messages: routerMessages,
+          messages: localMessages,
           personality,
           isOnline: navigator.onLine,
           onToken: streamToken,
@@ -887,6 +925,10 @@ const ChatbotPage = () => {
           if (!assistantContent) {
             streamToken(offline.content);
           }
+          if (lastUserText) {
+            void indexSovereignMemory(lastUserText, { category: "chat", source: "user" });
+          }
+          void indexSovereignMemory(offline.content, { category: "chat", source: "assistant" });
           if (user) {
             await saveMessage(offline.content, "assistant", conversationId);
           }
@@ -895,14 +937,29 @@ const ChatbotPage = () => {
 
         if (isAnyLocalModelReady()) {
           try {
-            const { content } = await runLocalChat(routerMessages, streamToken);
+            const { content } = await runLocalChat(localMessages, streamToken);
+            if (content) {
+              if (lastUserText) {
+                void indexSovereignMemory(lastUserText, { category: "chat", source: "user" });
+              }
+              void indexSovereignMemory(content, { category: "chat", source: "assistant" });
+            }
             if (content && user) {
               await saveMessage(content, "assistant", conversationId);
             }
             return assistantContent || content;
           } catch (e) {
+            if (isSovereignModeEnabled()) {
+              throw e instanceof Error ? e : new Error("Local chat failed in sovereign mode");
+            }
             console.warn("[Chat] Local turbo path failed, using cloud:", e);
           }
+        }
+
+        if (isSovereignModeEnabled()) {
+          throw new Error(
+            "Sovereign mode is on but no local model responded. Install Ollama, pull a model in Settings → Offline AI, then retry.",
+          );
         }
       }
 
@@ -1121,7 +1178,23 @@ const ChatbotPage = () => {
   const handleSendMessage = async () => {
     if ((!message.trim() && !selectedFile) || isLoading) return;
 
-    if (!isProOrHigher && nudge.shouldBlockSend) {
+    const isGuestLike = !user || isAnonymous;
+    if (isGuestLike && !isAnonymousAutonomousEnabled()) {
+      if (guestUsage.isLoaded && !guestUsage.canPerform("chats")) {
+        toast({
+          title: "Guest limit reached",
+          description: `You've used ${GUEST_LIMITS.chats} chats today. Sign in for unlimited access.`,
+          variant: "destructive",
+        });
+        navigate("/auth");
+        return;
+      }
+      if (guestUsage.isLoaded) {
+        guestUsage.trackGuestAction("chats");
+      }
+    }
+
+    if (!isProOrHigher && nudge.shouldBlockSend && !isAnonymousAutonomousEnabled()) {
       setUpgradeOpen(true);
       toast({
         title: CHAT_LIMIT_TOAST.title,
@@ -1756,15 +1829,6 @@ const ChatbotPage = () => {
     onProviderChange: handleProviderChange,
     hasKeyForProvider,
   };
-
-  if (authLoading) {
-    return (
-      <div className="shadowtalk-chat-shell neural-bg flex h-[100dvh] flex-col items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" aria-label="Loading chat" />
-        <p className="mt-3 text-sm text-muted-foreground">Starting ShadowTalk…</p>
-      </div>
-    );
-  }
 
   if (enterprise.needsWorkEmailSignIn) {
     return (

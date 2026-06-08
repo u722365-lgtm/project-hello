@@ -9,6 +9,9 @@ import {
 } from "@/lib/execution/synthesizeDeliverable";
 import type { DeliverableType } from "@/lib/execution/types";
 import type { BusinessIdea } from "@/lib/strategy/types";
+import { updateLocalMission } from "@/lib/desktop/localMissionStore";
+import { isAnonymousAutonomousEnabled } from "@/lib/anonymousAutonomousMode";
+import { shouldUseLocalAgent, shouldUseLocalMissionStore } from "@/lib/desktop/sovereignAgentMode";
 import { executeMissionTool } from "@/lib/see/missionToolExecutor";
 import type { MissionPlanStep } from "@/lib/see/types";
 import { trackAgenticEvent } from "@/lib/agenticMetrics";
@@ -55,15 +58,23 @@ export const useMissionExecutor = () => {
 
   const persistSteps = useCallback(
     async (missionId: string, steps: MissionPlanStep[], extra?: Record<string, unknown>) => {
+      const payload = {
+        steps: planToMissionSteps(steps),
+        ...extra,
+      };
+      if (missionId.startsWith("local-mission-")) {
+        await updateLocalMission(missionId, payload);
+        return;
+      }
       await supabase
         .from("missions")
         .update({
-          steps: JSON.parse(JSON.stringify(planToMissionSteps(steps))),
+          steps: JSON.parse(JSON.stringify(payload.steps)),
           ...extra,
         })
         .eq("id", missionId);
     },
-    []
+    [],
   );
 
   const runStep = useCallback(
@@ -249,17 +260,24 @@ export const useMissionExecutor = () => {
         return null;
       }
 
+      const isLocalMission = mission.id.startsWith("local-mission-");
       const {
         data: { session },
       } = await supabase.auth.getSession();
-      if (!session) {
+      if (
+        !session &&
+        !isLocalMission &&
+        !shouldUseLocalAgent() &&
+        !shouldUseLocalMissionStore() &&
+        !isAnonymousAutonomousEnabled()
+      ) {
         toast({ title: "Sign in required", variant: "destructive" });
         return null;
       }
 
       const ctx: ExecutionContext = {
         missionId: mission.id,
-        accessToken: session.access_token,
+        accessToken: session?.access_token ?? "local-desktop",
         autoApprove: mission.auto_approve,
       };
 
