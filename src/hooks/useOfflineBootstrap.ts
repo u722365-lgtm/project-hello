@@ -1,6 +1,7 @@
 /**
  * Tier A bootstrap — install default SmolLM for all users (web + desktop).
  * Tier C: desktop may skip download when bundled model flag is set.
+ * Tier D: desktop with Ollama skips Tier A — sovereign path handles offline chat.
  */
 
 import { useCallback, useEffect, useState } from "react";
@@ -8,6 +9,7 @@ import { getSmolLMEngine, isTierAModelCached, TIER_A_SIZE_MB } from "@/lib/offli
 import { isAnyLocalModelReady } from "@/lib/offline/localChat";
 import { getGemmaEngine } from "@/lib/offline/gemmaEngine";
 import { isShadowTalkDesktop, getDesktopInfo } from "@/lib/desktopBridge";
+import { shouldSkipTierABootstrap } from "@/lib/offline/offlineAICapability";
 
 import { BOOTSTRAP_CONSENT_KEY, BOOTSTRAP_DONE_KEY, isSilentTierAEnabled } from "@/lib/offline/tierAInstall";
 
@@ -19,6 +21,10 @@ export type BootstrapPhase =
   | "ready"
   | "skipped"
   | "error";
+
+function markBootstrapReady(): void {
+  localStorage.setItem(BOOTSTRAP_DONE_KEY, "1");
+}
 
 export function useOfflineBootstrap() {
   const [phase, setPhase] = useState<BootstrapPhase>("idle");
@@ -47,14 +53,16 @@ export function useOfflineBootstrap() {
       return;
     }
 
+    if (await shouldSkipTierABootstrap()) {
+      markBootstrapReady();
+      setPhase("ready");
+      return;
+    }
+
     if (isShadowTalkDesktop()) {
       const info = await getDesktopInfo();
-      const bundled = !!(info as { offlineModelBundled?: boolean })?.offlineModelBundled;
+      const bundled = !!info?.offlineModelBundled;
       setIsDesktopBundled(bundled);
-      if (bundled) {
-        setPhase("downloading");
-        return;
-      }
     }
 
     if (localStorage.getItem(BOOTSTRAP_CONSENT_KEY) === "1" || isSilentTierAEnabled()) {
@@ -66,10 +74,16 @@ export function useOfflineBootstrap() {
   }, []);
 
   useEffect(() => {
-    checkState();
+    void checkState();
   }, [checkState]);
 
   const acceptAndInstall = useCallback(async () => {
+    if (await shouldSkipTierABootstrap()) {
+      markBootstrapReady();
+      setPhase("ready");
+      return true;
+    }
+
     localStorage.setItem(BOOTSTRAP_CONSENT_KEY, "1");
     setPhase("downloading");
     setError(null);
@@ -80,13 +94,33 @@ export function useOfflineBootstrap() {
     });
 
     if (ok) {
-      localStorage.setItem(BOOTSTRAP_DONE_KEY, "1");
+      markBootstrapReady();
       setPhase("ready");
-    } else {
-      setPhase("error");
-      setError("Could not install offline AI. Check connection and storage, then retry.");
+      return true;
     }
-    return ok;
+
+    if (await shouldSkipTierABootstrap()) {
+      markBootstrapReady();
+      setPhase("ready");
+      return true;
+    }
+
+    const detail = getSmolLMEngine().loadError;
+    const online = typeof navigator !== "undefined" && navigator.onLine;
+
+    if (online) {
+      localStorage.setItem(BOOTSTRAP_SKIP_KEY, "1");
+      setPhase("skipped");
+      return false;
+    }
+
+    setPhase("error");
+    setError(
+      detail
+        ? `Could not install offline AI: ${detail}`
+        : "Could not install offline AI. Check connection and storage, then retry.",
+    );
+    return false;
   }, []);
 
   const skipInstall = useCallback(() => {
@@ -95,16 +129,16 @@ export function useOfflineBootstrap() {
   }, []);
 
   const retry = useCallback(() => {
+    localStorage.removeItem(BOOTSTRAP_SKIP_KEY);
     setPhase("downloading");
     void acceptAndInstall();
   }, [acceptAndInstall]);
 
-  // Auto-start when consent already given or desktop bundled
   useEffect(() => {
     if (phase !== "downloading") return;
     if (isAnyLocalModelReady()) {
+      markBootstrapReady();
       setPhase("ready");
-      localStorage.setItem(BOOTSTRAP_DONE_KEY, "1");
       return;
     }
     void acceptAndInstall();
