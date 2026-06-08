@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
+  Home,
   MessageSquarePlus,
   History,
   PanelLeftClose,
@@ -193,6 +194,14 @@ export function ChatShadowSidebar({
           animate="visible"
           className={cn("shrink-0 space-y-1", isCollapsed ? "px-2 pb-2" : "px-3 pb-3")}
         >
+          {actionBtn({
+            icon: <Home className="h-4 w-4 shrink-0" />,
+            label: "Back to Home",
+            onClick: () => {
+              navigate("/home");
+              onNavigate?.();
+            },
+          })}
           {actionBtn({
             icon: <MessageSquarePlus className="h-4 w-4 text-primary shrink-0" />,
             label: "New chat",

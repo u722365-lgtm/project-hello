@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import {
+  Home,
   MessageSquare,
   Brain,
   Network,
@@ -21,6 +22,7 @@ export interface ChatSidebarNavItem {
 }
 
 export const CHAT_SIDEBAR_NAV: ChatSidebarNavItem[] = [
+  { label: "Home", icon: Home, to: "/home", end: true, section: "workspace" },
   { label: "Chat", icon: MessageSquare, to: "/chatbot", end: true, section: "workspace" },
   { label: "Execute", shortLabel: "Exec", icon: Brain, to: "/execute", section: "explore" },
   { label: "Research", icon: Network, to: "/research", section: "explore" },

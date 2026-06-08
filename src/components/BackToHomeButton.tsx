@@ -13,29 +13,31 @@ export function BackToHomeButton({ className }: { className?: string }) {
     [location.pathname],
   );
   const isHome = path === "/home";
-  // Chatbot uses ChatHeader "Back to Home" — avoid duplicate controls
   const isChat = path === "/chatbot";
 
-  if (isChat) return null;
+  if (isHome) return null;
 
   return (
     <div
       className={cn(
-        "fixed left-4 z-50 safe-bottom",
+        "fixed z-[80]",
+        isChat
+          ? "left-[calc(4.25rem+env(safe-area-inset-left,0px))] top-3 safe-top md:hidden"
+          : "left-4 safe-bottom",
         className,
       )}
-      style={{ bottom: "calc(1rem + env(safe-area-inset-bottom, 0px))" }}
+      style={
+        isChat
+          ? { top: "calc(0.75rem + env(safe-area-inset-top, 0px))" }
+          : { bottom: "calc(1rem + env(safe-area-inset-bottom, 0px))" }
+      }
     >
       <Button
         type="button"
         variant="outline"
         size="sm"
-        onClick={() => {
-          if (!isHome) navigate("/home");
-        }}
+        onClick={() => navigate("/home")}
         aria-label="Back to home"
-        aria-disabled={isHome}
-        disabled={isHome}
         className={cn(
           "gap-2 rounded-full border-border/60 bg-background/70 backdrop-blur-md shadow-sm",
           "hover:bg-background/90 hover:border-primary/30",

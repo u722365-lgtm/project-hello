@@ -1928,6 +1928,41 @@ const ChatbotPage = () => {
           )}
         </AnimatePresence>
         <ChatMainPanel>
+          <div className="sticky top-0 z-30 shrink-0 bg-background/85 backdrop-blur-md border-b border-border/30">
+            <ChatHeader
+              variant="minimal"
+              userPlan={userPlan}
+              personality={personality}
+              onPersonalityChange={setPersonality}
+              onToggleSidebar={() => setShowSidebar(!showSidebar)}
+              onExport={handleExport}
+              onManageSubscription={() => navigate("/billing")}
+              onSignOut={signOut}
+              onOpenAnalytics={() => navigate("/insights?tab=usage")}
+              onOpenScriptAutomation={() => navigate("/workspace?tab=automate")}
+              onOpenStealthVault={() => navigate("/security?tab=vault")}
+              onOpenAgentWorkflows={() => navigate("/workspace?tab=agents")}
+              onOpenModelFineTuning={() => navigate("/personal-llm")}
+              onOpenWhiteLabelBranding={() => navigate("/enterprise")}
+              onOpenGeminiAnalytics={() => navigate("/settings?section=models")}
+              onOpenCanvas={() => navigate("/ide")}
+              onOpenDeepResearch={() => setShowDeepResearch(true)}
+              onOpenGoogleIntegration={() => navigate("/profile?tab=linked")}
+              onOpenAgenticRunner={() => navigate("/execute")}
+              onOpenVisualReasoning={() => setShowVisualReasoning(true)}
+              onOpenCreativeSynthesis={() => setShowCreativeSynthesis(true)}
+              onOpenImageGenerator={() => setShowImageGenerator(true)}
+              onOpenShadowTalkLive={() => setShowShadowTalkLive(true)}
+              onOpenBrowser={() => setShowShadowBrowser(true)}
+              aiProvider={aiProvider}
+              onProviderChange={handleProviderChange}
+              hasKeyForProvider={hasKeyForProvider}
+              maxChats="∞"
+              dailyChats={dailyChats}
+              toolsMenuOpen={toolsMenuOpen}
+              onToolsMenuOpenChange={setToolsMenuOpen}
+            />
+          </div>
           <motion.p
             initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1965,39 +2000,6 @@ const ChatbotPage = () => {
               End-to-end encrypted · Anonymous session
             </motion.div>
           )}
-          <ChatHeader
-            variant="minimal"
-            userPlan={userPlan}
-            personality={personality}
-            onPersonalityChange={setPersonality}
-            onToggleSidebar={() => setShowSidebar(!showSidebar)}
-            onExport={handleExport}
-            onManageSubscription={() => navigate("/billing")}
-            onSignOut={signOut}
-            onOpenAnalytics={() => navigate("/insights?tab=usage")}
-            onOpenScriptAutomation={() => navigate("/workspace?tab=automate")}
-            onOpenStealthVault={() => navigate("/security?tab=vault")}
-            onOpenAgentWorkflows={() => navigate("/workspace?tab=agents")}
-            onOpenModelFineTuning={() => navigate("/personal-llm")}
-            onOpenWhiteLabelBranding={() => navigate("/enterprise")}
-            onOpenGeminiAnalytics={() => navigate("/settings?section=models")}
-            onOpenCanvas={() => navigate("/ide")}
-            onOpenDeepResearch={() => setShowDeepResearch(true)}
-            onOpenGoogleIntegration={() => navigate("/profile?tab=linked")}
-            onOpenAgenticRunner={() => navigate("/execute")}
-            onOpenVisualReasoning={() => setShowVisualReasoning(true)}
-            onOpenCreativeSynthesis={() => setShowCreativeSynthesis(true)}
-            onOpenImageGenerator={() => setShowImageGenerator(true)}
-            onOpenShadowTalkLive={() => setShowShadowTalkLive(true)}
-            onOpenBrowser={() => setShowShadowBrowser(true)}
-            aiProvider={aiProvider}
-            onProviderChange={handleProviderChange}
-            hasKeyForProvider={hasKeyForProvider}
-            maxChats="∞"
-            dailyChats={dailyChats}
-            toolsMenuOpen={toolsMenuOpen}
-            onToolsMenuOpenChange={setToolsMenuOpen}
-          />
           {!enterprise.hideMonetization && (
             <ChatUpgradeNudge
               open={nudge.shouldShowBanner && !nudgeDismissed}
