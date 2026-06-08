@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
+import { Link } from "react-router-dom";
 import { capture } from "@/lib/selfHealing/errorCapture";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, RefreshCw } from "lucide-react";
@@ -45,9 +46,14 @@ export class SelfHealingErrorBoundary extends Component<Props, State> {
             <p className="text-xs text-muted-foreground font-mono break-words">
               {this.state.message}
             </p>
-            <Button onClick={this.reset} size="sm" variant="outline">
-              <RefreshCw className="h-3 w-3 mr-2" /> Retry
-            </Button>
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <Button onClick={this.reset} size="sm" variant="outline">
+                <RefreshCw className="h-3 w-3 mr-2" /> Retry
+              </Button>
+              <Button asChild size="sm" variant="secondary">
+                <Link to="/self-healing">View diagnostics</Link>
+              </Button>
+            </div>
           </div>
         </div>
       );

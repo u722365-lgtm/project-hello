@@ -51,8 +51,10 @@ const ACCOUNT_LINKS = [
   { label: "Profile & avatar", href: "/profile?tab=profile", desc: "Name, bio, photo" },
   { label: "Notifications", href: "/profile?tab=notifications", desc: "Email & alerts" },
   { label: "Security & 2FA", href: "/profile?tab=security", desc: "Password, API vault" },
+  { label: "Active sessions", href: "/sessions", desc: "Signed-in devices & revoke" },
   { label: "Billing & plan", href: "/profile?tab=billing", desc: "Subscription & credits" },
   { label: "Activity history", href: "/profile?tab=activity", desc: "Past conversations" },
+  { label: "Self-healing diagnostics", href: "/self-healing", desc: "Captured errors & auto-fix proposals" },
 ] as const;
 
 function AnimatedCard({

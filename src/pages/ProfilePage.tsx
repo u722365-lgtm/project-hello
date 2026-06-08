@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   User, Bell, Shield, Save, Loader2, CreditCard, ExternalLink, Crown,
   Lock, KeyRound, LogOut, Trash2, Mail, Eye, EyeOff, CheckCircle2,
-  AlertTriangle, Activity, Settings, Link2, Bot,
+  AlertTriangle, Activity, Settings, Link2, Bot, Monitor,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { SettingsAmbientBackground } from "@/components/settings/SettingsAmbientBackground";
@@ -461,6 +461,21 @@ const ProfilePage = () => {
                 </CardHeader>
                 <CardContent>
                   <TwoFactorSetup />
+                </CardContent>
+              </Card>
+
+              <Card className="glass border-border/50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Monitor className="h-5 w-5 text-primary" /> Active sessions
+                  </CardTitle>
+                  <CardDescription>Review and revoke signed-in devices</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button variant="outline" size="sm" onClick={() => navigate("/sessions")}>
+                    Manage sessions
+                    <ExternalLink className="ml-2 h-3.5 w-3.5" />
+                  </Button>
                 </CardContent>
               </Card>
 

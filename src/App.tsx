@@ -56,7 +56,6 @@ import { PushIntelligencePanel } from "@/components/chat/PushIntelligencePanel";
  const ProfilePage = lazy(() => import("./pages/ProfilePage"));
  const SettingsPage = lazy(() => import("./pages/SettingsPage"));
  const APIPage = lazy(() => import("./pages/APIPage"));
- const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
  const EnterpriseSettingsPage = lazy(() => import("./pages/EnterpriseSettingsPage"));
  const AboutPage = lazy(() => import("./pages/AboutPage"));
  const HelpCenterPage = lazy(() => import("./pages/HelpCenterPage"));
@@ -73,11 +72,9 @@ import { PushIntelligencePanel } from "@/components/chat/PushIntelligencePanel";
  const MonetizationPage = lazy(() => import("./pages/MonetizationPage"));
  const FounderAccessPage = lazy(() => import("./pages/FounderAccessPage"));
  const StrategyAgentPage = lazy(() => import("./pages/StrategyAgentPage"));
-  const WorkspacePage = lazy(() => import("./pages/WorkspacePage"));
   const IdePage = lazy(() => import("./pages/IdePage"));
   const MarketplacePage = lazy(() => import("./pages/MarketplacePage"));
   const DevelopersPage = lazy(() => import("./pages/DevelopersPage"));
-    const PrivacyScorePage = lazy(() => import("./pages/PrivacyScorePage"));
   const ContentForgePage = lazy(() => import("./pages/ContentForgePage"));
   const WorkspaceHubPage = lazy(() => import("./pages/WorkspaceHubPage"));
   const ResearchHubPage = lazy(() => import("./pages/ResearchHubPage"));
@@ -86,26 +83,16 @@ import { PushIntelligencePanel } from "@/components/chat/PushIntelligencePanel";
    const MissionControlPage = lazy(() => import("./pages/MissionControlPage"));
  const ExecutePage = lazy(() => import("./pages/ExecutePage"));
    const ReferralPage = lazy(() => import("./pages/ReferralPage"));
-const DeepResearchPage = lazy(() => import("./pages/DeepResearchPage"));
-const KnowledgeGraphPage = lazy(() => import("./pages/KnowledgeGraphPage"));
 const StrategyLabPage = lazy(() => import("./pages/StrategyLabPage"));
 const SovereignDataPage = lazy(() => import("./pages/SovereignDataPage"));
-const StealthVaultPage = lazy(() => import("./pages/StealthVaultPage"));
-const BusinessMemoryPage = lazy(() => import("./pages/BusinessMemoryPage"));
 const SovereignWalletPage = lazy(() => import("./pages/SovereignWalletPage"));
 const GhostAdsPage = lazy(() => import("./pages/GhostAdsPage"));
 const EnterpriseLicensePage = lazy(() => import("./pages/EnterpriseLicensePage"));
-const DataInsightsPage = lazy(() => import("./pages/DataInsightsPage"));
 const TransparencyPage = lazy(() => import("./pages/TransparencyPage"));
-const SecurityAuditPage = lazy(() => import("./pages/SecurityAuditPage"));
 const CommandCenterPage = lazy(() => import("./pages/CommandCenterPage"));
-const ShadowMemoryPage = lazy(() => import("./pages/ShadowMemoryPage"));
 const CompetitivePage = lazy(() => import("./pages/CompetitivePage"));
 const AgentArchitecturePage = lazy(() => import("./pages/AgentArchitecturePage"));
 const ComplianceDashboardPage = lazy(() => import("./pages/ComplianceDashboardPage"));
-const TrustPage = lazy(() => import("./pages/TrustPage"));
-const CreativeStudioPage = lazy(() => import("./pages/CreativeStudioPage"));
-const CyberCommandPage = lazy(() => import("./pages/CyberCommandPage"));
 const AutoImproveEngine = lazy(() => import("@/components/autoImprove/AutoImproveEngine"));
 const PersonalLLMPage = lazy(() => import("./pages/PersonalLLMPage"));
 const TemplatesPage = lazy(() => import("./pages/TemplatesPage"));
@@ -205,7 +192,7 @@ const AnimatedRoutes = () => {
           <Route path="/cyber" element={<Navigate to="/security?tab=cyber" replace />} />
           <Route path="/forge" element={<PageTransition><ContentForgePage /></PageTransition>} />
           <Route path="/presentations" element={<Navigate to="/forge?mode=slides" replace />} />
-          <Route path="/missioncontrol" element={<Navigate to="/execute" replace />} />
+          <Route path="/missioncontrol" element={<PageTransition><MissionControlPage /></PageTransition>} />
           <Route path="/referral" element={<PageTransition><ReferralPage /></PageTransition>} />
           <Route path="/research" element={<PageTransition><ResearchHubPage /></PageTransition>} />
           <Route path="/knowledge" element={<Navigate to="/research?tab=knowledge" replace />} />

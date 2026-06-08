@@ -81,4 +81,16 @@ describe("feature wiring verification", () => {
   it("ChatToolbar shows offline indicator", () => {
     expect(readSrc("components/chat/ChatToolbar.tsx")).toContain("OfflineModeIndicator");
   });
+
+  it("missioncontrol route preserves goal via MissionControlPage", () => {
+    const app = readSrc("App.tsx");
+    expect(app).toContain("MissionControlPage");
+    expect(readSrc("pages/MissionControlPage.tsx")).toContain("goal");
+  });
+
+  it("settings links sessions and self-healing diagnostics", () => {
+    const settings = readSrc("components/settings/SettingsSectionPanels.tsx");
+    expect(settings).toContain('href: "/sessions"');
+    expect(settings).toContain('href: "/self-healing"');
+  });
 });

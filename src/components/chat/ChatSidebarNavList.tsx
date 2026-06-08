@@ -100,8 +100,20 @@ export function ChatSidebarNavList({ collapsed, onItemClick }: ChatSidebarNavLis
   const location = useLocation();
   const { staggerList, staggerItem } = useSettingsMotion();
 
-  const isActive = (item: ChatSidebarNavItem) =>
-    item.end ? location.pathname === item.to : location.pathname.startsWith(item.to);
+  const isActive = (item: ChatSidebarNavItem) => {
+    const [itemPath, itemQuery] = item.to.split("?");
+    const pathOk = item.end
+      ? location.pathname === itemPath
+      : location.pathname === itemPath || location.pathname.startsWith(`${itemPath}/`);
+    if (!pathOk) return false;
+    if (!itemQuery) return true;
+    const expected = new URLSearchParams(itemQuery);
+    const actual = new URLSearchParams(location.search);
+    for (const [key, value] of expected) {
+      if (actual.get(key) !== value) return false;
+    }
+    return true;
+  };
 
   const workspace = CHAT_SIDEBAR_NAV.filter((i) => i.section === "workspace");
   const explore = CHAT_SIDEBAR_NAV.filter((i) => i.section === "explore");
