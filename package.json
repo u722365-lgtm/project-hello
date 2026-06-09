@@ -19,7 +19,11 @@
     "desktop:make": "npm run desktop:install && npm run desktop:build && cd electron && npm run electron:make",
     "desktop:make:publish": "npm run desktop:install && npm run desktop:build && cd electron && npm run electron:make:publish",
     "desktop:stage": "node scripts/stage-desktop-downloads.mjs",
-    "desktop:stage-ollama": "node scripts/stage-ollama-bundle.mjs"
+    "desktop:stage-ollama": "node scripts/stage-ollama-bundle.mjs",
+    "video:install": "cd remotion && npm install",
+    "video:studio": "cd remotion && npm run studio",
+    "video:render": "cd remotion && npm run render",
+    "video:render:all": "node scripts/render-viral-videos.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.73.0",
