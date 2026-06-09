@@ -1,5 +1,6 @@
 import { BRAND } from "@/lib/brand";
 import { buildAppShareUrl } from "@/lib/growth/shareGrowth";
+import { isShareAmplificationActive } from "@/lib/shadowScale/shadowScaleSignals";
 
 const SITE_ORIGIN =
   typeof window !== "undefined" ? window.location.origin : "https://www.shadowtalk-ai.com";
@@ -81,11 +82,16 @@ export function shouldShowChatShareBanner(): boolean {
     const day = new Date().toISOString().slice(0, 10);
     const raw = localStorage.getItem(SHARE_BANNER_DAY_KEY);
     const parsed = raw ? (JSON.parse(raw) as { day: string; count: number }) : null;
+    const dailyCap = getShareBannerDailyCap();
     if (!parsed || parsed.day !== day) return true;
-    return parsed.count < 2;
+    return parsed.count < dailyCap;
   } catch {
     return true;
   }
+}
+
+function getShareBannerDailyCap(): number {
+  return isShareAmplificationActive() ? 5 : 2;
 }
 
 export function recordChatShareBannerShown(): void {

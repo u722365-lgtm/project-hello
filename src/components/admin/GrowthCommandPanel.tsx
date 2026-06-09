@@ -92,9 +92,17 @@ export function GrowthCommandPanel() {
     }
   };
 
+  const runWorker = async () => {
+    const { error } = await supabase.functions.invoke("shadow-scale-orchestrator", {
+      body: { run_worker_only: true },
+    });
+    if (error) toast.error(error.message);
+  };
+
   const approve = async (id: string) => {
     await supabase.from("shadowscale_action_queue").update({ status: "approved" }).eq("id", id);
-    toast.success("Approved — worker will execute on next cycle");
+    await runWorker();
+    toast.success("Approved and executed");
     void load();
   };
 
@@ -123,7 +131,7 @@ export function GrowthCommandPanel() {
             Growth Command
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
-            ShadowScale autonomous engine — hybrid mode: low-risk auto-runs; you approve outbound blasts.
+            ShadowScale autonomous engine — senses telemetry, queues playbooks, executes in-app growth (announcements, share amplification, referral nudges, video promos). Turn on Autopilot for hands-off mode.
           </p>
         </div>
         <div className="flex gap-2">

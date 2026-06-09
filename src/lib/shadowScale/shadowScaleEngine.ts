@@ -6,12 +6,14 @@ import {
   SHADOWSCALE_HEARTBEAT_MS,
   SHADOWSCALE_TICK_MS,
 } from "./shadowScaleConfig";
+import { refreshShadowScaleSignals, subscribeShadowScaleSignals } from "./shadowScaleSignals";
 
-async function sendHeartbeat(route: string): Promise<void> {
+async function sendHeartbeat(route: string, userId: string | null): Promise<void> {
   const events = drainGrowthEvents();
   try {
     await supabase.from("shadowscale_heartbeats").insert({
       client_id: getShadowScaleClientId(),
+      user_id: userId,
       route,
       events,
     });
@@ -23,6 +25,7 @@ async function sendHeartbeat(route: string): Promise<void> {
     await supabase.functions.invoke("shadow-scale-orchestrator", {
       body: {
         client_id: getShadowScaleClientId(),
+        user_id: userId,
         route,
         events,
       },
@@ -32,19 +35,25 @@ async function sendHeartbeat(route: string): Promise<void> {
   }
 }
 
-export function startShadowScaleEngine(): () => void {
+export function startShadowScaleEngine(getUserId: () => string | null = () => null): () => void {
   if (typeof window === "undefined" || !isShadowScaleEngineEnabled()) return () => {};
+
+  void refreshShadowScaleSignals();
+  const unsubSignals = subscribeShadowScaleSignals(() => {});
 
   let lastHeartbeat = 0;
   const tick = window.setInterval(() => {
     const now = Date.now();
     if (now - lastHeartbeat >= SHADOWSCALE_HEARTBEAT_MS - 2000) {
       lastHeartbeat = now;
-      void sendHeartbeat(window.location.pathname);
+      void sendHeartbeat(window.location.pathname, getUserId());
     }
   }, SHADOWSCALE_TICK_MS);
 
-  void sendHeartbeat(window.location.pathname);
+  void sendHeartbeat(window.location.pathname, getUserId());
 
-  return () => clearInterval(tick);
+  return () => {
+    clearInterval(tick);
+    unsubSignals();
+  };
 }

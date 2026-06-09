@@ -102,8 +102,10 @@ describe("feature wiring verification", () => {
 
   it("ShadowScale growth engine and admin Growth Command wired", () => {
     expect(readSrc("App.tsx")).toContain("ShadowScaleEngine");
+    expect(readSrc("App.tsx")).toContain("ShadowScaleGrowthBanner");
     expect(readSrc("components/shadowScale/ShadowScaleEngine.tsx")).toContain("startShadowScaleEngine");
     expect(readSrc("components/admin/GrowthCommandPanel.tsx")).toContain("Growth Command");
+    expect(readSrc("components/admin/GrowthCommandPanel.tsx")).toContain("run_worker_only");
     expect(readSrc("components/admin/adminNav.ts")).toContain("growth-command");
     expect(readSrc("App.tsx")).toContain("AnnouncementBanner");
   });

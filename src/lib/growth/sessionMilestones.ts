@@ -18,6 +18,11 @@ export function recordSuccessfulChatSession(): number {
     localStorage.setItem(SESSIONS_KEY, String(next));
     if (typeof window !== "undefined") {
       window.dispatchEvent(new Event("shadowtalk-session-milestone"));
+      if (next === REFERRAL_NUDGE_MIN_SESSIONS) {
+        void import("@/lib/shadowScale/growthEvents").then(({ recordGrowthEvent }) => {
+          recordGrowthEvent("session_milestone", `sessions=${next}`);
+        });
+      }
     }
   } catch {
     /* ignore */
