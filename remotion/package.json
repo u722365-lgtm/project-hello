@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "studio": "remotion studio src/index.ts",
-    "render": "remotion render src/index.ts ViralShort out/viral-short.mp4",
+    "render": "remotion render src/index.ts ViralShort out/viral-short.mp4 --props='{\"hookVariant\":\"privacy\"}'",
     "render:privacy": "remotion render src/index.ts ViralShort out/viral-privacy.mp4 --props='{\"hookVariant\":\"privacy\"}'",
     "render:developer": "remotion render src/index.ts ViralShort out/viral-developer.mp4 --props='{\"hookVariant\":\"developer\"}'",
     "render:student": "remotion render src/index.ts ViralShort out/viral-student.mp4 --props='{\"hookVariant\":\"student\"}'",

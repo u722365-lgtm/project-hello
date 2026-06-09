@@ -22,6 +22,13 @@ const variants = [
   { name: "student", out: "viral-student.mp4" },
 ];
 
+console.log("▶ Generating voiceover tracks…");
+const vo = spawnSync("node", ["scripts/generate-viral-voiceover.mjs", ...variants.map((v) => v.name)], {
+  cwd: root,
+  stdio: "inherit",
+});
+if (vo.status !== 0) process.exit(vo.status ?? 1);
+
 for (const v of variants) {
   console.log(`\n▶ Rendering ${v.name} → remotion/out/${v.out}`);
   const r = spawnSync(

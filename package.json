@@ -21,8 +21,10 @@
     "desktop:stage": "node scripts/stage-desktop-downloads.mjs",
     "desktop:stage-ollama": "node scripts/stage-ollama-bundle.mjs",
     "video:install": "cd remotion && npm install",
+    "video:voiceover": "node scripts/generate-viral-voiceover.mjs",
+    "video:voiceover:all": "node scripts/generate-viral-voiceover.mjs privacy developer student",
     "video:studio": "cd remotion && npm run studio",
-    "video:render": "cd remotion && npm run render",
+    "video:render": "npm run video:voiceover && cd remotion && npm run render",
     "video:render:all": "node scripts/render-viral-videos.mjs"
   },
   "dependencies": {
