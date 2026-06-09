@@ -194,6 +194,7 @@ export default defineConfig(({ mode }) => {
     optimizeDeps: {
       // Fresh dep graph on each dev server start — avoids mixed ?v= chunk hashes on Lovable
       force: mode === "development",
+      exclude: ["@ffmpeg/ffmpeg", "@ffmpeg/util"],
       include: [
         "react",
         "react-dom",

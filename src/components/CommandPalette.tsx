@@ -17,6 +17,7 @@ import {
   Briefcase, Lock, Cookie, Scale, Wallet, FlaskConical,
   Database, Ghost, Key, BarChart,   Layers,
   LayoutGrid,
+  Clapperboard,
   Monitor,
 } from "lucide-react";
 
@@ -35,6 +36,7 @@ const pages = [
   { name: "Marketplace", href: "/marketplace", icon: Store, desc: "Agent marketplace" },
   { name: "Shadow Execution", href: "/execute", icon: Target, desc: "Multi-step missions & deliverables" },
   { name: "Content Forge", href: "/forge", icon: Presentation, desc: "Slides, documents, studio & Beast Mode" },
+  { name: "Video Studio", href: "/video-studio", icon: Clapperboard, desc: "Pro & Elite viral short generator — no API key" },
   { name: "Developers", href: "/developers", icon: Terminal, desc: "Developer tools" },
   { name: "Docs", href: "/docs", icon: BookOpen, desc: "Documentation" },
   { name: "Changelog", href: "/changelog", icon: History, desc: "What's new" },
@@ -99,7 +101,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ open, onOpenChange }) =
     ["/chatbot", "/ide", "/workspace", "/execute", "/strategy", "/pricing", "/marketplace"].includes(p.href),
   );
   const tools = pages.filter(p =>
-    ["/forge", "/research", "/insights", "/security", "/developers", "/strategy-lab", "/command-center"].includes(p.href),
+    ["/forge", "/video-studio", "/research", "/insights", "/security", "/developers", "/strategy-lab", "/command-center"].includes(p.href),
   );
   const rest = pages.filter(p => !core.includes(p) && !tools.includes(p));
 

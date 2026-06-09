@@ -46,6 +46,7 @@ export const FEATURES: Record<string, FeatureConfig> = {
   unlimitedMessages: { name: "Unlimited Messages", requiredPlan: "pro" },
   noAds: { name: "No Advertisements", requiredPlan: "pro" },
   prioritySupport: { name: "Priority Support", requiredPlan: "pro" },
+  videoStudio: { name: "Shadow Video Studio", requiredPlan: "pro", description: "Browser viral short generator — Pro & Elite" },
   customFineTuning: { name: "Custom Model Fine-Tuning", requiredPlan: "elite" },
   modelFineTuning: { name: "Model Fine-Tuning", requiredPlan: "elite" },
   whiteLabel: { name: "White-Label Solutions", requiredPlan: "elite" },

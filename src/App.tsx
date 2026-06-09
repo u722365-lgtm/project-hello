@@ -76,6 +76,7 @@ import { PushIntelligencePanel } from "@/components/chat/PushIntelligencePanel";
   const MarketplacePage = lazy(() => import("./pages/MarketplacePage"));
   const DevelopersPage = lazy(() => import("./pages/DevelopersPage"));
   const ContentForgePage = lazy(() => import("./pages/ContentForgePage"));
+  const VideoStudioPage = lazy(() => import("./pages/VideoStudioPage"));
   const WorkspaceHubPage = lazy(() => import("./pages/WorkspaceHubPage"));
   const ResearchHubPage = lazy(() => import("./pages/ResearchHubPage"));
   const InsightsHubPage = lazy(() => import("./pages/InsightsHubPage"));
@@ -200,6 +201,7 @@ const AnimatedRoutes = () => {
           <Route path="/trust" element={<Navigate to="/security?tab=trust" replace />} />
           <Route path="/cyber" element={<Navigate to="/security?tab=cyber" replace />} />
           <Route path="/forge" element={<PageTransition><ContentForgePage /></PageTransition>} />
+          <Route path="/video-studio" element={<PageTransition><VideoStudioPage /></PageTransition>} />
           <Route path="/presentations" element={<Navigate to="/forge?mode=slides" replace />} />
           <Route path="/missioncontrol" element={<PageTransition><MissionControlPage /></PageTransition>} />
           <Route path="/referral" element={<PageTransition><ReferralPage /></PageTransition>} />

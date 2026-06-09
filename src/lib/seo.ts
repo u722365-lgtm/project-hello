@@ -219,6 +219,12 @@ export const PAGE_SEO: Record<string, PageMeta> = {
     keywords: ['AI presentations', 'slide builder', 'deck generator', 'AI slides'],
     canonical: 'https://www.shadowtalk-ai.com/forge',
   },
+  videoStudio: {
+    title: 'Shadow Video Studio — Viral Short Generator',
+    description: 'Pro & Elite: generate 60s vertical promo videos in your browser. No API keys — bundled voiceover and on-device MP4 export.',
+    keywords: ['video generator', 'viral short', 'TikTok video', 'ShadowTalk promo', 'no API key'],
+    canonical: 'https://www.shadowtalk-ai.com/video-studio',
+  },
   developers: {
     title: 'Developer Tools & API',
     description: 'Build with ShadowTalk AI. API documentation, SDKs, webhooks, and developer resources.',
