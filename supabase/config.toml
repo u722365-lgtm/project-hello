@@ -91,3 +91,13 @@ project_id = "axsudmhjpfzffcicfvuj"
     verify_jwt = false
   [functions.oauth-callback]
     verify_jwt = false
+  [functions.verify-manual-payment]
+    verify_jwt = true
+  [functions.lemonsqueezy-checkout]
+    verify_jwt = false
+  [functions.lemonsqueezy-webhook]
+    verify_jwt = false
+  [functions.lemonsqueezy-portal]
+    verify_jwt = false
+  [functions.check-lemonsqueezy-subscription]
+    verify_jwt = false

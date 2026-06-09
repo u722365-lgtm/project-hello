@@ -79,10 +79,32 @@ export function ManualPaymentsManager() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [processing, setProcessing] = useState(false);
+  const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
+  const [loadingReceipt, setLoadingReceipt] = useState(false);
 
   useEffect(() => {
     loadPayments();
   }, [statusFilter]);
+
+  useEffect(() => {
+    if (!viewDialogOpen || !selectedPayment?.receipt_url) {
+      setReceiptUrl(null);
+      return;
+    }
+    let cancelled = false;
+    setLoadingReceipt(true);
+    void supabase.storage
+      .from("payment-receipts")
+      .createSignedUrl(selectedPayment.receipt_url, 3600)
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        setReceiptUrl(error ? null : data?.signedUrl ?? null);
+        setLoadingReceipt(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [viewDialogOpen, selectedPayment?.receipt_url]);
 
   const loadPayments = async () => {
     setLoading(true);
@@ -117,23 +139,16 @@ export function ManualPaymentsManager() {
     
     setProcessing(true);
     try {
-      const { data: userData } = await supabase.auth.getUser();
-      
-      const { error } = await supabase
-        .from('manual_payments')
-        .update({
-          status: 'verified',
-          verified_by: userData.user?.id,
-          verified_at: new Date().toISOString(),
-          notes: notes || null,
-        })
-        .eq('id', selectedPayment.id);
+      const { data, error } = await supabase.functions.invoke("verify-manual-payment", {
+        body: { paymentId: selectedPayment.id, action: "verify", notes: notes || null },
+      });
 
       if (error) throw error;
+      if (!data?.ok) throw new Error(data?.error ?? "Verification failed");
 
       toast({
-        title: "Payment Verified! ✅",
-        description: `${selectedPayment.email} is now an Elite member`,
+        title: "Payment verified",
+        description: `${selectedPayment.email} → ${data.plan ?? selectedPayment.plan_type} activated`,
       });
 
       setActionDialogOpen(false);
@@ -143,6 +158,7 @@ export function ManualPaymentsManager() {
       console.error('Error verifying payment:', error);
       toast({
         title: "Error verifying payment",
+        description: error instanceof Error ? error.message : "Try again",
         variant: "destructive",
       });
     } finally {
@@ -155,22 +171,15 @@ export function ManualPaymentsManager() {
     
     setProcessing(true);
     try {
-      const { data: userData } = await supabase.auth.getUser();
-      
-      const { error } = await supabase
-        .from('manual_payments')
-        .update({
-          status: 'rejected',
-          verified_by: userData.user?.id,
-          verified_at: new Date().toISOString(),
-          notes: notes || null,
-        })
-        .eq('id', selectedPayment.id);
+      const { data, error } = await supabase.functions.invoke("verify-manual-payment", {
+        body: { paymentId: selectedPayment.id, action: "reject", notes: notes || null },
+      });
 
       if (error) throw error;
+      if (!data?.ok) throw new Error(data?.error ?? "Reject failed");
 
       toast({
-        title: "Payment Rejected",
+        title: "Payment rejected",
         description: "The payment has been marked as rejected",
       });
 
@@ -379,7 +388,8 @@ export function ManualPaymentsManager() {
                       </TableCell>
                       <TableCell>{getMethodBadge(payment.payment_method)}</TableCell>
                       <TableCell className="font-semibold">
-                        ${payment.amount} {payment.currency}
+                        {payment.currency === "PKR" ? "Rs " : "$"}
+                        {payment.amount} {payment.currency}
                       </TableCell>
                       <TableCell>{getStatusBadge(payment.status)}</TableCell>
                       <TableCell className="text-right">
@@ -463,7 +473,10 @@ export function ManualPaymentsManager() {
                   <div className="text-xs text-muted-foreground flex items-center gap-1">
                     <DollarSign className="h-3 w-3" /> Amount
                   </div>
-                  <div className="font-bold text-lg">${selectedPayment.amount} {selectedPayment.currency}</div>
+                  <div className="font-bold text-lg">
+                    {selectedPayment.currency === "PKR" ? "Rs " : "$"}
+                    {selectedPayment.amount} {selectedPayment.currency}
+                  </div>
                 </div>
                 <div className="space-y-1">
                   <div className="text-xs text-muted-foreground">Status</div>
@@ -479,6 +492,27 @@ export function ManualPaymentsManager() {
                   <div className="font-mono text-sm bg-muted p-2 rounded">
                     {selectedPayment.transaction_reference}
                   </div>
+                </div>
+              )}
+
+              {selectedPayment.receipt_url && (
+                <div className="space-y-2">
+                  <div className="text-xs text-muted-foreground">Receipt</div>
+                  {loadingReceipt ? (
+                    <p className="text-sm text-muted-foreground">Loading receipt…</p>
+                  ) : receiptUrl ? (
+                    <a href={receiptUrl} target="_blank" rel="noopener noreferrer" className="block">
+                      {receiptUrl.includes(".pdf") ? (
+                        <div className="flex items-center gap-2 p-3 rounded border bg-muted text-sm">
+                          <FileText className="h-4 w-4" /> Open PDF receipt
+                        </div>
+                      ) : (
+                        <img src={receiptUrl} alt="Payment receipt" className="max-h-64 rounded-lg border object-contain w-full" />
+                      )}
+                    </a>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">Could not load receipt</p>
+                  )}
                 </div>
               )}
 
@@ -506,7 +540,7 @@ export function ManualPaymentsManager() {
             </DialogTitle>
             <DialogDescription>
               {actionType === 'verify' 
-                ? 'Confirm this payment and activate the user\'s Elite membership'
+                ? `Confirm payment and activate ${selectedPayment?.plan_type ?? 'pro'} plan`
                 : 'Reject this payment submission'
               }
             </DialogDescription>

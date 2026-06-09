@@ -24,6 +24,9 @@ import {
   WHITELABEL_PLANS,
 } from "@/lib/monetization";
 import Navigation from "@/components/Navigation";
+import { PaymentReceiptForm } from "@/components/payments/PaymentReceiptForm";
+import { InternationalCardButton } from "@/components/payments/InternationalCardButton";
+import { PKR_MONTHLY, type PaidPlanId } from "@/lib/payments/planPricing";
 
 const VALID_PLAN_IDS = new Set(["free", "pro", "premium", "elite"]);
 
@@ -171,8 +174,8 @@ const FounderAccessPage = () => {
             <h1 className="text-4xl md:text-5xl font-bold mb-3 tracking-tight">
               Founder's <span className="gradient-text">Vault</span>
             </h1>
-            <p className="text-muted-foreground text-lg max-w-md mx-auto">
-              Select your plan and complete payment to unlock your access
+            <p className="text-muted-foreground text-lg max-w-xl mx-auto">
+              Pakistan: JazzCash / Easypaisa / bank. International: card (when enabled) or USDT. Submit receipt — activated within 24h.
             </p>
           </motion.div>
 
@@ -242,6 +245,11 @@ const FounderAccessPage = () => {
                                   <div className="mt-1.5">
                                     <span className="text-2xl font-bold">${tier.price}</span>
                                     <span className="text-xs text-muted-foreground">{tier.period}</span>
+                                    {(["pro", "premium", "elite"] as PaidPlanId[]).includes(tier.id as PaidPlanId) && (
+                                      <p className="text-[10px] text-muted-foreground mt-1">
+                                        ≈ Rs {PKR_MONTHLY[tier.id as PaidPlanId].toLocaleString()} PK
+                                      </p>
+                                    )}
                                   </div>
                                   {isSelected && (
                                     <motion.div 
@@ -384,6 +392,81 @@ const FounderAccessPage = () => {
                 </Card>
               </motion.div>
 
+              {/* Payment destination details */}
+              <motion.div variants={itemVariants}>
+                <Card className="glass border-[hsl(var(--border))] overflow-hidden">
+                  <CardHeader className="pb-3 border-b border-[hsl(var(--border))]">
+                    <CardTitle className="text-base flex items-center gap-2 font-semibold">
+                      <Wallet className="w-4 h-4 text-primary" />
+                      Send Payment To
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-5 space-y-4">
+                    <div className="grid grid-cols-2 gap-2">
+                      {paymentMethods.map((method) => {
+                        const Icon = method.icon;
+                        const isActive = activePaymentMethod === method.id;
+                        return (
+                          <button
+                            key={method.id}
+                            type="button"
+                            onClick={() => setActivePaymentMethod(method.id)}
+                            className={`rounded-xl p-3 text-left border-2 transition-all ${
+                              isActive
+                                ? "border-primary bg-[hsl(var(--primary)/0.08)]"
+                                : "border-[hsl(var(--border))] hover:border-[hsl(var(--primary)/0.3)]"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2 mb-1">
+                              <Icon className={`w-4 h-4 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
+                              <span className="text-sm font-medium">{method.name}</span>
+                            </div>
+                            <p className="text-[10px] text-muted-foreground">{method.desc}</p>
+                            <Badge variant="outline" className="mt-2 text-[9px]">{method.badge}</Badge>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <AnimatePresence mode="wait">
+                      {activePaymentMethod === "bank" && (
+                        <motion.div key="bank" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-2">
+                          <PaymentDetailRow label="Bank" value={bankDetails.bankName} onCopy={() => copyToClipboard(bankDetails.bankName, "Bank")} copied={copiedField === "Bank"} />
+                          <PaymentDetailRow label="Account name" value={bankDetails.accountName} onCopy={() => copyToClipboard(bankDetails.accountName, "Account name")} copied={copiedField === "Account name"} />
+                          <PaymentDetailRow label="IBAN" value={bankDetails.iban} onCopy={() => copyToClipboard(bankDetails.iban, "IBAN")} copied={copiedField === "IBAN"} mono />
+                          <PaymentDetailRow label="Reference" value={`${bankDetails.reference}-${selectedTier}`} onCopy={() => copyToClipboard(`${bankDetails.reference}-${selectedTier}`, "Reference")} copied={copiedField === "Reference"} />
+                        </motion.div>
+                      )}
+                      {activePaymentMethod === "mobile" && (
+                        <motion.div key="mobile" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-2">
+                          <PaymentDetailRow label="JazzCash" value={mobileWallet.jazzcash} onCopy={() => copyToClipboard(mobileWallet.jazzcash, "JazzCash")} copied={copiedField === "JazzCash"} mono />
+                          <PaymentDetailRow label="Easypaisa" value={mobileWallet.easypaisa} onCopy={() => copyToClipboard(mobileWallet.easypaisa, "Easypaisa")} copied={copiedField === "Easypaisa"} mono />
+                          <PaymentDetailRow label="Account title" value={mobileWallet.name} onCopy={() => copyToClipboard(mobileWallet.name, "Wallet name")} copied={copiedField === "Wallet name"} />
+                          {(["pro", "premium", "elite"] as PaidPlanId[]).includes(selectedTier as PaidPlanId) && (
+                            <p className="text-xs text-muted-foreground pt-1">
+                              Send Rs {PKR_MONTHLY[selectedTier as PaidPlanId].toLocaleString()} for {selectedProduct.name}
+                            </p>
+                          )}
+                        </motion.div>
+                      )}
+                      {activePaymentMethod === "crypto" && (
+                        <motion.div key="crypto" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-2">
+                          <PaymentDetailRow label="USDT address" value={cryptoDetails.usdt} onCopy={() => copyToClipboard(cryptoDetails.usdt, "USDT")} copied={copiedField === "USDT"} mono />
+                          <PaymentDetailRow label="Network" value={cryptoDetails.network} onCopy={() => copyToClipboard(cryptoDetails.network, "Network")} copied={copiedField === "Network"} />
+                        </motion.div>
+                      )}
+                      {activePaymentMethod === "wire" && (
+                        <motion.div key="wire" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-2">
+                          <PaymentDetailRow label="Bank" value={internationalDetails.bankName} onCopy={() => copyToClipboard(internationalDetails.bankName, "Intl bank")} copied={copiedField === "Intl bank"} />
+                          <PaymentDetailRow label="SWIFT" value={internationalDetails.swift} onCopy={() => copyToClipboard(internationalDetails.swift, "SWIFT")} copied={copiedField === "SWIFT"} mono />
+                          <PaymentDetailRow label="IBAN" value={internationalDetails.iban} onCopy={() => copyToClipboard(internationalDetails.iban, "Intl IBAN")} copied={copiedField === "Intl IBAN"} mono />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </CardContent>
+                </Card>
+              </motion.div>
+
             </div>
 
             {/* Right Column - Order Summary (Sticky) */}
@@ -435,36 +518,52 @@ const FounderAccessPage = () => {
                     <div className="space-y-3">
                       <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">How to Complete</h4>
                       <div className="space-y-3">
-                        <StepItem number={1} title="Send Payment" description="Transfer using your selected method" />
-                        <StepItem number={2} title="Screenshot Receipt" description="Take a clear photo of confirmation" />
-                        <StepItem number={3} title="Send on WhatsApp" description="Upload for instant activation" />
+                        <StepItem number={1} title="Send payment" description="Use JazzCash, Easypaisa, bank, or USDT details on the left" />
+                        <StepItem number={2} title="Submit proof below" description="Upload receipt — fastest way to activate" />
+                        <StepItem number={3} title="Or WhatsApp" description="Send screenshot if upload fails" />
                       </div>
                     </div>
 
                     <Separator className="bg-[hsl(var(--border))]" />
 
-                    {/* CTA */}
+                    <InternationalCardButton planKey={selectedTier} />
+
+                    <PaymentReceiptForm
+                      planKey={selectedTier}
+                      currency={activePaymentMethod === "mobile" || activePaymentMethod === "bank" ? "PKR" : "USD"}
+                      defaultMethod={
+                        activePaymentMethod === "mobile"
+                          ? "jazzcash"
+                          : activePaymentMethod === "bank"
+                            ? "bank_transfer"
+                            : activePaymentMethod === "crypto"
+                              ? "usdt"
+                              : "wise"
+                      }
+                    />
+
                     <div className="space-y-3">
                       <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
                         <Button 
                           size="lg" 
-                          className="w-full bg-gradient-to-r from-[hsl(var(--success))] to-[hsl(150_80%_35%)] hover:opacity-90 text-white font-semibold gap-2 shadow-[0_4px_24px_hsl(var(--success)/0.3)]"
+                          variant="outline"
+                          className="w-full gap-2"
                           onClick={() => window.open(whatsappLink, '_blank')}
                         >
                           <MessageCircle className="w-5 h-5" />
-                          Complete on WhatsApp
+                          Send receipt on WhatsApp
                           <ArrowUpRight className="w-4 h-4" />
                         </Button>
                       </motion.div>
 
                       <Button 
-                        variant="outline" 
+                        variant="ghost" 
                         size="sm" 
-                        className="w-full gap-2 border-[hsl(var(--border))] text-muted-foreground hover:text-foreground"
+                        className="w-full gap-2 text-muted-foreground"
                         onClick={() => window.open(internationalWhatsappLink, '_blank')}
                       >
                         <Globe className="w-4 h-4" />
-                        International Users
+                        International support (Wise / crypto)
                       </Button>
                     </div>
 
