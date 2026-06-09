@@ -10,6 +10,7 @@ import AboutSpotlight from "@/components/about/AboutSpotlight";
 import AboutTimeline from "@/components/about/AboutTimeline";
 import AboutSkills from "@/components/about/AboutSkills";
 import AboutStack from "@/components/about/AboutStack";
+import AboutUserFeedback from "@/components/about/AboutUserFeedback";
 import AboutProof from "@/components/about/AboutProof";
 import AboutTeam from "@/components/about/AboutTeam";
 import AboutProjects from "@/components/about/AboutProjects";
@@ -47,6 +48,7 @@ const AboutPage = () => {
       <AboutStats />
       <Separator className="max-w-4xl mx-auto opacity-30" />
       <AboutMission />
+      <AboutUserFeedback />
       <AboutSpotlight />
       <AboutTimeline />
       <Separator className="max-w-4xl mx-auto opacity-30" />

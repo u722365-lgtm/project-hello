@@ -7,7 +7,7 @@ import { fadeUp, fadeUpStagger } from "./aboutMotion";
 
 const HERO_LINES = [
   "I am Zain Ahmed — 17, from Karachi, building sovereign AI.",
-  "While others rent intelligence, I architect freedom.",
+  "Users said offline access with limited data was a good experience — 5/5.",
   "ShadowTalk is proof that Pakistan ships world-class tech.",
 ];
 
@@ -205,8 +205,8 @@ const AboutHero = () => {
               <div className="absolute inset-0 shimmer opacity-0 group-hover:opacity-100 transition-opacity" />
               <Quote className="h-4 w-4 inline mr-2 text-primary relative z-10" />
               <span className="relative z-10">
-                "People play with balls; I play with AIs. My goal isn't just to code—it's to architect the
-                infrastructure for the next generation of Pakistani builders."
+                &ldquo;That&apos;s really Commendable!!!! Chatbot is also working properly.&rdquo; — AI builder,
+                Agentic AI community. I build so more people send messages like that.
               </span>
             </motion.blockquote>
           </motion.div>

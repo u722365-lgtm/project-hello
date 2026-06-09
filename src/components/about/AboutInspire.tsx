@@ -83,9 +83,9 @@ const AboutInspire = () => {
           </motion.h2>
 
           <motion.p variants={fadeUp} className="mt-8 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            You are not looking at a résumé. You are looking at a{" "}
-            <span className="text-foreground font-semibold">living proof</span> that discipline, clarity, and code can
-            rewrite what people think a 17-year-old from Karachi is allowed to do.
+            Users rate it <span className="text-foreground font-semibold">5/5</span>. AI builders call it{" "}
+            <span className="text-foreground font-semibold">commendable</span>. Engineers offer to help. You are not
+            looking at a résumé — you are looking at a product people actually use.
           </motion.p>
         </motion.div>
 
@@ -121,10 +121,9 @@ const AboutInspire = () => {
           className="mt-16 md:mt-20 text-center max-w-3xl mx-auto"
         >
           <p className="text-2xl md:text-3xl font-semibold italic leading-snug text-foreground/95">
-            "If his story doesn't make you want to build something —{" "}
-            <span className="text-primary not-italic font-bold">you weren't paying attention.</span>"
+            &ldquo;It&apos;s very nice.. You made it..?&rdquo;
           </p>
-          <footer className="mt-6 text-sm text-muted-foreground">— Every visitor who stayed past the hero</footer>
+          <footer className="mt-6 text-sm text-muted-foreground">— Early ShadowTalk tester, WhatsApp</footer>
         </motion.blockquote>
       </div>
     </section>

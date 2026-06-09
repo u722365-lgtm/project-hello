@@ -34,7 +34,9 @@ const AboutMission = () => {
               <p className="text-lg text-muted-foreground leading-relaxed mb-8">
                 I believe the future of intelligence shouldn't depend on a constant internet connection or a foreign cloud server.
                 My mission: <span className="text-primary font-semibold text-glow-pulse">"Intelligence without Internet"</span> — giving every student and business the power of AI on their own terms.
-                <span className="block mt-4 text-foreground font-medium">If that resonates with you, you're already part of why I build.</span>
+                <span className="block mt-4 text-foreground font-medium">
+                  Ejaz, a real user, put it best: offline access with limited data was a good experience — and rated us 5/5.
+                </span>
               </p>
 
               <div className="grid sm:grid-cols-3 gap-4">
