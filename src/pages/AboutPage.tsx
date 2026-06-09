@@ -4,6 +4,7 @@ import AboutScrollProgress from "@/components/about/AboutScrollProgress";
 import AboutHero from "@/components/about/AboutHero";
 import AboutQuoteMarquee from "@/components/about/AboutQuoteMarquee";
 import AboutInspire from "@/components/about/AboutInspire";
+import AboutFounderStory from "@/components/about/AboutFounderStory";
 import AboutStats from "@/components/about/AboutStats";
 import AboutMission from "@/components/about/AboutMission";
 import AboutSpotlight from "@/components/about/AboutSpotlight";
@@ -44,6 +45,7 @@ const AboutPage = () => {
       <AboutHero />
       <AboutQuoteMarquee />
       <AboutInspire />
+      <AboutFounderStory />
       <Separator className="max-w-4xl mx-auto opacity-30" />
       <AboutStats />
       <Separator className="max-w-4xl mx-auto opacity-30" />
