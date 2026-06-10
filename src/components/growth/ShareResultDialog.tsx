@@ -9,7 +9,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Copy, Check, Share2, Twitter, Linkedin, Mail, Download } from "lucide-react";
+import { Copy, Check, Share2, Instagram, Linkedin, Mail, Download } from "lucide-react";
+import { FOUNDER_SOCIAL } from "@/lib/socialLinks";
 import {
   getShareSocialUrls,
   renderShareCardPng,
@@ -103,15 +104,21 @@ export function ShareResultDialog({
 
           <div className="grid grid-cols-2 gap-2">
             <Button type="button" variant="outline" size="sm" asChild>
-              <a href={social.twitter} target="_blank" rel="noopener noreferrer">
-                <Twitter className="h-4 w-4 mr-2" />
-                Post on X
+              <a href={FOUNDER_SOCIAL.instagram.url} target="_blank" rel="noopener noreferrer">
+                <Instagram className="h-4 w-4 mr-2" />
+                Follow on Instagram
+              </a>
+            </Button>
+            <Button type="button" variant="outline" size="sm" asChild>
+              <a href={FOUNDER_SOCIAL.linkedin.url} target="_blank" rel="noopener noreferrer">
+                <Linkedin className="h-4 w-4 mr-2" />
+                Follow on LinkedIn
               </a>
             </Button>
             <Button type="button" variant="outline" size="sm" asChild>
               <a href={social.linkedin} target="_blank" rel="noopener noreferrer">
-                <Linkedin className="h-4 w-4 mr-2" />
-                LinkedIn
+                <Share2 className="h-4 w-4 mr-2" />
+                Share link
               </a>
             </Button>
             <Button type="button" variant="outline" size="sm" asChild>

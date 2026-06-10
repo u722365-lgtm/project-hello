@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Mail, MessageSquare, MapPin, Clock, Send, Loader2 } from "lucide-react";
-import { SocialLinks } from "@/components/SocialLinks";
+import { FollowUsSection } from "@/components/FollowUsSection";
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -182,10 +182,7 @@ const ContactPage = () => {
                 </p>
               </div>
 
-              <div>
-                <h3 className="font-bold mb-4">Follow Us</h3>
-                <SocialLinks />
-              </div>
+              <FollowUsSection centered={false} description="" />
 
               <Card className="bg-gradient-to-br from-primary/10 to-accent/10 border-primary/20">
                 <CardContent className="p-6">

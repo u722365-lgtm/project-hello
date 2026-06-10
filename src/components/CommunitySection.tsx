@@ -10,7 +10,6 @@ import {
   Loader2,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { motion, useInView } from "framer-motion";
 import { useMemo, useRef } from "react";
 import { LANDING_COPY } from "@/lib/brand";
@@ -20,7 +19,7 @@ import LandingAmbientOrb from "@/components/landing/LandingAmbientOrb";
 import LandingInteractiveCard from "@/components/landing/LandingInteractiveCard";
 import { buildCommunityHighlights, usePlatformMetrics } from "@/hooks/usePlatformMetrics";
 import { useCommunityEvents } from "@/hooks/useCMSContent";
-import { FOUNDER_SOCIAL } from "@/lib/socialLinks";
+import { SocialLinks } from "@/components/SocialLinks";
 
 const CommunitySection = () => {
   const sectionRef = useRef(null);
@@ -134,29 +133,7 @@ const CommunitySection = () => {
                 </LandingInteractiveCard>
               ))}
             </div>
-            <div className="flex gap-3">
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
-                <Button className="btn-glow" asChild>
-                  <a href="https://discord.gg/shadowtalkai" target="_blank" rel="noopener noreferrer">
-                    Join Discord
-                  </a>
-                </Button>
-              </motion.div>
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
-                <Button variant="outline" asChild>
-                  <a href={FOUNDER_SOCIAL.instagram.url} target="_blank" rel="noopener noreferrer">
-                    Instagram
-                  </a>
-                </Button>
-              </motion.div>
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
-                <Button variant="outline" asChild>
-                  <a href={FOUNDER_SOCIAL.linkedin.url} target="_blank" rel="noopener noreferrer">
-                    LinkedIn
-                  </a>
-                </Button>
-              </motion.div>
-            </div>
+            <SocialLinks variant="buttons" />
           </div>
 
           <div>

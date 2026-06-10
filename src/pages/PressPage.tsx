@@ -3,15 +3,16 @@ import Footer from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { 
-  Newspaper, 
-  Download, 
-  ExternalLink, 
+import {
+  Newspaper,
+  Download,
+  ExternalLink,
   Mail,
   Calendar,
   Image as ImageIcon,
-  FileText
+  FileText,
 } from "lucide-react";
+import { FollowUsSection } from "@/components/FollowUsSection";
 const PressPage = () => {
   const pressReleases = [
     {
@@ -234,6 +235,19 @@ const PressPage = () => {
               </CardContent>
             </Card>
           </div>
+        </div>
+      </section>
+
+      <section className="py-16 px-4">
+        <div className="container mx-auto max-w-2xl">
+          <Card className="p-8">
+            <CardContent className="p-0">
+              <FollowUsSection
+                description="Press, partnerships, and product updates — follow @shadowtalk_ai and Zain Ahmed on LinkedIn."
+                variant="buttons"
+              />
+            </CardContent>
+          </Card>
         </div>
       </section>
 

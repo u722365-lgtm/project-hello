@@ -96,7 +96,8 @@ const Footer = () => {
               <span className="text-lg font-bold gradient-text">{BRAND.fullName}</span>
             </div>
             <p className="text-sm text-muted-foreground mb-2 leading-relaxed max-w-xs">{BRAND.shortPitch}</p>
-            <p className="text-xs text-muted-foreground/80 mb-5 max-w-xs">{LANDING_COPY.founder.line}</p>
+            <p className="text-xs text-muted-foreground/80 mb-3 max-w-xs">{LANDING_COPY.founder.line}</p>
+            <p className="text-xs font-semibold text-foreground/80 mb-2">Follow Us</p>
             <LandingStagger className="flex items-center gap-2">
               {socials.map((s, i) => (
                 <LandingAnimate key={s.label} preset="pop" index={i} as="div">

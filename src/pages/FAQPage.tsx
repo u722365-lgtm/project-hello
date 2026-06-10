@@ -14,6 +14,7 @@ import { motion } from "framer-motion";
 import { useFAQItems } from "@/hooks/useCMSContent";
 import SEOHead from "@/components/SEOHead";
 import { PAGE_SEO, getFAQSchema } from "@/lib/seo";
+import { FollowUsSection } from "@/components/FollowUsSection";
 
 
 const fadeUp = {
@@ -139,6 +140,9 @@ const FAQPage = () => {
             <Button className="btn-glow" asChild>
               <Link to="/contact">Contact Support <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
+            <div className="mt-8 pt-8 border-t border-border/50">
+              <FollowUsSection description="Follow for changelog drops, founder notes, and product updates." />
+            </div>
           </motion.div>
         </div>
       </section>
