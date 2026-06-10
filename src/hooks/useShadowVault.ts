@@ -37,7 +37,7 @@ export const AVAILABLE_SERVICES: Array<{
   { name: 'Google Calendar', type: 'calendar', icon: '📅', description: 'Manage calendar events' },
   { name: 'Google Drive', type: 'storage', icon: '📁', description: 'Access and manage files' },
   { name: 'Google Sheets', type: 'storage', icon: '📊', description: 'Read and write spreadsheets' },
-  { name: 'WhatsApp', type: 'messaging', icon: '💬', description: 'Send messages', comingSoon: true },
+  { name: 'WhatsApp', type: 'messaging', icon: '💬', description: 'QR or phone link — chat with ShadowTalk AI', comingSoon: false },
   { name: 'LinkedIn', type: 'social', icon: '💼', description: 'Professional networking', comingSoon: true },
   { name: 'Stripe', type: 'payment', icon: '💳', description: 'Payment processing' },
   { name: 'Notion', type: 'storage', icon: '📝', description: 'Notes and databases' },

@@ -55,6 +55,10 @@ project_id = "axsudmhjpfzffcicfvuj"
     verify_jwt = false
   [functions.whatsapp-webhook]
     verify_jwt = false
+  [functions.whatsapp-qr]
+    verify_jwt = false
+  [functions.whatsapp-qr-webhook]
+    verify_jwt = false
   [functions.image-edit]
     verify_jwt = false
   [functions.document-ai]

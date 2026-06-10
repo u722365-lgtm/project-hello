@@ -33,12 +33,11 @@ serve(async (req) => {
     const auth = await requireAuth(req, corsHeaders);
     if (!auth.authenticated) return auth.response;
 
-    const { userId } = auth;
+    const userId = auth.userId!;
     await checkRateLimit(userId, supabaseAdmin);
 
     const json = await req.json();
     const { action, phoneNumber, code } = json;
-    const userId = auth.userId;
 
     switch (action) {
       case "link":
@@ -85,6 +84,7 @@ async function handleLinkCreation(
   const { error } = await supabase.from("whatsapp_links").insert({
     user_id: userId,
     phone_number: phoneNumber,
+    connection_type: "twilio",
     verification_code: code,
     verification_expires_at: expiresAt,
     is_verified: false,

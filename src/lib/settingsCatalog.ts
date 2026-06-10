@@ -24,7 +24,7 @@ export const SETTINGS_CATALOG: SettingsCatalogEntry[] = [
   { id: "learning", section: "data", label: "Adaptive learning", description: "On-device behavior learning", keywords: ["auto improve", "consent"] },
   { id: "privacy", section: "data", label: "Privacy & data", description: "Export and clear local data", keywords: ["gdpr", "delete", "cookies"] },
   { id: "api-keys", section: "connections", label: "API keys", description: "Bring your own provider keys", keywords: ["byok", "openai", "anthropic"] },
-  { id: "linked", section: "connections", label: "Linked accounts", description: "Google, GitHub, Slack", keywords: ["oauth", "integration"] },
+  { id: "linked", section: "connections", label: "Linked accounts", description: "Google, GitHub, Slack, WhatsApp QR", keywords: ["oauth", "integration", "whatsapp", "qr"] },
   { id: "profile", section: "account", label: "Profile & avatar", description: "Name, bio, photo", keywords: ["user", "photo"] },
   { id: "billing", section: "account", label: "Billing & plan", description: "Subscription and credits", keywords: ["pro", "elite", "stripe"] },
   { id: "security", section: "account", label: "Security & 2FA", description: "Password and vault", keywords: ["2fa", "password"] },
