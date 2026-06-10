@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Users, Github, Linkedin, Globe } from "lucide-react";
+import { Users, Instagram, Linkedin } from "lucide-react";
+import { FOUNDER_SOCIAL } from "@/lib/socialLinks";
 
 const team = [
   {
@@ -79,13 +80,35 @@ const AboutTeam = () => {
                   <h3 className="font-bold text-lg">{member.name}</h3>
                   <p className="text-xs text-primary font-semibold mb-2">{member.role}</p>
                   <p className="text-sm text-muted-foreground mb-4">{member.desc}</p>
-                  <div className="flex flex-wrap justify-center gap-1.5">
+                  <div className="flex flex-wrap justify-center gap-1.5 mb-3">
                     {member.tags.map((tag, j) => (
                       <Badge key={j} variant="outline" className="text-[10px] border-border/40">
                         {tag}
                       </Badge>
                     ))}
                   </div>
+                  {member.name === "Zain Ahmed" && (
+                    <div className="flex justify-center gap-2">
+                      <a
+                        href={FOUNDER_SOCIAL.instagram.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Instagram"
+                        className="p-2 rounded-lg border border-border/40 text-muted-foreground hover:text-primary hover:border-primary/30 transition-colors"
+                      >
+                        <Instagram className="h-4 w-4" />
+                      </a>
+                      <a
+                        href={FOUNDER_SOCIAL.linkedin.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="LinkedIn"
+                        className="p-2 rounded-lg border border-border/40 text-muted-foreground hover:text-primary hover:border-primary/30 transition-colors"
+                      >
+                        <Linkedin className="h-4 w-4" />
+                      </a>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </motion.div>

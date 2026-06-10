@@ -1,3 +1,5 @@
+import { SOCIAL_SAME_AS } from "@/lib/socialLinks";
+
  // SEO utilities and structured data helpers
  
 /** Google/Bing search snippet — keep ≤160 characters (conversion-focused) */
@@ -61,9 +63,7 @@ export function generateMetaTags(meta: PageMeta): Record<string, string> {
      name: 'ShadowTalk AI',
       url: 'https://www.shadowtalk-ai.com',
       logo: 'https://www.shadowtalk-ai.com/pwa-512x512.png',
-     sameAs: [
-       'https://twitter.com/ShadowTalkAI',
-     ],
+     sameAs: [...SOCIAL_SAME_AS],
      contactPoint: {
        '@type': 'ContactPoint',
        contactType: 'customer support',

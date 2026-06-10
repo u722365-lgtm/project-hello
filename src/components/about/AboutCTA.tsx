@@ -2,6 +2,8 @@ import { Button } from "@/components/ui/button";
 import { Wifi, MessageCircle, ArrowRight, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { SocialLinks } from "@/components/SocialLinks";
+import { FOUNDER_SOCIAL } from "@/lib/socialLinks";
 
 const AboutCTA = () => {
   const navigate = useNavigate();
@@ -69,14 +71,19 @@ const AboutCTA = () => {
               </motion.div>
             </div>
 
-            <motion.div
-              animate={{ opacity: [0.7, 1, 0.7] }}
-              transition={{ duration: 2.5, repeat: Infinity }}
-              className="flex items-center justify-center gap-2 text-xs text-muted-foreground"
-            >
-              <div className="w-1.5 h-1.5 bg-success rounded-full connectivity-pulse" />
-              <span>Open for collaborations, press, and bold partnerships</span>
-            </motion.div>
+            <div className="flex flex-col items-center gap-4">
+              <SocialLinks className="justify-center" iconClassName="h-4 w-4" linkClassName="p-2.5" />
+              <motion.div
+                animate={{ opacity: [0.7, 1, 0.7] }}
+                transition={{ duration: 2.5, repeat: Infinity }}
+                className="flex items-center justify-center gap-2 text-xs text-muted-foreground"
+              >
+                <div className="w-1.5 h-1.5 bg-success rounded-full connectivity-pulse" />
+                <span>
+                  Follow {FOUNDER_SOCIAL.instagram.handle} · connect on LinkedIn — open for collaborations & press
+                </span>
+              </motion.div>
+            </div>
           </div>
         </motion.div>
       </div>
