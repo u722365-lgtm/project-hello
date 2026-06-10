@@ -6,6 +6,7 @@ import { BRAND } from "@/lib/brand";
 import { buildViralShareBlurb } from "@/lib/growth/selfMarketing";
 import { getShareSocialUrls } from "@/lib/growth/shareGrowth";
 import { recordGrowthEvent } from "@/lib/shadowScale/growthEvents";
+import { useMarketingExperiments } from "@/hooks/useMarketingExperiments";
 type ShareWinBannerProps = {
   visible: boolean;
   title: string;
@@ -28,6 +29,7 @@ export function ShareWinBanner({
   onDismiss,
 }: ShareWinBannerProps) {
   const [sharing, setSharing] = useState(false);
+  const { shareCta } = useMarketingExperiments();
 
   const social = getShareSocialUrls({
     title,
@@ -73,7 +75,7 @@ export function ShareWinBanner({
               <p className="text-sm font-medium text-foreground">
                 {colleagueMode
                   ? `Great result — share with a ${orgName ?? "colleague"} teammate`
-                  : "ShadowTalk finished this — share it and let the product market itself"}
+                  : shareCta}
               </p>
               <p className="text-xs text-muted-foreground mt-0.5 truncate">
                 {title}

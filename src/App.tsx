@@ -116,6 +116,9 @@ const AnnouncementBanner = lazy(() =>
 const ShadowScaleGrowthBanner = lazy(() =>
   import("./components/shadowScale/ShadowScaleGrowthBanner").then((m) => ({ default: m.ShadowScaleGrowthBanner })),
 );
+const MarketingDailyBanner = lazy(() =>
+  import("./components/growth/MarketingDailyBanner").then((m) => ({ default: m.MarketingDailyBanner })),
+);
 const OfflineBootstrapBanner = lazy(() =>
   import("./components/offline/OfflineBootstrapBanner").then((m) => ({ default: m.OfflineBootstrapBanner })),
 );
@@ -327,6 +330,7 @@ const App = () => {
                       <NotificationPermissionRequester />
                      <Suspense fallback={null}>
                        <AnnouncementBanner />
+                       <MarketingDailyBanner />
                        <ShadowScaleGrowthBanner />
                      </Suspense>
                      <AnimatedRoutes />

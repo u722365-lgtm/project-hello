@@ -167,7 +167,8 @@ async function runPlaybooks(
   }
 
   const convRate = metrics.referrals > 0 ? metrics.conversions / metrics.referrals : 0;
-  if (metrics.referrals > 0 && convRate < 0.1) {
+  const lowShares = metrics.shares < 2 && metrics.active_users >= 1;
+  if ((metrics.referrals > 0 && convRate < 0.1) || lowShares) {
     const { data: dupShare } = await admin
       .from("shadowscale_action_queue")
       .select("id")

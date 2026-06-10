@@ -1,6 +1,8 @@
 import { useEffect } from "react";
+import { recordGrowthEvent } from "@/lib/shadowScale/growthEvents";
 
 const REFERRAL_STORAGE_KEY = "shadowtalk_ref_code";
+const REFERRAL_CLICK_KEY = "shadowtalk_ref_click_logged";
 
 export const POWER_USER_TIERS = [
   { name: "Bronze", minReferrals: 3, commission: 20, badge: "🥉", bonus: 5 },
@@ -48,7 +50,11 @@ export const useReferralCapture = () => {
     const refCode = params.get("ref");
     if (refCode) {
       localStorage.setItem(REFERRAL_STORAGE_KEY, refCode);
-      // Clean URL without reload
+      const clickKey = `${REFERRAL_CLICK_KEY}:${refCode}`;
+      if (!sessionStorage.getItem(clickKey)) {
+        sessionStorage.setItem(clickKey, "1");
+        recordGrowthEvent("referral_click", refCode);
+      }
       const url = new URL(window.location.href);
       url.searchParams.delete("ref");
       window.history.replaceState({}, "", url.pathname + url.search);

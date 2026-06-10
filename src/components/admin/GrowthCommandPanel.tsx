@@ -17,6 +17,7 @@ import {
   Users,
   Share2,
 } from "lucide-react";
+import { FreeMarketingPanel } from "@/components/growth/FreeMarketingPanel";
 
 interface ScaleConfig {
   id: string;
@@ -120,6 +121,12 @@ export function GrowthCommandPanel() {
     void load();
   };
 
+  const runFreeBlogSync = async () => {
+    const { data, error } = await supabase.functions.invoke("changelog-to-blog");
+    if (error) toast.error(error.message);
+    else toast.success(`Changelog → blog (free): ${JSON.stringify(data ?? "ok")}`);
+  };
+
   const pending = actions.filter((a) => a.status === "pending").length;
 
   return (
@@ -141,8 +148,13 @@ export function GrowthCommandPanel() {
           <Button size="sm" onClick={() => void runOrchestrator()}>
             <Play className="h-4 w-4 mr-1" /> Run cycle
           </Button>
+          <Button size="sm" variant="secondary" onClick={() => void runFreeBlogSync()}>
+            Free blog sync
+          </Button>
         </div>
       </div>
+
+      <FreeMarketingPanel compact />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
