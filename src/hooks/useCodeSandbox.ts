@@ -390,6 +390,82 @@ console.log('Parse complete:', JSON.stringify(result));
     return executeCode(parserCode);
   }, [executeCode]);
 
+  /** Run an arbitrary shell command in WebContainer (real npm/node/ls — not simulated). */
+  const runShellCommand = useCallback(
+    async (commandLine: string, timeout = 120_000): Promise<ExecutionResult> => {
+      const startTime = Date.now();
+      const trimmed = commandLine.trim();
+      if (!trimmed) {
+        return { success: false, output: '', error: 'Empty command', duration: 0 };
+      }
+
+      if (!containerRef.current) {
+        const ok = await initialize();
+        if (!ok || !containerRef.current) {
+          return {
+            success: false,
+            output: '',
+            error:
+              state.error ||
+              'Computer runtime unavailable. Use Chrome/Edge; production needs COOP/COEP headers for full shell.',
+            duration: Date.now() - startTime,
+          };
+        }
+      }
+
+      setState((prev) => ({ ...prev, isExecuting: true }));
+
+      try {
+        const wc = containerRef.current!;
+        const parts = trimmed.split(/\s+/);
+        const head = parts[0];
+        const tail = parts.slice(1);
+        const direct = ['npm', 'npx', 'node', 'ls', 'cat', 'pwd', 'mkdir', 'rm', 'touch', 'echo'];
+        const process =
+          direct.includes(head) || head.startsWith('./')
+            ? await wc.spawn(head, tail)
+            : await wc.spawn('jsh', ['-c', trimmed]);
+
+        const readOutput = async () => {
+          let out = '';
+          const reader = process.output.getReader();
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            out += value;
+          }
+          return out;
+        };
+
+        const [output, exitCode] = await Promise.race([
+          Promise.all([readOutput(), process.exit]),
+          new Promise<[string, number]>((_, reject) =>
+            setTimeout(() => reject(new Error('Execution timeout')), timeout),
+          ),
+        ]);
+
+        setState((prev) => ({ ...prev, isExecuting: false }));
+
+        return {
+          success: exitCode === 0,
+          output: output.trim(),
+          error: exitCode !== 0 ? `Exit code ${exitCode}` : undefined,
+          duration: Date.now() - startTime,
+        };
+      } catch (e: unknown) {
+        setState((prev) => ({ ...prev, isExecuting: false }));
+        const msg = e instanceof Error ? e.message : String(e);
+        return {
+          success: false,
+          output: '',
+          error: msg,
+          duration: Date.now() - startTime,
+        };
+      }
+    },
+    [initialize, state.error],
+  );
+
   // Cleanup
   const teardown = useCallback(() => {
     if (containerRef.current) {
@@ -420,6 +496,7 @@ console.log('Parse complete:', JSON.stringify(result));
     ...state,
     initialize,
     executeCode,
+    runShellCommand,
     executeFallback,
     createAndExecuteTool,
     parseUnknownFormat,

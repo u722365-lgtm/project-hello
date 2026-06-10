@@ -74,6 +74,7 @@ Philosophy: free tier unlocks the product surface; paid tiers raise **limits**, 
 15. Desktop app for Windows + PWA install
 16. Referral program (commission on signups)
 17. Cyber Command, security audit, privacy score tools
+18. **Computer Mode** — real npm/node shell in-browser (WebContainer) at /computer
 
 ---
 
@@ -82,6 +83,7 @@ Philosophy: free tier unlocks the product surface; paid tiers raise **limits**, 
 | URL | Product |
 |-----|---------|
 | /chatbot | Primary AI workspace (default entry) |
+| /computer | Computer Mode — real in-browser shell (npm, node) |
 | /home | Marketing landing |
 | /missioncontrol | Mission Control (S.E.E.) |
 | /pricing | Plans & checkout |

@@ -248,6 +248,14 @@ export function useAgenticToolDispatch() {
           navigate("/ide");
           return { handled: true };
 
+        case "computer_mode":
+          navigate("/computer");
+          ui.appendAssistantMessage(
+            "Opening **Computer Mode** — real npm/node shell in your browser. Use Shadow Browser for web research.",
+            { tool: "computer_mode", status: "complete", params },
+          );
+          return { handled: true };
+
         case "cognitive_loop":
           ui.appendAssistantMessage(
             "This needs **multi-agent debate** — legal, technical, and business specialists will analyze it together.",

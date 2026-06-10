@@ -40,6 +40,9 @@ export function useChatCommandActions(handlers: ChatCommandHandlers) {
         case "code":
           handlers.openCodeCanvas();
           break;
+        case "computer":
+          navigate("/computer");
+          break;
         case "research":
           handlers.setChatMode("research");
           handlers.openDeepResearch();

@@ -12,6 +12,7 @@ export type ToolType =
   | 'multi_model'
   | 'api_marketplace'
   | 'code_canvas'
+  | 'computer_mode'
   | 'app_builder'
   | 'analytics'
   | 'stealth_vault'
@@ -218,6 +219,20 @@ const TOOL_PATTERNS: Array<{
         prompt: msg,
       };
     },
+  },
+  {
+    tool: 'computer_mode',
+    patterns: [
+      /\b(open|launch|start)\s+(?:the\s+)?computer\s*(?:mode)?/i,
+      /\bcomputer\s+mode/i,
+      /\brun\s+(?:this\s+)?(?:on\s+)?(?:the\s+)?(?:shell|terminal|sandbox)/i,
+      /\b(use|give)\s+(?:me\s+)?(?:a\s+)?computer/i,
+      /\bnpm\s+install/i,
+      /\bexecute\s+(?:shell|terminal)\s+command/i,
+    ],
+    priority: 8,
+    autoExecute: true,
+    extractParams: (msg) => ({ command: msg }),
   },
   {
     tool: 'code_canvas',

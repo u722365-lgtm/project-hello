@@ -44,7 +44,7 @@ const FEATURES: Feature[] = [
   { name: "Visual Execution Dashboard", description: "Node-graph pipeline with live status", shadowtalk: "superior", manus: "partial", chatgpt: "no", claude: "no", gemini: "no", icon: <Eye className="h-3.5 w-3.5" />, category: "agentic" },
   { name: "Multi-Model Consensus", description: "GPT + Gemini + Claude simultaneous query", shadowtalk: "free", manus: "no", chatgpt: "no", claude: "no", gemini: "no", icon: <Brain className="h-3.5 w-3.5" />, category: "agentic" },
   { name: "Human-in-the-Loop Safety", description: "Approve/reject agent actions in real-time", shadowtalk: "superior", manus: "partial", chatgpt: "partial", claude: "no", gemini: "no", icon: <Shield className="h-3.5 w-3.5" />, category: "agentic" },
-  { name: "Computer Use / Operator", description: "Autonomous browser automation agent", shadowtalk: "free", manus: "yes", chatgpt: "paid", claude: "paid", gemini: "no", icon: <MonitorSmartphone className="h-3.5 w-3.5" />, category: "agentic" },
+  { name: "Computer Mode (Shell)", description: "Real npm/node in-browser via WebContainer + Shadow Browser for web", shadowtalk: "free", manus: "yes", chatgpt: "paid", claude: "partial", gemini: "no", icon: <MonitorSmartphone className="h-3.5 w-3.5" />, category: "agentic" },
 
   // Generation & Creation
   { name: "Advanced Voice Mode", description: "Real-time voice conversation via ElevenLabs", shadowtalk: "free", manus: "no", chatgpt: "paid", claude: "no", gemini: "partial", icon: <Mic className="h-3.5 w-3.5" />, category: "generation" },

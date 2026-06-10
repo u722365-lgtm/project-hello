@@ -29,6 +29,7 @@ const Footer = () => {
     {
       title: "Tools",
       links: [
+        { name: "Computer Mode", href: "/computer" },
         { name: "Mission Control", href: "/missioncontrol" },
         { name: "Content Forge", href: "/forge" },
         { name: "Privacy Score", href: "/privacy-score" },
