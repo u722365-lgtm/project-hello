@@ -30,6 +30,7 @@ import {
 } from "@/hooks/useCyberData";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
+import { CyberGlobeBackdrop } from "@/components/three/Scene3DBackdrop";
 
 // Lazy load heavy sub-modules
 const CyberAICopilot = lazy(() => import("./CyberAICopilot"));
@@ -223,9 +224,10 @@ const CyberCommandCenter = () => {
   ];
 
   return (
-    <div className="container mx-auto max-w-7xl px-4 py-8">
+    <div className="container mx-auto max-w-7xl px-4 py-8 relative">
+      <CyberGlobeBackdrop className="absolute inset-x-0 top-0 h-[420px] opacity-70 -z-0" />
       {/* HERO — real stats */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10 relative z-[1]">
         <div className="inline-flex items-center gap-2 rounded-full border border-destructive/30 bg-destructive/5 px-4 py-1.5 mb-6">
           <LivePulse />
           <span className="text-xs font-mono text-destructive font-semibold tracking-wider">CYBER COMMAND — LIVE</span>

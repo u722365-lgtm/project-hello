@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, lazy, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { MessageCircle, Bot, Zap, ArrowRight, Search, Workflow, Target } from "lucide-react";
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
@@ -15,6 +15,10 @@ import { StealthKillSwitch } from "@/components/StealthKillSwitch";
 import { useStealthKillSwitch } from "@/hooks/useStealthKillSwitch";
 import FreeTierLimitsStrip from "@/components/growth/FreeTierLimitsStrip";
 import ProofOverHypeBar from "@/components/growth/ProofOverHypeBar";
+
+const NeuralGlobeBackdrop = lazy(() =>
+  import("@/components/three/Scene3DBackdrop").then((m) => ({ default: m.NeuralGlobeBackdrop })),
+);
 
 const floatingOrbAnim = {
   y: [0, -20, 0],
@@ -63,6 +67,9 @@ const HeroSection = () => {
 
   return (
     <section className="shadowtalk-hero neural-bg relative min-h-[100dvh] min-h-screen flex items-center justify-center overflow-hidden">
+      <Suspense fallback={null}>
+        <NeuralGlobeBackdrop className="z-[1]" />
+      </Suspense>
       <div className="absolute inset-0 bg-grid-dense opacity-20 z-[2]" aria-hidden />
 
       <LandingAmbientOrb
