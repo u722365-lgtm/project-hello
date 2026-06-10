@@ -18,6 +18,8 @@
        {tags.keywords && <meta name="keywords" content={tags.keywords} />}
        <meta name="robots" content={tags.robots} />
        <link rel="canonical" href={meta.canonical || baseUrl} />
+       <link rel="alternate" type="text/plain" href={`${baseUrl}/llms.txt`} title="ShadowTalk AI llms.txt" />
+       <link rel="alternate" type="application/json" href={`${baseUrl}/shadowtalk.json`} title="ShadowTalk AI facts JSON" />
  
        {/* Open Graph */}
        <meta property="og:type" content={tags['og:type']} />
