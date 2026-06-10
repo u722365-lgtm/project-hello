@@ -102,6 +102,7 @@ import {
   setGuestArchivedIds,
 } from "@/lib/chatArchive";
 import { CHAT_COMMAND_MODAL_ACTIONS, CHAT_COMMAND_NAV_ROUTES } from "@/lib/chatCommandRoutes";
+import { consumePendingChatInsert } from "@/lib/pendingChatInsert";
 import { useChatSpeech } from "@/hooks/useChatSpeech";
 import { OfflineToolsPanel } from "@/components/chat/OfflineToolsPanel";
 import { BrowseActivityPanel, useAutoBrowse } from "@/components/chat/BrowseActivityPanel";
@@ -1720,6 +1721,18 @@ const ChatbotPage = () => {
     [user, currentConversationId],
   );
 
+  useEffect(() => {
+    const pending = consumePendingChatInsert();
+    if (!pending) return;
+    if (pending.startsWith("Execute this workspace")) {
+      setMessage(pending);
+      toast({ title: "Script loaded", description: "Review and send to run in chat." });
+    } else {
+      insertAssistantToChat(pending);
+      toast({ title: "Inserted into chat", description: "Content added from Research or Browser." });
+    }
+  }, [insertAssistantToChat, toast]);
+
   const handleCommandAction = (action: string) => {
     setShowCommandPalette(false);
 
@@ -1800,6 +1813,13 @@ const ChatbotPage = () => {
       case "wordle":
         setMessage("Let's play Wordle — pick a 5-letter word and give me hints.");
         toast({ title: "Wordle", description: "Prompt added to the chat input." });
+        return;
+      case "branching":
+        handleNewChat();
+        toast({
+          title: "New conversation branch",
+          description: "Started a fresh thread — explore an alternate path from here.",
+        });
         return;
       default:
         toast({

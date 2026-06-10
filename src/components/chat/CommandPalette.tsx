@@ -19,7 +19,7 @@ import {
   BarChart3, Palette, Key, Activity, BookOpen, Database,
   GitBranch, Sliders, Lock, Target, Leaf, Navigation, Wand2,
   Rocket, Cpu, PenTool, LayoutDashboard, UserPlus, Mail,
-  HardDrive, Layers, BrainCircuit, Cog, FileCode, MonitorSmartphone
+  HardDrive, Layers, BrainCircuit, Cog, FileCode, MonitorSmartphone, Link2
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/components/AuthProvider";
@@ -552,10 +552,28 @@ export const CommandPalette = ({ open, onOpenChange, onAction }: CommandPaletteP
       description: "Invite friends, earn rewards",
       icon: <UserPlus className="h-4 w-4" />,
       category: "Account",
-      action: () => navigate("/profile"),
+      action: () => navigate("/referral"),
       keywords: ["referral", "invite", "earn", "rewards", "share"],
     },
-    
+    {
+      id: "whatsapp-contacts",
+      label: "WhatsApp Contacts",
+      description: "Import contacts, draft messages, open WhatsApp",
+      icon: <MessageSquare className="h-4 w-4" />,
+      category: "Account",
+      action: () => navigate("/whatsapp"),
+      keywords: ["whatsapp", "contacts", "qr", "messaging", "wa"],
+    },
+    {
+      id: "linked-accounts",
+      label: "Linked Accounts",
+      description: "WhatsApp QR, Google, GitHub, Slack",
+      icon: <Link2 className="h-4 w-4" />,
+      category: "Account",
+      action: () => navigate("/profile?tab=linked"),
+      keywords: ["integrations", "oauth", "connect", "whatsapp link"],
+    },
+
     // Workspace
     {
       id: "workspace",
