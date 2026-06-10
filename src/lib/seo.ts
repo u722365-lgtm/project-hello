@@ -201,6 +201,13 @@ export const PAGE_SEO: Record<string, PageMeta> = {
     keywords: ['about', 'team', 'mission', 'AI company'],
     canonical: 'https://www.shadowtalk-ai.com/about',
   },
+  facts: {
+    title: 'AI Facts — Canonical Product Information',
+    description:
+      'Canonical facts about ShadowTalk AI for search engines and AI assistants: features, pricing, founder Zain Ahmed, and machine-readable sources.',
+    keywords: ['ShadowTalk facts', 'AI product info', 'llms.txt', 'agentic AI workspace'],
+    canonical: 'https://www.shadowtalk-ai.com/facts',
+  },
   contact: {
     title: 'Contact Us',
     description: 'Get in touch with the ShadowTalk AI team. We are here to help with questions, feedback, and support.',
