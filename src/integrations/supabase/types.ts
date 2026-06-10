@@ -3503,6 +3503,48 @@ export type Database = {
           },
         ]
       }
+      whatsapp_contacts: {
+        Row: {
+          created_at: string
+          group_name: string | null
+          id: string
+          last_messaged_at: string | null
+          name: string
+          notes: string | null
+          phone: string
+          source: string
+          tags: string[]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          group_name?: string | null
+          id?: string
+          last_messaged_at?: string | null
+          name: string
+          notes?: string | null
+          phone: string
+          source?: string
+          tags?: string[]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          group_name?: string | null
+          id?: string
+          last_messaged_at?: string | null
+          name?: string
+          notes?: string | null
+          phone?: string
+          source?: string
+          tags?: string[]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       whatsapp_links: {
         Row: {
           created_at: string

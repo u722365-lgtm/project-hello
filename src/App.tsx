@@ -100,6 +100,7 @@ const AutoImproveEngine = lazy(() => import("@/components/autoImprove/AutoImprov
 const PersonalLLMPage = lazy(() => import("./pages/PersonalLLMPage"));
 const TemplatesPage = lazy(() => import("./pages/TemplatesPage"));
 const DownloadsPage = lazy(() => import("./pages/DownloadsPage"));
+const WhatsAppContactsPage = lazy(() => import("./pages/WhatsAppContactsPage"));
 const PWABanner = lazy(() => import("./components/PWABanner"));
 const CookieConsent = lazy(() => import("./components/CookieConsent"));
 const CustomerSupportWidget = lazy(() => import("./components/CustomerSupportWidget"));
@@ -167,6 +168,7 @@ const AnimatedRoutes = () => {
           <Route path="/pricing" element={<PageTransition><PricingPage /></PageTransition>} />
           {/* Chat workspace: no PageTransition — avoids opacity-0 flash and flex height collapse */}
           <Route path="/chatbot" element={<ChatbotPage />} />
+          <Route path="/whatsapp" element={<PageTransition><WhatsAppContactsPage /></PageTransition>} />
           <Route path="/admin" element={<PageTransition><AdminPage /></PageTransition>} />
           <Route path="/docs" element={<PageTransition><DocsPage /></PageTransition>} />
           <Route path="/changelog" element={<PageTransition><ChangelogPage /></PageTransition>} />
