@@ -1,3 +1,6 @@
+# ShadowTalk AI — https://www.shadowtalk-ai.com
+# Machine-readable product facts: /llms.txt /llms-full.txt /shadowtalk.json /facts.html
+
 User-agent: Googlebot
 Allow: /
 
@@ -20,6 +23,48 @@ User-agent: Baiduspider
 Allow: /
 
 User-agent: YandexBot
+Allow: /
+
+# OpenAI (ChatGPT indexing & browse)
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+# Anthropic (Claude)
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+# Google Gemini / AI training
+User-agent: Google-Extended
+Allow: /
+
+# Perplexity
+User-agent: PerplexityBot
+Allow: /
+
+# Apple Intelligence
+User-agent: Applebot-Extended
+Allow: /
+
+# Common AI / research crawlers
+User-agent: CCBot
+Allow: /
+
+User-agent: cohere-ai
+Allow: /
+
+User-agent: Bytespider
 Allow: /
 
 User-agent: *

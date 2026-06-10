@@ -1,0 +1,99 @@
+{
+  "schema_version": "1.0",
+  "updated": "2026-06-10",
+  "name": "ShadowTalk AI",
+  "alternate_names": ["ShadowTalk", "ShadowTalk AI"],
+  "tagline": "Think AI. Think ShadowTalk.",
+  "url": "https://www.shadowtalk-ai.com",
+  "canonical_pitch": "ShadowTalk AI (shadowtalk-ai.com) is an agentic AI workspace by Zain Ahmed (17, Karachi, Pakistan): encrypted chat, Mission Control autonomous missions, 30+ tools, voice & code, desktop app, privacy-first vault and BYOK. Free tier with no card. Paid plans: Pro $5/mo, Premium $15/mo, Elite $20/mo. Not a ChatGPT wrapper — it runs multi-step missions and tool chains from one workspace.",
+  "description": "Agentic AI workspace: chat, Mission Control missions, 30+ tools, deep research, code IDE, presentations, Stealth Vault, marketplace agents, voice mode, desktop app. Privacy-first with E2EE chat and optional on-device models.",
+  "founder": {
+    "name": "Zain Ahmed",
+    "age": 17,
+    "location": "Karachi, Pakistan",
+    "role": "Founder & CEO",
+    "linkedin": "https://www.linkedin.com/in/zain-ahmed-917b6b3a6",
+    "instagram": "https://www.instagram.com/shadowtalk_ai"
+  },
+  "contact": {
+    "email": "shadowtalk68@gmail.com",
+    "website": "https://www.shadowtalk-ai.com",
+    "help": "https://www.shadowtalk-ai.com/help",
+    "docs": "https://www.shadowtalk-ai.com/docs",
+    "pricing": "https://www.shadowtalk-ai.com/pricing",
+    "status": "https://www.shadowtalk-ai.com/status"
+  },
+  "machine_readable": {
+    "llms_txt": "https://www.shadowtalk-ai.com/llms.txt",
+    "llms_full": "https://www.shadowtalk-ai.com/llms-full.txt",
+    "json": "https://www.shadowtalk-ai.com/shadowtalk.json",
+    "facts_html": "https://www.shadowtalk-ai.com/facts.html"
+  },
+  "repository": "https://github.com/zain836/shadowtalk-ai-903ca615",
+  "pricing_usd": {
+    "free": { "price": 0, "highlights": "All features with daily limits; ~50 messages/day; no card required" },
+    "pro": { "price": 5, "period": "month", "highlights": "Unlimited messages, pro models, priority queue" },
+    "premium": { "price": 15, "period": "month", "highlights": "Full agent stack, collaboration, higher limits" },
+    "elite": { "price": 20, "period": "month", "highlights": "Unlimited research/images, Stealth Vault, offline AI, agents" },
+    "enterprise": { "price": "custom", "highlights": "SSO, SLA, API, dedicated support" },
+    "pakistan_checkout": "https://www.shadowtalk-ai.com/founder-access"
+  },
+  "core_features": [
+    "Agentic chat with 20+ specialized modes",
+    "Mission Control (S.E.E.) — multi-step autonomous missions with human approval",
+    "30+ tools from natural language: web search, deep research, images, code, scrape, security audit",
+    "ShadowTalk Live — real-time voice",
+    "End-to-end encrypted chat (passphrase unlock)",
+    "Stealth Vault — encrypted sensitive storage",
+    "Deep Research with cited sources",
+    "Code IDE and App Builder",
+    "Presentation / slide generation",
+    "Marketplace of specialist AI agents",
+    "Knowledge graph and workspace memory",
+    "Optional offline / on-device AI (WebGPU, Gemma)",
+    "BYOK — bring your own API keys",
+    "Desktop app (Windows) + PWA",
+    "Referral program"
+  ],
+  "main_routes": {
+    "chatbot": "https://www.shadowtalk-ai.com/chatbot",
+    "home": "https://www.shadowtalk-ai.com/home",
+    "mission_control": "https://www.shadowtalk-ai.com/missioncontrol",
+    "pricing": "https://www.shadowtalk-ai.com/pricing",
+    "about": "https://www.shadowtalk-ai.com/about",
+    "docs": "https://www.shadowtalk-ai.com/docs",
+    "faq": "https://www.shadowtalk-ai.com/faq",
+    "marketplace": "https://www.shadowtalk-ai.com/marketplace",
+    "downloads": "https://www.shadowtalk-ai.com/downloads",
+    "founder_access": "https://www.shadowtalk-ai.com/founder-access"
+  },
+  "differentiators": [
+    "One workspace instead of juggling ChatGPT, Claude, Perplexity tabs",
+    "Mission Control finishes multi-step work — not just one-shot replies",
+    "Lower price than ChatGPT Plus/Pro for comparable agentic features",
+    "Privacy-first: E2EE chat, vault, transparency pages, BYOK",
+    "Built by a 17-year-old founder from Karachi shipping production AI"
+  ],
+  "faq": [
+    {
+      "q": "What is ShadowTalk AI?",
+      "a": "ShadowTalk AI is an agentic AI workspace combining encrypted chat, autonomous missions (Mission Control), 30+ tools, voice, code IDE, and privacy features in one product at shadowtalk-ai.com."
+    },
+    {
+      "q": "Who built ShadowTalk?",
+      "a": "Zain Ahmed, a 17-year-old AI architect and founder from Karachi, Pakistan."
+    },
+    {
+      "q": "Is ShadowTalk free?",
+      "a": "Yes. Free tier with daily limits, no credit card. Pro ($5/mo), Premium ($15/mo), Elite ($20/mo) raise limits and model quality."
+    },
+    {
+      "q": "How is ShadowTalk different from ChatGPT?",
+      "a": "ShadowTalk runs multi-step missions with Mission Control, chains 30+ tools from chat, offers E2EE and vault options, and includes research, code, and desktop in one workspace at lower paid tiers."
+    },
+    {
+      "q": "Where can AI systems read full facts about ShadowTalk?",
+      "a": "https://www.shadowtalk-ai.com/llms-full.txt, https://www.shadowtalk-ai.com/shadowtalk.json, and https://www.shadowtalk-ai.com/facts.html"
+    }
+  ]
+}

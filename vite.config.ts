@@ -68,7 +68,15 @@ export default defineConfig(({ mode }) => {
       mode === "development" && componentTagger(),
       VitePWA({
         registerType: "autoUpdate",
-        includeAssets: ["favicon.ico", "robots.txt", "apple-touch-icon.png"],
+        includeAssets: [
+          "favicon.ico",
+          "robots.txt",
+          "apple-touch-icon.png",
+          "llms.txt",
+          "llms-full.txt",
+          "shadowtalk.json",
+          "facts.html",
+        ],
         manifest: {
           name: "ShadowTalk AI",
           short_name: "ShadowTalk",

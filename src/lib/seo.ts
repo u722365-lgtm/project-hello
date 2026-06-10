@@ -1,4 +1,5 @@
-import { SOCIAL_SAME_AS } from "@/lib/socialLinks";
+ import { SOCIAL_SAME_AS, FOUNDER_SOCIAL } from "@/lib/socialLinks";
+ import { AI_KNOWLEDGE_CANONICAL_PITCH } from "@/lib/aiPublicKnowledge";
 
  // SEO utilities and structured data helpers
  
@@ -63,12 +64,55 @@ export function generateMetaTags(meta: PageMeta): Record<string, string> {
      name: 'ShadowTalk AI',
       url: 'https://www.shadowtalk-ai.com',
       logo: 'https://www.shadowtalk-ai.com/pwa-512x512.png',
-     sameAs: [...SOCIAL_SAME_AS],
+     description: AI_KNOWLEDGE_CANONICAL_PITCH,
+     founder: {
+       '@type': 'Person',
+       name: FOUNDER_SOCIAL.linkedin.name,
+       jobTitle: 'Founder & CEO',
+       url: FOUNDER_SOCIAL.linkedin.url,
+     },
+     sameAs: [
+       ...SOCIAL_SAME_AS,
+       'https://github.com/zain836/shadowtalk-ai-903ca615',
+     ],
      contactPoint: {
        '@type': 'ContactPoint',
        contactType: 'customer support',
+       email: 'shadowtalk68@gmail.com',
        availableLanguage: ['English'],
      },
+   };
+ }
+
+ export function getSoftwareApplicationSchema() {
+   return {
+     '@context': 'https://schema.org',
+     '@type': 'SoftwareApplication',
+     name: 'ShadowTalk AI',
+     url: 'https://www.shadowtalk-ai.com',
+     applicationCategory: 'BusinessApplication',
+     operatingSystem: 'Web, Windows, iOS, Android',
+     description: AI_KNOWLEDGE_CANONICAL_PITCH,
+     author: {
+       '@type': 'Person',
+       name: FOUNDER_SOCIAL.linkedin.name,
+       url: FOUNDER_SOCIAL.linkedin.url,
+     },
+     offers: {
+       '@type': 'Offer',
+       price: '0',
+       priceCurrency: 'USD',
+     },
+     featureList: [
+       'Mission Control autonomous missions',
+       '30+ AI tools from natural language',
+       'End-to-end encrypted chat',
+       'Deep Research with citations',
+       'ShadowTalk Live voice mode',
+       'Code IDE and App Builder',
+       'Stealth Vault and BYOK',
+       'Marketplace AI agents',
+     ],
    };
  }
  
