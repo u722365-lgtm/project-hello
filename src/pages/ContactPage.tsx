@@ -13,17 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { 
-  Mail, 
-  MessageSquare, 
-  MapPin, 
-  Clock, 
-  Send,
-  Twitter,
-  Linkedin,
-  Github,
-  Loader2
-} from "lucide-react";
+import { Mail, MessageSquare, MapPin, Clock, Send, Loader2 } from "lucide-react";
+import { SocialLinks } from "@/components/SocialLinks";
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -193,14 +184,7 @@ const ContactPage = () => {
 
               <div>
                 <h3 className="font-bold mb-4">Follow Us</h3>
-                <div className="flex gap-4">
-                  <a href="https://twitter.com/shadowtalkai" target="_blank" rel="noopener noreferrer"
-                    className="p-3 bg-muted rounded-lg hover:bg-primary/10 transition-colors"><Twitter className="h-5 w-5" /></a>
-                  <a href="https://linkedin.com/company/shadowtalkai" target="_blank" rel="noopener noreferrer"
-                    className="p-3 bg-muted rounded-lg hover:bg-primary/10 transition-colors"><Linkedin className="h-5 w-5" /></a>
-                  <a href="https://github.com/shadowtalkai" target="_blank" rel="noopener noreferrer"
-                    className="p-3 bg-muted rounded-lg hover:bg-primary/10 transition-colors"><Github className="h-5 w-5" /></a>
-                </div>
+                <SocialLinks />
               </div>
 
               <Card className="bg-gradient-to-br from-primary/10 to-accent/10 border-primary/20">

@@ -1,4 +1,5 @@
-import { Bot, Github, Twitter, Linkedin, Mail, Globe, Shield, FileText, ArrowUpRight } from "lucide-react";
+import { Bot, Mail, Globe, Shield, FileText, ArrowUpRight } from "lucide-react";
+import { SOCIAL_LINKS } from "@/lib/socialLinks";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import NewsletterSubscription from "./NewsletterSubscription";
@@ -66,9 +67,7 @@ const Footer = () => {
   ];
 
   const socials = [
-    { icon: Twitter, href: "https://twitter.com/shadowtalkai", label: "Twitter" },
-    { icon: Github, href: "https://github.com/shadowtalkai", label: "GitHub" },
-    { icon: Linkedin, href: "https://linkedin.com/company/shadowtalkai", label: "LinkedIn" },
+    ...SOCIAL_LINKS,
     { icon: Mail, href: "mailto:shadowtalk68@gmail.com", label: "Email" },
   ];
 

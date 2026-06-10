@@ -20,6 +20,7 @@ import LandingAmbientOrb from "@/components/landing/LandingAmbientOrb";
 import LandingInteractiveCard from "@/components/landing/LandingInteractiveCard";
 import { buildCommunityHighlights, usePlatformMetrics } from "@/hooks/usePlatformMetrics";
 import { useCommunityEvents } from "@/hooks/useCMSContent";
+import { FOUNDER_SOCIAL } from "@/lib/socialLinks";
 
 const CommunitySection = () => {
   const sectionRef = useRef(null);
@@ -143,8 +144,15 @@ const CommunitySection = () => {
               </motion.div>
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
                 <Button variant="outline" asChild>
-                  <a href="https://twitter.com/shadowtalkai" target="_blank" rel="noopener noreferrer">
-                    Follow on X
+                  <a href={FOUNDER_SOCIAL.instagram.url} target="_blank" rel="noopener noreferrer">
+                    Instagram
+                  </a>
+                </Button>
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
+                <Button variant="outline" asChild>
+                  <a href={FOUNDER_SOCIAL.linkedin.url} target="_blank" rel="noopener noreferrer">
+                    LinkedIn
                   </a>
                 </Button>
               </motion.div>
