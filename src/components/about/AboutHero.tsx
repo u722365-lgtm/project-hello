@@ -4,6 +4,7 @@ import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import zainImage from "@/assets/zain-ahmed.png";
 import { fadeUp, fadeUpStagger } from "./aboutMotion";
+import { SocialLinks } from "@/components/SocialLinks";
 
 const HERO_LINES = [
   "I am Zain Ahmed — 17, from Karachi, building sovereign AI.",
@@ -195,6 +196,11 @@ const AboutHero = () => {
               <span className="text-foreground">{displayText}</span>
               <span className="typing-cursor" />
             </motion.p>
+
+            <motion.div variants={fadeUp}>
+              <p className="text-xs font-semibold text-foreground/80 mb-2">Follow Us</p>
+              <SocialLinks />
+            </motion.div>
 
             <motion.blockquote
               variants={fadeUp}

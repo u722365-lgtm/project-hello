@@ -11,6 +11,7 @@ import {
   MessageCircle, Bug, Handshake, Rocket,
   Send, Loader2, CheckCircle2
 } from "lucide-react";
+import { FollowUsSection } from "@/components/FollowUsSection";
 
 type FormType = "contact" | "feedback" | "partnership" | "waitlist";
 
@@ -214,6 +215,15 @@ const AboutForms = () => {
               </Tabs>
             </CardContent>
           </Card>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mt-10"
+        >
+          <FollowUsSection description="While you wait for a reply — follow @shadowtalk_ai and Zain on LinkedIn." />
         </motion.div>
       </div>
     </section>

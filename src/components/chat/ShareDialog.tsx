@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Copy, Check, Link2, Twitter, Linkedin, Mail, Download, MessageSquare } from "lucide-react";
+import { Copy, Check, Link2, Instagram, Linkedin, Mail, Download, MessageSquare } from "lucide-react";
+import { FOUNDER_SOCIAL } from "@/lib/socialLinks";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -89,14 +90,13 @@ export const ShareDialog = ({ isOpen, onClose, messages, conversationTitle }: Sh
     toast({ title: "Downloaded!", description: `Saved as ${filename}` });
   };
 
-  const shareVia = (platform: 'twitter' | 'linkedin' | 'email') => {
+  const shareVia = (platform: "linkedin" | "email") => {
     const text = `Check out this conversation with ShadowTalk AI!`;
     const urls = {
-      twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`,
       linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`,
-      email: `mailto:?subject=${encodeURIComponent('ShadowTalk AI Conversation')}&body=${encodeURIComponent(text + '\n\n' + shareUrl)}`,
+      email: `mailto:?subject=${encodeURIComponent("ShadowTalk AI Conversation")}&body=${encodeURIComponent(text + "\n\n" + shareUrl)}`,
     };
-    window.open(urls[platform], '_blank');
+    window.open(urls[platform], "_blank");
   };
 
   return (
@@ -133,13 +133,11 @@ export const ShareDialog = ({ isOpen, onClose, messages, conversationTitle }: Sh
 
           <TabsContent value="social" className="space-y-4 mt-4">
             <div className="grid grid-cols-3 gap-3">
-              <Button
-                variant="outline"
-                className="flex-col gap-2 h-auto py-4"
-                onClick={() => shareVia('twitter')}
-              >
-                <Twitter className="h-5 w-5" />
-                <span className="text-xs">Twitter</span>
+              <Button variant="outline" className="flex-col gap-2 h-auto py-4" asChild>
+                <a href={FOUNDER_SOCIAL.instagram.url} target="_blank" rel="noopener noreferrer">
+                  <Instagram className="h-5 w-5" />
+                  <span className="text-xs">Instagram</span>
+                </a>
               </Button>
               <Button
                 variant="outline"

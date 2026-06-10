@@ -18,6 +18,7 @@ import { format } from "date-fns";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import SEOHead from "@/components/SEOHead";
+import { FollowUsSection } from "@/components/FollowUsSection";
 import { PAGE_SEO } from "@/lib/seo";
 import NewsletterSignup from "@/components/blog/NewsletterSignup";
 
@@ -260,6 +261,12 @@ const BlogPage = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      <section className="py-16 px-4 border-t border-border/40">
+        <div className="container mx-auto max-w-2xl">
+          <FollowUsSection description="New posts, launches, and builder notes — Instagram and LinkedIn." />
+        </div>
+      </section>
 
       <Footer />
     </div>

@@ -21,6 +21,7 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useDocsPages } from "@/hooks/useCMSContent";
 import { getHelpArticleRoute } from "@/lib/helpArticleRoutes";
+import { FollowUsSection } from "@/components/FollowUsSection";
 
 const CATEGORY_META: Record<
   string,
@@ -236,6 +237,9 @@ const HelpCenterPage = () => {
                 Contact Support
                 <ArrowRight className="h-4 w-4" />
               </Link>
+              <div className="mt-8 pt-8 border-t border-border/50">
+                <FollowUsSection description="Product updates and founder notes on Instagram and LinkedIn." />
+              </div>
             </CardContent>
           </Card>
         </div>

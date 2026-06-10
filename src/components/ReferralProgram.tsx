@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import {
   Gift, Copy, Check, Users, DollarSign, TrendingUp,
-  Share2, Trophy, Target, Zap, Crown, ExternalLink, Mail
+  Share2, Trophy, Target, Zap, Crown, ExternalLink, Mail, Instagram, Linkedin,
 } from "lucide-react";
+import { FOUNDER_SOCIAL } from "@/lib/socialLinks";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -186,9 +187,9 @@ const ReferralProgram = () => {
                   size="sm"
                   variant="outline"
                   className="gap-2"
-                  onClick={() => window.open(shareLinks.twitter, "_blank")}
+                  onClick={() => window.open(FOUNDER_SOCIAL.instagram.url, "_blank")}
                 >
-                  <ExternalLink className="h-3.5 w-3.5" /> Twitter / X
+                  <Instagram className="h-3.5 w-3.5" /> Follow on Instagram
                 </Button>
                 <Button
                   size="sm"
@@ -202,9 +203,17 @@ const ReferralProgram = () => {
                   size="sm"
                   variant="outline"
                   className="gap-2"
+                  onClick={() => window.open(FOUNDER_SOCIAL.linkedin.url, "_blank")}
+                >
+                  <Linkedin className="h-3.5 w-3.5" /> Follow on LinkedIn
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-2"
                   onClick={() => window.open(shareLinks.linkedin, "_blank")}
                 >
-                  <ExternalLink className="h-3.5 w-3.5" /> LinkedIn
+                  <ExternalLink className="h-3.5 w-3.5" /> Share on LinkedIn
                 </Button>
                 <Button
                   size="sm"

@@ -16,6 +16,7 @@ import {
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { FollowUsSection } from "@/components/FollowUsSection";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30, filter: "blur(6px)" },
@@ -251,6 +252,9 @@ const CareersPage = () => {
             <Button variant="outline" className="hover:bg-primary/10 hover:text-primary hover:border-primary/30" asChild>
               <Link to="/contact">Send General Application</Link>
             </Button>
+            <div className="mt-8 pt-8 border-t border-border/50">
+              <FollowUsSection description="See what we're shipping — follow the founder on Instagram and LinkedIn." />
+            </div>
           </motion.div>
         </div>
       </section>
