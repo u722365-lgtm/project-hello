@@ -100,6 +100,17 @@ describe("feature wiring verification", () => {
     expect(readSrc("components/shadowHeal/ShadowHealEngine.tsx")).toContain("startShadowHealEngine");
   });
 
+  it("hub pages wire insert-to-chat and script run", () => {
+    expect(readSrc("pages/ResearchHubPage.tsx")).toContain("queueChatInsert");
+    expect(readSrc("pages/ResearchHubPage.tsx")).toContain("onInsertToChat={handleInsertToChat}");
+    expect(readSrc("pages/WorkspaceHubPage.tsx")).toContain("onRunScript={handleRunScript}");
+    expect(readSrc("pages/ChatbotPage.tsx")).toContain("consumePendingChatInsert");
+  });
+
+  it("command routes include computer mode", () => {
+    expect(readSrc("lib/chatCommandRoutes.ts")).toContain('computer: "/computer"');
+  });
+
   it("ShadowScale growth engine and admin Growth Command wired", () => {
     expect(readSrc("App.tsx")).toContain("ShadowScaleEngine");
     expect(readSrc("App.tsx")).toContain("ShadowScaleGrowthBanner");

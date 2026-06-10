@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Brain, Network, Store, Workflow } from "lucide-react";
 import { UnifiedHubShell } from "@/components/hubs/UnifiedHubShell";
 import WorkspacePage from "@/pages/WorkspacePage";
@@ -11,8 +11,10 @@ import {
   type WorkspaceHubMode,
   WORKSPACE_HUB_MODES,
 } from "@/lib/hubs/workspaceHub";
+import { queueChatInsert } from "@/lib/pendingChatInsert";
 
 const WorkspaceHubPage = () => {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const mode = parseWorkspaceHubMode(searchParams.get("tab"), searchParams.get("panel"));
 
@@ -21,6 +23,16 @@ const WorkspaceHubPage = () => {
       setSearchParams({ tab });
     },
     [setSearchParams],
+  );
+
+  const handleRunScript = useCallback(
+    (scriptCode: string) => {
+      queueChatInsert(
+        `Execute this workspace automation script:\n\n\`\`\`\n${scriptCode}\n\`\`\``,
+      );
+      navigate("/chatbot");
+    },
+    [navigate],
   );
 
   const icons: Record<WorkspaceHubMode, React.ReactNode> = {
@@ -57,7 +69,7 @@ const WorkspaceHubPage = () => {
       )}
       {mode === "automate" && (
         <div className="h-full overflow-y-auto p-4 md:p-6">
-          <ScriptAutomation onClose={() => {}} onRunScript={() => {}} />
+          <ScriptAutomation onClose={() => {}} onRunScript={handleRunScript} />
         </div>
       )}
     </UnifiedHubShell>

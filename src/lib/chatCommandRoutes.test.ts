@@ -29,4 +29,14 @@ describe("chatCommandRoutes wiring", () => {
     expect(CHAT_COMMAND_NAV_ROUTES["white-label"]).toBe("/enterprise");
     expect(CHAT_COMMAND_NAV_ROUTES["fine-tuning"]).toBe("/personal-llm");
   });
+
+  it("routes computer mode and referral", () => {
+    expect(CHAT_COMMAND_NAV_ROUTES.computer).toBe("/computer");
+    expect(CHAT_COMMAND_NAV_ROUTES.referral).toBe("/referral");
+  });
+
+  it("handles branching in-chat without nav loop", () => {
+    expect(CHAT_COMMAND_MODAL_ACTIONS.has("branching")).toBe(true);
+    expect(CHAT_COMMAND_NAV_ROUTES.branching).toBeUndefined();
+  });
 });

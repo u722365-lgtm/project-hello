@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Search, Network, Globe } from "lucide-react";
 import { UnifiedHubShell } from "@/components/hubs/UnifiedHubShell";
 import { DeepResearchPanel } from "@/components/chat/DeepResearchPanel";
@@ -10,8 +10,10 @@ import {
   type ResearchHubMode,
   RESEARCH_HUB_MODES,
 } from "@/lib/hubs/researchHub";
+import { queueChatInsert } from "@/lib/pendingChatInsert";
 
 const ResearchHubPage = () => {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const mode = parseResearchHubMode(searchParams.get("tab"));
   const query = searchParams.get("q") || searchParams.get("topic") || "";
@@ -26,6 +28,14 @@ const ResearchHubPage = () => {
       });
     },
     [setSearchParams],
+  );
+
+  const handleInsertToChat = useCallback(
+    (content: string) => {
+      queueChatInsert(content);
+      navigate("/chatbot");
+    },
+    [navigate],
   );
 
   const icons: Record<ResearchHubMode, React.ReactNode> = {
@@ -51,14 +61,19 @@ const ResearchHubPage = () => {
           embedded
           isOpen
           onClose={() => {}}
-          onInsertToChat={() => {}}
+          onInsertToChat={handleInsertToChat}
           initialQuery={query}
           autoResearch={auto && !!query}
         />
       )}
       {mode === "knowledge" && <KnowledgeHubPanel />}
       {mode === "browser" && (
-        <ShadowBrowser embedded isOpen onClose={() => {}} />
+        <ShadowBrowser
+          embedded
+          isOpen
+          onClose={() => {}}
+          onInsertToChat={handleInsertToChat}
+        />
       )}
     </UnifiedHubShell>
   );

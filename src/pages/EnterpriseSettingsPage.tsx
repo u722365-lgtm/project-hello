@@ -42,7 +42,29 @@ const EnterpriseSettingsPage = () => {
   
   const hasEnterpriseAccess = userPlan === 'elite' || userPlan === 'enterprise';
 
-  const handleSaveSSO = () => { toast({ title: "SSO Configuration Saved", description: "Your SSO settings have been updated." }); };
+  const handleSaveSSO = () => {
+    try {
+      localStorage.setItem(
+        "shadowtalk_enterprise_sso",
+        JSON.stringify({ ssoEnabled, ssoProvider, samlConfig, oauthConfig }),
+      );
+    } catch {
+      /* ignore */
+    }
+    toast({ title: "SSO Configuration Saved", description: "Your SSO settings have been stored for this workspace." });
+  };
+
+  const handleSaveSecurity = () => {
+    try {
+      localStorage.setItem(
+        "shadowtalk_enterprise_security",
+        JSON.stringify({ mfaRequired, sessionTimeout, ipWhitelist }),
+      );
+    } catch {
+      /* ignore */
+    }
+    toast({ title: "Security settings saved", description: "Policies stored for this workspace session." });
+  };
   const handleTestConnection = () => {
     toast({ title: "Testing SSO Connection", description: "Attempting to connect..." });
     setTimeout(() => { toast({ title: "Connection Successful", description: "SSO configuration is valid." }); }, 2000);
@@ -263,7 +285,10 @@ const EnterpriseSettingsPage = () => {
                       <Label>IP Whitelist</Label>
                       <textarea className="w-full h-24 p-3 bg-background/50 border border-border/50 rounded-xl text-sm font-mono" placeholder={"Enter IP addresses or CIDR ranges, one per line\ne.g., 192.168.1.0/24"} value={ipWhitelist} onChange={e => setIpWhitelist(e.target.value)} disabled={!hasEnterpriseAccess} />
                     </div>
-                    <Button className="btn-glow" disabled={!hasEnterpriseAccess}><CheckCircle2 className="h-4 w-4 mr-2" />Save Security Settings</Button>
+                    <Button className="btn-glow" disabled={!hasEnterpriseAccess} onClick={handleSaveSecurity}>
+                      <CheckCircle2 className="h-4 w-4 mr-2" />
+                      Save Security Settings
+                    </Button>
                   </CardContent>
                 </Card>
               </motion.div>

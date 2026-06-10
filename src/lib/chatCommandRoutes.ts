@@ -17,7 +17,7 @@ export const CHAT_COMMAND_NAV_ROUTES: Record<string, string> = {
   organize: "/workspace",
   eco: "/transparency",
   agentic: "/execute",
-  branching: "/chatbot",
+  computer: "/computer",
   "canvas-document": "/ide",
   referral: "/referral",
   workspace: "/workspace",
@@ -50,4 +50,5 @@ export const CHAT_COMMAND_MODAL_ACTIONS = new Set([
   "knowledge-vault-modal",
   "wordle",
   "bunker",
+  "branching",
 ]);
