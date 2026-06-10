@@ -19,9 +19,16 @@ export default defineConfig(({ mode }) => {
     server: {
       host: "::",
       port: 8080,
-      // Prevent browsers from caching mismatched .vite/deps chunks (duplicate React crash)
       headers: {
         "Cache-Control": "no-store",
+        "Cross-Origin-Opener-Policy": "same-origin",
+        "Cross-Origin-Embedder-Policy": "credentialless",
+      },
+    },
+    preview: {
+      headers: {
+        "Cross-Origin-Opener-Policy": "same-origin",
+        "Cross-Origin-Embedder-Policy": "credentialless",
       },
     },
     define: {
@@ -34,6 +41,10 @@ export default defineConfig(({ mode }) => {
        minify: isProduction ? 'esbuild' : false,
        sourcemap: isProduction ? 'hidden' : true,
        rollupOptions: {
+         input: {
+           main: path.resolve(__dirname, "index.html"),
+           "computer-frame": path.resolve(__dirname, "computer-frame.html"),
+         },
          output: {
            // Chunk splitting for better caching
            manualChunks: {

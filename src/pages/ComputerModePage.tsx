@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
@@ -5,8 +6,23 @@ import { PAGE_SEO } from "@/lib/seo";
 import { ComputerModePanel } from "@/components/computer/ComputerModePanel";
 import { Badge } from "@/components/ui/badge";
 import { MonitorSmartphone } from "lucide-react";
+import { COMPUTER_FRAME_PATH, isCrossOriginIsolated } from "@/lib/crossOriginIsolation";
 
 const ComputerModePage = () => {
+  useEffect(() => {
+    if (!isCrossOriginIsolated()) {
+      window.location.replace(COMPUTER_FRAME_PATH);
+    }
+  }, []);
+
+  if (!isCrossOriginIsolated()) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center text-sm text-muted-foreground">
+        Starting isolated computer shell…
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <SEOHead meta={PAGE_SEO.computer} />

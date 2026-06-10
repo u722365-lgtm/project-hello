@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { isWebContainerEnvironment } from '@/lib/crossOriginIsolation';
 
 // =============================================================================
 // WEBCONTAINER CODE SANDBOX - Native Tool-Building
@@ -32,11 +33,7 @@ export interface SandboxState {
 // Import WebContainer types
 import type { WebContainer as WCType } from '@webcontainer/api';
 
-// Detect if WebContainer is available
-const isWebContainerSupported = (): boolean => {
-  // WebContainer requires SharedArrayBuffer which needs COOP/COEP headers
-  return typeof SharedArrayBuffer !== 'undefined';
-};
+const isWebContainerSupported = (): boolean => isWebContainerEnvironment();
 
 export const useCodeSandbox = () => {
   const [state, setState] = useState<SandboxState>({
@@ -59,7 +56,7 @@ export const useCodeSandbox = () => {
     if (!isWebContainerSupported()) {
       setState(prev => ({
         ...prev,
-        error: 'WebContainer requires SharedArrayBuffer. Please enable COOP/COEP headers or use a supported browser.',
+        error: 'WebContainer needs cross-origin isolation (COOP/COEP). Open /computer-frame.html or redeploy with updated headers.',
       }));
       return false;
     }
@@ -407,7 +404,7 @@ console.log('Parse complete:', JSON.stringify(result));
             output: '',
             error:
               state.error ||
-              'Computer runtime unavailable. Use Chrome/Edge; production needs COOP/COEP headers for full shell.',
+              'Computer runtime unavailable. Use Chrome/Edge and open /computer-frame.html for the isolated shell.',
             duration: Date.now() - startTime,
           };
         }

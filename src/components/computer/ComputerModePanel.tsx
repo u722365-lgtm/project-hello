@@ -16,6 +16,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { COMPUTER_FRAME_PATH, isCrossOriginIsolated } from "@/lib/crossOriginIsolation";
 
 type TerminalLine = {
   type: "input" | "output" | "error" | "system";
@@ -31,6 +32,7 @@ const QUICK_COMMANDS = [
 
 export function ComputerModePanel({ embedded = false }: { embedded?: boolean }) {
   const sandbox = useCodeSandbox();
+  const isolated = isCrossOriginIsolated();
   const [lines, setLines] = useState<TerminalLine[]>([
     {
       type: "system",
@@ -50,7 +52,7 @@ export function ComputerModePanel({ embedded = false }: { embedded?: boolean }) 
         type: "system",
         text: support.webContainerSupported
           ? "Booting WebContainer…"
-          : "Limited mode: WebContainer needs SharedArrayBuffer (COOP/COEP). Fallback runs simple JS only.",
+          : `Limited mode: needs cross-origin isolation (COOP/COEP). Open ${COMPUTER_FRAME_PATH} for the full shell.`,
       },
     ]);
     const ok = await sandbox.initialize();
@@ -167,6 +169,15 @@ export function ComputerModePanel({ embedded = false }: { embedded?: boolean }) 
           </div>
         </CardHeader>
         <CardContent className="space-y-3">
+          {!isolated && !embedded && (
+            <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-200/90">
+              WebContainer needs isolated headers.{" "}
+              <a href={COMPUTER_FRAME_PATH} className="underline font-medium text-amber-100">
+                Open isolated computer shell
+              </a>{" "}
+              or hard-refresh after deploy.
+            </div>
+          )}
           <div className="flex flex-wrap gap-2">
             {QUICK_COMMANDS.map((q) => (
               <Button
