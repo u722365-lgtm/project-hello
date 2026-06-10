@@ -72,6 +72,7 @@ const UI_ROUTES: Partial<Record<ToolType, { path: string; label: string }>> = {
   strategy_agent: { path: "/execute?mode=strategy_report", label: "Shadow Execution" },
   workspace: { path: "/workspace", label: "AI Workspace" },
   ide: { path: "/ide", label: "Code IDE" },
+  computer_mode: { path: "/computer", label: "Computer Mode" },
   marketplace: { path: "/marketplace", label: "Marketplace" },
   presentation_builder: { path: "/forge?mode=slides", label: "Content Forge" },
   knowledge_vault: { path: "/research?tab=knowledge", label: "Shadow Research" },

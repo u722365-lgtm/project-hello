@@ -19,7 +19,7 @@ import {
   BarChart3, Palette, Key, Activity, BookOpen, Database,
   GitBranch, Sliders, Lock, Target, Leaf, Navigation, Wand2,
   Rocket, Cpu, PenTool, LayoutDashboard, UserPlus, Mail,
-  HardDrive, Layers, BrainCircuit, Cog, FileCode
+  HardDrive, Layers, BrainCircuit, Cog, FileCode, MonitorSmartphone
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/components/AuthProvider";
@@ -137,6 +137,17 @@ export const CommandPalette = ({ open, onOpenChange, onAction }: CommandPaletteP
       keywords: ["agent", "autonomous", "workflow", "task"],
       badge: "New",
       badgeVariant: "destructive" as const,
+    },
+    {
+      id: "computer-mode",
+      label: "Computer Mode",
+      description: "Real npm/node shell in your browser (WebContainer)",
+      icon: <MonitorSmartphone className="h-4 w-4" />,
+      category: "AI Tools",
+      action: () => onAction("computer"),
+      keywords: ["computer", "shell", "terminal", "npm", "manus", "sandbox", "code run"],
+      badge: "New",
+      badgeVariant: "default" as const,
     },
     {
       id: "creative-synthesis",

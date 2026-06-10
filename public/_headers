@@ -1,0 +1,8 @@
+# Cloudflare Pages / static hosts — enables WebContainer (SharedArrayBuffer) for Computer Mode
+/*
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Embedder-Policy: credentialless
+
+/facts.html
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Embedder-Policy: credentialless

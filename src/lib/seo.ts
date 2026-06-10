@@ -201,6 +201,13 @@ export const PAGE_SEO: Record<string, PageMeta> = {
     keywords: ['about', 'team', 'mission', 'AI company'],
     canonical: 'https://www.shadowtalk-ai.com/about',
   },
+  computer: {
+    title: 'Computer Mode — In-Browser Shell',
+    description:
+      'ShadowTalk Computer Mode: real npm/node shell in your browser via WebContainer. Run code, install packages, and pair with Mission Control.',
+    keywords: ['computer use', 'code sandbox', 'WebContainer', 'AI agent shell'],
+    canonical: 'https://www.shadowtalk-ai.com/computer',
+  },
   facts: {
     title: 'AI Facts — Canonical Product Information',
     description:
