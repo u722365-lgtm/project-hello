@@ -105,15 +105,25 @@ interface ShadowBrowserProps {
 
 // ─── Constants ─────────────────────────────────────────────────
 
-const DEFAULT_HOME = "https://duckduckgo.com";
+const SHADOW_HOME = "about:shadowtalk";
 const AI_REQUEST_TIMEOUT = 30000;
 const MAX_RETRIES = 2;
+const IFRAME_PROXY_FALLBACK_MS = 6000;
 
-const BLOCKED_DOMAINS = [
-  "google.com", "youtube.com", "github.com", "facebook.com", "twitter.com",
+/** Sites that block iframe embedding — load via cloud browser instead */
+const PROXY_FIRST_DOMAINS = [
+  "duckduckgo.com", "google.com", "bing.com", "yahoo.com", "search.brave.com",
+  "youtube.com", "github.com", "facebook.com", "twitter.com",
   "x.com", "instagram.com", "linkedin.com", "netflix.com", "amazon.com",
   "microsoft.com", "apple.com", "reddit.com", "twitch.tv", "discord.com",
 ];
+
+interface WebSearchResult {
+  title: string;
+  link: string;
+  snippet?: string;
+  displayLink?: string;
+}
 
 const KEYBOARD_SHORTCUTS = [
   { keys: ["Ctrl", "T"], action: "New tab" },
@@ -132,10 +142,27 @@ const KEYBOARD_SHORTCUTS = [
 
 const isOnline = () => typeof navigator !== "undefined" ? navigator.onLine : true;
 
+const isShadowHome = (url: string): boolean =>
+  url === SHADOW_HOME || url.startsWith("about:shadowtalk");
+
+const getShadowSearchQuery = (url: string): string | null => {
+  if (!url.startsWith("about:shadowtalk?q=")) return null;
+  try {
+    return decodeURIComponent(url.slice("about:shadowtalk?q=".length));
+  } catch {
+    return null;
+  }
+};
+
+const toShadowSearchUrl = (query: string) =>
+  `about:shadowtalk?q=${encodeURIComponent(query.trim())}`;
+
 const formatUrl = (input: string): string => {
   let url = input.trim();
+  if (!url) return SHADOW_HOME;
+  if (isShadowHome(url)) return url;
   if (!url.includes(".") || url.includes(" ")) {
-    return `https://duckduckgo.com/?q=${encodeURIComponent(url)}`;
+    return toShadowSearchUrl(url);
   }
   if (!url.startsWith("http://") && !url.startsWith("https://")) {
     url = "https://" + url;
@@ -143,10 +170,11 @@ const formatUrl = (input: string): string => {
   return url;
 };
 
-const isBlockedDomain = (url: string): boolean => {
+const needsProxyFirst = (url: string): boolean => {
+  if (isShadowHome(url)) return false;
   try {
     const domain = new URL(url).hostname.replace("www.", "");
-    return BLOCKED_DOMAINS.some((blocked) => domain.includes(blocked));
+    return PROXY_FIRST_DOMAINS.some((blocked) => domain === blocked || domain.endsWith(`.${blocked}`));
   } catch {
     return false;
   }
@@ -251,7 +279,7 @@ const ErrorOverlay = ({ error, url, onRetry, onOpenExternal, onGoHome, onViewVia
         <p className="text-sm text-muted-foreground mb-2">{error.message}</p>
         <p className="text-xs text-muted-foreground/70 mb-6 font-mono truncate max-w-xs mx-auto">{getDomainFromUrl(url)}</p>
         <div className="flex flex-col gap-3">
-          {(error.type === "blocked" || error.type === "cors") && onViewViaProxy && (
+          {(error.type === "blocked" || error.type === "cors" || error.type === "network" || error.type === "timeout") && onViewViaProxy && (
             <Button onClick={onViewViaProxy} disabled={isProxyLoading} className="gap-2 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white">
               {isProxyLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
               {isProxyLoading ? "Loading via cloud..." : "View via Cloud Browser"}
@@ -283,6 +311,116 @@ const ConnectionStatus = () => {
       <WifiOff className="h-4 w-4 text-destructive" />
       <span className="text-xs text-destructive font-medium">You're offline — browsing and AI features are unavailable</span>
     </motion.div>
+  );
+};
+
+const ShadowHomePage = ({ onSearch }: { onSearch: (query: string) => void }) => {
+  const [query, setQuery] = useState("");
+  const suggestions = ["ShadowTalk AI features", "Web privacy best practices", "Latest AI news"];
+
+  return (
+    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-zinc-50 to-zinc-100 dark:from-zinc-900 dark:to-zinc-950">
+      <div className="w-full max-w-xl px-6 text-center">
+        <div className="h-16 w-16 mx-auto rounded-2xl bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center mb-6 shadow-lg shadow-primary/20">
+          <Globe className="h-8 w-8 text-primary" />
+        </div>
+        <h2 className="text-2xl font-bold mb-2">Shadow Browser</h2>
+        <p className="text-sm text-muted-foreground mb-8">
+          Search the web or enter a URL — pages that block embedding load via cloud browser automatically.
+        </p>
+        <form
+          onSubmit={(e) => { e.preventDefault(); if (query.trim()) onSearch(query.trim()); }}
+          className="flex gap-2 mb-6"
+        >
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search or enter a URL..."
+            className="h-12 rounded-xl text-base shadow-sm"
+            autoFocus
+          />
+          <Button type="submit" size="lg" className="h-12 px-5 rounded-xl" disabled={!query.trim()}>
+            <Search className="h-5 w-5" />
+          </Button>
+        </form>
+        <div className="flex flex-wrap justify-center gap-2">
+          {suggestions.map((s) => (
+            <Button key={s} variant="outline" size="sm" className="rounded-full text-xs" onClick={() => onSearch(s)}>
+              {s}
+            </Button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ShadowSearchResults = ({
+  query,
+  results,
+  isLoading,
+  onResultClick,
+  onNewSearch,
+}: {
+  query: string;
+  results: WebSearchResult[];
+  isLoading: boolean;
+  onResultClick: (url: string) => void;
+  onNewSearch: (query: string) => void;
+}) => {
+  const [refineQuery, setRefineQuery] = useState(query);
+
+  return (
+    <div className="absolute inset-0 bg-white dark:bg-zinc-900 overflow-hidden flex flex-col">
+      <div className="border-b border-border/50 px-4 py-3 bg-muted/30">
+        <form
+          onSubmit={(e) => { e.preventDefault(); if (refineQuery.trim()) onNewSearch(refineQuery.trim()); }}
+          className="flex gap-2 max-w-3xl mx-auto"
+        >
+          <Input
+            value={refineQuery}
+            onChange={(e) => setRefineQuery(e.target.value)}
+            placeholder="Search the web..."
+            className="h-10 rounded-xl"
+          />
+          <Button type="submit" size="sm" className="rounded-xl px-4" disabled={isLoading}>
+            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+          </Button>
+        </form>
+      </div>
+      <ScrollArea className="flex-1">
+        <div className="max-w-3xl mx-auto px-4 py-6 space-y-4">
+          {isLoading && (
+            <div className="flex items-center justify-center gap-2 py-12 text-sm text-muted-foreground">
+              <Loader2 className="h-5 w-5 animate-spin text-primary" />
+              Searching for &ldquo;{query}&rdquo;...
+            </div>
+          )}
+          {!isLoading && results.length === 0 && (
+            <div className="text-center py-12 text-sm text-muted-foreground">
+              No results found. Try a different search term.
+            </div>
+          )}
+          {!isLoading && results.map((result, i) => (
+            <button
+              key={`${result.link}-${i}`}
+              onClick={() => onResultClick(result.link)}
+              className="w-full text-left p-4 rounded-xl hover:bg-muted/50 border border-transparent hover:border-border/50 transition-all"
+            >
+              <div className="text-xs text-emerald-600 dark:text-emerald-400 mb-1 truncate">
+                {result.displayLink || getDomainFromUrl(result.link)}
+              </div>
+              <div className="text-base font-medium text-blue-600 dark:text-blue-400 mb-1 line-clamp-2">
+                {result.title}
+              </div>
+              {result.snippet && (
+                <p className="text-sm text-muted-foreground line-clamp-2">{result.snippet}</p>
+              )}
+            </button>
+          ))}
+        </div>
+      </ScrollArea>
+    </div>
   );
 };
 
@@ -346,22 +484,27 @@ export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl, emb
   const { toast } = useToast();
 
   // Core state
-  const createTab = (url = DEFAULT_HOME): BrowserTab => ({
-    id: crypto.randomUUID(), url, title: "New Tab", isLoading: true,
-    canGoBack: false, canGoForward: false, error: null, isPinned: false,
-    isMuted: false, history: [url], historyIndex: 0,
-  });
+  const createTab = (url = SHADOW_HOME): BrowserTab => {
+    const searchQuery = getShadowSearchQuery(url);
+    const onHome = isShadowHome(url) && searchQuery === null;
+    return {
+      id: crypto.randomUUID(), url, title: searchQuery ? `Search: ${searchQuery}` : "New Tab",
+      isLoading: !onHome,
+      canGoBack: false, canGoForward: false, error: null, isPinned: false,
+      isMuted: false, history: [url], historyIndex: 0,
+    };
+  };
 
-  const [tabs, setTabs] = useState<BrowserTab[]>([createTab(initialUrl || DEFAULT_HOME)]);
+  const [tabs, setTabs] = useState<BrowserTab[]>([createTab(initialUrl || SHADOW_HOME)]);
   const [activeTabId, setActiveTabId] = useState(tabs[0].id);
-  const [urlInput, setUrlInput] = useState(initialUrl || DEFAULT_HOME);
+  const [urlInput, setUrlInput] = useState(initialUrl || SHADOW_HOME);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showSidebar, setShowSidebar] = useState(true);
   const [sidebarMode, setSidebarMode] = useState<"ai" | "bookmarks" | "history" | "together" | "downloads">("together");
 
   // Enhanced features
   const [splitView, setSplitView] = useState(false);
-  const [splitUrl, setSplitUrl] = useState(DEFAULT_HOME);
+  const [splitUrl, setSplitUrl] = useState(SHADOW_HOME);
   const [privacyMode, setPrivacyMode] = useState(false);
   const [readingMode, setReadingMode] = useState(false);
   const [readingContent, setReadingContent] = useState("");
@@ -372,6 +515,11 @@ export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl, emb
   const [proxyHtml, setProxyHtml] = useState<string | null>(null);
   const [firecrawlData, setFirecrawlData] = useState<{ screenshot?: string; markdown?: string; title?: string; links?: string[] } | null>(null);
   const [isProxyLoading, setIsProxyLoading] = useState(false);
+  const [searchResults, setSearchResults] = useState<WebSearchResult[]>([]);
+  const [searchResultsQuery, setSearchResultsQuery] = useState("");
+  const [isWebSearching, setIsWebSearching] = useState(false);
+  const proxyRequestIdRef = useRef(0);
+  const lastSearchedUrlRef = useRef("");
 
   // AI Search state
   const [searchQuery, setSearchQuery] = useState("");
@@ -459,63 +607,244 @@ export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl, emb
 
   // ─── Navigation ────────────────────────────────────────────
 
+  const fetchViaProxy = useCallback(async (targetUrl?: string, tabId = activeTabId) => {
+    const url = targetUrl || tabs.find(t => t.id === tabId)?.url;
+    if (!url || isShadowHome(url)) return;
+
+    const requestId = ++proxyRequestIdRef.current;
+    setIsProxyLoading(true);
+    setProxyHtml(null);
+    setFirecrawlData(null);
+    setSearchResults([]);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("firecrawl-scrape", {
+        body: {
+          url,
+          options: { formats: ["markdown", "screenshot", "links"], onlyMainContent: false },
+        },
+      });
+
+      if (requestId !== proxyRequestIdRef.current) return;
+      if (error) throw new Error(error.message);
+
+      const scrapeData = data?.data || data;
+      const screenshot = scrapeData?.screenshot;
+      const markdown = scrapeData?.markdown;
+      const title = scrapeData?.metadata?.title;
+      const links = scrapeData?.links;
+
+      if (screenshot || markdown) {
+        setFirecrawlData({ screenshot, markdown, title, links });
+        setTabs(prev => prev.map(tab => tab.id === tabId ? {
+          ...tab, error: null, isLoading: false, title: title || tab.title,
+        } : tab));
+        toast({ title: "Page loaded via cloud browser", description: title || getDomainFromUrl(url) });
+        return;
+      }
+
+      const headers = await getAuthHeaders();
+      const response = await fetchAIWithRetry(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/web-proxy`,
+        {
+          method: "POST", headers,
+          body: stringifyChatBody({ url, mode: "proxy" }),
+        },
+        1, 20000
+      );
+      if (requestId !== proxyRequestIdRef.current) return;
+
+      const proxyData = await response.json();
+      if (proxyData.success && proxyData.html) {
+        setProxyHtml(proxyData.html);
+        setTabs(prev => prev.map(tab => tab.id === tabId ? {
+          ...tab, error: null, isLoading: false, title: proxyData.title || tab.title,
+        } : tab));
+        toast({ title: "Page loaded via proxy", description: proxyData.title || getDomainFromUrl(url) });
+      } else {
+        setTabs(prev => prev.map(tab => tab.id === tabId ? {
+          ...tab, isLoading: false,
+          error: { type: "blocked" as const, message: proxyData.error || "This site could not be loaded in Shadow Browser.", retryable: true },
+        } : tab));
+      }
+    } catch (err) {
+      if (requestId !== proxyRequestIdRef.current) return;
+      const msg = err instanceof Error ? err.message : "Request failed";
+      setTabs(prev => prev.map(tab => tab.id === tabId ? {
+        ...tab, isLoading: false,
+        error: { type: "network" as const, message: msg, retryable: true },
+      } : tab));
+    } finally {
+      if (requestId === proxyRequestIdRef.current) setIsProxyLoading(false);
+    }
+  }, [activeTabId, tabs, getAuthHeaders, toast]);
+
+  const performWebSearch = useCallback(async (query: string, tabId = activeTabId) => {
+    const searchUrl = toShadowSearchUrl(query);
+    lastSearchedUrlRef.current = searchUrl;
+    setIsWebSearching(true);
+    setSearchResults([]);
+    setSearchResultsQuery(query);
+    setProxyHtml(null);
+    setFirecrawlData(null);
+    setTabs(prev => prev.map(tab => tab.id === tabId ? {
+      ...tab, url: searchUrl, isLoading: true, title: `Search: ${query}`, error: null,
+    } : tab));
+    setUrlInput(searchUrl);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("web-search", {
+        body: { query, numResults: 8 },
+      });
+      if (error) throw new Error(error.message);
+
+      const results: WebSearchResult[] = (data?.results || []).map((r: WebSearchResult) => ({
+        title: r.title,
+        link: r.link,
+        snippet: r.snippet,
+        displayLink: r.displayLink,
+      }));
+
+      setSearchResults(results);
+      setTabs(prev => prev.map(tab => tab.id === tabId ? { ...tab, isLoading: false, error: null } : tab));
+      if (!privacyMode) {
+        setHistory(prev => [{ url: searchUrl, title: `Search: ${query}`, visitedAt: new Date() }, ...prev.filter(h => h.url !== searchUrl)]);
+      }
+      if (!results.length) {
+        toast({ title: "No results", description: "Try different keywords or open the site in a new tab.", variant: "destructive" });
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Search failed";
+      setTabs(prev => prev.map(tab => tab.id === tabId ? {
+        ...tab, isLoading: false,
+        error: { type: "network" as const, message: msg, retryable: true },
+      } : tab));
+      toast({ title: "Search error", description: msg, variant: "destructive" });
+    } finally {
+      setIsWebSearching(false);
+    }
+  }, [activeTabId, privacyMode, toast]);
+
   const navigateTo = useCallback((url: string) => {
     setProxyHtml(null);
     setFirecrawlData(null);
-    const formattedUrl = formatUrl(url);
+    setSearchResults([]);
+    setSearchResultsQuery("");
+    proxyRequestIdRef.current += 1;
 
-    if (isBlockedDomain(formattedUrl)) {
+    const formattedUrl = formatUrl(url);
+    const shadowSearchQuery = getShadowSearchQuery(formattedUrl);
+
+    if (isShadowHome(formattedUrl) && shadowSearchQuery === null) {
       setTabs(prev => prev.map(tab => tab.id === activeTabId ? {
-        ...tab, url: formattedUrl, isLoading: false, title: getDomainFromUrl(formattedUrl),
-        history: [...tab.history.slice(0, tab.historyIndex + 1), formattedUrl],
+        ...tab, url: SHADOW_HOME, isLoading: false, title: "New Tab", error: null,
+        history: [...tab.history.slice(0, tab.historyIndex + 1), SHADOW_HOME],
         historyIndex: tab.historyIndex + 1,
-        error: { type: "blocked" as const, message: `${getDomainFromUrl(formattedUrl)} blocks embedded access.`, retryable: false },
       } : tab));
-      setUrlInput(formattedUrl);
-      if (!privacyMode) setHistory(prev => [{ url: formattedUrl, title: getDomainFromUrl(formattedUrl), visitedAt: new Date() }, ...prev.filter(h => h.url !== formattedUrl)]);
+      setUrlInput(SHADOW_HOME);
       return;
     }
 
+    if (shadowSearchQuery !== null) {
+      setTabs(prev => prev.map(tab => tab.id === activeTabId ? {
+        ...tab, url: formattedUrl, isLoading: true, title: `Search: ${shadowSearchQuery}`, error: null,
+        history: [...tab.history.slice(0, tab.historyIndex + 1), formattedUrl],
+        historyIndex: tab.historyIndex + 1,
+      } : tab));
+      setUrlInput(formattedUrl);
+      void performWebSearch(shadowSearchQuery, activeTabId);
+      return;
+    }
+
+    const title = getDomainFromUrl(formattedUrl);
     setTabs(prev => prev.map(tab => tab.id === activeTabId ? {
       ...tab, url: formattedUrl, isLoading: true, title: "Loading...", error: null,
       history: [...tab.history.slice(0, tab.historyIndex + 1), formattedUrl],
       historyIndex: tab.historyIndex + 1,
     } : tab));
     setUrlInput(formattedUrl);
-    if (!privacyMode) setHistory(prev => [{ url: formattedUrl, title: formattedUrl, visitedAt: new Date() }, ...prev.filter(h => h.url !== formattedUrl)]);
+    if (!privacyMode) {
+      setHistory(prev => [{ url: formattedUrl, title, visitedAt: new Date() }, ...prev.filter(h => h.url !== formattedUrl)]);
+    }
+
+    if (needsProxyFirst(formattedUrl)) {
+      void fetchViaProxy(formattedUrl, activeTabId);
+      return;
+    }
 
     if (iframeTimeoutRef.current) clearTimeout(iframeTimeoutRef.current);
     iframeTimeoutRef.current = setTimeout(() => {
-      setTabs(prev => prev.map(tab =>
-        tab.id === activeTabId && tab.isLoading ? {
-          ...tab, isLoading: false,
-          error: { type: "timeout" as const, message: "Page took too long to load.", retryable: true },
-        } : tab
-      ));
-    }, 15000);
-  }, [activeTabId, privacyMode]);
+      setTabs(prev => {
+        const tab = prev.find(t => t.id === activeTabId);
+        if (!tab?.isLoading || isShadowHome(tab.url)) return prev;
+        void fetchViaProxy(tab.url, activeTabId);
+        return prev;
+      });
+    }, IFRAME_PROXY_FALLBACK_MS);
+  }, [activeTabId, privacyMode, fetchViaProxy, performWebSearch]);
+
+  useEffect(() => {
+    if (!initialUrl) return;
+    const formatted = formatUrl(initialUrl);
+    const query = getShadowSearchQuery(formatted);
+    if (query) void performWebSearch(query, activeTabId);
+    else if (needsProxyFirst(formatted)) void fetchViaProxy(formatted, activeTabId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const restoreTabView = useCallback((url: string, tabId: string) => {
+    setProxyHtml(null);
+    setFirecrawlData(null);
+    setSearchResults([]);
+    setSearchResultsQuery("");
+    proxyRequestIdRef.current += 1;
+
+    const shadowSearchQuery = getShadowSearchQuery(url);
+    if (isShadowHome(url) && shadowSearchQuery === null) {
+      setTabs(prev => prev.map(tab => tab.id === tabId ? {
+        ...tab, url, isLoading: false, title: "New Tab", error: null,
+      } : tab));
+      return;
+    }
+    if (shadowSearchQuery !== null) {
+      void performWebSearch(shadowSearchQuery, tabId);
+      return;
+    }
+    if (needsProxyFirst(url)) {
+      setTabs(prev => prev.map(tab => tab.id === tabId ? {
+        ...tab, url, isLoading: true, title: getDomainFromUrl(url), error: null,
+      } : tab));
+      void fetchViaProxy(url, tabId);
+      return;
+    }
+    setTabs(prev => prev.map(tab => tab.id === tabId ? {
+      ...tab, url, isLoading: true, title: "Loading...", error: null,
+    } : tab));
+  }, [fetchViaProxy, performWebSearch]);
 
   const goBack = useCallback(() => {
     if (activeTab.historyIndex > 0) {
       const newIndex = activeTab.historyIndex - 1;
       const prevUrl = activeTab.history[newIndex];
       setTabs(prev => prev.map(tab => tab.id === activeTabId ? {
-        ...tab, url: prevUrl, historyIndex: newIndex, isLoading: true, error: null, title: "Loading...",
+        ...tab, historyIndex: newIndex,
       } : tab));
       setUrlInput(prevUrl);
+      restoreTabView(prevUrl, activeTabId);
     }
-  }, [activeTab, activeTabId]);
+  }, [activeTab, activeTabId, restoreTabView]);
 
   const goForward = useCallback(() => {
     if (activeTab.historyIndex < activeTab.history.length - 1) {
       const newIndex = activeTab.historyIndex + 1;
       const nextUrl = activeTab.history[newIndex];
       setTabs(prev => prev.map(tab => tab.id === activeTabId ? {
-        ...tab, url: nextUrl, historyIndex: newIndex, isLoading: true, error: null, title: "Loading...",
+        ...tab, historyIndex: newIndex,
       } : tab));
       setUrlInput(nextUrl);
+      restoreTabView(nextUrl, activeTabId);
     }
-  }, [activeTab, activeTabId]);
+  }, [activeTab, activeTabId, restoreTabView]);
 
   const handleUrlSubmit = (e: React.FormEvent) => { e.preventDefault(); navigateTo(urlInput); };
 
@@ -525,7 +854,7 @@ export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl, emb
     const newTab = createTab();
     setTabs(prev => [...prev, newTab]);
     setActiveTabId(newTab.id);
-    setUrlInput(DEFAULT_HOME);
+    setUrlInput(SHADOW_HOME);
     setTimeout(() => urlInputRef.current?.focus(), 100);
   };
 
@@ -624,63 +953,6 @@ export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl, emb
       id: crypto.randomUUID(), url: activeTab.url, filename: `screenshot-${Date.now()}.png`,
       status: "complete", progress: 100, timestamp: new Date(),
     }, ...prev]);
-  };
-
-  const fetchViaProxy = async () => {
-    setIsProxyLoading(true);
-    setProxyHtml(null);
-    setFirecrawlData(null);
-    try {
-      // Use Firecrawl for rich rendering (screenshot + markdown)
-      const { data, error } = await supabase.functions.invoke('firecrawl-scrape', {
-        body: {
-          url: activeTab.url,
-          options: { formats: ['markdown', 'screenshot', 'links'], onlyMainContent: false },
-        },
-      });
-
-      if (error) throw new Error(error.message);
-
-      const scrapeData = data?.data || data;
-      const screenshot = scrapeData?.screenshot;
-      const markdown = scrapeData?.markdown;
-      const title = scrapeData?.metadata?.title;
-      const links = scrapeData?.links;
-
-      if (screenshot || markdown) {
-        setFirecrawlData({ screenshot, markdown, title, links });
-        setTabs(prev => prev.map(tab => tab.id === activeTabId ? {
-          ...tab, error: null, isLoading: false, title: title || tab.title,
-        } : tab));
-        toast({ title: "Page loaded via cloud browser", description: title || getDomainFromUrl(activeTab.url) });
-      } else {
-        // Fallback to old proxy
-        const headers = await getAuthHeaders();
-        const response = await fetchAIWithRetry(
-          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/web-proxy`,
-          {
-            method: "POST", headers,
-            body: stringifyChatBody({ url: activeTab.url, mode: "proxy" }),
-          },
-          1, 20000
-        );
-        const proxyData = await response.json();
-        if (proxyData.success && proxyData.html) {
-          setProxyHtml(proxyData.html);
-          setTabs(prev => prev.map(tab => tab.id === activeTabId ? {
-            ...tab, error: null, isLoading: false, title: proxyData.title || tab.title,
-          } : tab));
-          toast({ title: "Page loaded via proxy", description: proxyData.title || getDomainFromUrl(activeTab.url) });
-        } else {
-          toast({ title: "Could not load page", description: proxyData.error || "Failed to fetch", variant: "destructive" });
-        }
-      }
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Request failed";
-      toast({ title: "Load error", description: msg, variant: "destructive" });
-    } finally {
-      setIsProxyLoading(false);
-    }
   };
 
   const enableReadingMode = async () => {
@@ -783,7 +1055,7 @@ export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl, emb
   useEffect(() => {
     if (browseTogetherEnabled && autoAnalyze && activeTab?.url && activeTab.url !== lastAnalyzedUrl.current && !activeTab.error) {
       const timer = setTimeout(() => {
-        if (activeTab.url !== DEFAULT_HOME && !activeTab.url.includes("duckduckgo.com/?q=")) {
+        if (!isShadowHome(activeTab.url) && !getShadowSearchQuery(activeTab.url)) {
           analyzePageForBrowseTogether();
           lastAnalyzedUrl.current = activeTab.url;
         }
@@ -797,7 +1069,7 @@ export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl, emb
   };
 
   const analyzePageForBrowseTogether = async () => {
-    if (!activeTab?.url || activeTab.url === DEFAULT_HOME) return;
+    if (!activeTab?.url || isShadowHome(activeTab.url) || getShadowSearchQuery(activeTab.url)) return;
     setIsAIThinking(true);
     addBrowseMessage({ role: "system", content: `📍 Now viewing: ${activeTab.title || getDomainFromUrl(activeTab.url)}` });
     try {
@@ -821,7 +1093,7 @@ export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl, emb
           if (parsed.insights) setPageInsights(parsed.insights);
           if (parsed.relatedTopics) {
             setRelatedContent(parsed.relatedTopics.map((t: { title: string; searchQuery: string }) => ({
-              title: t.title, url: `https://duckduckgo.com/?q=${encodeURIComponent(t.searchQuery)}`, relevance: "Related",
+              title: t.title, url: toShadowSearchUrl(t.searchQuery), relevance: "Related",
             })));
           }
           if (parsed.suggestedQuestions?.[0]) addBrowseMessage({ role: "ai", content: parsed.suggestedQuestions[0], type: "suggestion" });
@@ -1016,7 +1288,7 @@ export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl, emb
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-lg" onClick={() => navigateTo(DEFAULT_HOME)}>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-lg" onClick={() => navigateTo(SHADOW_HOME)}>
                 <Home className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
@@ -1458,7 +1730,7 @@ export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl, emb
         {/* Browser Content */}
         <div className={`flex-1 bg-white dark:bg-zinc-900 relative ${splitView ? "flex" : ""}`}>
           <div className={splitView ? "flex-1 relative" : "absolute inset-0"}>
-            {activeTab.isLoading && !activeTab.error && (
+            {activeTab.isLoading && !activeTab.error && !isShadowHome(activeTab.url) && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 bg-background/90 backdrop-blur-sm flex items-center justify-center z-10">
                 <div className="flex flex-col items-center gap-4">
                   <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center shadow-lg shadow-primary/20">
@@ -1473,7 +1745,22 @@ export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl, emb
               {readingMode && <ReadingModeOverlay content={readingContent} onClose={() => setReadingMode(false)} />}
             </AnimatePresence>
 
-            {!activeTab.error && !proxyHtml && !firecrawlData && (
+            {isShadowHome(activeTab.url) && getShadowSearchQuery(activeTab.url) === null && !activeTab.error && (
+              <ShadowHomePage onSearch={(query) => navigateTo(query)} />
+            )}
+
+            {getShadowSearchQuery(activeTab.url) !== null && !activeTab.error && (
+              <ShadowSearchResults
+                query={searchResultsQuery || getShadowSearchQuery(activeTab.url) || ""}
+                results={searchResults}
+                isLoading={isWebSearching || activeTab.isLoading}
+                onResultClick={(resultUrl) => navigateTo(resultUrl)}
+                onNewSearch={(query) => navigateTo(query)}
+              />
+            )}
+
+            {!activeTab.error && !proxyHtml && !firecrawlData
+              && !isShadowHome(activeTab.url) && getShadowSearchQuery(activeTab.url) === null && (
               <iframe ref={iframeRef} src={activeTab.url} className="w-full h-full border-0"
                 onLoad={handleIframeLoad} onError={handleIframeError}
                 sandbox="allow-same-origin allow-scripts allow-popups allow-forms" title="Browser" />
@@ -1490,7 +1777,7 @@ export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl, emb
                     <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] rounded" onClick={() => window.open(activeTab.url, "_blank")}>
                       <ExternalLink className="h-3 w-3 mr-1" /> Open Original
                     </Button>
-                    <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] rounded" onClick={() => { setFirecrawlData(null); navigateTo(DEFAULT_HOME); }}>
+                    <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] rounded" onClick={() => { setFirecrawlData(null); navigateTo(SHADOW_HOME); }}>
                       <X className="h-3 w-3 mr-1" /> Close
                     </Button>
                   </div>
@@ -1528,7 +1815,7 @@ export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl, emb
                     <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] rounded" onClick={() => window.open(activeTab.url, "_blank")}>
                       <ExternalLink className="h-3 w-3 mr-1" /> Open Original
                     </Button>
-                    <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] rounded" onClick={() => { setProxyHtml(null); navigateTo(DEFAULT_HOME); }}>
+                    <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] rounded" onClick={() => { setProxyHtml(null); navigateTo(SHADOW_HOME); }}>
                       <X className="h-3 w-3 mr-1" /> Close
                     </Button>
                   </div>
@@ -1547,8 +1834,8 @@ export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl, emb
                 <ErrorOverlay error={activeTab.error} url={activeTab.url}
                   onRetry={() => { setProxyHtml(null); setFirecrawlData(null); navigateTo(activeTab.url); }}
                   onOpenExternal={() => window.open(activeTab.url, "_blank")}
-                  onGoHome={() => { setProxyHtml(null); setFirecrawlData(null); navigateTo(DEFAULT_HOME); }}
-                  onViewViaProxy={fetchViaProxy}
+                  onGoHome={() => { setProxyHtml(null); setFirecrawlData(null); navigateTo(SHADOW_HOME); }}
+                  onViewViaProxy={() => fetchViaProxy(activeTab.url)}
                   isProxyLoading={isProxyLoading}
                 />
               )}
