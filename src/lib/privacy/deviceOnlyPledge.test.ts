@@ -3,9 +3,12 @@ import {
   canUseCloudAI,
   ensureDeviceOnlyPledgeDefaults,
   hasCloudOptIn,
+  hasInterimCloudConsent,
   isDeviceOnlyPledgeActive,
+  needsInterimCloudChoice,
   setCloudOptIn,
   setDeviceOnlyPledgeActive,
+  setInterimCloudConsent,
   shouldPersistChatToCloud,
 } from "./deviceOnlyPledge";
 
@@ -33,5 +36,13 @@ describe("deviceOnlyPledge", () => {
     setCloudOptIn(true);
     setDeviceOnlyPledgeActive(true);
     expect(canUseCloudAI()).toBe(false);
+  });
+
+  it("allows interim cloud while no local model is ready", () => {
+    ensureDeviceOnlyPledgeDefaults();
+    setInterimCloudConsent(true);
+    expect(hasInterimCloudConsent()).toBe(true);
+    expect(canUseCloudAI()).toBe(true);
+    expect(needsInterimCloudChoice()).toBe(false);
   });
 });

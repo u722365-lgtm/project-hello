@@ -116,7 +116,7 @@ export function PrivacyDataCard() {
             <div>
               <p className="font-medium text-sm">Device-only pledge</p>
               <p className="text-xs text-muted-foreground max-w-md">
-                Your data never leaves your device. Chat, IDE, and agents stay local — we cannot read your workspace or messages.
+                Your data never leaves your device once a local model is loaded. Until then, chat offers a clear choice to use cloud AI temporarily while the model downloads.
               </p>
             </div>
           </div>

@@ -34,8 +34,11 @@ function withSystemPrompt(messages: RouterMessage[], personality: string): Route
 export function getBasicOfflineFallback(prompt: string): string {
   const normalized = prompt.toLowerCase().trim();
 
-  if (/^(hi|hello|hey|greetings)/i.test(normalized)) {
-    return "Hello! I'm in offline mode. Download an on-device model in Profile → Offline AI for full local chat.";
+  if (/^(hi|hello|hey|greetings|bro|yo|sup)/i.test(normalized)) {
+    return (
+      "Hi! Device-only mode is on and no on-device model is loaded yet.\n\n" +
+      "Choose **Use cloud AI until my model is ready** in the prompt above, or open **Profile → Offline AI** to download a model (~1–3 GB)."
+    );
   }
   if (/help|what can you do/i.test(normalized)) {
     return (
@@ -85,9 +88,10 @@ export function getBasicOfflineFallback(prompt: string): string {
   }
 
   return (
-    "I'm offline and no on-device model is loaded yet.\n\n" +
-    "Open **Profile → Offline AI** to download a model (~1–3 GB, one-time). " +
-    "Your message will work fully once the model is ready."
+    "Device-only mode is active but your on-device model isn't loaded yet.\n\n" +
+    "• **Use cloud AI until ready** — pick this in the chat prompt (temporary)\n" +
+    "• **Profile → Offline AI** — download a model (~1–3 GB, one-time)\n\n" +
+    "Once the model finishes downloading, it loads automatically and chat runs fully on-device."
   );
 }
 

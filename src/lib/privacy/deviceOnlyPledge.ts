@@ -1,14 +1,20 @@
 /**
  * Device-only privacy pledge — "Your data never leaves your device."
- * Default ON. Cloud AI and cloud chat persistence require explicit opt-in.
+ * Default ON. Cloud AI requires full opt-in OR interim consent while no local model is ready.
  */
+
+import { isLocalInferenceReady } from "./localInferenceReady";
 
 const PLEDGE_KEY = "shadowtalk_device_only_pledge";
 const CLOUD_OPT_IN_KEY = "shadowtalk_cloud_opt_in_acknowledged";
+const INTERIM_CLOUD_KEY = "shadowtalk_interim_cloud_until_local_ready";
 const ROUTING_PREF_KEY = "shadowtalk_offline_pref";
 
 export const DEVICE_ONLY_BLOCKED_MESSAGE =
-  "Device-only mode is on: your data stays on this device. Load an on-device model (Settings → Offline AI) or explicitly opt in to cloud features in Privacy settings.";
+  "Device-only mode is on: your data stays on this device. Allow cloud AI while your model downloads, load an on-device model (Profile → Offline AI), or opt in to cloud in Privacy settings.";
+
+export const INTERIM_CLOUD_DECLINED_MESSAGE =
+  "Choose how to chat: allow cloud AI until your on-device model is ready, or download a model in Profile → Offline AI.";
 
 /** Initialize defaults on first visit — pledge active, routing local-only. */
 export function ensureDeviceOnlyPledgeDefaults(): void {
@@ -57,16 +63,61 @@ export function setCloudOptIn(acknowledged: boolean): void {
   if (acknowledged) {
     localStorage.setItem(CLOUD_OPT_IN_KEY, "true");
     localStorage.setItem(PLEDGE_KEY, "false");
+    localStorage.removeItem(INTERIM_CLOUD_KEY);
   } else {
     localStorage.removeItem(CLOUD_OPT_IN_KEY);
     localStorage.setItem(PLEDGE_KEY, "true");
     localStorage.setItem(ROUTING_PREF_KEY, "local-only");
+    localStorage.removeItem(INTERIM_CLOUD_KEY);
   }
+}
+
+/**
+ * User allows cloud AI temporarily while the on-device model downloads or loads.
+ * Revoked automatically once local inference is ready.
+ */
+export function hasInterimCloudConsent(): boolean {
+  try {
+    return localStorage.getItem(INTERIM_CLOUD_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
+export function setInterimCloudConsent(allowed: boolean): void {
+  if (allowed) {
+    localStorage.setItem(INTERIM_CLOUD_KEY, "true");
+    localStorage.setItem(ROUTING_PREF_KEY, "auto");
+  } else {
+    localStorage.removeItem(INTERIM_CLOUD_KEY);
+    if (isDeviceOnlyPledgeActive() && !hasCloudOptIn()) {
+      localStorage.setItem(ROUTING_PREF_KEY, "local-only");
+    }
+  }
+}
+
+/** Call when Gemma/SmolLM finishes loading — switch back to local-only routing. */
+export function onLocalModelReady(): void {
+  localStorage.removeItem(INTERIM_CLOUD_KEY);
+  if (isDeviceOnlyPledgeActive() && !hasCloudOptIn()) {
+    localStorage.setItem(ROUTING_PREF_KEY, "local-only");
+  }
+}
+
+export function needsInterimCloudChoice(): boolean {
+  return (
+    isDeviceOnlyPledgeActive() &&
+    !hasCloudOptIn() &&
+    !hasInterimCloudConsent() &&
+    !isLocalInferenceReady()
+  );
 }
 
 /** Cloud LLM / agent APIs (Jules, chat edge function, etc.) */
 export function canUseCloudAI(): boolean {
-  return !isDeviceOnlyPledgeActive() || hasCloudOptIn();
+  if (!isDeviceOnlyPledgeActive() || hasCloudOptIn()) return true;
+  if (hasInterimCloudConsent() && !isLocalInferenceReady()) return true;
+  return false;
 }
 
 /** Supabase messages/conversations — operator-visible unless E2EE-only client storage */

@@ -274,22 +274,9 @@ const App = () => {
       const cleanupChrome = () => window.cancelIdleCallback(chromeId);
 
       const resumeOffline = () => {
-        if (localStorage.getItem('shadowtalk_offline_autoresume') !== '1') return;
-        void (async () => {
-          try {
-            const [{ getGemmaEngine }, { getPreferredLocalModel }, { requestPersistentStorage }] =
-              await Promise.all([
-                import('@/lib/offline/gemmaEngine'),
-                import('@/lib/offline/hybridRouter'),
-                import('@/lib/offline/opfsModelStore'),
-              ]);
-            await requestPersistentStorage();
-            const key = getPreferredLocalModel() as Parameters<ReturnType<typeof getGemmaEngine>['load']>[0];
-            getGemmaEngine().load(key).catch((e) => console.warn('[Offline] auto-resume failed', e));
-          } catch (e) {
-            console.warn('[Offline] auto-resume bootstrap failed', e);
-          }
-        })();
+        void import('@/lib/offline/bootstrapLocalModel').then(({ bootstrapCachedLocalModel }) =>
+          bootstrapCachedLocalModel().catch((e) => console.warn('[Offline] bootstrap failed', e)),
+        );
       };
 
       const offlineId = window.requestIdleCallback(resumeOffline, { timeout: 12000 });
