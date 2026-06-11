@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
+import { connectIntegration } from '@/lib/integrationOAuth';
 
 interface GoogleIntegrationPanelProps {
   isOpen: boolean;
@@ -77,53 +78,23 @@ export const GoogleIntegrationPanel: React.FC<GoogleIntegrationPanelProps> = ({
     }
   };
 
-  const handleConnect = async (serviceId: string) => {
-    setIsConnecting(serviceId);
-    
+  const handleConnect = async (_serviceId: string) => {
+    setIsConnecting(_serviceId);
+
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast({ title: 'Please sign in first', variant: 'destructive' });
+      const result = await connectIntegration('google', 'both');
+      if (result.ok) {
+        setServices(prev => prev.map(s => ({
+          ...s, connected: true, lastSync: new Date().toISOString(),
+        })));
+        toast({ title: 'Google Connected!', description: 'All Google services are now linked.' });
         setIsConnecting(null);
-        return;
+      } else if (!result.redirecting) {
+        toast({ title: 'Connection Failed', description: result.error, variant: 'destructive' });
+        setIsConnecting(null);
       }
-
-      // Initiate real OAuth flow
-      const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/oauth-initiate`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`
-        },
-        body: JSON.stringify({ provider: "google", scope: "both" })
-      });
-
-      const data = await resp.json();
-      
-      if (data.authUrl) {
-        // Open OAuth popup
-        const popup = window.open(data.authUrl, 'google-auth', 'width=500,height=600');
-        
-        // Listen for OAuth completion
-        const handleMessage = (event: MessageEvent) => {
-          if (event.data?.type === 'oauth-success') {
-            setServices(prev => prev.map(s => ({
-              ...s, connected: true, lastSync: new Date().toISOString()
-            })));
-            toast({ title: 'Google Connected!', description: 'All Google services are now linked.' });
-            window.removeEventListener('message', handleMessage);
-          } else if (event.data?.type === 'oauth-error') {
-            toast({ title: 'Connection Failed', description: event.data.error, variant: 'destructive' });
-            window.removeEventListener('message', handleMessage);
-          }
-        };
-        window.addEventListener('message', handleMessage);
-      } else {
-        toast({ title: 'Connection Failed', description: data.error || 'Could not start OAuth flow', variant: 'destructive' });
-      }
-    } catch (error) {
+    } catch {
       toast({ title: 'Connection Failed', description: 'Please try again later.', variant: 'destructive' });
-    } finally {
       setIsConnecting(null);
     }
   };

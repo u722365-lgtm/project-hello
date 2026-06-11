@@ -226,19 +226,21 @@ export const PerceptionDashboard = ({ onEventSelect, onProactiveSuggestion }: Pe
                   void connectIntegration("google", "both").then((result) => {
                     if (result.ok) {
                       toast({ title: "Google connected", description: "Gmail, Calendar, and Drive are linked." });
-                    } else {
+                      setConnecting(false);
+                    } else if (!result.redirecting) {
                       toast({
                         title: "Could not connect Google",
                         description: result.error,
                         variant: "destructive",
                       });
+                      setConnecting(false);
                     }
-                  }).finally(() => setConnecting(false));
+                  }).catch(() => setConnecting(false));
                 }}
-                className="gap-2"
+                className="gap-2 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/15 text-foreground shadow-none"
               >
                 {connecting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
-                Connect Google
+                {connecting ? "Redirecting to Google…" : "Connect Google"}
               </Button>
             </div>
           )}

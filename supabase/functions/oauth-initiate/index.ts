@@ -20,8 +20,13 @@ const GOOGLE_SCOPES = {
   ].join(" "),
 };
 
-function buildAuthUrl(provider: OAuthProvider, userId: string, scopeKey: string): string | null {
-  const state = btoa(JSON.stringify({ userId, provider, scope: scopeKey }));
+function buildAuthUrl(
+  provider: OAuthProvider,
+  userId: string,
+  scopeKey: string,
+  returnTo?: string,
+): string | null {
+  const state = btoa(JSON.stringify({ userId, provider, scope: scopeKey, returnTo }));
 
   if (provider === "google") {
     const clientId = Deno.env.get("GOOGLE_OAUTH_CLIENT_ID");
@@ -128,9 +133,9 @@ Deno.serve(async (req) => {
     const auth = await requireAuth(req, corsHeaders);
     if (!auth.authenticated) return auth.response;
 
-    let body: { provider?: string; scope?: string };
+    let body: { provider?: string; scope?: string; returnTo?: string };
     try {
-      body = (await req.json()) as { provider?: string; scope?: string };
+      body = (await req.json()) as { provider?: string; scope?: string; returnTo?: string };
     } catch {
       return new Response(
         JSON.stringify({ error: "Invalid JSON body", message: "Send { provider, scope? }" }),
@@ -148,7 +153,11 @@ Deno.serve(async (req) => {
     }
 
     const scopeKey = body.scope || (oauthProvider === "google" ? "both" : "default");
-    const authUrl = buildAuthUrl(oauthProvider, auth.userId, scopeKey);
+    const returnTo =
+      typeof body.returnTo === "string" && body.returnTo.startsWith("/")
+        ? body.returnTo.slice(0, 512)
+        : undefined;
+    const authUrl = buildAuthUrl(oauthProvider, auth.userId, scopeKey, returnTo);
 
     if (!authUrl) {
       return new Response(

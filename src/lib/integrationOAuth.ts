@@ -2,25 +2,34 @@ import { supabase } from "@/integrations/supabase/client";
 
 export type IntegrationProvider = "google" | "github" | "slack" | "notion";
 
-export type OAuthPopupResult =
+export type OAuthConnectResult =
   | { ok: true; provider: IntegrationProvider }
-  | { ok: false; error: string };
+  | { ok: false; error: string; redirecting?: boolean };
 
 const REDIRECT_PATH = "/profile?tab=linked";
+
+/** Google OAuth popups fail under COOP same-origin (ERR_BLOCKED_BY_RESPONSE). */
+const REDIRECT_PROVIDERS: IntegrationProvider[] = ["google"];
 
 export function getLinkedProfileUrl(): string {
   return `${window.location.origin}${REDIRECT_PATH}`;
 }
 
-/** Start OAuth popup for workspace integrations (Gmail, GitHub, Slack, Notion). */
+function getOAuthReturnPath(): string {
+  return `${window.location.pathname}${window.location.search}`;
+}
+
+/** Start OAuth for workspace integrations (Gmail, GitHub, Slack, Notion). */
 export async function connectIntegration(
   provider: IntegrationProvider,
   scope?: string,
-): Promise<OAuthPopupResult> {
+): Promise<OAuthConnectResult> {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) {
     return { ok: false, error: "Sign in required" };
   }
+
+  const returnTo = getOAuthReturnPath();
 
   const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/oauth-initiate`, {
     method: "POST",
@@ -28,7 +37,7 @@ export async function connectIntegration(
       "Content-Type": "application/json",
       Authorization: `Bearer ${session.access_token}`,
     },
-    body: JSON.stringify({ provider, scope: scope ?? "default" }),
+    body: JSON.stringify({ provider, scope: scope ?? "default", returnTo }),
   });
 
   const data = (await resp.json()) as { authUrl?: string; error?: string; message?: string };
@@ -39,14 +48,21 @@ export async function connectIntegration(
     };
   }
 
+  if (REDIRECT_PROVIDERS.includes(provider)) {
+    sessionStorage.setItem("shadowtalk_oauth_return", returnTo);
+    window.location.assign(data.authUrl);
+    return { ok: false, error: "Redirecting to Google…", redirecting: true };
+  }
+
   return openOAuthPopup(data.authUrl, provider);
 }
 
-export function openOAuthPopup(authUrl: string, provider: IntegrationProvider): Promise<OAuthPopupResult> {
+export function openOAuthPopup(authUrl: string, provider: IntegrationProvider): Promise<OAuthConnectResult> {
   return new Promise((resolve) => {
-    const popup = window.open(authUrl, `${provider}-oauth`, "width=520,height=720");
+    const popup = window.open(authUrl, `${provider}-oauth`, "width=520,height=720,noopener");
     if (!popup) {
-      resolve({ ok: false, error: "Popup blocked — allow popups for this site" });
+      window.location.assign(authUrl);
+      resolve({ ok: false, error: "Redirecting for authorization…", redirecting: true });
       return;
     }
 

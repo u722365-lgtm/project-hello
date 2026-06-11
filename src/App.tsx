@@ -28,6 +28,7 @@ import { BackToHomeButton } from "@/components/BackToHomeButton";
 import { useReferralCapture } from "./hooks/useReferralTracking";
 import PersistedAuthRedirect from "@/components/PersistedAuthRedirect";
 import WorkspacePathRemember from "@/components/WorkspacePathRemember";
+import { OAuthReturnHandler } from "@/components/OAuthReturnHandler";
 
 export const CommandPaletteContext = createContext<{ open: () => void }>({ open: () => {} });
  // Critical path pages - loaded immediately
@@ -323,6 +324,7 @@ const App = () => {
                    <SitePageShell>
                      <GlobalScrollReveal />
                      <PersistedAuthRedirect />
+                     <OAuthReturnHandler />
                      <WorkspacePathRemember />
                       <NotificationPermissionRequester />
                      <Suspense fallback={null}>
