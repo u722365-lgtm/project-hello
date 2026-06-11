@@ -7,8 +7,10 @@ import {
   FileText, File, ChevronRight, ChevronDown,
   Columns, Monitor, Smartphone, Tablet,
   Palette, Zap, GitBranch, Package, RefreshCw,
-  ExternalLink, Split, ArrowRight, Wand2
+  ExternalLink, Split, ArrowRight, Wand2, Bot
 } from "lucide-react";
+import { JulesPanel } from "@/components/ide/JulesPanel";
+import type { ParsedFileChange } from "@/lib/jules/types";
 import { Button } from "@/components/ui/button";
 // Tabs removed - using conditional rendering for full-height panels
 import { useToast } from "@/hooks/use-toast";
@@ -52,7 +54,7 @@ interface PersonalIDEProps {
   initialProject?: IDEInitialProject;
   onClose: () => void;
   /** Which bottom panel to show first (e.g. preview for HTML from chat). */
-  defaultOutputPanel?: "console" | "preview" | "terminal";
+  defaultOutputPanel?: "console" | "preview" | "terminal" | "jules";
 }
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -201,7 +203,7 @@ export const PersonalIDE = ({
   const [isRunning, setIsRunning] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(true);
   const [showExplorer, setShowExplorer] = useState(false);
-  const [outputPanel, setOutputPanel] = useState<"console" | "preview" | "terminal">(
+  const [outputPanel, setOutputPanel] = useState<"console" | "preview" | "terminal" | "jules">(
     defaultOutputPanel,
   );
   const [theme, setTheme] = useState("vs-dark");
@@ -263,6 +265,25 @@ export const PersonalIDE = ({
   }, []);
 
   const clearConsole = useCallback(() => setConsoleLogs([]), []);
+
+  const applyJulesChanges = useCallback((changes: ParsedFileChange[]) => {
+    setFiles((prev) => {
+      const next = [...prev];
+      for (const change of changes) {
+        const basename = change.path.split("/").pop() ?? change.path;
+        const idx = next.findIndex((f) => f.name === change.path || f.name === basename);
+        if (idx >= 0) {
+          next[idx] = { ...next[idx], content: change.content, isModified: true };
+        } else {
+          const lang = LANG_MAP[basename.split(".").pop() || ""] || "plaintext";
+          next.push(createFile(basename, lang, change.content));
+        }
+      }
+      return next;
+    });
+    addLog("system", `✅ Jules applied ${changes.length} file change${changes.length === 1 ? "" : "s"}`);
+    toast({ title: `Jules applied ${changes.length} file${changes.length === 1 ? "" : "s"}` });
+  }, [addLog, toast]);
 
   // ─── Execution ────────────────────────────────────────────────────────────
 
@@ -589,6 +610,17 @@ export const PersonalIDE = ({
         </div>
 
         <div className="flex items-center gap-1">
+          <Button
+            variant={outputPanel === "jules" ? "secondary" : "ghost"}
+            size="sm"
+            onClick={() => setOutputPanel("jules")}
+            className="h-7 px-2 gap-1 text-xs text-violet-400"
+            title="Google Jules autonomous agent"
+          >
+            <Bot className="h-3 w-3" />
+            <span className="hidden sm:inline">Jules</span>
+          </Button>
+
           {/* AI Assist with dropdown */}
           <div className="relative">
             <Button variant="ghost" size="sm" onClick={handleAIAssist} disabled={isAIAssisting} className="h-7 px-2 gap-1 text-xs">
@@ -888,6 +920,9 @@ export const PersonalIDE = ({
                   <Button variant={outputPanel === "terminal" ? "secondary" : "ghost"} size="sm" onClick={() => setOutputPanel("terminal")} className="text-xs gap-1 h-6 px-2">
                     <Terminal className="h-3 w-3" /> Terminal
                   </Button>
+                  <Button variant={outputPanel === "jules" ? "secondary" : "ghost"} size="sm" onClick={() => setOutputPanel("jules")} className="text-xs gap-1 h-6 px-2 text-violet-400">
+                    <Bot className="h-3 w-3" /> Jules
+                  </Button>
                 </div>
                 <div className="flex items-center gap-1">
                   {outputPanel === "preview" && previewHtml && (
@@ -979,6 +1014,14 @@ export const PersonalIDE = ({
                       />
                     </div>
                   </div>
+                )}
+
+                {outputPanel === "jules" && (
+                  <JulesPanel
+                    files={files.map((f) => ({ name: f.name, content: f.content, language: f.language }))}
+                    activeFileName={activeFile?.name}
+                    onApplyChanges={applyJulesChanges}
+                  />
                 )}
               </div>
             </div>
