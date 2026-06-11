@@ -25,7 +25,11 @@
     "video:voiceover:all": "node scripts/generate-viral-voiceover.mjs privacy developer student",
     "video:studio": "cd remotion && npm run studio",
     "video:render": "npm run video:voiceover && cd remotion && npm run render",
-    "video:render:all": "node scripts/render-viral-videos.mjs"
+    "video:render:all": "node scripts/render-viral-videos.mjs",
+    "cli:install": "cd cli && npm install",
+    "cli:build": "cd cli && npm run build",
+    "cli:dev": "cd cli && npm run dev",
+    "cli:test": "cd cli && npm test"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.73.0",
