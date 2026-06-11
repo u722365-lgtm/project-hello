@@ -13,6 +13,7 @@ import {
   isSovereignModeEnabled,
   shouldPreferOllamaInference,
 } from "@/lib/desktop/sovereignMode";
+import { canUseCloudAI } from "@/lib/privacy/deviceOnlyPledge";
 import { isShadowTalkDesktop } from "@/lib/desktopBridge";
 import { isAnyLocalModelReady } from "./localChat";
 import {
@@ -89,7 +90,7 @@ export function decideRoute(
   messages: RouterMessage[],
   isOnline: boolean,
 ): RoutingDecision {
-  const mode = getRoutingMode();
+  const mode = canUseCloudAI() ? getRoutingMode() : "local-only";
   const sovereignMode = isSovereignModeEnabled();
   const sovereignRouting = isShadowTalkDesktop() ? getSovereignRoutingMode() : null;
   const ollamaReady = isOllamaInferenceReady();
@@ -116,7 +117,7 @@ export function decideRoute(
     }
   }
 
-  if (mode === "cloud-only" || sovereignRouting === "cloud-only") {
+  if ((mode === "cloud-only" || sovereignRouting === "cloud-only") && canUseCloudAI()) {
     return { target: "cloud", reason: "User forced cloud-only mode" };
   }
 
@@ -124,7 +125,7 @@ export function decideRoute(
     if (ollamaReady) return localDecision("Offline — Ollama on-device AI", "ollama");
     if (browserLocalReady) return localDecision("Offline — browser on-device AI", "browser");
     return {
-      target: "cloud",
+      target: "local",
       reason: "Offline but no local model — install Ollama or download a browser model",
       backend: "none",
     };
@@ -133,13 +134,15 @@ export function decideRoute(
   if (mode === "local-only") {
     if (localBackend !== "none") {
       return localDecision(
-        localBackend === "ollama" ? "Local-only — Ollama" : "User forced local-only mode",
+        localBackend === "ollama" ? "Local-only — Ollama" : "Device-only pledge — on-device AI",
         localBackend,
       );
     }
     return {
-      target: "cloud",
-      reason: "Local model not loaded yet — falling back to cloud this time",
+      target: "local",
+      reason: canUseCloudAI()
+        ? "Local model not loaded yet — load Offline AI in Settings"
+        : "Device-only pledge — load an on-device model (Settings → Offline AI)",
       backend: "none",
     };
   }
@@ -171,6 +174,14 @@ export function decideRoute(
     return {
       target: "cloud",
       reason: "Cloud turbo — fastest on this device for quality responses",
+    };
+  }
+
+  if (!canUseCloudAI()) {
+    return {
+      target: "local",
+      reason: "Device-only pledge — cloud AI blocked. Load an on-device model.",
+      backend: "none",
     };
   }
 

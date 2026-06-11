@@ -1,28 +1,9 @@
-import { supabase } from "@/integrations/supabase/client";
+import { assertCloudAllowed } from "@/lib/privacy/deviceOnlyPledge";
 import type { JulesActivity, JulesSession, JulesSource } from "./types";
 
-const FN_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/jules-agent`;
-
-async function authHeaders(): Promise<Record<string, string>> {
-  const { data: { session } } = await supabase.auth.getSession();
-  return {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-  };
-}
-
-async function julesRequest<T>(body: Record<string, unknown>): Promise<T> {
-  const res = await fetch(FN_URL, {
-    method: "POST",
-    headers: await authHeaders(),
-    body: JSON.stringify(body),
-  });
-
-  const data = await res.json();
-  if (!res.ok) {
-    throw new Error(typeof data.error === "string" ? data.error : "Jules request failed");
-  }
-  return data as T;
+async function julesRequest<T>(_body: Record<string, unknown>): Promise<T> {
+  assertCloudAllowed("Jules cloud agent");
+  throw new Error("Jules cloud agent is disabled under the device-only pledge");
 }
 
 export async function verifyJulesApiKey(apiKey: string): Promise<boolean> {

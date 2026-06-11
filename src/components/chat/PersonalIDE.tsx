@@ -20,8 +20,7 @@ import { Input } from "@/components/ui/input";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { supabase } from "@/integrations/supabase/client";
-import { stringifyChatBody } from "@/lib/chatRequest";
+import { runLocalIdeAssist } from "@/lib/ide/localIdeAssist";
 
 const Editor = lazy(() => import("@monaco-editor/react"));
 
@@ -359,52 +358,18 @@ export const PersonalIDE = ({
 
     setIsAIAssisting(true);
     setShowAIMenu(false);
-    addLog("system", `🤖 AI: "${instruction}"`);
+    addLog("system", `🤖 On-device AI: "${instruction}"`);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const systemPrompt = isCodeAction
-        ? `You are a code assistant inside an IDE. The user is editing a ${activeFile.language} file named "${activeFile.name}". Respond ONLY with the updated code. No explanations, no markdown fences. Just the raw code.`
-        : `You are a code assistant. The user is editing a ${activeFile.language} file named "${activeFile.name}". Provide a clear, helpful explanation.`;
+      const workspaceFiles = files.map((f) => ({
+        name: f.name,
+        content: f.content,
+        language: f.language,
+      }));
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
-        body: stringifyChatBody({
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: `${instruction}\n\n${activeFile.content}` },
-          ],
-          personality: "professional",
-          mode: "general",
-        }),
-      });
-
-      if (!response.ok) throw new Error("AI request failed");
-
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
-      let result = "";
-
-      while (reader) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const chunk = decoder.decode(value, { stream: true });
-        for (const line of chunk.split("\n")) {
-          if (line.startsWith("data: ") && line !== "data: [DONE]") {
-            try {
-              const data = JSON.parse(line.slice(6));
-              const text = data.choices?.[0]?.delta?.content;
-              if (text) result += text;
-            } catch {}
-          }
-        }
-      }
-
-      let cleanResult = result.trim();
+      let cleanResult = (
+        await runLocalIdeAssist(instruction, workspaceFiles, activeFile.name, isCodeAction)
+      ).trim();
       const fenceMatch = cleanResult.match(/^```\w*\n([\s\S]*)\n```$/);
       if (fenceMatch) cleanResult = fenceMatch[1];
 
@@ -423,7 +388,7 @@ export const PersonalIDE = ({
     } finally {
       setIsAIAssisting(false);
     }
-  }, [activeFile, addLog, updateFileContent, toast]);
+  }, [activeFile, files, addLog, updateFileContent, toast]);
 
   const handleAIAssist = useCallback(async () => {
     if (!activeFile) return;
@@ -615,10 +580,10 @@ export const PersonalIDE = ({
             size="sm"
             onClick={() => setOutputPanel("jules")}
             className="h-7 px-2 gap-1 text-xs text-violet-400"
-            title="Google Jules autonomous agent"
+            title="On-device code agent — zero cloud upload"
           >
             <Bot className="h-3 w-3" />
-            <span className="hidden sm:inline">Jules</span>
+            <span className="hidden sm:inline">Agent</span>
           </Button>
 
           {/* AI Assist with dropdown */}
@@ -920,8 +885,8 @@ export const PersonalIDE = ({
                   <Button variant={outputPanel === "terminal" ? "secondary" : "ghost"} size="sm" onClick={() => setOutputPanel("terminal")} className="text-xs gap-1 h-6 px-2">
                     <Terminal className="h-3 w-3" /> Terminal
                   </Button>
-                  <Button variant={outputPanel === "jules" ? "secondary" : "ghost"} size="sm" onClick={() => setOutputPanel("jules")} className="text-xs gap-1 h-6 px-2 text-violet-400">
-                    <Bot className="h-3 w-3" /> Jules
+                  <Button variant={outputPanel === "jules" ? "secondary" : "ghost"} size="sm" onClick={() => setOutputPanel("jules")} className="text-xs gap-1 h-6 px-2 text-emerald-400">
+                    <Bot className="h-3 w-3" /> Agent
                   </Button>
                 </div>
                 <div className="flex items-center gap-1">

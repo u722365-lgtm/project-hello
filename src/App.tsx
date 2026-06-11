@@ -20,6 +20,9 @@ import { StealthKillSwitchProvider } from "@/contexts/StealthKillSwitchContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import BootScreen from "@/components/BootScreen";
 import { shouldSkipBootScreen } from "@/lib/skipBootScreen";
+import { ensureDeviceOnlyPledgeDefaults } from "@/lib/privacy/deviceOnlyPledge";
+
+ensureDeviceOnlyPledgeDefaults();
 import CommandPalette from "@/components/CommandPalette";
 import { BackToHomeButton } from "@/components/BackToHomeButton";
 import { useReferralCapture } from "./hooks/useReferralTracking";

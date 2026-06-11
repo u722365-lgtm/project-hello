@@ -84,6 +84,11 @@ import {
   indexSovereignMemory,
 } from "@/lib/desktop/sovereignMemoryRag";
 import { isSovereignModeEnabled } from "@/lib/desktop/sovereignMode";
+import {
+  canUseCloudAI,
+  DEVICE_ONLY_BLOCKED_MESSAGE,
+  shouldPersistChatToCloud,
+} from "@/lib/privacy/deviceOnlyPledge";
 import { runLocalChat, isAnyLocalModelReady } from "@/lib/offline/localChat";
 import type { RouterMessage } from "@/lib/offline/hybridRouter";
 import { decideRoute } from "@/lib/offline/hybridRouter";
@@ -727,6 +732,16 @@ const ChatbotPage = () => {
     if (!user) return currentConversationId;
     if (currentConversationId) return currentConversationId;
 
+    if (!shouldPersistChatToCloud()) {
+      const localId = `local-${crypto.randomUUID()}`;
+      setCurrentConversationId(localId);
+      setConversations((prev) => [
+        { id: localId, title: "Private Chat", created_at: new Date().toISOString() },
+        ...prev,
+      ]);
+      return localId;
+    }
+
     const titleToSave = chatPrivate.active
       ? await chatPrivate.wrapForStorage("New Chat")
       : "New Chat";
@@ -753,7 +768,7 @@ const ChatbotPage = () => {
   };
 
   const saveMessage = async (content: string, role: 'user' | 'assistant', conversationId: string) => {
-    if (!user || !conversationId) return null;
+    if (!user || !conversationId || !shouldPersistChatToCloud()) return null;
 
     const contentToSave = await chatPrivate.wrapForStorage(content);
     const { data } = await supabase
@@ -902,13 +917,13 @@ const ChatbotPage = () => {
               }
               return final;
             }
-            if (isSovereignModeEnabled()) {
-              throw new Error(ollama.error ?? "Ollama chat failed in sovereign mode");
+            if (isSovereignModeEnabled() || !canUseCloudAI()) {
+              throw new Error(ollama.error ?? "Ollama chat failed on-device");
             }
             console.warn("[Chat] Ollama path failed, trying browser/cloud:", ollama.error);
           } catch (e) {
-            if (isSovereignModeEnabled()) {
-              throw e instanceof Error ? e : new Error("Ollama unavailable in sovereign mode");
+            if (isSovereignModeEnabled() || !canUseCloudAI()) {
+              throw e instanceof Error ? e : new Error("Ollama unavailable on-device");
             }
             console.warn("[Chat] Ollama path failed:", e);
           }
@@ -950,18 +965,24 @@ const ChatbotPage = () => {
             }
             return assistantContent || content;
           } catch (e) {
-            if (isSovereignModeEnabled()) {
-              throw e instanceof Error ? e : new Error("Local chat failed in sovereign mode");
+            if (isSovereignModeEnabled() || !canUseCloudAI()) {
+              throw e instanceof Error ? e : new Error("Local chat failed on-device");
             }
             console.warn("[Chat] Local turbo path failed, using cloud:", e);
           }
         }
 
-        if (isSovereignModeEnabled()) {
+        if (isSovereignModeEnabled() || !canUseCloudAI()) {
           throw new Error(
-            "Sovereign mode is on but no local model responded. Install Ollama, pull a model in Settings → Offline AI, then retry.",
+            canUseCloudAI()
+              ? "Sovereign mode is on but no local model responded. Install Ollama, pull a model in Settings → Offline AI, then retry."
+              : DEVICE_ONLY_BLOCKED_MESSAGE,
           );
         }
+      }
+
+      if (!canUseCloudAI()) {
+        throw new Error(DEVICE_ONLY_BLOCKED_MESSAGE);
       }
 
       const chatUrl = getChatFunctionUrl();
