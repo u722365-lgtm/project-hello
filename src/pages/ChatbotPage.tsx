@@ -21,6 +21,9 @@ import { ChatInput } from "@/components/chat/ChatInput";
 import { ChatMessages } from "@/components/chat/ChatMessages";
 import { ConversationSidebar } from "@/components/chat/ConversationSidebar";
 import { ImageGenerator } from "@/components/chat/ImageGenerator";
+import { MusicGenerator } from "@/components/chat/MusicGenerator";
+import { WordleGame } from "@/components/chat/WordleGame";
+import { GoogleIntegrationPanel } from "@/components/chat/GoogleIntegrationPanel";
 import { DeepResearchPanel } from "@/components/chat/DeepResearchPanel";
 import { CommandPalette } from "@/components/chat/CommandPalette";
 
@@ -269,6 +272,11 @@ const ChatbotPage = () => {
   
   // Modals
   const [showImageGenerator, setShowImageGenerator] = useState(false);
+  const [showMusicGenerator, setShowMusicGenerator] = useState(false);
+  const [musicPrompt, setMusicPrompt] = useState("");
+  const [musicAutoGenerate, setMusicAutoGenerate] = useState(false);
+  const [showWordle, setShowWordle] = useState(false);
+  const [showGoogleIntegration, setShowGoogleIntegration] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [showDeepResearch, setShowDeepResearch] = useState(false);
   const [showShadowTalkLive, setShowShadowTalkLive] = useState(false);
@@ -303,6 +311,17 @@ const ChatbotPage = () => {
   useEffect(() => {
     warmHardwareProfile();
     prewarmFastestLocalPath();
+  }, []);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setShowCommandPalette((open) => !open);
+      }
+    };
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
   }, []);
 
   useEffect(() => {
@@ -1446,6 +1465,11 @@ const ChatbotPage = () => {
         if (q) setMessage(q);
       },
       openImageGenerator: () => setShowImageGenerator(true),
+      openMusicGenerator: (prompt?: string) => {
+        setMusicPrompt(prompt ?? "");
+        setMusicAutoGenerate(Boolean(prompt));
+        setShowMusicGenerator(true);
+      },
       openAgenticRunner: (g: string) => goToExecute(g, "general"),
       openBrowser: () => setShowShadowBrowser(true),
       openShadowLive: () => setShowShadowTalkLive(true),
@@ -1775,6 +1799,14 @@ const ChatbotPage = () => {
       case "image":
         setShowImageGenerator(true);
         return;
+      case "music":
+        setMusicPrompt(message.trim());
+        setMusicAutoGenerate(false);
+        setShowMusicGenerator(true);
+        return;
+      case "google":
+        setShowGoogleIntegration(true);
+        return;
       case "voice":
         setShowShadowTalkLive(true);
         return;
@@ -1832,8 +1864,7 @@ const ChatbotPage = () => {
         return;
       }
       case "wordle":
-        setMessage("Let's play Wordle — pick a 5-letter word and give me hints.");
-        toast({ title: "Wordle", description: "Prompt added to the chat input." });
+        setShowWordle(true);
         return;
       case "branching":
         handleNewChat();
@@ -1988,11 +2019,16 @@ const ChatbotPage = () => {
               onOpenGeminiAnalytics={() => navigate("/settings?section=models")}
               onOpenCanvas={() => navigate("/ide")}
               onOpenDeepResearch={() => setShowDeepResearch(true)}
-              onOpenGoogleIntegration={() => navigate("/profile?tab=linked")}
+              onOpenGoogleIntegration={() => setShowGoogleIntegration(true)}
               onOpenAgenticRunner={() => navigate("/execute")}
               onOpenVisualReasoning={() => setShowVisualReasoning(true)}
               onOpenCreativeSynthesis={() => setShowCreativeSynthesis(true)}
               onOpenImageGenerator={() => setShowImageGenerator(true)}
+              onOpenMusicGenerator={() => {
+                setMusicPrompt(message.trim());
+                setMusicAutoGenerate(false);
+                setShowMusicGenerator(true);
+              }}
               onOpenShadowTalkLive={() => setShowShadowTalkLive(true)}
               onOpenBrowser={() => setShowShadowBrowser(true)}
               aiProvider={aiProvider}
@@ -2198,6 +2234,28 @@ const ChatbotPage = () => {
           />
         </ChatMainPanel>
       {showImageGenerator && <ImageGenerator onClose={() => setShowImageGenerator(false)} onImageGenerated={(url) => setMessages(prev => [...prev, { id: crypto.randomUUID(), type: 'ai', content: '🎨 Generated image', timestamp: new Date(), imageUrl: url }])} />}
+      <MusicGenerator
+        isOpen={showMusicGenerator}
+        onClose={() => {
+          setShowMusicGenerator(false);
+          setMusicAutoGenerate(false);
+        }}
+        initialPrompt={musicPrompt}
+        autoGenerate={musicAutoGenerate}
+        onInsertToChat={(content) => {
+          insertAssistantToChat(content);
+          setShowMusicGenerator(false);
+        }}
+      />
+      <WordleGame isOpen={showWordle} onClose={() => setShowWordle(false)} />
+      <GoogleIntegrationPanel
+        isOpen={showGoogleIntegration}
+        onClose={() => setShowGoogleIntegration(false)}
+        onImportContent={(content, source) => {
+          insertAssistantToChat(`**Imported from ${source}**\n\n${content}`);
+          setShowGoogleIntegration(false);
+        }}
+      />
       {showDeepResearch && <DeepResearchPanel isOpen={showDeepResearch} onClose={() => setShowDeepResearch(false)} onInsertToChat={(c) => setMessages(prev => [...prev, { id: crypto.randomUUID(), type: 'ai', content: c, timestamp: new Date() }])} />}
       {showCognitiveLoop && (
         <CognitiveLoopPanel

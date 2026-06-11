@@ -32,6 +32,9 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { parseVCard } from "@/lib/whatsapp/vcardParser";
 import { useNavigate } from "react-router-dom";
+import { canUseCloudAI } from "@/lib/privacy/deviceOnlyPledge";
+import { runLocalChat } from "@/lib/offline/localChat";
+import type { RouterMessage } from "@/lib/offline/hybridRouter";
 
 interface Contact {
   id: string;
@@ -193,31 +196,43 @@ export default function WhatsAppContactsPage() {
     if (!aiPrompt.trim() || !draftTarget) return;
     setAiBusy(true);
     try {
-      const { data, error } = await supabase.functions.invoke("personal-llm-chat", {
-        body: {
-          messages: [
-            {
-              role: "system",
-              content:
-                "You draft short, friendly, professional WhatsApp messages. Output ONLY the message body, no preamble, no quotes. Keep under 350 chars unless asked.",
-            },
-            {
-              role: "user",
-              content: `Recipient: ${draftTarget.name}${draftTarget.notes ? ` (notes: ${draftTarget.notes})` : ""}\n\nDraft a WhatsApp message: ${aiPrompt}`,
-            },
-          ],
+      const messages: RouterMessage[] = [
+        {
+          role: "system",
+          content:
+            "You draft short, friendly, professional WhatsApp messages. Output ONLY the message body, no preamble, no quotes. Keep under 350 chars unless asked.",
         },
-      });
-      if (error) throw error;
-      const txt =
-        (data as any)?.content ??
-        (data as any)?.message ??
-        (data as any)?.text ??
-        "";
+        {
+          role: "user",
+          content: `Recipient: ${draftTarget.name}${draftTarget.notes ? ` (notes: ${draftTarget.notes})` : ""}\n\nDraft a WhatsApp message: ${aiPrompt}`,
+        },
+      ];
+
+      let txt = "";
+      if (canUseCloudAI()) {
+        const { data, error } = await supabase.functions.invoke("chat", {
+          body: { messages, personality: "professional" },
+        });
+        if (error) throw error;
+        txt =
+          typeof data === "string"
+            ? data
+            : (data as { content?: string; message?: string; text?: string; choices?: Array<{ message?: { content?: string } }> })
+                ?.content ??
+              (data as { choices?: Array<{ message?: { content?: string } }> })?.choices?.[0]?.message
+                ?.content ??
+              (data as { message?: string })?.message ??
+              (data as { text?: string })?.text ??
+              "";
+      } else {
+        const { content } = await runLocalChat(messages);
+        txt = content;
+      }
+
       if (txt) setDraftMsg(String(txt).trim());
       else toast.error("AI returned empty draft");
-    } catch (e: any) {
-      toast.error(e.message || "AI draft failed");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "AI draft failed");
     } finally {
       setAiBusy(false);
     }

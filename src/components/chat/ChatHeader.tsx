@@ -3,7 +3,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { 
   Bot, ArrowLeft, Home, LogOut, Settings, Download, Lock, Crown, Star, Zap, Menu, 
-  Search, Image, Play, Eye, Wand2, Compass, FileText, Mic, AudioLines, MoreVertical,
+  Search, Image, Play, Eye, Wand2, Compass, FileText, Mic, AudioLines, MoreVertical, Music,
   LayoutGrid, Sparkles, MessageCircle, Briefcase, Heart, Laugh, Lightbulb,
   Scale, Target, HelpCircle, Share2, Plus, Pin, Mail
 } from "lucide-react";
@@ -75,6 +75,7 @@ interface ChatHeaderProps {
   onOpenDeepResearch: () => void;
   onOpenGoogleIntegration?: () => void;
   onOpenImageGenerator: () => void;
+  onOpenMusicGenerator?: () => void;
   onOpenShadowTalkLive: () => void;
   onOpenAgenticRunner: () => void;
   onOpenVisualReasoning: () => void;
@@ -94,6 +95,8 @@ interface ChatHeaderProps {
 type ToolsHubHandlers = {
   onOpenDeepResearch: () => void;
   onOpenGoogleIntegration?: () => void;
+  onOpenImageGenerator?: () => void;
+  onOpenMusicGenerator?: () => void;
   onOpenAgenticRunner: () => void;
   onOpenVisualReasoning: () => void;
   onOpenCreativeSynthesis: () => void;
@@ -111,6 +114,8 @@ const runTool = (fn: () => void, onClose?: () => void) => () => {
 const ToolsHubMenuContent = ({
   onOpenDeepResearch,
   onOpenGoogleIntegration,
+  onOpenImageGenerator,
+  onOpenMusicGenerator,
   onOpenAgenticRunner,
   onOpenVisualReasoning,
   onOpenCreativeSynthesis,
@@ -138,6 +143,18 @@ const ToolsHubMenuContent = ({
         <Play className="h-4 w-4 text-green-400" />
         <span className="text-[12px] font-semibold">Agentic Runner</span>
       </button>
+      {onOpenImageGenerator && (
+        <button type="button" onClick={runTool(onOpenImageGenerator, onClose)} className="flex flex-col items-start gap-2 p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-transparent hover:border-white/10 transition-all text-left">
+          <Image className="h-4 w-4 text-violet-400" />
+          <span className="text-[12px] font-semibold">Image Studio</span>
+        </button>
+      )}
+      {onOpenMusicGenerator && (
+        <button type="button" onClick={runTool(onOpenMusicGenerator, onClose)} className="flex flex-col items-start gap-2 p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-transparent hover:border-white/10 transition-all text-left">
+          <Music className="h-4 w-4 text-fuchsia-400" />
+          <span className="text-[12px] font-semibold">Music Studio</span>
+        </button>
+      )}
     </div>
     <div className="space-y-1">
       {[
@@ -217,6 +234,7 @@ export const ChatHeader = ({
   onOpenCanvas,
   onOpenDeepResearch,
   onOpenGoogleIntegration,
+  onOpenMusicGenerator,
   onOpenAgenticRunner,
   onOpenVisualReasoning,
   onOpenCreativeSynthesis,
@@ -241,6 +259,8 @@ export const ChatHeader = ({
   const toolsHandlers = {
     onOpenDeepResearch,
     onOpenGoogleIntegration,
+    onOpenImageGenerator,
+    onOpenMusicGenerator,
     onOpenAgenticRunner,
     onOpenVisualReasoning,
     onOpenCreativeSynthesis,
@@ -383,13 +403,7 @@ export const ChatHeader = ({
         <ToolsHubMenu
           open={toolsMenuOpen}
           onOpenChange={onToolsMenuOpenChange}
-          onOpenDeepResearch={onOpenDeepResearch}
-          onOpenAgenticRunner={onOpenAgenticRunner}
-          onOpenVisualReasoning={onOpenVisualReasoning}
-          onOpenCreativeSynthesis={onOpenCreativeSynthesis}
-          onOpenShadowTalkLive={onOpenShadowTalkLive}
-          onOpenBrowser={onOpenBrowser}
-          onOpenCanvas={onOpenCanvas}
+          {...toolsHandlers}
         />
 
         {/* User Profile / Unified Settings */}

@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export interface ShadowToolUIHandlers {
   openImageGenerator: (prompt: string, autoGenerate?: boolean) => void;
+  openMusicGenerator?: (prompt: string, autoGenerate?: boolean) => void;
   openDeepResearch: (query: string, autoResearch?: boolean) => void;
   openShadowBrowser: (url?: string) => void;
   openShadowTalkLive: () => void;
@@ -134,6 +135,8 @@ export function useShadowToolBridge(handlers: ShadowToolUIHandlers) {
         if (result.kind === "ui") {
           if (detection.tool === "image_generator" && detection.params?.prompt) {
             handlers.openImageGenerator(detection.params.prompt, true);
+          } else if (detection.tool === "music_generator") {
+            handlers.openMusicGenerator?.(detection.params?.prompt || message, true);
           } else if (detection.tool === "deep_research" && (detection.params?.query || message)) {
             handlers.openDeepResearch(detection.params?.query || message, true);
           } else {

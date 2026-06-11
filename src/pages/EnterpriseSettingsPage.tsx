@@ -1,6 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/components/AuthProvider";
+import { supabase } from "@/integrations/supabase/client";
+import { SSOProvider } from "@/components/enterprise/SSOProvider";
+import { WhiteLabelBranding } from "@/components/chat/WhiteLabelBranding";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,12 +12,11 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { 
-  ArrowLeft, Shield, Key, Users, Building2, Globe, Lock, CheckCircle2,
-  AlertCircle, Settings, Zap, FileText
+  ArrowLeft, Shield, Users, Building2, Lock, CheckCircle2,
+  AlertCircle, Zap, Palette
 } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
@@ -32,27 +34,47 @@ const EnterpriseSettingsPage = () => {
   const { user, userPlan } = useAuth();
   const { toast } = useToast();
   
-  const [ssoEnabled, setSsoEnabled] = useState(false);
-  const [ssoProvider, setSsoProvider] = useState<string>("");
-  const [samlConfig, setSamlConfig] = useState({ entityId: "", ssoUrl: "", certificate: "", signRequest: true });
-  const [oauthConfig, setOauthConfig] = useState({ clientId: "", clientSecret: "", authorizationUrl: "", tokenUrl: "", scope: "openid profile email" });
+  const [workspaceId, setWorkspaceId] = useState<string | null>(null);
+  const [showBranding, setShowBranding] = useState(false);
   const [mfaRequired, setMfaRequired] = useState(false);
   const [ipWhitelist, setIpWhitelist] = useState("");
   const [sessionTimeout, setSessionTimeout] = useState("60");
   
   const hasEnterpriseAccess = userPlan === 'elite' || userPlan === 'enterprise';
 
-  const handleSaveSSO = () => {
-    try {
-      localStorage.setItem(
-        "shadowtalk_enterprise_sso",
-        JSON.stringify({ ssoEnabled, ssoProvider, samlConfig, oauthConfig }),
-      );
-    } catch {
-      /* ignore */
-    }
-    toast({ title: "SSO Configuration Saved", description: "Your SSO settings have been stored for this workspace." });
-  };
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+
+    const loadWorkspace = async () => {
+      const { data: existing } = await supabase
+        .from("workspaces")
+        .select("id")
+        .eq("owner_id", user.id)
+        .limit(1)
+        .maybeSingle();
+
+      if (cancelled) return;
+      if (existing?.id) {
+        setWorkspaceId(existing.id);
+        return;
+      }
+
+      const slug = `workspace-${user.id.slice(0, 8)}`;
+      const { data: created } = await supabase
+        .from("workspaces")
+        .insert({ owner_id: user.id, name: "My Workspace", slug })
+        .select("id")
+        .single();
+
+      if (!cancelled && created?.id) setWorkspaceId(created.id);
+    };
+
+    void loadWorkspace();
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   const handleSaveSecurity = () => {
     try {
@@ -64,10 +86,6 @@ const EnterpriseSettingsPage = () => {
       /* ignore */
     }
     toast({ title: "Security settings saved", description: "Policies stored for this workspace session." });
-  };
-  const handleTestConnection = () => {
-    toast({ title: "Testing SSO Connection", description: "Attempting to connect..." });
-    setTimeout(() => { toast({ title: "Connection Successful", description: "SSO configuration is valid." }); }, 2000);
   };
 
   if (!user) {
@@ -137,97 +155,21 @@ const EnterpriseSettingsPage = () => {
             <TabsList className="glass-subtle border-border/30">
               <TabsTrigger value="sso" className="gap-2"><Shield className="h-4 w-4" />SSO</TabsTrigger>
               <TabsTrigger value="security" className="gap-2"><Lock className="h-4 w-4" />Security</TabsTrigger>
+              <TabsTrigger value="branding" className="gap-2"><Palette className="h-4 w-4" />Branding</TabsTrigger>
               <TabsTrigger value="team" className="gap-2"><Users className="h-4 w-4" />Team</TabsTrigger>
             </TabsList>
 
             <TabsContent value="sso" className="space-y-6">
               <motion.div custom={0} variants={fadeUp} initial="hidden" animate="visible">
-                <Card className="card-glass overflow-hidden">
-                  <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-                  <CardHeader className="relative z-10">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle className="flex items-center gap-2"><Key className="h-5 w-5 text-primary" />Single Sign-On (SSO)</CardTitle>
-                        <CardDescription>Configure SSO for your organization using SAML 2.0 or OAuth 2.0</CardDescription>
-                      </div>
-                      <Switch checked={ssoEnabled} onCheckedChange={setSsoEnabled} disabled={!hasEnterpriseAccess} />
-                    </div>
-                  </CardHeader>
-                  {ssoEnabled && (
-                    <CardContent className="space-y-6 relative z-10">
-                      <div className="space-y-4">
-                        <Label>Identity Provider</Label>
-                        <Select value={ssoProvider} onValueChange={setSsoProvider}>
-                          <SelectTrigger className="bg-background/50 border-border/50"><SelectValue placeholder="Select your identity provider" /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="saml">SAML 2.0 (Okta, Azure AD, OneLogin)</SelectItem>
-                            <SelectItem value="oauth">OAuth 2.0 / OpenID Connect</SelectItem>
-                            <SelectItem value="google">Google Workspace</SelectItem>
-                            <SelectItem value="microsoft">Microsoft Azure AD</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {ssoProvider === 'saml' && (
-                        <div className="space-y-4 glass-subtle rounded-xl p-5">
-                          <h4 className="font-semibold flex items-center gap-2"><FileText className="h-4 w-4 text-primary" />SAML 2.0 Configuration</h4>
-                          <div className="grid gap-4 md:grid-cols-2">
-                            <div className="space-y-2">
-                              <Label htmlFor="entityId">Entity ID (Issuer)</Label>
-                              <Input id="entityId" placeholder="https://your-idp.com/saml" value={samlConfig.entityId} onChange={e => setSamlConfig(prev => ({ ...prev, entityId: e.target.value }))} className="bg-background/50 border-border/50" />
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="ssoUrl">SSO URL</Label>
-                              <Input id="ssoUrl" placeholder="https://your-idp.com/sso" value={samlConfig.ssoUrl} onChange={e => setSamlConfig(prev => ({ ...prev, ssoUrl: e.target.value }))} className="bg-background/50 border-border/50" />
-                            </div>
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="certificate">X.509 Certificate</Label>
-                            <textarea id="certificate" className="w-full h-24 p-3 bg-background/50 border border-border/50 rounded-xl text-sm font-mono" placeholder={"-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----"} value={samlConfig.certificate} onChange={e => setSamlConfig(prev => ({ ...prev, certificate: e.target.value }))} />
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <Switch checked={samlConfig.signRequest} onCheckedChange={checked => setSamlConfig(prev => ({ ...prev, signRequest: checked }))} />
-                            <Label>Sign authentication requests</Label>
-                          </div>
-                        </div>
-                      )}
-
-                      {ssoProvider === 'oauth' && (
-                        <div className="space-y-4 glass-subtle rounded-xl p-5">
-                          <h4 className="font-semibold flex items-center gap-2"><Globe className="h-4 w-4 text-primary" />OAuth 2.0 / OpenID Connect</h4>
-                          <div className="grid gap-4 md:grid-cols-2">
-                            <div className="space-y-2">
-                              <Label>Client ID</Label>
-                              <Input placeholder="your-client-id" value={oauthConfig.clientId} onChange={e => setOauthConfig(prev => ({ ...prev, clientId: e.target.value }))} className="bg-background/50 border-border/50" />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>Client Secret</Label>
-                              <Input type="password" placeholder="••••••••" value={oauthConfig.clientSecret} onChange={e => setOauthConfig(prev => ({ ...prev, clientSecret: e.target.value }))} className="bg-background/50 border-border/50" />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>Authorization URL</Label>
-                              <Input placeholder="https://your-idp.com/authorize" value={oauthConfig.authorizationUrl} onChange={e => setOauthConfig(prev => ({ ...prev, authorizationUrl: e.target.value }))} className="bg-background/50 border-border/50" />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>Token URL</Label>
-                              <Input placeholder="https://your-idp.com/token" value={oauthConfig.tokenUrl} onChange={e => setOauthConfig(prev => ({ ...prev, tokenUrl: e.target.value }))} className="bg-background/50 border-border/50" />
-                            </div>
-                          </div>
-                          <div className="space-y-2">
-                            <Label>Scopes</Label>
-                            <Input placeholder="openid profile email" value={oauthConfig.scope} onChange={e => setOauthConfig(prev => ({ ...prev, scope: e.target.value }))} className="bg-background/50 border-border/50" />
-                          </div>
-                        </div>
-                      )}
-
-                      <Separator className="opacity-30" />
-                      <div className="flex gap-3">
-                        <Button onClick={handleSaveSSO} className="btn-glow"><CheckCircle2 className="h-4 w-4 mr-2" />Save Configuration</Button>
-                        <Button variant="outline" onClick={handleTestConnection} className="hover:bg-primary/10 hover:border-primary/30"><Settings className="h-4 w-4 mr-2" />Test Connection</Button>
-                      </div>
+                {workspaceId ? (
+                  <SSOProvider workspaceId={workspaceId} />
+                ) : (
+                  <Card className="card-glass overflow-hidden">
+                    <CardContent className="py-10 text-center text-muted-foreground">
+                      Loading workspace…
                     </CardContent>
-                  )}
-                </Card>
+                  </Card>
+                )}
               </motion.div>
 
               <motion.div custom={1} variants={fadeUp} initial="hidden" animate="visible">
@@ -294,6 +236,35 @@ const EnterpriseSettingsPage = () => {
               </motion.div>
             </TabsContent>
 
+            <TabsContent value="branding" className="space-y-6">
+              <motion.div custom={0} variants={fadeUp} initial="hidden" animate="visible">
+                <Card className="card-glass overflow-hidden">
+                  <CardHeader className="relative z-10">
+                    <CardTitle className="flex items-center gap-2">
+                      <Palette className="h-5 w-5 text-primary" />
+                      White-Label Branding
+                    </CardTitle>
+                    <CardDescription>
+                      Customize logos, colors, and domain for your workspace chat experience.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="relative z-10 space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      Open the branding studio to preview and save your organization&apos;s look. Changes sync to your workspace when you have Elite or Enterprise access.
+                    </p>
+                    <Button
+                      className="btn-glow"
+                      disabled={!hasEnterpriseAccess}
+                      onClick={() => setShowBranding(true)}
+                    >
+                      <Palette className="h-4 w-4 mr-2" />
+                      Open Branding Studio
+                    </Button>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </TabsContent>
+
             <TabsContent value="team" className="space-y-6">
               <motion.div custom={0} variants={fadeUp} initial="hidden" animate="visible">
                 <Card className="card-glass overflow-hidden">
@@ -317,6 +288,12 @@ const EnterpriseSettingsPage = () => {
       </main>
 
       <Footer />
+      {showBranding && (
+        <WhiteLabelBranding
+          workspaceId={workspaceId ?? undefined}
+          onClose={() => setShowBranding(false)}
+        />
+      )}
     </div>
   );
 };

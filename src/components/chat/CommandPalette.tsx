@@ -19,7 +19,7 @@ import {
   BarChart3, Palette, Key, Activity, BookOpen, Database,
   GitBranch, Sliders, Lock, Target, Leaf, Navigation, Wand2,
   Rocket, Cpu, PenTool, LayoutDashboard, UserPlus, Mail,
-  HardDrive, Layers, BrainCircuit, Cog, FileCode, MonitorSmartphone, Link2
+  HardDrive, Layers, BrainCircuit, Cog, FileCode, MonitorSmartphone, Link2, Music
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/components/AuthProvider";
@@ -168,6 +168,17 @@ export const CommandPalette = ({ open, onOpenChange, onAction }: CommandPaletteP
       category: "AI Tools",
       action: () => onAction("image"),
       keywords: ["image", "picture", "art", "dalle", "midjourney"],
+    },
+    {
+      id: "music-generator",
+      label: "Music Studio",
+      description: "Generate music and sound effects",
+      icon: <Music className="h-4 w-4" />,
+      category: "AI Tools",
+      action: () => onAction("music"),
+      keywords: ["music", "song", "beat", "audio", "sfx", "sound"],
+      badge: "New",
+      badgeVariant: "default" as const,
     },
     {
       id: "document-generator",

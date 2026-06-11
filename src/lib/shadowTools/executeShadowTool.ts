@@ -313,18 +313,9 @@ export async function executeShadowTool(
 
     case "music_generator":
       return {
-        kind: "chat_flags",
+        kind: "ui",
         tool,
-        flags: {
-          messages: [
-            {
-              role: "user",
-              content: `Recommend music and describe sonic direction for: ${p.prompt || message}. Include genre, tempo, instruments, and mood.`,
-            },
-          ],
-          personality: "creative",
-          mode: "music",
-        },
+        message: "Opening Music Studio.",
       };
 
     default: {

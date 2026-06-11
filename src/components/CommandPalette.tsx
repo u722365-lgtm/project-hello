@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   CommandDialog,
   CommandInput,
@@ -41,6 +41,8 @@ const pages = [
   { name: "Docs", href: "/docs", icon: BookOpen, desc: "Documentation" },
   { name: "Changelog", href: "/changelog", icon: History, desc: "What's new" },
   { name: "Chat Rooms", href: "/rooms", icon: Users, desc: "Collaborative rooms" },
+  { name: "WhatsApp Contacts", href: "/whatsapp", icon: MessageSquare, desc: "Contacts, broadcast & AI drafts" },
+  { name: "Computer Mode", href: "/computer", icon: Monitor, desc: "Real npm/node shell in browser" },
   { name: "API", href: "/api", icon: Code, desc: "API reference" },
   { name: "Enterprise", href: "/enterprise", icon: Building2, desc: "Enterprise settings" },
   { name: "About", href: "/about", icon: UserCircle, desc: "About ShadowTalk" },
@@ -79,10 +81,13 @@ interface CommandPaletteProps {
 
 const CommandPalette: React.FC<CommandPaletteProps> = ({ open, onOpenChange }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const onChatPage = location.pathname === "/chatbot";
 
-  // Global keyboard shortcut: Ctrl+K / Cmd+K
+  // Global keyboard shortcut: Ctrl+K / Cmd+K (chat page uses its own tools palette)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (onChatPage) return;
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
         onOpenChange(!open);
@@ -90,7 +95,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ open, onOpenChange }) =
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [open, onOpenChange]);
+  }, [open, onOpenChange, onChatPage]);
 
   const handleSelect = useCallback((href: string) => {
     navigate(href);

@@ -17,6 +17,7 @@ import type { DeliverableType } from "@/lib/execution/types";
 export interface ToolDispatchUI {
   openDeepResearch: (query?: string) => void;
   openImageGenerator: () => void;
+  openMusicGenerator?: (prompt?: string) => void;
   openAgenticRunner: (goal: string) => void;
   openBrowser: () => void;
   openShadowLive: () => void;
@@ -188,6 +189,18 @@ export function useAgenticToolDispatch() {
             params,
           });
           return { handled: true };
+
+        case "music_generator": {
+          const prompt = params.prompt ?? message;
+          ui.setPendingMessage(prompt);
+          ui.openMusicGenerator?.(prompt);
+          ui.appendAssistantMessage("Opening **Music Studio** with your prompt.", {
+            tool: "music_generator",
+            status: "complete",
+            params,
+          });
+          return { handled: true };
+        }
 
         case "image_decoder":
           return {
