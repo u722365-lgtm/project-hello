@@ -138,6 +138,12 @@ export function decideRoute(
         localBackend,
       );
     }
+    if (canUseCloudAI() && isOnline) {
+      return {
+        target: "cloud",
+        reason: "On-device model still downloading — using cloud until ready",
+      };
+    }
     return {
       target: "local",
       reason: canUseCloudAI()

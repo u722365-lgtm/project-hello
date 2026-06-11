@@ -10,6 +10,10 @@ import {
 } from '@/lib/persistentAuth';
 import { resolvePlanFromCheckSubscription } from '@/lib/resolveUserPlan';
 import { applyReferralOnSignup } from '@/lib/referral/applyReferralOnSignup';
+import {
+  bootstrapSeamlessOfflineForLoggedInUser,
+  resetSeamlessOfflineBootstrap,
+} from '@/lib/offline/seamlessOfflineBootstrap';
 
 type UserPlan = 'free' | 'pro' | 'premium' | 'lifetime' | 'elite' | 'enterprise';
 
@@ -152,6 +156,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (!mounted) return;
 
         if (event === 'SIGNED_OUT') {
+          resetSeamlessOfflineBootstrap();
           applySession(null);
           setUserPlan('free');
           setSubscribed(false);
@@ -164,6 +169,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           applySession(nextSession);
           if (nextSession?.user) {
             clearExplicitSignOut();
+            bootstrapSeamlessOfflineForLoggedInUser();
             if (event === 'SIGNED_IN') {
               void applyReferralOnSignup();
             }

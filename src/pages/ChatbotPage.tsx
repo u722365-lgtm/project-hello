@@ -92,17 +92,15 @@ import { isSovereignModeEnabled } from "@/lib/desktop/sovereignMode";
 import {
   canUseCloudAI,
   DEVICE_ONLY_BLOCKED_MESSAGE,
-  needsInterimCloudChoice,
-  setInterimCloudConsent,
+  ensureAutoCloudUntilLocalReady,
   shouldPersistChatToCloud,
 } from "@/lib/privacy/deviceOnlyPledge";
 import {
-  isLocalInferenceLoading,
   isLocalInferenceReady,
   LOCAL_MODEL_READY_EVENT,
 } from "@/lib/privacy/localInferenceReady";
 import { bootstrapCachedLocalModel } from "@/lib/offline/bootstrapLocalModel";
-import { InterimCloudConsentDialog } from "@/components/chat/InterimCloudConsentDialog";
+import { bootstrapSeamlessOfflineForLoggedInUser } from "@/lib/offline/seamlessOfflineBootstrap";
 import { runLocalChat, isAnyLocalModelReady } from "@/lib/offline/localChat";
 import type { RouterMessage } from "@/lib/offline/hybridRouter";
 import { decideRoute } from "@/lib/offline/hybridRouter";
@@ -289,7 +287,6 @@ const ChatbotPage = () => {
   const [musicAutoGenerate, setMusicAutoGenerate] = useState(false);
   const [showWordle, setShowWordle] = useState(false);
   const [showGoogleIntegration, setShowGoogleIntegration] = useState(false);
-  const [showInterimCloudDialog, setShowInterimCloudDialog] = useState(false);
   const [localModelReady, setLocalModelReady] = useState(() => isLocalInferenceReady());
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [showDeepResearch, setShowDeepResearch] = useState(false);
@@ -356,10 +353,10 @@ const ChatbotPage = () => {
   }, []);
 
   useEffect(() => {
-    if (needsInterimCloudChoice() && !localModelReady) {
-      setShowInterimCloudDialog(true);
+    if (user && !isAnonymous) {
+      bootstrapSeamlessOfflineForLoggedInUser();
     }
-  }, [localModelReady]);
+  }, [user, isAnonymous]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -938,6 +935,10 @@ const ChatbotPage = () => {
 
 
       const hasMultimodalImage = chatMessages.some((m) => Array.isArray(m.content));
+      if (user && !isAnonymous) {
+        ensureAutoCloudUntilLocalReady();
+      }
+
       const route = decideRoute(routerMessages, navigator.onLine);
       const useLocal =
         !hasMultimodalImage &&
@@ -1005,17 +1006,21 @@ const ChatbotPage = () => {
         });
 
         if (offline?.content) {
-          if (!assistantContent) {
-            streamToken(offline.content);
+          const useCloudInstead =
+            offline.source === "fallback" && canUseCloudAI() && navigator.onLine;
+          if (!useCloudInstead) {
+            if (!assistantContent) {
+              streamToken(offline.content);
+            }
+            if (lastUserText) {
+              void indexSovereignMemory(lastUserText, { category: "chat", source: "user" });
+            }
+            void indexSovereignMemory(offline.content, { category: "chat", source: "assistant" });
+            if (user) {
+              await saveMessage(offline.content, "assistant", conversationId);
+            }
+            return assistantContent || offline.content;
           }
-          if (lastUserText) {
-            void indexSovereignMemory(lastUserText, { category: "chat", source: "user" });
-          }
-          void indexSovereignMemory(offline.content, { category: "chat", source: "assistant" });
-          if (user) {
-            await saveMessage(offline.content, "assistant", conversationId);
-          }
-          return assistantContent || offline.content;
         }
 
         if (isAnyLocalModelReady()) {
@@ -1289,11 +1294,6 @@ const ChatbotPage = () => {
 
   const handleSendMessage = async () => {
     if ((!message.trim() && !selectedFile) || isLoading) return;
-
-    if (needsInterimCloudChoice()) {
-      setShowInterimCloudDialog(true);
-      return;
-    }
 
     const isGuestLike = !user || isAnonymous;
     if (isGuestLike && !isAnonymousAutonomousEnabled()) {
@@ -2480,27 +2480,6 @@ const ChatbotPage = () => {
         onOpenChange={setByokDialogOpen}
         provider={pendingByokProvider}
         onSaved={handleByokSaved}
-      />
-      <InterimCloudConsentDialog
-        open={showInterimCloudDialog}
-        onOpenChange={setShowInterimCloudDialog}
-        isDownloading={isLocalInferenceLoading()}
-        onUseCloudUntilReady={() => {
-          setInterimCloudConsent(true);
-          setShowInterimCloudDialog(false);
-          toast({
-            title: "Cloud AI enabled temporarily",
-            description: "We'll switch to your on-device model automatically once it's loaded.",
-          });
-        }}
-        onGoToDownload={() => {
-          setShowInterimCloudDialog(false);
-          navigate("/settings?section=models");
-        }}
-        onStayDeviceOnly={() => {
-          setInterimCloudConsent(false);
-          setShowInterimCloudDialog(false);
-        }}
       />
       {enterprise.showOnboarding && enterprise.tenant && (
         <EnterpriseOnboarding tenant={enterprise.tenant} />

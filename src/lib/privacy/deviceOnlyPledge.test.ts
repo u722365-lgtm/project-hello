@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import {
   canUseCloudAI,
+  ensureAutoCloudUntilLocalReady,
   ensureDeviceOnlyPledgeDefaults,
   hasCloudOptIn,
   hasInterimCloudConsent,
@@ -41,6 +42,15 @@ describe("deviceOnlyPledge", () => {
   it("allows interim cloud while no local model is ready", () => {
     ensureDeviceOnlyPledgeDefaults();
     setInterimCloudConsent(true);
+    expect(hasInterimCloudConsent()).toBe(true);
+    expect(canUseCloudAI()).toBe(true);
+    expect(needsInterimCloudChoice()).toBe(false);
+  });
+
+  it("auto-enables interim cloud for logged-in bootstrap", () => {
+    ensureDeviceOnlyPledgeDefaults();
+    expect(canUseCloudAI()).toBe(false);
+    ensureAutoCloudUntilLocalReady();
     expect(hasInterimCloudConsent()).toBe(true);
     expect(canUseCloudAI()).toBe(true);
     expect(needsInterimCloudChoice()).toBe(false);

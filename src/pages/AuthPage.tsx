@@ -223,7 +223,8 @@ const AuthPage = () => {
         if (error) throw error;
         if (data.user && data.session) {
           await saveCredentialsForOffline(cleanEmail, cleanPassword, data.user.id);
-          // startSilentTierAInstall(); // hook removed; offline model loads on demand
+          const { startSilentTierAInstall } = await import("@/lib/offline/tierAInstall");
+          startSilentTierAInstall();
           clearExplicitSignOut();
           toast({ title: "Success", description: "Account created! Offline AI installs in the background." });
           setLoading(false);

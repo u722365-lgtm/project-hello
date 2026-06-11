@@ -4,6 +4,7 @@
 
 import { decideRoute, type RouterMessage } from "@/lib/offline/hybridRouter";
 import { getGemmaEngine } from "@/lib/offline/gemmaEngine";
+import { canUseCloudAI } from "@/lib/privacy/deviceOnlyPledge";
 
 export type OfflineCompletionSource = "local-gemma" | "local-webllm" | "fallback";
 
@@ -36,8 +37,9 @@ export function getBasicOfflineFallback(prompt: string): string {
 
   if (/^(hi|hello|hey|greetings|bro|yo|sup)/i.test(normalized)) {
     return (
-      "Hi! Device-only mode is on and no on-device model is loaded yet.\n\n" +
-      "Choose **Use cloud AI until my model is ready** in the prompt above, or open **Profile → Offline AI** to download a model (~1–3 GB)."
+      "Hi! Your on-device model is still downloading. " +
+      "If you're online, try sending your message again — cloud AI should respond. " +
+      "Offline chat will work automatically once the download finishes."
     );
   }
   if (/help|what can you do/i.test(normalized)) {
@@ -88,10 +90,9 @@ export function getBasicOfflineFallback(prompt: string): string {
   }
 
   return (
-    "Device-only mode is active but your on-device model isn't loaded yet.\n\n" +
-    "• **Use cloud AI until ready** — pick this in the chat prompt (temporary)\n" +
-    "• **Profile → Offline AI** — download a model (~1–3 GB, one-time)\n\n" +
-    "Once the model finishes downloading, it loads automatically and chat runs fully on-device."
+    "Your on-device model is still preparing. " +
+    "While online, ShadowTalk uses cloud AI automatically. " +
+    "Once the download completes, chat switches to fully private on-device inference."
   );
 }
 
@@ -161,6 +162,7 @@ export async function runOfflineCompletion(
     const web = await tryWebLlm();
     if (web) return web;
     const lastUser = messages.filter((m) => m.role === "user").pop()?.content ?? "";
+    if (canUseCloudAI() && isOnline) return null;
     return { content: getBasicOfflineFallback(lastUser), source: "fallback" };
   }
 
@@ -171,6 +173,7 @@ export async function runOfflineCompletion(
     const web = await tryWebLlm();
     if (web) return web;
     const lastUser = messages.filter((m) => m.role === "user").pop()?.content ?? "";
+    if (canUseCloudAI() && isOnline) return null;
     return { content: getBasicOfflineFallback(lastUser), source: "fallback" };
   }
 

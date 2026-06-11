@@ -16,17 +16,11 @@ export const DEVICE_ONLY_BLOCKED_MESSAGE =
 export const INTERIM_CLOUD_DECLINED_MESSAGE =
   "Choose how to chat: allow cloud AI until your on-device model is ready, or download a model in Profile → Offline AI.";
 
-/** Initialize defaults on first visit — pledge active, routing local-only. */
+/** Initialize defaults on first visit — pledge active; routing stays auto until local model is ready. */
 export function ensureDeviceOnlyPledgeDefaults(): void {
   try {
     if (localStorage.getItem(PLEDGE_KEY) === null) {
       localStorage.setItem(PLEDGE_KEY, "true");
-    }
-    if (isDeviceOnlyPledgeActive() && !hasCloudOptIn()) {
-      const pref = localStorage.getItem(ROUTING_PREF_KEY);
-      if (pref !== "cloud-only") {
-        localStorage.setItem(ROUTING_PREF_KEY, "local-only");
-      }
     }
   } catch {
     // SSR / private mode — treat as pledged
@@ -104,13 +98,22 @@ export function onLocalModelReady(): void {
   }
 }
 
+/**
+ * Logged-in users get cloud AI automatically while the on-device model downloads.
+ * No manual consent dialog — see seamlessOfflineBootstrap.
+ */
+export function ensureAutoCloudUntilLocalReady(): void {
+  if (!isDeviceOnlyPledgeActive() || hasCloudOptIn() || isLocalInferenceReady()) return;
+  if (!hasInterimCloudConsent()) {
+    setInterimCloudConsent(true);
+  } else if (localStorage.getItem(ROUTING_PREF_KEY) === "local-only") {
+    localStorage.setItem(ROUTING_PREF_KEY, "auto");
+  }
+}
+
+/** @deprecated Automated — always false; cloud is enabled silently for logged-in users. */
 export function needsInterimCloudChoice(): boolean {
-  return (
-    isDeviceOnlyPledgeActive() &&
-    !hasCloudOptIn() &&
-    !hasInterimCloudConsent() &&
-    !isLocalInferenceReady()
-  );
+  return false;
 }
 
 /** Cloud LLM / agent APIs (Jules, chat edge function, etc.) */
