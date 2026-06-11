@@ -46,6 +46,8 @@ export const GoogleIntegrationPanel: React.FC<GoogleIntegrationPanelProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [files, setFiles] = useState<Array<{ id: string; name: string; type: string; modified: string }>>([]);
   const [isLoadingFiles, setIsLoadingFiles] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncSummary, setSyncSummary] = useState<{ email: number; calendar: number } | null>(null);
 
   // Check existing connections on mount
   useEffect(() => {
@@ -199,6 +201,33 @@ export const GoogleIntegrationPanel: React.FC<GoogleIntegrationPanelProps> = ({
     }
   };
 
+  const handleSyncNow = async () => {
+    setIsSyncing(true);
+    try {
+      const [emailRes, calendarRes] = await Promise.all([
+        supabase.functions.invoke('email-sync'),
+        supabase.functions.invoke('calendar-sync'),
+      ]);
+      if (emailRes.error) throw emailRes.error;
+      if (calendarRes.error) throw calendarRes.error;
+      const emailCount = (emailRes.data as { items?: unknown[] })?.items?.length ?? 0;
+      const calendarCount = (calendarRes.data as { items?: unknown[] })?.items?.length ?? 0;
+      setSyncSummary({ email: emailCount, calendar: calendarCount });
+      toast({
+        title: 'Sync complete',
+        description: `${emailCount} emails and ${calendarCount} calendar events loaded.`,
+      });
+    } catch (error) {
+      toast({
+        title: 'Sync failed',
+        description: error instanceof Error ? error.message : 'Could not sync Google data',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   const connectedCount = services.filter(s => s.connected).length;
 
   if (!isOpen) return null;
@@ -255,6 +284,20 @@ export const GoogleIntegrationPanel: React.FC<GoogleIntegrationPanelProps> = ({
               </div>
             </div>
           </div>
+
+          {connectedCount > 0 && (
+            <div className="mx-4 flex items-center justify-between gap-3 rounded-lg border border-border/50 bg-muted/30 px-3 py-2">
+              <p className="text-xs text-muted-foreground">
+                {syncSummary
+                  ? `Last sync: ${syncSummary.email} emails, ${syncSummary.calendar} events`
+                  : 'Sync Gmail and Calendar via secure edge functions'}
+              </p>
+              <Button size="sm" variant="outline" onClick={() => void handleSyncNow()} disabled={isSyncing}>
+                {isSyncing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-1" />}
+                Sync now
+              </Button>
+            </div>
+          )}
 
           {/* Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="p-4">

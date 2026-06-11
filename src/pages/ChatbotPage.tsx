@@ -24,6 +24,8 @@ import { ImageGenerator } from "@/components/chat/ImageGenerator";
 import { MusicGenerator } from "@/components/chat/MusicGenerator";
 import { WordleGame } from "@/components/chat/WordleGame";
 import { GoogleIntegrationPanel } from "@/components/chat/GoogleIntegrationPanel";
+import { PerceptionDashboard } from "@/components/chat/PerceptionDashboard";
+import { UserContextPanel, type UserContext } from "@/components/chat/UserContextPanel";
 import { DeepResearchPanel } from "@/components/chat/DeepResearchPanel";
 import { CommandPalette } from "@/components/chat/CommandPalette";
 
@@ -96,6 +98,7 @@ import { runLocalChat, isAnyLocalModelReady } from "@/lib/offline/localChat";
 import type { RouterMessage } from "@/lib/offline/hybridRouter";
 import { decideRoute } from "@/lib/offline/hybridRouter";
 import { useCustomApiKeys } from "@/hooks/useCustomApiKeys";
+import { useUserSettings } from "@/hooks/useUserSettings";
 import { stringifyChatBody } from "@/lib/chatRequest";
 import { ByokProviderKeyDialog } from "@/components/chat/ByokProviderKeyDialog";
 import {
@@ -302,6 +305,25 @@ const ChatbotPage = () => {
   const [guestArchivedIds, setGuestArchivedIdsState] = useState<Set<string>>(() =>
     getGuestArchivedIds(),
   );
+  const DEFAULT_USER_CONTEXT: UserContext = {
+    country: "",
+    city: "",
+    incomeRange: "",
+    employmentStatus: "",
+    familyStatus: "",
+    interests: [],
+    recentLifeEvents: [],
+  };
+  const {
+    value: savedUserContext,
+    save: saveUserContext,
+    isLoading: userContextLoading,
+  } = useUserSettings<UserContext>("user_context_profile", DEFAULT_USER_CONTEXT);
+  const [userContext, setUserContext] = useState<UserContext>(DEFAULT_USER_CONTEXT);
+
+  useEffect(() => {
+    if (!userContextLoading) setUserContext(savedUserContext);
+  }, [savedUserContext, userContextLoading]);
 
   const abortControllerRef = useRef<AbortController | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -1015,12 +1037,35 @@ const ChatbotPage = () => {
       const learnedHint = getChatDefaults()?.systemHintAddon;
       const memoryContext = getMemoryContext();
       const businessMemory = [learnedHint, memoryContext].filter(Boolean).join("\n").trim();
+      const hasUserContext = Boolean(
+        userContext.country ||
+          userContext.city ||
+          userContext.incomeRange ||
+          userContext.employmentStatus ||
+          userContext.familyStatus ||
+          userContext.recentLifeEvents.length,
+      );
+
       const requestBody = stringifyChatBody({
         messages: augmented,
         personality,
         mode: chatMode,
         ...buildChatProviderPayload(aiProvider, aiConfig, keys),
         ...(businessMemory ? { businessMemory } : {}),
+        ...(hasUserContext
+          ? {
+              userContext: {
+                country: userContext.country || undefined,
+                city: userContext.city || undefined,
+                incomeRange: userContext.incomeRange || undefined,
+                employmentStatus: userContext.employmentStatus || undefined,
+                familyStatus: userContext.familyStatus || undefined,
+                recentLifeEvents: userContext.recentLifeEvents.length
+                  ? userContext.recentLifeEvents
+                  : undefined,
+              },
+            }
+          : {}),
         ...(chatFlags?.webSearch
           ? { webSearch: true, searchQuery: chatFlags.searchQuery }
           : {}),
@@ -2064,6 +2109,16 @@ const ChatbotPage = () => {
             onEnableEncryption={handleEnableChatEncryption}
             onDisableEncryption={chatPrivate.disablePrivateMode}
           />
+          <div className="hidden md:flex items-center justify-between gap-3 px-4 md:px-6 py-2 border-b border-border/20">
+            {!userContextLoading && (
+              <UserContextPanel
+                context={userContext}
+                onContextChange={setUserContext}
+                onSave={() => void saveUserContext(userContext)}
+              />
+            )}
+            <PerceptionDashboard onProactiveSuggestion={(suggestion) => setMessage(suggestion)} />
+          </div>
           {chatPrivate.active && (
             <motion.div
               initial={{ opacity: 0, y: -4 }}

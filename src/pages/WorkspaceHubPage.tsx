@@ -69,7 +69,7 @@ const WorkspaceHubPage = () => {
       )}
       {mode === "automate" && (
         <div className="h-full overflow-y-auto p-4 md:p-6">
-          <ScriptAutomation onClose={() => {}} onRunScript={handleRunScript} />
+          <ScriptAutomation embedded onClose={() => {}} onRunScript={handleRunScript} />
         </div>
       )}
     </UnifiedHubShell>

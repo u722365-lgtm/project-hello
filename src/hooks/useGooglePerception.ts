@@ -242,18 +242,73 @@ export const useGooglePerception = () => {
     }
   }, []);
 
+  const syncViaEdgeFunctions = useCallback(async (): Promise<PerceptionEvent[]> => {
+    try {
+      const [emailRes, calendarRes] = await Promise.all([
+        supabase.functions.invoke('email-sync'),
+        supabase.functions.invoke('calendar-sync'),
+      ]);
+
+      const events: PerceptionEvent[] = [];
+
+      const emailItems = (emailRes.data as { items?: Array<{ id: string; title: string; date: string; priority: string }> })?.items ?? [];
+      for (const item of emailItems) {
+        events.push({
+          id: `email_${item.id}`,
+          source: 'gmail',
+          type: 'email',
+          title: item.title,
+          summary: item.date,
+          timestamp: new Date(item.date),
+          metadata: { priority: item.priority },
+          urgency: item.priority === 'high' ? 'high' : item.priority === 'medium' ? 'medium' : 'low',
+        });
+      }
+
+      const calendarItems = (calendarRes.data as { items?: Array<{ id: string; title: string; date: string; priority: string }> })?.items ?? [];
+      for (const item of calendarItems) {
+        const start = new Date(item.date);
+        const hoursUntil = (start.getTime() - Date.now()) / (1000 * 60 * 60);
+        let urgency: PerceptionEvent['urgency'] = 'low';
+        if (hoursUntil <= 0.5) urgency = 'critical';
+        else if (hoursUntil <= 2) urgency = 'high';
+        else if (hoursUntil <= 6) urgency = 'medium';
+
+        events.push({
+          id: `calendar_${item.id}`,
+          source: 'calendar',
+          type: 'upcoming_event',
+          title: item.title,
+          summary: `Starts ${start.toLocaleString()}`,
+          timestamp: start,
+          metadata: { priority: item.priority },
+          urgency,
+        });
+      }
+
+      if (events.length > 0) return events;
+    } catch (e) {
+      console.warn('[GooglePerception] Edge sync failed, falling back to direct API:', e);
+    }
+    return [];
+  }, []);
+
   // Run perception check
   const runPerceptionCheck = useCallback(async (): Promise<PerceptionEvent[]> => {
-    if (!state.isConnected || !tokenRef.current) {
-      return [];
+    if (!state.isConnected) {
+      const connected = await checkConnection();
+      if (!connected) return [];
     }
 
     try {
-      const [gmailEvents, calendarEvents, driveEvents] = await Promise.all([
-        fetchGmailEvents(),
-        fetchCalendarEvents(),
-        fetchDriveEvents(),
-      ]);
+      const edgeEvents = await syncViaEdgeFunctions();
+      const [gmailEvents, calendarEvents, driveEvents] = edgeEvents.length > 0
+        ? [edgeEvents.filter((e) => e.source === 'gmail'), edgeEvents.filter((e) => e.source === 'calendar'), [] as PerceptionEvent[]]
+        : await Promise.all([
+            fetchGmailEvents(),
+            fetchCalendarEvents(),
+            fetchDriveEvents(),
+          ]);
 
       const allEvents = [...gmailEvents, ...calendarEvents, ...driveEvents]
         .sort((a, b) => {
@@ -280,7 +335,7 @@ export const useGooglePerception = () => {
       }));
       return [];
     }
-  }, [state.isConnected, fetchGmailEvents, fetchCalendarEvents, fetchDriveEvents]);
+  }, [state.isConnected, checkConnection, syncViaEdgeFunctions, fetchGmailEvents, fetchCalendarEvents, fetchDriveEvents]);
 
   // Start monitoring
   const startMonitoring = useCallback(async (intervalMs = 60000) => {

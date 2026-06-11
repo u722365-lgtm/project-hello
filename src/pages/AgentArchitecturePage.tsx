@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import Navigation from "@/components/Navigation";
 import { Bot, Plus, Play, Pause, Trash2, Cpu, MemoryStick, Zap, Network, Shield, Clock } from "lucide-react";
@@ -29,6 +30,7 @@ const AGENT_TYPES = [
 ];
 
 const AgentArchitecturePage = () => {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [agents, setAgents] = useState<LocalAgent[]>([]);
   const [systemStats, setSystemStats] = useState({ totalCPU: 0, totalMemory: 0, activeAgents: 0 });
@@ -133,9 +135,19 @@ const AgentArchitecturePage = () => {
           <h1 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight">
             Distributed Agent <span className="gradient-text">Architecture</span>
           </h1>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Spawn unlimited parallel agents that run entirely on your device. No cloud dependency, no data exposure, no latency.
+          <p className="text-muted-foreground max-w-2xl mx-auto mb-6">
+            Local simulation demo — spawn parallel agents on this page. For real multi-step missions and installed marketplace agents, use the links below.
           </p>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <Button onClick={() => navigate("/execute")}>
+              <Play className="h-4 w-4 mr-2" />
+              Open Shadow Execution
+            </Button>
+            <Button variant="outline" onClick={() => navigate("/workspace?tab=agents")}>
+              <Bot className="h-4 w-4 mr-2" />
+              Installed Agents
+            </Button>
+          </div>
         </motion.div>
 
         {/* System Stats */}

@@ -36,6 +36,11 @@ const EnterpriseSettingsPage = () => {
   
   const [workspaceId, setWorkspaceId] = useState<string | null>(null);
   const [showBranding, setShowBranding] = useState(false);
+  const [teamMembers, setTeamMembers] = useState<Array<{ id: string; role: string; user_id: string; display_name: string | null }>>([]);
+  const [pendingInvites, setPendingInvites] = useState<Array<{ id: string; email: string; role: string; expires_at: string }>>([]);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState("member");
+  const [teamLoading, setTeamLoading] = useState(false);
   const [mfaRequired, setMfaRequired] = useState(false);
   const [ipWhitelist, setIpWhitelist] = useState("");
   const [sessionTimeout, setSessionTimeout] = useState("60");
@@ -75,6 +80,84 @@ const EnterpriseSettingsPage = () => {
       cancelled = true;
     };
   }, [user]);
+
+  useEffect(() => {
+    if (!workspaceId) return;
+    let cancelled = false;
+
+    const loadTeam = async () => {
+      setTeamLoading(true);
+      try {
+        const [{ data: members }, { data: invites }] = await Promise.all([
+          supabase
+            .from("workspace_members")
+            .select("id, role, user_id, profiles(display_name)")
+            .eq("workspace_id", workspaceId),
+          supabase
+            .from("workspace_invitations")
+            .select("id, email, role, expires_at")
+            .eq("workspace_id", workspaceId)
+            .is("accepted_at", null)
+            .gt("expires_at", new Date().toISOString()),
+        ]);
+
+        if (cancelled) return;
+        setTeamMembers(
+          (members ?? []).map((m) => ({
+            id: m.id,
+            role: m.role,
+            user_id: m.user_id,
+            display_name: (m.profiles as { display_name: string | null } | null)?.display_name ?? null,
+          })),
+        );
+        setPendingInvites(invites ?? []);
+      } finally {
+        if (!cancelled) setTeamLoading(false);
+      }
+    };
+
+    void loadTeam();
+    return () => {
+      cancelled = true;
+    };
+  }, [workspaceId]);
+
+  const handleInviteMember = async () => {
+    if (!user || !workspaceId || !inviteEmail.trim()) return;
+    if (!hasEnterpriseAccess) {
+      toast({ title: "Upgrade required", description: "Team invites need Elite or Enterprise.", variant: "destructive" });
+      return;
+    }
+
+    try {
+      const token = crypto.randomUUID();
+      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+      const { error } = await supabase.from("workspace_invitations").insert({
+        workspace_id: workspaceId,
+        email: inviteEmail.trim().toLowerCase(),
+        role: inviteRole,
+        invited_by: user.id,
+        token,
+        expires_at: expiresAt,
+      });
+      if (error) throw error;
+      toast({ title: "Invitation sent", description: `${inviteEmail} can join your workspace.` });
+      setInviteEmail("");
+      const { data: invites } = await supabase
+        .from("workspace_invitations")
+        .select("id, email, role, expires_at")
+        .eq("workspace_id", workspaceId)
+        .is("accepted_at", null)
+        .gt("expires_at", new Date().toISOString());
+      setPendingInvites(invites ?? []);
+    } catch (error) {
+      toast({
+        title: "Invite failed",
+        description: error instanceof Error ? error.message : "Could not send invitation",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleSaveSecurity = () => {
     try {
@@ -273,12 +356,68 @@ const EnterpriseSettingsPage = () => {
                     <CardTitle className="flex items-center gap-2"><Users className="h-5 w-5 text-primary" />Team Management</CardTitle>
                     <CardDescription>Manage your workspace team members</CardDescription>
                   </CardHeader>
-                  <CardContent className="relative z-10">
-                    <div className="glass-subtle rounded-xl p-8 text-center">
-                      <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground/30" />
-                      <h3 className="font-semibold mb-2">Team Management Coming Soon</h3>
-                      <p className="text-sm text-muted-foreground">Invite team members, assign roles, and manage access from here.</p>
-                    </div>
+                  <CardContent className="relative z-10 space-y-6">
+                    {teamLoading ? (
+                      <p className="text-sm text-muted-foreground text-center py-6">Loading team…</p>
+                    ) : (
+                      <>
+                        <div className="space-y-2">
+                          <Label>Members ({teamMembers.length})</Label>
+                          <div className="space-y-2">
+                            {teamMembers.map((member) => (
+                              <div key={member.id} className="flex items-center justify-between glass-subtle rounded-xl px-4 py-3">
+                                <div>
+                                  <p className="font-medium text-sm">
+                                    {member.display_name || `User ${member.user_id.slice(0, 8)}`}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">{member.user_id}</p>
+                                </div>
+                                <Badge variant="secondary" className="capitalize">{member.role}</Badge>
+                              </div>
+                            ))}
+                            {teamMembers.length === 0 && (
+                              <p className="text-sm text-muted-foreground">No members yet.</p>
+                            )}
+                          </div>
+                        </div>
+
+                        {pendingInvites.length > 0 && (
+                          <div className="space-y-2">
+                            <Label>Pending invites</Label>
+                            {pendingInvites.map((invite) => (
+                              <div key={invite.id} className="flex items-center justify-between glass-subtle rounded-xl px-4 py-3 text-sm">
+                                <span>{invite.email}</span>
+                                <Badge variant="outline" className="capitalize">{invite.role}</Badge>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        <div className="space-y-3 border-t border-border/30 pt-4">
+                          <Label>Invite teammate</Label>
+                          <div className="flex flex-col sm:flex-row gap-2">
+                            <Input
+                              type="email"
+                              placeholder="colleague@company.com"
+                              value={inviteEmail}
+                              onChange={(e) => setInviteEmail(e.target.value)}
+                              disabled={!hasEnterpriseAccess}
+                              className="bg-background/50"
+                            />
+                            <Select value={inviteRole} onValueChange={setInviteRole} disabled={!hasEnterpriseAccess}>
+                              <SelectTrigger className="sm:w-36 bg-background/50"><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="member">Member</SelectItem>
+                                <SelectItem value="admin">Admin</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <Button className="btn-glow" disabled={!hasEnterpriseAccess} onClick={() => void handleInviteMember()}>
+                              Invite
+                            </Button>
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </CardContent>
                 </Card>
               </motion.div>

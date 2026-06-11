@@ -23,6 +23,7 @@ import {
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
+import { buildScheduleConfig, type SchedulePreset } from '@/lib/scriptSchedule';
 
 interface Script {
   id: string;
@@ -50,11 +51,13 @@ interface ScriptExecution {
 interface ScriptAutomationProps {
   onClose: () => void;
   onRunScript: (prompt: string) => void;
+  embedded?: boolean;
 }
 
 export const ScriptAutomation: React.FC<ScriptAutomationProps> = ({
   onClose,
   onRunScript,
+  embedded = false,
 }) => {
   const { user } = useAuth();
   const [scripts, setScripts] = useState<Script[]>([]);
@@ -68,7 +71,8 @@ export const ScriptAutomation: React.FC<ScriptAutomationProps> = ({
     description: '',
     script_code: '',
     trigger_type: 'manual',
-    trigger_config: {} as Record<string, unknown>
+    trigger_config: {} as Record<string, unknown>,
+    schedule_preset: '1h' as SchedulePreset,
   });
 
   // Fetch scripts from database
@@ -125,6 +129,11 @@ export const ScriptAutomation: React.FC<ScriptAutomationProps> = ({
       return;
     }
 
+    const triggerConfig =
+      newScript.trigger_type === 'schedule'
+        ? buildScheduleConfig(newScript.schedule_preset)
+        : newScript.trigger_config;
+
     setIsSaving(true);
     try {
       const { data, error } = await supabase
@@ -135,7 +144,7 @@ export const ScriptAutomation: React.FC<ScriptAutomationProps> = ({
           description: newScript.description || null,
           script_code: newScript.script_code,
           trigger_type: newScript.trigger_type,
-          trigger_config: {},
+          trigger_config: triggerConfig,
           is_active: true,
           run_count: 0
         } as never)
@@ -159,7 +168,14 @@ export const ScriptAutomation: React.FC<ScriptAutomationProps> = ({
 
       setScripts(prev => [newScriptData, ...prev]);
       setIsCreating(false);
-      setNewScript({ name: '', description: '', script_code: '', trigger_type: 'manual', trigger_config: {} });
+      setNewScript({
+        name: '',
+        description: '',
+        script_code: '',
+        trigger_type: 'manual',
+        trigger_config: {},
+        schedule_preset: '1h',
+      });
       toast.success('Script created successfully');
     } catch (error) {
       console.error('Error creating script:', error);
@@ -256,7 +272,7 @@ export const ScriptAutomation: React.FC<ScriptAutomationProps> = ({
         .eq('id', execution.id);
 
       toast.success(`Running: ${script.name}`);
-      onClose();
+      if (!embedded) onClose();
     } catch (error) {
       console.error('Error running script:', error);
       toast.error('Failed to run script');
@@ -284,15 +300,19 @@ export const ScriptAutomation: React.FC<ScriptAutomationProps> = ({
     return new Date(dateString).toLocaleString();
   };
 
+  const shellClass = embedded
+    ? "w-full"
+    : "fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4";
+
   if (!user) {
     return (
-      <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className={shellClass}>
         <Card className="w-full max-w-md">
           <CardContent className="pt-6 text-center">
             <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <p className="text-lg font-medium">Sign in required</p>
             <p className="text-muted-foreground mb-4">Please sign in to use Script Automation</p>
-            <Button onClick={onClose}>Close</Button>
+            {!embedded && <Button onClick={onClose}>Close</Button>}
           </CardContent>
         </Card>
       </div>
@@ -300,8 +320,8 @@ export const ScriptAutomation: React.FC<ScriptAutomationProps> = ({
   }
 
   return (
-    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-2xl max-h-[85vh] overflow-hidden">
+    <div className={shellClass}>
+      <Card className={`w-full max-w-2xl ${embedded ? "" : "max-h-[85vh]"} overflow-hidden`}>
         <CardHeader className="flex flex-row items-center justify-between border-b">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-primary/10">
@@ -314,9 +334,11 @@ export const ScriptAutomation: React.FC<ScriptAutomationProps> = ({
           </div>
           <div className="flex items-center gap-2">
             <Badge variant="secondary">Pro Feature</Badge>
-            <Button variant="ghost" size="icon" onClick={onClose}>
-              <X className="h-4 w-4" />
-            </Button>
+            {!embedded && (
+              <Button variant="ghost" size="icon" onClick={onClose}>
+                <X className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         </CardHeader>
         <CardContent className="p-4">
@@ -350,10 +372,26 @@ export const ScriptAutomation: React.FC<ScriptAutomationProps> = ({
                   <SelectContent>
                     <SelectItem value="manual">Manual Trigger</SelectItem>
                     <SelectItem value="schedule">Scheduled</SelectItem>
-                    <SelectItem value="webhook">On Webhook</SelectItem>
                     <SelectItem value="event">On Event</SelectItem>
                   </SelectContent>
                 </Select>
+                {newScript.trigger_type === 'schedule' && (
+                  <Select
+                    value={newScript.schedule_preset}
+                    onValueChange={(value) =>
+                      setNewScript((prev) => ({ ...prev, schedule_preset: value as SchedulePreset }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Run interval" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="15m">Every 15 minutes</SelectItem>
+                      <SelectItem value="1h">Every hour</SelectItem>
+                      <SelectItem value="daily">Every 24 hours</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
                 <div className="flex gap-2">
                   <Button onClick={handleCreateScript} className="flex-1" disabled={isSaving}>
                     {isSaving ? (

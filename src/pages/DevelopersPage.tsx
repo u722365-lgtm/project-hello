@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Code, Cpu, Shield, Zap, Terminal, Key, Globe, ArrowRight, Construction } from "lucide-react";
 import { PRIVACY_COPY } from "@/lib/productClaims";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { APIMarketplace } from "@/components/chat/APIMarketplace";
 
 const codeExamples = {
   quickstart: `// Initialize the Shadow SDK
@@ -67,6 +69,7 @@ const sdkFeatures = [
 
 const DevelopersPage = () => {
   const navigate = useNavigate();
+  const [showApiMarketplace, setShowApiMarketplace] = useState(false);
 
   return (
     <div className="min-h-screen bg-background">
@@ -84,10 +87,13 @@ const DevelopersPage = () => {
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
             Embed ShadowTalk's local inference engine into your own apps. Privacy-first, offline-capable AI for every developer.
           </p>
-          <div className="flex items-center justify-center gap-4">
-            <Button size="lg" onClick={() => navigate('/api')}>
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <Button size="lg" onClick={() => setShowApiMarketplace(true)}>
               <Key className="mr-2 h-5 w-5" />
-              Get API Key
+              Manage API Keys
+            </Button>
+            <Button size="lg" variant="outline" onClick={() => navigate('/api')}>
+              API Reference
             </Button>
             <Button size="lg" variant="outline" onClick={() => navigate('/docs')}>
               Read Docs
@@ -159,6 +165,7 @@ const DevelopersPage = () => {
         </Card>
       </div>
       <Footer />
+      <APIMarketplace isOpen={showApiMarketplace} onClose={() => setShowApiMarketplace(false)} />
     </div>
   );
 };
