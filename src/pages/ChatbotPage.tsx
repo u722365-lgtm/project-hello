@@ -101,6 +101,15 @@ import {
 } from "@/lib/privacy/localInferenceReady";
 import { bootstrapCachedLocalModel } from "@/lib/offline/bootstrapLocalModel";
 import { bootstrapSeamlessOfflineForLoggedInUser } from "@/lib/offline/seamlessOfflineBootstrap";
+import {
+  getShadowSpectreScope,
+  hasAcceptedShadowSpectreTerms,
+  routeShadowSpectreHead,
+  streamShadowSpectre,
+} from "@/lib/cyber/shadowspectre";
+import { ShadowSpectreScopeBar } from "@/components/cyber/ShadowSpectreScopeBar";
+import { ShadowSpectrePanel } from "@/components/cyber/ShadowSpectrePanel";
+import { ShadowSpectreTermsDialog } from "@/components/cyber/ShadowSpectreTermsDialog";
 import { runLocalChat, isAnyLocalModelReady } from "@/lib/offline/localChat";
 import type { RouterMessage } from "@/lib/offline/hybridRouter";
 import { decideRoute } from "@/lib/offline/hybridRouter";
@@ -287,6 +296,9 @@ const ChatbotPage = () => {
   const [musicAutoGenerate, setMusicAutoGenerate] = useState(false);
   const [showWordle, setShowWordle] = useState(false);
   const [showGoogleIntegration, setShowGoogleIntegration] = useState(false);
+  const [showShadowSpectrePanel, setShowShadowSpectrePanel] = useState(false);
+  const [showShadowSpectreTerms, setShowShadowSpectreTerms] = useState(false);
+  const [shadowSpectreHead, setShadowSpectreHead] = useState<string>("general");
   const [localModelReady, setLocalModelReady] = useState(() => isLocalInferenceReady());
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [showDeepResearch, setShowDeepResearch] = useState(false);
@@ -357,6 +369,12 @@ const ChatbotPage = () => {
       bootstrapSeamlessOfflineForLoggedInUser();
     }
   }, [user, isAnonymous]);
+
+  useEffect(() => {
+    if (chatMode === "shadowspectre" && !hasAcceptedShadowSpectreTerms()) {
+      setShowShadowSpectreTerms(true);
+    }
+  }, [chatMode]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -933,6 +951,52 @@ const ChatbotPage = () => {
           : (m.content.find((p) => p.type === "text") as { text?: string } | undefined)?.text ?? "",
       }));
 
+      if (chatMode === "shadowspectre") {
+        if (!hasAcceptedShadowSpectreTerms()) {
+          setShowShadowSpectreTerms(true);
+          throw new Error("Accept ShadowSpectre authorized-use terms to continue.");
+        }
+        if (!canUseCloudAI()) {
+          throw new Error(DEVICE_ONLY_BLOCKED_MESSAGE);
+        }
+
+        const head = routeShadowSpectreHead(lastUser);
+        setShadowSpectreHead(head);
+        const aiMessageId = crypto.randomUUID();
+        let assistantContent = "";
+        const streamToken = (token: string) => {
+          assistantContent += token;
+          setMessages((prev) => {
+            const exists = prev.find((m) => m.id === aiMessageId);
+            if (exists) {
+              return prev.map((m) =>
+                m.id === aiMessageId ? { ...m, content: assistantContent } : m,
+              );
+            }
+            return [
+              ...prev,
+              { id: aiMessageId, type: "ai", content: assistantContent, timestamp: new Date() },
+            ];
+          });
+        };
+
+        const spectre = await streamShadowSpectre({
+          messages: routerMessages,
+          head,
+          authorization: getShadowSpectreScope(),
+          onToken: streamToken,
+          signal: controller.signal,
+        });
+        setShadowSpectreHead(spectre.head);
+        if (lastUser) {
+          void indexSovereignMemory(lastUser, { category: "chat", source: "user" });
+        }
+        void indexSovereignMemory(spectre.content, { category: "chat", source: "assistant" });
+        if (user) {
+          await saveMessage(spectre.content, "assistant", conversationId);
+        }
+        return spectre.content;
+      }
 
       const hasMultimodalImage = chatMessages.some((m) => Array.isArray(m.content));
       if (user && !isAnonymous) {
@@ -1883,6 +1947,10 @@ const ChatbotPage = () => {
       case "google":
         setShowGoogleIntegration(true);
         return;
+      case "shadowspectre":
+        setChatMode("shadowspectre");
+        setShowShadowSpectrePanel(true);
+        return;
       case "voice":
         setShowShadowTalkLive(true);
         return;
@@ -2115,6 +2183,11 @@ const ChatbotPage = () => {
               toolsMenuOpen={toolsMenuOpen}
               onToolsMenuOpenChange={setToolsMenuOpen}
             />
+            {chatMode === "shadowspectre" && (
+              <div className="px-3 pb-2">
+                <ShadowSpectreScopeBar activeHead={shadowSpectreHead} />
+              </div>
+            )}
           </div>
           <motion.p
             initial={{ opacity: 0, y: -6 }}
@@ -2487,6 +2560,18 @@ const ChatbotPage = () => {
       {enterprise.showHelpFab && enterprise.tenant && (
         <EnterpriseHelpFab tenant={enterprise.tenant} />
       )}
+      <ShadowSpectrePanel
+        open={showShadowSpectrePanel}
+        onClose={() => setShowShadowSpectrePanel(false)}
+      />
+      <ShadowSpectreTermsDialog
+        open={showShadowSpectreTerms}
+        onAccepted={() => setShowShadowSpectreTerms(false)}
+        onDecline={() => {
+          setShowShadowSpectreTerms(false);
+          if (chatMode === "shadowspectre") setChatMode("general");
+        }}
+      />
       </motion.div>
     </div>
   );

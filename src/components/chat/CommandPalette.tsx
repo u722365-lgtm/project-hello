@@ -19,7 +19,7 @@ import {
   BarChart3, Palette, Key, Activity, BookOpen, Database,
   GitBranch, Sliders, Lock, Target, Leaf, Navigation, Wand2,
   Rocket, Cpu, PenTool, LayoutDashboard, UserPlus, Mail,
-  HardDrive, Layers, BrainCircuit, Cog, FileCode, MonitorSmartphone, Link2, Music
+  HardDrive, Layers, BrainCircuit, Cog, FileCode, MonitorSmartphone, Link2, Music, Crosshair
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/components/AuthProvider";
@@ -312,6 +312,17 @@ export const CommandPalette = ({ open, onOpenChange, onAction }: CommandPaletteP
       keywords: ["google", "gmail", "drive", "docs", "calendar", "integration"],
       badge: "Match Gemini",
       badgeVariant: "secondary" as const,
+    },
+    {
+      id: "shadowspectre",
+      label: "ShadowSpectre",
+      description: "Uncensored cybersecurity model — pentest, SOC, IR, intel",
+      icon: <Crosshair className="h-4 w-4 text-red-400" />,
+      category: "Integrations",
+      action: () => onAction("shadowspectre"),
+      keywords: ["shadowspectre", "cyber", "pentest", "hack", "soc", "cve", "exploit", "security"],
+      badge: "Elite",
+      badgeVariant: "destructive" as const,
     },
     
     // Collaboration

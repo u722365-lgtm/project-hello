@@ -71,6 +71,8 @@ project_id = "axsudmhjpfzffcicfvuj"
     verify_jwt = false
   [functions.cyber-ai-copilot]
     verify_jwt = false
+  [functions.shadowspectre]
+    verify_jwt = false
   [functions.generate-blog]
     verify_jwt = false
   [functions.changelog-to-blog]

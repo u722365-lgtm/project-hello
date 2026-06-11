@@ -1,4 +1,5 @@
- import { Code, Languages, FileText, Bug, Lightbulb, Image, MessageSquare, Pen, Music, Brain, Leaf, Shield, Search, Camera, Table, Calculator, GraduationCap, Mail, FileCheck, Lock, Sparkles, Crown, Skull, Bot } from "lucide-react";
+ import { Code, Languages, FileText, Bug, Lightbulb, Image, MessageSquare, Pen, Music, Brain, Leaf, Shield, Search, Camera, Table, Calculator, GraduationCap, Mail, FileCheck, Lock, Sparkles, Crown, Skull, Bot, Crosshair } from "lucide-react";
+import { SHADOWSPECTRE_MODE_PROMPT } from "@/lib/cyber/shadowspectre";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -32,7 +33,8 @@ export type ChatMode =
   | "academic"
   | "email"
   | "proofread"
-  | "uncensored";
+  | "uncensored"
+  | "shadowspectre";
 
 interface ModeSelectorProps {
   mode: ChatMode;
@@ -193,6 +195,14 @@ const modes: { value: ChatMode; label: string; icon: React.ReactNode; prompt: st
      tier: "elite"
    },
    {
+     value: "shadowspectre",
+     label: "ShadowSpectre",
+     icon: <Crosshair className="h-4 w-4" />,
+     prompt: SHADOWSPECTRE_MODE_PROMPT,
+     color: "text-red-500",
+     tier: "elite",
+   },
+   {
      value: "uncensored",
      label: "☠️ Uncensored Arena",
      icon: <Skull className="h-4 w-4" />,
@@ -227,9 +237,9 @@ export const ModeSelector = ({ mode, onModeChange, disabled }: ModeSelectorProps
   const { canAccess, getUpgradeMessage, isPremiumOrHigher, isElite } = useFeatureGating();
   const { toast } = useToast();
   const currentMode = modes.find(m => m.value === mode) || modes[0];
-  const standardModes = modes.filter(m => !['ppag', 'hsca', 'uncensored', 'research', 'math', 'camera', 'organize', 'academic'].includes(m.value));
+  const standardModes = modes.filter(m => !['ppag', 'hsca', 'uncensored', 'shadowspectre', 'research', 'math', 'camera', 'organize', 'academic'].includes(m.value));
   const specialModes = modes.filter(m => ['research', 'math', 'camera', 'organize', 'academic'].includes(m.value));
-   const advancedModes = modes.filter(m => ['ppag', 'hsca', 'uncensored'].includes(m.value));
+   const advancedModes = modes.filter(m => ['ppag', 'hsca', 'uncensored', 'shadowspectre'].includes(m.value));
 
   const handleModeSelect = (selectedMode: ChatMode) => {
     const featureKey = modeFeatureMap[selectedMode];

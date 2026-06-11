@@ -6,6 +6,7 @@ const CLOUD_AI_PATHS = [
   "/functions/v1/document-ai",
   "/functions/v1/generate-presentation",
   "/functions/v1/cyber-ai-copilot",
+  "/functions/v1/shadowspectre",
   "/functions/v1/proactive-ai",
   "/functions/v1/vision-analyze",
   "/functions/v1/image-edit",
