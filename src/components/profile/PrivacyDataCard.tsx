@@ -10,6 +10,12 @@ import {
   updateCookiePreferences,
   type CookiePreferences,
 } from "@/lib/cookiePreferences";
+import {
+  hasCloudOptIn,
+  isDeviceOnlyPledgeActive,
+  setCloudOptIn,
+  setDeviceOnlyPledgeActive,
+} from "@/lib/privacy/deviceOnlyPledge";
 
 const BUNKER_KEY = "shadowtalk_bunker_mode";
 
@@ -27,6 +33,7 @@ export function PrivacyDataCard() {
   const { toast } = useToast();
   const [prefs, setPrefs] = useState<CookiePreferences>(() => getCookiePreferences());
   const [bunker, setBunker] = useState(() => getBunkerMode());
+  const [deviceOnly, setDeviceOnly] = useState(() => isDeviceOnlyPledgeActive());
 
   const patchPrefs = (partial: Partial<CookiePreferences>) => {
     const next = updateCookiePreferences(partial);
@@ -100,6 +107,50 @@ export function PrivacyDataCard() {
             onCheckedChange={(v) => patchPrefs({ marketing: v })}
           />
         </div>
+
+        <div className="flex items-center justify-between p-4 rounded-xl hover:bg-muted/30 transition-colors border border-emerald-500/20 bg-emerald-500/5">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-emerald-500/10">
+              <Shield className="h-4 w-4 text-emerald-500" />
+            </div>
+            <div>
+              <p className="font-medium text-sm">Device-only pledge</p>
+              <p className="text-xs text-muted-foreground max-w-md">
+                Your data never leaves your device. Chat, IDE, and agents stay local — we cannot read your workspace or messages.
+              </p>
+            </div>
+          </div>
+          <Switch
+            checked={deviceOnly}
+            onCheckedChange={(v) => {
+              if (!v) {
+                const ok = window.confirm(
+                  "Allow cloud AI? Your prompts and code may be sent to third-party providers and stored on our servers. We will not use this for training, but operators could access server logs.",
+                );
+                if (!ok) return;
+                setCloudOptIn(true);
+                setDeviceOnly(false);
+                toast({
+                  title: "Cloud opt-in enabled",
+                  description: "You can revert anytime by turning device-only back on.",
+                  variant: "destructive",
+                });
+                return;
+              }
+              setDeviceOnlyPledgeActive(true);
+              setDeviceOnly(true);
+              toast({
+                title: "Device-only restored",
+                description: "Cloud AI and server chat sync are blocked again.",
+              });
+            }}
+          />
+        </div>
+        {!deviceOnly && hasCloudOptIn() && (
+          <p className="text-xs text-amber-500 px-4 pb-2">
+            Cloud opt-in is active — some data may leave this device.
+          </p>
+        )}
 
         <div className="flex items-center justify-between p-4 rounded-xl hover:bg-muted/30 transition-colors">
           <div className="flex items-center gap-3">
