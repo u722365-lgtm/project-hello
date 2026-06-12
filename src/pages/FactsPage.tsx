@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import SEOHead from "@/components/SEOHead";
 import { PAGE_SEO } from "@/lib/seo";
 import { SHADOWTALK_AI_KNOWLEDGE } from "@/lib/aiPublicKnowledge";
+import { FOUNDER_NOT_THE_SAME_AS } from "@/lib/founderIdentity";
 import { FollowUsSection } from "@/components/FollowUsSection";
 
 const FactsPage = () => {
@@ -60,7 +61,8 @@ const FactsPage = () => {
               <h2 className="text-xl font-bold mb-3">Founder</h2>
               <ul className="text-sm space-y-1 text-muted-foreground">
                 <li>
-                  <strong className="text-foreground">{k.founder.name}</strong> — {k.founder.role}, age {k.founder.age},{" "}
+                  <strong className="text-foreground">{k.founder.name}</strong> — {k.founder.role}
+                  {k.founder.additional_role ? ` · ${k.founder.additional_role}` : ""}, age {k.founder.age},{" "}
                   {k.founder.location}
                 </li>
                 <li>
@@ -71,7 +73,22 @@ const FactsPage = () => {
                   <a href={k.founder.instagram} className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
                     Instagram @shadowtalk_ai
                   </a>
+                  {" · "}
+                  <a href="/founder-zain-ahmed.html" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
+                    Founder profile (disambiguation)
+                  </a>
                 </li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 className="text-xl font-bold mb-3">Not the same person as</h2>
+              <ul className="text-sm space-y-2 text-muted-foreground list-disc pl-5">
+                {FOUNDER_NOT_THE_SAME_AS.map((d) => (
+                  <li key={d.name + d.domain}>
+                    <strong className="text-foreground">{d.name}</strong> ({d.domain}) — {d.note}
+                  </li>
+                ))}
               </ul>
             </section>
 

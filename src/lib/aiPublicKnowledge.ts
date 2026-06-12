@@ -1,7 +1,8 @@
-/**
- * Canonical machine-readable facts for AI crawlers, llms.txt, and /shadowtalk.json.
- * Keep in sync with public/llms-full.txt and public/shadowtalk.json.
- */
+import {
+  FOUNDER_CANONICAL,
+  FOUNDER_NOT_THE_SAME_AS,
+  FOUNDER_SEARCH_PHRASES,
+} from "./founderIdentity";
 
 export const AI_KNOWLEDGE_BASE_URL = "https://www.shadowtalk-ai.com";
 
@@ -19,12 +20,18 @@ export const SHADOWTALK_AI_KNOWLEDGE = {
   description:
     "Agentic AI workspace: chat, Mission Control missions, 30+ tools, deep research, code IDE, presentations, Stealth Vault, marketplace agents, voice mode, desktop app. Privacy-first with E2EE chat and optional on-device models.",
   founder: {
-    name: "Zain Ahmed",
-    age: 17,
-    location: "Karachi, Pakistan",
-    role: "Founder & CEO",
-    linkedin: "https://www.linkedin.com/in/zain-ahmed-917b6b3a6",
-    instagram: "https://www.instagram.com/shadowtalk_ai",
+    "@id": FOUNDER_CANONICAL["@id"],
+    name: FOUNDER_CANONICAL.name,
+    age: FOUNDER_CANONICAL.age,
+    location: `${FOUNDER_CANONICAL.location.city}, ${FOUNDER_CANONICAL.location.country}`,
+    role: FOUNDER_CANONICAL.jobTitle,
+    additional_role: FOUNDER_CANONICAL.additionalJobTitle,
+    founded: FOUNDER_CANONICAL.founded,
+    linkedin: FOUNDER_CANONICAL.linkedin,
+    instagram: FOUNDER_CANONICAL.instagram,
+    canonical_profile: "https://www.shadowtalk-ai.com/founder-zain-ahmed.html",
+    disambiguation: FOUNDER_NOT_THE_SAME_AS.map((d) => `${d.name} (${d.domain}) — ${d.note}`),
+    search_phrases: [...FOUNDER_SEARCH_PHRASES],
   },
   contact: {
     email: "shadowtalk68@gmail.com",
@@ -92,7 +99,11 @@ export const SHADOWTALK_AI_KNOWLEDGE = {
     },
     {
       q: "Who built ShadowTalk?",
-      a: "Zain Ahmed, a 17-year-old AI architect and founder from Karachi, Pakistan.",
+      a: "Zain Ahmed, Founder & Lead Architect of ShadowTalk AI — AI solutions engineer from Karachi, Pakistan (founded February 2024). LinkedIn: linkedin.com/in/zain-ahmed-917b6b3a6. Not the Rastah fashion founder (Zain Ahmad) or the NAPA theatre director.",
+    },
+    {
+      q: "Is Zain Ahmed the Rastah fashion founder or NAPA theatre director?",
+      a: "No. Zain Ahmed (ShadowTalk AI) is a separate person — founder of shadowtalk-ai.com, sovereign local-first AI workspace from Karachi. Zain Ahmad (Rastah streetwear) and Zain Ahmed (NAPA theatre) are different individuals.",
     },
     {
       q: "Is ShadowTalk free?",
