@@ -111,6 +111,25 @@ describe("feature wiring verification", () => {
     expect(readSrc("lib/chatCommandRoutes.ts")).toContain('computer: "/computer"');
   });
 
+  it("ShadowSpectre model wired in chat, cyber command, and edge config", () => {
+    const chat = readSrc("pages/ChatbotPage.tsx");
+    expect(chat).toContain('chatMode === "shadowspectre"');
+    expect(chat).toContain("streamShadowSpectre");
+    expect(chat).toContain("ShadowSpectreScopeBar");
+    expect(chat).toContain('case "shadowspectre"');
+
+    expect(readSrc("components/chat/ModeSelector.tsx")).toContain('"shadowspectre"');
+    expect(readSrc("components/cyber/CyberAICopilot.tsx")).toContain("streamShadowSpectre");
+    expect(readSrc("lib/privacy/cloudEgressGuard.ts")).toContain("/functions/v1/shadowspectre");
+    expect(readSrc("components/chat/CommandPalette.tsx")).toContain("shadowspectre");
+
+    const config = readFileSync(resolve(root, "supabase/config.toml"), "utf-8");
+    expect(config).toContain("[functions.shadowspectre]");
+    expect(readFileSync(resolve(root, "supabase/functions/shadowspectre/index.ts"), "utf-8")).toContain(
+      "buildShadowSpectreSystemPrompt",
+    );
+  });
+
   it("ShadowScale growth engine and admin Growth Command wired", () => {
     expect(readSrc("App.tsx")).toContain("ShadowScaleEngine");
     expect(readSrc("App.tsx")).toContain("ShadowScaleGrowthBanner");

@@ -952,6 +952,9 @@ const ChatbotPage = () => {
       }));
 
       if (chatMode === "shadowspectre") {
+        if (!user || isAnonymous) {
+          throw new Error("Sign in required to use ShadowSpectre.");
+        }
         if (!hasAcceptedShadowSpectreTerms()) {
           setShowShadowSpectreTerms(true);
           throw new Error("Accept ShadowSpectre authorized-use terms to continue.");

@@ -34,6 +34,8 @@ export async function streamShadowSpectre(
     signal,
   });
 
+  const contentType = resp.headers.get("content-type") ?? "";
+
   if (!resp.ok || !resp.body) {
     let detail = `ShadowSpectre request failed (${resp.status})`;
     try {
@@ -43,6 +45,12 @@ export async function streamShadowSpectre(
       // ignore
     }
     throw new Error(detail);
+  }
+
+  // requireAuth failures return 200 + JSON (not SSE)
+  if (contentType.includes("application/json")) {
+    const err = (await resp.json()) as { error?: string };
+    throw new Error(err.error ?? "Sign in required to use ShadowSpectre.");
   }
 
   const resolvedHead = (resp.headers.get("X-ShadowSpectre-Head") ?? head ?? "general") as ShadowSpectreHead;
