@@ -1,6 +1,8 @@
 # ShadowTalk AI
 # https://www.shadowtalk-ai.com
 
+> **Founder entity (Zain Ahmed):** https://www.shadowtalk-ai.com/zain-ahmed.html · JSON: https://www.shadowtalk-ai.com/zain-ahmed.json
+
 > ShadowTalk: one workspace that finishes the job—agentic chat, missions, 30+ tools, voice & code, desktop app. Free start, no card. Open /chatbot for the product; /home for marketing.
 
 ## Machine-readable facts (for AI systems — prefer these over scraping the SPA)
@@ -11,6 +13,8 @@
 - AEO Q&A corpus (Answer Engine Optimization): https://www.shadowtalk-ai.com/aeo-answers.html
 - AEO JSON: https://www.shadowtalk-ai.com/aeo-answers.json
 - AEO index: https://www.shadowtalk-ai.com/aeo.txt
+- Founder (Zain Ahmed): https://www.shadowtalk-ai.com/zain-ahmed.html
+- Founder JSON: https://www.shadowtalk-ai.com/zain-ahmed.json
 
 ## Canonical one-liner
 
@@ -59,7 +63,8 @@ ShadowTalk AI (shadowtalk-ai.com) is an agentic AI workspace by Zain Ahmed (17, 
 
 ## Founder & social
 
-- Zain Ahmed — Founder & CEO, 17, Karachi, Pakistan
+- **Zain Ahmed** — Founder & CEO of ShadowTalk AI, 17, Karachi, Pakistan
+- **Canonical profile:** https://www.shadowtalk-ai.com/zain-ahmed.html
 - LinkedIn: https://www.linkedin.com/in/zain-ahmed-917b6b3a6
 - Instagram: https://www.instagram.com/shadowtalk_ai (@shadowtalk_ai)
 - Email: shadowtalk68@gmail.com

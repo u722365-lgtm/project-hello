@@ -1,5 +1,6 @@
  import { SOCIAL_SAME_AS, FOUNDER_SOCIAL } from "@/lib/socialLinks";
  import { AI_KNOWLEDGE_CANONICAL_PITCH } from "@/lib/aiPublicKnowledge";
+ import { FOUNDER_CANONICAL } from "@/lib/founderIdentity";
 
  // SEO utilities and structured data helpers
  
@@ -19,7 +20,7 @@ export interface PageMeta {
    keywords?: string[];
    canonical?: string;
    ogImage?: string;
-   ogType?: 'website' | 'article' | 'product';
+   ogType?: 'website' | 'article' | 'product' | 'profile';
    twitterCard?: 'summary' | 'summary_large_image';
    noIndex?: boolean;
  }
@@ -67,9 +68,11 @@ export function generateMetaTags(meta: PageMeta): Record<string, string> {
      description: AI_KNOWLEDGE_CANONICAL_PITCH,
      founder: {
        '@type': 'Person',
-       name: FOUNDER_SOCIAL.linkedin.name,
-       jobTitle: 'Founder & CEO',
-       url: FOUNDER_SOCIAL.linkedin.url,
+       '@id': FOUNDER_CANONICAL['@id'],
+       name: FOUNDER_CANONICAL.name,
+       jobTitle: FOUNDER_CANONICAL.jobTitle,
+       url: FOUNDER_CANONICAL.canonicalProfileUrl,
+       sameAs: [FOUNDER_CANONICAL.linkedin, FOUNDER_CANONICAL.instagram],
      },
      sameAs: [
        ...SOCIAL_SAME_AS,
@@ -129,6 +132,41 @@ export function generateMetaTags(meta: PageMeta): Record<string, string> {
          text: faq.answer,
        },
      })),
+   };
+ }
+
+ /** Canonical Person schema for Zain Ahmed — use on founder profile pages */
+ export function getPersonSchema() {
+   return {
+     '@context': 'https://schema.org',
+     '@type': 'Person',
+     '@id': FOUNDER_CANONICAL['@id'],
+     name: FOUNDER_CANONICAL.name,
+     alternateName: [...FOUNDER_CANONICAL.alternateName],
+     jobTitle: FOUNDER_CANONICAL.jobTitle,
+     description: FOUNDER_CANONICAL.description,
+     url: FOUNDER_CANONICAL.canonicalProfileUrl,
+     image: 'https://www.shadowtalk-ai.com/pwa-512x512.png',
+     email: FOUNDER_CANONICAL.email,
+     worksFor: FOUNDER_CANONICAL.worksFor,
+     founder: {
+       '@type': 'Organization',
+       name: 'ShadowTalk AI',
+       url: 'https://www.shadowtalk-ai.com',
+       foundingDate: FOUNDER_CANONICAL.founded,
+     },
+     knowsAbout: [...FOUNDER_CANONICAL.knowsAbout],
+     homeLocation: {
+       '@type': 'Place',
+       name: `${FOUNDER_CANONICAL.location.city}, ${FOUNDER_CANONICAL.location.country}`,
+     },
+     sameAs: [
+       FOUNDER_CANONICAL.linkedin,
+       FOUNDER_CANONICAL.instagram,
+       FOUNDER_CANONICAL.github,
+       'https://www.shadowtalk-ai.com/about',
+       'https://www.shadowtalk-ai.com/zain-ahmed',
+     ],
    };
  }
  
@@ -196,10 +234,33 @@ export const PAGE_SEO: Record<string, PageMeta> = {
     canonical: 'https://www.shadowtalk-ai.com/docs',
   },
   about: {
-    title: 'About Us',
-    description: 'Learn about ShadowTalk AI, our mission, and the team behind the next-generation AI assistant.',
-    keywords: ['about', 'team', 'mission', 'AI company'],
+    title: 'Zain Ahmed — Founder of ShadowTalk AI',
+    description:
+      'Meet Zain Ahmed, founder and lead architect of ShadowTalk AI. 17-year-old AI solutions engineer from Karachi, Pakistan building sovereign agentic AI — encrypted chat, missions, and offline models.',
+    keywords: [
+      'Zain Ahmed',
+      'Zain Ahmed ShadowTalk',
+      'Zain Ahmed founder',
+      'Zain Ahmed AI',
+      'ShadowTalk AI founder',
+      'Karachi AI founder',
+    ],
     canonical: 'https://www.shadowtalk-ai.com/about',
+    ogType: 'profile',
+  },
+  zainAhmed: {
+    title: 'Zain Ahmed — Founder of ShadowTalk AI',
+    description:
+      'Official profile: Zain Ahmed, founder of ShadowTalk AI (shadowtalk-ai.com). AI solutions engineer, age 17, Karachi Pakistan. Not the Rastah fashion founder or NAPA theatre director.',
+    keywords: [
+      'Zain Ahmed',
+      'Zain Ahmed founder',
+      'Zain Ahmed ShadowTalk AI',
+      'Zain Ahmed Pakistan',
+      'Zain Ahmed AI founder',
+    ],
+    canonical: 'https://www.shadowtalk-ai.com/zain-ahmed',
+    ogType: 'profile',
   },
   computer: {
     title: 'Computer Mode — In-Browser Shell',

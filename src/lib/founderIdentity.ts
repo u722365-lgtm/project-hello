@@ -6,7 +6,12 @@
 export const FOUNDER_CANONICAL = {
   "@id": "https://www.shadowtalk-ai.com/#zain-ahmed-shadowtalk",
   name: "Zain Ahmed",
-  alternateName: ["Zain Ahmed — ShadowTalk AI", "Zain Ahmed (ShadowTalk)"],
+  alternateName: [
+    "Zain Ahmed — ShadowTalk AI",
+    "Zain Ahmed (ShadowTalk)",
+    "Zain Ahmed founder of ShadowTalk",
+    "Zain Ahmed AI founder Karachi",
+  ],
   jobTitle: "Founder & Lead Architect",
   additionalJobTitle: "AI Solutions Engineer",
   worksFor: {
@@ -28,11 +33,16 @@ export const FOUNDER_CANONICAL = {
   instagramHandle: "@shadowtalk_ai",
   email: "shadowtalk68@gmail.com",
   github: "https://github.com/zain836/shadowtalk-ai-903ca615",
+  /** Primary entity URL for "Zain Ahmed" name searches — exact-match slug */
+  canonicalProfileUrl: "https://www.shadowtalk-ai.com/zain-ahmed.html",
   profilePages: [
+    "https://www.shadowtalk-ai.com/zain-ahmed",
+    "https://www.shadowtalk-ai.com/zain-ahmed.html",
+    "https://www.shadowtalk-ai.com/founder-zain-ahmed.html",
     "https://www.shadowtalk-ai.com/about",
     "https://www.shadowtalk-ai.com/facts",
     "https://www.shadowtalk-ai.com/facts.html",
-    "https://www.shadowtalk-ai.com/founder-zain-ahmed.html",
+    "https://www.shadowtalk-ai.com/answers",
   ],
   knowsAbout: [
     "Artificial Intelligence",
@@ -59,8 +69,11 @@ export const FOUNDER_NOT_THE_SAME_AS = [
 ] as const;
 
 export const FOUNDER_SEARCH_PHRASES = [
+  "Zain Ahmed",
   "Zain Ahmed ShadowTalk AI",
+  "Zain Ahmed founder of ShadowTalk",
   "Zain Ahmed ShadowTalk founder Karachi",
   "Zain Ahmed AI solutions engineer Pakistan",
+  "Zain Ahmed AI founder Pakistan",
   "founder of shadowtalk-ai.com",
 ] as const;

@@ -21,12 +21,16 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import SEOHead from "@/components/SEOHead";
+import { PAGE_SEO, getPersonSchema } from "@/lib/seo";
 
 const AboutPage = () => {
   const navigate = useNavigate();
+  const personSchema = getPersonSchema();
 
   return (
     <div className="min-h-screen bg-background about-page">
+      <SEOHead meta={PAGE_SEO.about} structuredData={personSchema} />
       <AboutScrollProgress />
       <Navigation />
 

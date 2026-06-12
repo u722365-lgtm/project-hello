@@ -91,6 +91,10 @@ export default defineConfig(({ mode }) => {
           "aeo-answers.html",
           "aeo-answers.json",
           "aeo.txt",
+          "zain-ahmed.html",
+          "zain-ahmed.json",
+          "zain-ahmed.txt",
+          "founder-zain-ahmed.html",
         ],
         manifest: {
           name: "ShadowTalk AI",

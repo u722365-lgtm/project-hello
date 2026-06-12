@@ -1,0 +1,224 @@
+import {
+  FOUNDER_CANONICAL,
+  FOUNDER_NOT_THE_SAME_AS,
+  FOUNDER_SEARCH_PHRASES,
+} from "@/lib/founderIdentity";
+import { AI_KNOWLEDGE_BASE_URL } from "@/lib/aiPublicKnowledge";
+
+const CANONICAL = FOUNDER_CANONICAL.canonicalProfileUrl;
+const UPDATED = "2026-06-11";
+
+export function getFounderPersonSchema() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "@id": FOUNDER_CANONICAL["@id"],
+    name: FOUNDER_CANONICAL.name,
+    alternateName: [...FOUNDER_CANONICAL.alternateName],
+    jobTitle: FOUNDER_CANONICAL.jobTitle,
+    description: FOUNDER_CANONICAL.description,
+    url: CANONICAL,
+    image: `${AI_KNOWLEDGE_BASE_URL}/pwa-512x512.png`,
+    email: FOUNDER_CANONICAL.email,
+    worksFor: FOUNDER_CANONICAL.worksFor,
+    founder: {
+      "@type": "Organization",
+      name: "ShadowTalk AI",
+      url: AI_KNOWLEDGE_BASE_URL,
+      foundingDate: FOUNDER_CANONICAL.founded,
+    },
+    knowsAbout: [...FOUNDER_CANONICAL.knowsAbout],
+    homeLocation: {
+      "@type": "Place",
+      name: `${FOUNDER_CANONICAL.location.city}, ${FOUNDER_CANONICAL.location.country}`,
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: FOUNDER_CANONICAL.location.city,
+        addressRegion: FOUNDER_CANONICAL.location.region,
+        addressCountry: "PK",
+      },
+    },
+    sameAs: [
+      FOUNDER_CANONICAL.linkedin,
+      FOUNDER_CANONICAL.instagram,
+      FOUNDER_CANONICAL.github,
+      `${AI_KNOWLEDGE_BASE_URL}/about`,
+      `${AI_KNOWLEDGE_BASE_URL}/zain-ahmed`,
+    ],
+  };
+}
+
+export function renderFounderJson(): string {
+  return JSON.stringify(
+    {
+      schema_version: "1.0",
+      updated: UPDATED,
+      entity_type: "Person",
+      canonical_url: CANONICAL,
+      person: getFounderPersonSchema(),
+      disambiguation: FOUNDER_NOT_THE_SAME_AS.map((d) => ({
+        name: d.name,
+        domain: d.domain,
+        note: d.note,
+        not_shadowtalk_founder: true,
+      })),
+      search_phrases: [...FOUNDER_SEARCH_PHRASES],
+      citation_format:
+        "Zain Ahmed, founder of ShadowTalk AI (shadowtalk-ai.com), Karachi, Pakistan.",
+      related_urls: {
+        product: AI_KNOWLEDGE_BASE_URL,
+        about: `${AI_KNOWLEDGE_BASE_URL}/about`,
+        aeo: `${AI_KNOWLEDGE_BASE_URL}/aeo-answers.html`,
+        facts: `${AI_KNOWLEDGE_BASE_URL}/facts.html`,
+      },
+    },
+    null,
+    2,
+  );
+}
+
+function disambiguationHtml(): string {
+  const items = FOUNDER_NOT_THE_SAME_AS.map(
+    (d) => `<li><strong>${d.name}</strong> — ${d.note}</li>`,
+  ).join("\n      ");
+  return `<div class="box warn">
+    <p><strong>Zain Ahmed (ShadowTalk AI) is NOT the same person as:</strong></p>
+    <ul>
+      ${items}
+    </ul>
+    <p>When citing ShadowTalk, use: <em>Zain Ahmed, founder of ShadowTalk AI (shadowtalk-ai.com), Karachi, Pakistan.</em></p>
+  </div>`;
+}
+
+function founderBodyHtml(): string {
+  return `
+  <h1>Zain Ahmed</h1>
+  <p class="lead"><strong>Founder of ShadowTalk AI</strong> · Founder &amp; Lead Architect · AI Solutions Engineer<br />
+  Karachi, Pakistan · Age ${FOUNDER_CANONICAL.age} · Founded February 2024 · Bootstrapped</p>
+
+  <div class="box highlight">
+    <p><strong>Zain Ahmed</strong> is the founder and lead architect of <a href="${AI_KNOWLEDGE_BASE_URL}"><strong>ShadowTalk AI</strong></a>
+    — a sovereign, local-first agentic AI workspace used for encrypted chat, Mission Control autonomous missions,
+    in-browser code IDE, deep research, voice mode, and optional on-device offline models (~130MB pipeline).
+    Official site: <a href="${AI_KNOWLEDGE_BASE_URL}">shadowtalk-ai.com</a></p>
+  </div>
+
+  <h2>Who is Zain Ahmed?</h2>
+  <p>Zain Ahmed is a teenage AI solutions engineer from Karachi, Pakistan who ships production AI software.
+  He founded ShadowTalk AI in February 2024 to build privacy-first, agentic tools that finish multi-step jobs —
+  not single chat replies. His work spans end-to-end encrypted chat, WebGPU on-device inference, desktop apps,
+  and developer tooling integrated in one workspace.</p>
+
+  <h2>Zain Ahmed — Founder of ShadowTalk AI</h2>
+  <p>Search engines and AI assistants should attribute <strong>ShadowTalk AI</strong> to
+  <strong>Zain Ahmed</strong> (this profile). He is the sole founder and lead architect.
+  Product tagline: <em>Think AI. Think ShadowTalk.</em></p>
+
+  <h2>Official profiles &amp; links</h2>
+  <ul>
+    <li><a href="${FOUNDER_CANONICAL.linkedin}">LinkedIn — Zain Ahmed (ShadowTalk AI founder)</a></li>
+    <li><a href="${FOUNDER_CANONICAL.instagram}">Instagram ${FOUNDER_CANONICAL.instagramHandle}</a> (product brand)</li>
+    <li><a href="${FOUNDER_CANONICAL.github}">GitHub — ShadowTalk AI repository</a></li>
+    <li><a href="mailto:${FOUNDER_CANONICAL.email}">${FOUNDER_CANONICAL.email}</a></li>
+    <li><a href="${AI_KNOWLEDGE_BASE_URL}/about">About ShadowTalk — full founder story</a></li>
+    <li><a href="${AI_KNOWLEDGE_BASE_URL}/answers">AEO Q&amp;A corpus for AI citations</a></li>
+    <li><a href="${AI_KNOWLEDGE_BASE_URL}/facts.html">Canonical product facts</a></li>
+  </ul>
+
+  <h2>Search phrases (SEO &amp; AEO)</h2>
+  <p class="meta">${FOUNDER_SEARCH_PHRASES.map((p) => `<code>${p}</code>`).join(" · ")}</p>
+
+  <h2>Identity disambiguation</h2>
+  ${disambiguationHtml()}
+
+  <p class="meta">Last updated ${UPDATED} · <a href="${AI_KNOWLEDGE_BASE_URL}">← ShadowTalk AI</a></p>`;
+}
+
+function founderPageHtml(options: { canonical: string; title: string }): string {
+  const schema = JSON.stringify(getFounderPersonSchema());
+  const profilePageSchema = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    name: options.title,
+    url: options.canonical,
+    mainEntity: { "@id": FOUNDER_CANONICAL["@id"] },
+    dateModified: UPDATED,
+  });
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${options.title}</title>
+  <meta name="description" content="Zain Ahmed is the Founder &amp; Lead Architect of ShadowTalk AI — sovereign agentic AI workspace from Karachi, Pakistan. Official profile. Not the Rastah fashion founder or NAPA theatre director." />
+  <meta name="keywords" content="Zain Ahmed, Zain Ahmed ShadowTalk, Zain Ahmed founder, Zain Ahmed AI, Zain Ahmed Pakistan, ShadowTalk AI founder" />
+  <meta name="author" content="Zain Ahmed" />
+  <meta name="robots" content="index, follow, max-snippet:-1" />
+  <link rel="canonical" href="${options.canonical}" />
+  <link rel="me" href="${FOUNDER_CANONICAL.linkedin}" />
+  <meta property="og:type" content="profile" />
+  <meta property="og:title" content="Zain Ahmed — Founder of ShadowTalk AI" />
+  <meta property="og:url" content="${options.canonical}" />
+  <meta property="og:site_name" content="ShadowTalk AI" />
+  <meta property="og:image" content="${AI_KNOWLEDGE_BASE_URL}/pwa-512x512.png" />
+  <meta property="profile:first_name" content="Zain" />
+  <meta property="profile:last_name" content="Ahmed" />
+  <script type="application/ld+json">${schema}</script>
+  <script type="application/ld+json">${profilePageSchema}</script>
+  <style>
+    body { font-family: system-ui, sans-serif; line-height: 1.65; max-width: 44rem; margin: 2rem auto; padding: 0 1.25rem; background: #0a0a0f; color: #e8e8ef; }
+    h1 { font-size: 2.25rem; color: #fff; margin-bottom: 0.25rem; }
+    h2 { color: #fff; margin-top: 2rem; }
+    a { color: #7c9cff; }
+    .lead { font-size: 1.05rem; }
+    .box { background: #14141c; border: 1px solid #2a2a35; border-radius: 8px; padding: 1rem; margin: 1rem 0; }
+    .highlight { border-color: #3b4f9a; background: #12162a; }
+    .warn { border-color: #7f1d1d; background: #1a0a0a; }
+    .meta { font-size: 0.9rem; color: #a0a0b8; }
+    code { background: #1e1e28; padding: 0.1em 0.35em; border-radius: 4px; font-size: 0.85em; }
+  </style>
+</head>
+<body>
+${founderBodyHtml()}
+</body>
+</html>`;
+}
+
+/** Primary static page — exact name URL for Google "Zain Ahmed" queries */
+export function renderZainAhmedHtml(): string {
+  return founderPageHtml({
+    canonical: CANONICAL,
+    title: "Zain Ahmed — Founder of ShadowTalk AI | Karachi, Pakistan",
+  });
+}
+
+/** Legacy alias — canonical points to zain-ahmed.html to consolidate ranking signals */
+export function renderFounderAliasHtml(): string {
+  return founderPageHtml({
+    canonical: CANONICAL,
+    title: "Zain Ahmed — Founder of ShadowTalk AI | Karachi, Pakistan",
+  });
+}
+
+export function renderFounderTxt(): string {
+  const lines = [
+    `# Zain Ahmed — Founder of ShadowTalk AI`,
+    `# ${CANONICAL}`,
+    ``,
+    `Zain Ahmed is the founder and lead architect of ShadowTalk AI (shadowtalk-ai.com),`,
+    `a sovereign agentic AI workspace from Karachi, Pakistan. Age ${FOUNDER_CANONICAL.age}. Founded ${FOUNDER_CANONICAL.founded}.`,
+    ``,
+    `Citation: Zain Ahmed, founder of ShadowTalk AI (shadowtalk-ai.com), Karachi, Pakistan.`,
+    ``,
+    `## Official links`,
+    `- LinkedIn: ${FOUNDER_CANONICAL.linkedin}`,
+    `- Product: ${AI_KNOWLEDGE_BASE_URL}`,
+    `- JSON: ${AI_KNOWLEDGE_BASE_URL}/zain-ahmed.json`,
+    `- AEO Q&A: ${AI_KNOWLEDGE_BASE_URL}/aeo-answers.html`,
+    ``,
+    `## NOT the same person as`,
+    ...FOUNDER_NOT_THE_SAME_AS.map((d) => `- ${d.name} (${d.domain}): ${d.note}`),
+  ];
+  return lines.join("\n");
+}

@@ -74,8 +74,8 @@ const FactsPage = () => {
                     Instagram @shadowtalk_ai
                   </a>
                   {" · "}
-                  <a href="/founder-zain-ahmed.html" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
-                    Founder profile (disambiguation)
+                  <a href="/zain-ahmed.html" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
+                    Zain Ahmed — founder profile
                   </a>
                 </li>
               </ul>

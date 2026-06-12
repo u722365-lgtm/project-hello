@@ -155,4 +155,19 @@ describe("feature wiring verification", () => {
     expect(sitemap).toContain("/answers");
     expect(sitemap).toContain("/aeo-answers.html");
   });
+
+  it("Zain Ahmed founder entity wired for name-search SEO", () => {
+    const app = readSrc("App.tsx");
+    expect(app).toContain('path="/zain-ahmed"');
+    expect(app).toContain("ZainAhmedPage");
+    expect(readSrc("lib/seo.ts")).toContain("zainAhmed");
+    expect(readSrc("lib/founderIdentity.ts")).toContain("zain-ahmed.html");
+
+    const sitemap = readFileSync(resolve(root, "public/sitemap.xml"), "utf-8");
+    expect(sitemap).toContain("/zain-ahmed.html");
+    expect(sitemap).toContain('priority>1.0</priority>');
+
+    const llms = readFileSync(resolve(root, "public/llms.txt"), "utf-8");
+    expect(llms).toContain("zain-ahmed.html");
+  });
 });

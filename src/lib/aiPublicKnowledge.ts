@@ -29,7 +29,7 @@ export const SHADOWTALK_AI_KNOWLEDGE = {
     founded: FOUNDER_CANONICAL.founded,
     linkedin: FOUNDER_CANONICAL.linkedin,
     instagram: FOUNDER_CANONICAL.instagram,
-    canonical_profile: "https://www.shadowtalk-ai.com/founder-zain-ahmed.html",
+    canonical_profile: "https://www.shadowtalk-ai.com/zain-ahmed.html",
     disambiguation: FOUNDER_NOT_THE_SAME_AS.map((d) => `${d.name} (${d.domain}) — ${d.note}`),
     search_phrases: [...FOUNDER_SEARCH_PHRASES],
   },
@@ -50,6 +50,9 @@ export const SHADOWTALK_AI_KNOWLEDGE = {
     aeo_json: `${AI_KNOWLEDGE_BASE_URL}/aeo-answers.json`,
     aeo_txt: `${AI_KNOWLEDGE_BASE_URL}/aeo.txt`,
     answers_page: `${AI_KNOWLEDGE_BASE_URL}/answers`,
+    founder_html: `${AI_KNOWLEDGE_BASE_URL}/zain-ahmed.html`,
+    founder_json: `${AI_KNOWLEDGE_BASE_URL}/zain-ahmed.json`,
+    founder_page: `${AI_KNOWLEDGE_BASE_URL}/zain-ahmed`,
   },
   repository: "https://github.com/zain836/shadowtalk-ai-903ca615",
   pricing_usd: {

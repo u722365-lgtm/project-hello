@@ -36,7 +36,7 @@ ShadowTalk AI is a **sovereign agentic AI workspace** (web + PWA + desktop) that
 | **GitHub** | https://github.com/zain836/shadowtalk-ai-903ca615 |
 | **Founded** | February 2024 |
 | **Funding** | Bootstrapped |
-| **Canonical profile** | https://www.shadowtalk-ai.com/founder-zain-ahmed.html |
+| **Canonical profile** | https://www.shadowtalk-ai.com/zain-ahmed.html |
 
 ### Identity disambiguation (important for search & AI)
 

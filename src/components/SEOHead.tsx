@@ -1,14 +1,19 @@
  import { Helmet } from 'react-helmet-async';
  import { PageMeta, generateMetaTags, getOrganizationSchema } from '@/lib/seo';
  
- interface SEOHeadProps {
-   meta: PageMeta;
-   structuredData?: Record<string, unknown>;
- }
- 
- export function SEOHead({ meta, structuredData }: SEOHeadProps) {
-   const tags = generateMetaTags(meta);
-   const baseUrl = 'https://www.shadowtalk-ai.com';
+interface SEOHeadProps {
+  meta: PageMeta;
+  structuredData?: Record<string, unknown> | Record<string, unknown>[];
+}
+
+export function SEOHead({ meta, structuredData }: SEOHeadProps) {
+  const tags = generateMetaTags(meta);
+  const baseUrl = 'https://www.shadowtalk-ai.com';
+  const extraSchemas = structuredData
+    ? Array.isArray(structuredData)
+      ? structuredData
+      : [structuredData]
+    : [];
  
    return (
      <Helmet>
@@ -41,11 +46,11 @@
        <script type="application/ld+json">
          {JSON.stringify(getOrganizationSchema())}
        </script>
-       {structuredData && (
-         <script type="application/ld+json">
-           {JSON.stringify(structuredData)}
-         </script>
-       )}
+      {extraSchemas.map((schema, index) => (
+        <script key={index} type="application/ld+json">
+          {JSON.stringify(schema)}
+        </script>
+      ))}
      </Helmet>
    );
  }
