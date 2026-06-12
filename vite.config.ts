@@ -88,6 +88,9 @@ export default defineConfig(({ mode }) => {
           "llms-full.txt",
           "shadowtalk.json",
           "facts.html",
+          "aeo-answers.html",
+          "aeo-answers.json",
+          "aeo.txt",
         ],
         manifest: {
           name: "ShadowTalk AI",

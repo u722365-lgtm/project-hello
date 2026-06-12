@@ -71,6 +71,7 @@ import { PushIntelligencePanel } from "@/components/chat/PushIntelligencePanel";
  const CareersPage = lazy(() => import("./pages/CareersPage"));
  const PressPage = lazy(() => import("./pages/PressPage"));
  const FactsPage = lazy(() => import("./pages/FactsPage"));
+const AnswersPage = lazy(() => import("./pages/AnswersPage"));
  const ComputerModePage = lazy(() => import("./pages/ComputerModePage"));
  const PrivacyPolicyPage = lazy(() => import("./pages/PrivacyPolicyPage"));
  const TermsOfServicePage = lazy(() => import("./pages/TermsOfServicePage"));
@@ -196,6 +197,7 @@ const AnimatedRoutes = () => {
           <Route path="/careers" element={<PageTransition><CareersPage /></PageTransition>} />
           <Route path="/press" element={<PageTransition><PressPage /></PageTransition>} />
           <Route path="/facts" element={<PageTransition><FactsPage /></PageTransition>} />
+          <Route path="/answers" element={<PageTransition><AnswersPage /></PageTransition>} />
           <Route path="/computer" element={<PageTransition><ComputerModePage /></PageTransition>} />
           <Route path="/privacy" element={<PageTransition><PrivacyPolicyPage /></PageTransition>} />
           <Route path="/terms" element={<PageTransition><TermsOfServicePage /></PageTransition>} />

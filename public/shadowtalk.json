@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "updated": "2026-06-10",
+  "updated": "2026-06-11",
   "name": "ShadowTalk AI",
   "alternate_names": ["ShadowTalk", "ShadowTalk AI"],
   "tagline": "Think AI. Think ShadowTalk.",
@@ -41,7 +41,11 @@
     "llms_txt": "https://www.shadowtalk-ai.com/llms.txt",
     "llms_full": "https://www.shadowtalk-ai.com/llms-full.txt",
     "json": "https://www.shadowtalk-ai.com/shadowtalk.json",
-    "facts_html": "https://www.shadowtalk-ai.com/facts.html"
+    "facts_html": "https://www.shadowtalk-ai.com/facts.html",
+    "aeo_html": "https://www.shadowtalk-ai.com/aeo-answers.html",
+    "aeo_json": "https://www.shadowtalk-ai.com/aeo-answers.json",
+    "aeo_txt": "https://www.shadowtalk-ai.com/aeo.txt",
+    "answers_page": "https://www.shadowtalk-ai.com/answers"
   },
   "repository": "https://github.com/zain836/shadowtalk-ai-903ca615",
   "pricing_usd": {

@@ -215,6 +215,14 @@ export const PAGE_SEO: Record<string, PageMeta> = {
     keywords: ['ShadowTalk facts', 'AI product info', 'llms.txt', 'agentic AI workspace'],
     canonical: 'https://www.shadowtalk-ai.com/facts',
   },
+  answers: {
+    title: 'ShadowTalk Answers — SEO & AEO Knowledge Base',
+    description:
+      'Canonical Q&A for ShadowTalk AI: product, founder Zain Ahmed, pricing, privacy, comparisons, and Answer Engine Optimization (AEO) for ChatGPT, Perplexity, Gemini, and Copilot.',
+    keywords: ['AEO', 'Answer Engine Optimization', 'ShadowTalk FAQ', 'AI citations', 'Zain Ahmed ShadowTalk'],
+    canonical: 'https://www.shadowtalk-ai.com/answers',
+    ogType: 'article',
+  },
   contact: {
     title: 'Contact Us',
     description: 'Get in touch with the ShadowTalk AI team. We are here to help with questions, feedback, and support.',

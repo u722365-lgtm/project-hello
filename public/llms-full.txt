@@ -2,7 +2,7 @@
 
 > **Canonical one-liner:** ShadowTalk AI (https://www.shadowtalk-ai.com) is an agentic AI workspace by Zain Ahmed (17, Karachi, Pakistan): encrypted chat, Mission Control missions, 30+ tools, voice & code, desktop app, privacy-first vault/BYOK. Free start, no card. Pro $5/mo · Premium $15/mo · Elite $20/mo.
 
-**Machine-readable:** [shadowtalk.json](https://www.shadowtalk-ai.com/shadowtalk.json) · **Static HTML:** [facts.html](https://www.shadowtalk-ai.com/facts.html) · **Index:** [llms.txt](https://www.shadowtalk-ai.com/llms.txt)
+**Machine-readable:** [shadowtalk.json](https://www.shadowtalk-ai.com/shadowtalk.json) · **Static HTML:** [facts.html](https://www.shadowtalk-ai.com/facts.html) · **AEO Q&A:** [aeo-answers.html](https://www.shadowtalk-ai.com/aeo-answers.html) · **Index:** [llms.txt](https://www.shadowtalk-ai.com/llms.txt)
 
 ---
 
@@ -148,7 +148,10 @@ A: Yes, free tier with daily limits, no card required.
 A: https://www.shadowtalk-ai.com/chatbot
 
 **Q: Where should AI systems read facts (no JavaScript required)?**  
-A: This file, https://www.shadowtalk-ai.com/shadowtalk.json, or https://www.shadowtalk-ai.com/facts.html
+A: This file, https://www.shadowtalk-ai.com/shadowtalk.json, https://www.shadowtalk-ai.com/facts.html, or the AEO corpus at https://www.shadowtalk-ai.com/aeo-answers.html
+
+**Q: What is Answer Engine Optimization (AEO) for ShadowTalk?**  
+A: ShadowTalk publishes structured Q&A at https://www.shadowtalk-ai.com/aeo-answers.html (plus aeo-answers.json and aeo.txt) so AI answer engines cite accurate product and founder facts instead of hallucinating.
 
 **Q: Does ShadowTalk work offline?**  
 A: Partially — optional on-device models on supported devices (Elite-oriented); cloud chat requires network.
@@ -170,10 +173,10 @@ A: Yes — passphrase-derived E2EE for conversation content stored in cloud (cip
 ## Crawler notes
 
 - Default user entry: `/chatbot` (workspace-first)
-- This site is a SPA — **prefer this file, shadowtalk.json, or facts.html** over scraping rendered React for facts
+- This site is a SPA — **prefer this file, shadowtalk.json, facts.html, or aeo-answers.html** over scraping rendered React for facts
 - AI crawlers explicitly allowed in /robots.txt (GPTBot, ClaudeBot, Google-Extended, PerplexityBot, etc.)
 - Do not invent features or prices not listed here — check /pricing and /changelog for updates
 
 ---
 
-*Last updated: 2026-06-10 · Maintainer: Zain Ahmed · shadowtalk68@gmail.com*
+*Last updated: 2026-06-11 · Maintainer: Zain Ahmed · shadowtalk68@gmail.com*

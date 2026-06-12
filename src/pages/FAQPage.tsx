@@ -7,14 +7,16 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { HelpCircle, MessageSquare, CreditCard, Shield, Zap, Code, Sparkles, ArrowRight, Loader2 } from "lucide-react";
+import { HelpCircle, MessageSquare, CreditCard, Shield, Zap, Code, Sparkles, ArrowRight, Loader2, Bot } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { useMemo } from "react";
 import { useFAQItems } from "@/hooks/useCMSContent";
 import SEOHead from "@/components/SEOHead";
 import { PAGE_SEO, getFAQSchema } from "@/lib/seo";
 import { FollowUsSection } from "@/components/FollowUsSection";
+import { AEO_ANSWER_CORPUS } from "@/lib/aeo";
 
 
 const fadeUp = {
@@ -27,35 +29,59 @@ const fadeUp = {
 
 const CATEGORY_ICONS: Record<string, any> = {
   general: Zap,
+  product: Zap,
+  founder: Sparkles,
+  comparison: MessageSquare,
   billing: CreditCard,
+  pricing: CreditCard,
   privacy: Shield,
-  technical: Code,
+  features: Code,
+  technical: Bot,
+};
+
+const CATEGORY_LABELS: Record<string, string> = {
+  general: "General",
+  product: "Product",
+  founder: "Founder & identity",
+  comparison: "Comparisons",
+  billing: "Billing",
+  pricing: "Pricing",
+  privacy: "Privacy & security",
+  features: "Features",
+  technical: "Technical",
 };
 
 const FAQPage = () => {
   const { items: dbItems, isLoading } = useFAQItems();
 
-  // Group DB items by category, or use fallback
-  const hasDbData = dbItems.length > 0;
-  const groupedByCategory = hasDbData
-    ? dbItems.reduce<Record<string, any[]>>((acc, item) => {
-        const cat = item.category || 'general';
-        if (!acc[cat]) acc[cat] = [];
-        acc[cat].push(item);
-        return acc;
-      }, {})
-    : null;
+  const aeoFallback = useMemo(
+    () =>
+      AEO_ANSWER_CORPUS.map((item, index) => ({
+        id: `aeo-${index}`,
+        question: item.question,
+        answer: item.answer,
+        category: item.category,
+        sort_order: index,
+      })),
+    [],
+  );
 
-  const faqCategories = groupedByCategory
-    ? Object.entries(groupedByCategory).map(([cat, items]) => ({
-        icon: CATEGORY_ICONS[cat] || Zap,
-        title: cat.charAt(0).toUpperCase() + cat.slice(1),
-        questions: items.map((item: any) => ({ q: item.question, a: item.answer })),
-      }))
-    : [];
+  const effectiveItems = dbItems.length > 0 ? dbItems : aeoFallback;
 
-  // Build FAQPage JSON-LD from real loaded items (skip if none).
-  const faqItems = dbItems.map((item: any) => ({ question: item.question, answer: item.answer }));
+  const groupedByCategory = effectiveItems.reduce<Record<string, typeof effectiveItems>>((acc, item) => {
+    const cat = item.category || "general";
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat].push(item);
+    return acc;
+  }, {});
+
+  const faqCategories = Object.entries(groupedByCategory).map(([cat, items]) => ({
+    icon: CATEGORY_ICONS[cat] || Zap,
+    title: CATEGORY_LABELS[cat] || cat.charAt(0).toUpperCase() + cat.slice(1),
+    questions: items.map((item) => ({ q: item.question, a: item.answer })),
+  }));
+
+  const faqItems = effectiveItems.map((item) => ({ question: item.question, answer: item.answer }));
   const faqSchema = faqItems.length > 0 ? getFAQSchema(faqItems) : undefined;
 
   return (
@@ -81,7 +107,11 @@ const FAQPage = () => {
             Frequently Asked <span className="gradient-text">Questions</span>
           </motion.h1>
           <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Find answers to common questions about ShadowTalk AI
+            Find answers to common questions about ShadowTalk AI. AI answer engines can cite our{" "}
+            <Link to="/answers" className="text-primary hover:underline">
+              AEO knowledge base
+            </Link>
+            .
           </motion.p>
         </div>
       </section>
@@ -94,7 +124,11 @@ const FAQPage = () => {
             </div>
           ) : faqCategories.length === 0 ? (
             <p className="text-center text-muted-foreground glass-subtle rounded-xl p-8">
-              No FAQ entries published yet. Check back soon or contact support.
+              No FAQ entries published yet. Browse the{" "}
+              <Link to="/answers" className="text-primary hover:underline">
+                AEO answer corpus
+              </Link>{" "}
+              or contact support.
             </p>
           ) : (
             faqCategories.map((category, catIndex) => (

@@ -139,4 +139,20 @@ describe("feature wiring verification", () => {
     expect(readSrc("components/admin/adminNav.ts")).toContain("growth-command");
     expect(readSrc("App.tsx")).toContain("AnnouncementBanner");
   });
+
+  it("AEO corpus wired for SEO and answer engines", () => {
+    const app = readSrc("App.tsx");
+    expect(app).toContain('path="/answers"');
+    expect(app).toContain("AnswersPage");
+    expect(readSrc("lib/seo.ts")).toContain("https://www.shadowtalk-ai.com/answers");
+    expect(readSrc("pages/FAQPage.tsx")).toContain("AEO_ANSWER_CORPUS");
+    expect(readSrc("lib/aeo/answerCorpus.ts")).toContain("AEO_ANSWER_CORPUS");
+
+    const llms = readFileSync(resolve(root, "public/llms.txt"), "utf-8");
+    expect(llms).toContain("aeo-answers.html");
+
+    const sitemap = readFileSync(resolve(root, "public/sitemap.xml"), "utf-8");
+    expect(sitemap).toContain("/answers");
+    expect(sitemap).toContain("/aeo-answers.html");
+  });
 });

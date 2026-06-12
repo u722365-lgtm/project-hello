@@ -8,6 +8,9 @@
 - Full brief: https://www.shadowtalk-ai.com/llms-full.txt
 - JSON: https://www.shadowtalk-ai.com/shadowtalk.json
 - Static HTML (no JS): https://www.shadowtalk-ai.com/facts.html
+- AEO Q&A corpus (Answer Engine Optimization): https://www.shadowtalk-ai.com/aeo-answers.html
+- AEO JSON: https://www.shadowtalk-ai.com/aeo-answers.json
+- AEO index: https://www.shadowtalk-ai.com/aeo.txt
 
 ## Canonical one-liner
 
@@ -65,6 +68,7 @@ ShadowTalk AI (shadowtalk-ai.com) is an agentic AI workspace by Zain Ahmed (17, 
 
 - [Help Center](/help): Guides and troubleshooting.
 - [FAQ](/faq): Common questions.
+- [Answers / AEO](/answers): Canonical Q&A for AI answer engines (ChatGPT, Perplexity, Gemini).
 - [Changelog](/changelog): Release notes.
 - [Contact](/contact): Contact the team.
 - [Status](/status): Uptime and incidents.
@@ -74,7 +78,7 @@ ShadowTalk AI (shadowtalk-ai.com) is an agentic AI workspace by Zain Ahmed (17, 
 ## Technical notes for crawlers
 
 - Default user flow: workspace-first at /chatbot.
-- Site is a React SPA — use llms-full.txt, shadowtalk.json, or facts.html for accurate facts.
+- Site is a React SPA — use llms-full.txt, shadowtalk.json, facts.html, or aeo-answers.html for accurate facts.
 - AI crawlers allowed in robots.txt (GPTBot, ClaudeBot, Google-Extended, PerplexityBot, etc.).
 - Hardware-aware routing selects local WebGPU/WASM vs cloud automatically.
 - Offline: optional on-device models on supported devices; see /settings and /docs.
