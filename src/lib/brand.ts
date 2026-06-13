@@ -68,7 +68,7 @@ export const LANDING_COPY = {
       "Limits, billing, privacy, and integrations — answered here and in /docs so you can choose ShadowTalk with confidence.",
   },
   founder: {
-    line: "Crafted by a founder obsessed with agentic AI that actually ships — not slide decks.",
+    line: "Built by Zain Ahmed Fahad Patel — founder obsessed with agentic AI that actually ships.",
   },
 } as const;
 

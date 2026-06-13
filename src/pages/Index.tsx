@@ -2,7 +2,7 @@ import { lazy, Suspense } from "react";
 import LandingNavigation from "@/components/landing/LandingNavigation";
 import HeroSection from "@/components/HeroSection";
 import { SEOHead } from "@/components/SEOHead";
-import { PAGE_SEO } from "@/lib/seo";
+import { PAGE_SEO, getFounderHomeStructuredData } from "@/lib/seo";
 import LandingPageShell from "@/components/landing/LandingPageShell";
 import LandingSectionReveal from "@/components/landing/LandingSectionReveal";
 import LandingSectionFallback from "@/components/landing/LandingSectionFallback";
@@ -17,12 +17,13 @@ const TestimonialsSection = lazy(() => import("@/components/TestimonialsSection"
 const CommunitySection = lazy(() => import("@/components/CommunitySection"));
 const FAQSection = lazy(() => import("@/components/FAQSection"));
 const CommunityBuildingBlock = lazy(() => import("@/components/growth/CommunityBuildingBlock"));
+const FounderSpotlightSection = lazy(() => import("@/components/founder/FounderSpotlightSection"));
 const Footer = lazy(() => import("@/components/Footer"));
 
 const Index = () => {
   return (
     <>
-      <SEOHead meta={PAGE_SEO.home} />
+      <SEOHead meta={PAGE_SEO.home} structuredData={getFounderHomeStructuredData()} />
       <PlatformMetricsProvider>
         <LandingPageShell>
           <LandingMotionProvider>
@@ -62,6 +63,11 @@ const Index = () => {
               <Suspense fallback={<LandingSectionFallback />}>
                 <LandingSectionReveal preset="fadeUp">
                   <CommunityBuildingBlock />
+                </LandingSectionReveal>
+              </Suspense>
+              <Suspense fallback={<LandingSectionFallback />}>
+                <LandingSectionReveal preset="fadeUp">
+                  <FounderSpotlightSection />
                 </LandingSectionReveal>
               </Suspense>
               <Suspense fallback={<LandingSectionFallback />}>

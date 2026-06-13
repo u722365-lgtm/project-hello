@@ -195,4 +195,15 @@ describe("feature wiring verification", () => {
     expect(readSrc("lib/aeo/answerCorpus.ts")).toContain('category: "google"');
     expect(readSrc("lib/googleSeo/syncGoogleSeoAssets.test.ts")).toContain("google-seo-hub.html");
   });
+
+  it("homepage and chatbot expose founder text for Google crawl", () => {
+    expect(readSrc("pages/Index.tsx")).toContain("FounderSpotlightSection");
+    expect(readSrc("pages/ChatbotPage.tsx")).toContain("FounderCrawlStrip");
+    expect(readSrc("lib/seo.ts")).toContain("FOUNDER_HOME_FAQ");
+    expect(readSrc("lib/seo.ts")).toContain("getFounderHomeStructuredData");
+    const indexHtml = readFileSync(resolve(root, "index.html"), "utf-8");
+    expect(indexHtml).toContain("Zain Ahmed Fahad Patel");
+    expect(indexHtml).toContain("zain-ahmed-fahad-patel-shadowtalk");
+    expect(indexHtml).toContain('rel="author"');
+  });
 });

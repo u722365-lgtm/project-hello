@@ -119,6 +119,25 @@ export function generateMetaTags(meta: PageMeta): Record<string, string> {
    };
  }
  
+/** Founder Q&As for homepage + chatbot FAQ schema (Google / AI Overviews) */
+export const FOUNDER_HOME_FAQ = [
+  {
+    question: "Who founded ShadowTalk AI?",
+    answer:
+      "ShadowTalk AI was founded by Zain Ahmed Fahad Patel (also known as Zain Ahmed), Founder & Lead Architect, an AI solutions engineer based in Karachi, Pakistan (founded February 2024). Official profile: shadowtalk-ai.com/zain-ahmed-fahad-patel.html",
+  },
+  {
+    question: "Who is Zain Ahmed Fahad Patel?",
+    answer:
+      "Zain Ahmed Fahad Patel is the founder and lead architect of ShadowTalk AI (shadowtalk-ai.com), a sovereign agentic AI workspace from Karachi, Pakistan. He is a 17-year-old AI solutions engineer, also known publicly as Zain Ahmed.",
+  },
+  {
+    question: "Is Zain Ahmed the founder of ShadowTalk?",
+    answer:
+      "Yes. Zain Ahmed (full name Zain Ahmed Fahad Patel) is the founder of ShadowTalk AI — not the Rastah fashion co-founder or the NAPA theatre director.",
+  },
+] as const;
+
  // Structured data for FAQ page
  export function getFAQSchema(faqs: Array<{ question: string; answer: string }>) {
    return {
@@ -170,6 +189,10 @@ export function generateMetaTags(meta: PageMeta): Record<string, string> {
      ],
    };
  }
+
+export function getFounderHomeStructuredData() {
+  return [getPersonSchema(), getFAQSchema([...FOUNDER_HOME_FAQ])];
+}
  
  // Structured data for Product (Pricing)
  export function getProductSchema(product: {
@@ -210,9 +233,20 @@ export function generateMetaTags(meta: PageMeta): Record<string, string> {
 export const PAGE_SEO: Record<string, PageMeta> = {
   home: {
     title: 'Think AI. Think ShadowTalk. — Agentic AI Workspace',
-    description: SITE_SEARCH_DESCRIPTION,
+    description:
+      'ShadowTalk AI by Zain Ahmed Fahad Patel — agentic chat, missions, 30+ tools, voice & code. Free start, no card. Founder: Karachi, Pakistan.',
     socialDescription: SITE_SOCIAL_DESCRIPTION,
-    keywords: ['ShadowTalk', 'agentic AI', 'AI agents', 'AI workspace', 'Mission Control', 'AI automation', 'GPT alternative', 'privacy AI'],
+    keywords: [
+      'ShadowTalk',
+      'Zain Ahmed Fahad Patel',
+      'Zain Ahmed ShadowTalk founder',
+      'agentic AI',
+      'AI agents',
+      'AI workspace',
+      'Mission Control',
+      'GPT alternative',
+      'privacy AI',
+    ],
     canonical: 'https://www.shadowtalk-ai.com/home',
   },
   pricing: {
@@ -223,9 +257,18 @@ export const PAGE_SEO: Record<string, PageMeta> = {
   },
   chatbot: {
     title: 'ShadowTalk AI — Try Chat Free',
-    description: SITE_SEARCH_DESCRIPTION,
+    description:
+      'ShadowTalk AI — founded by Zain Ahmed Fahad Patel (Karachi, Pakistan). Agentic chat, missions, 30+ tools. Free start, no card.',
     socialDescription: SITE_SOCIAL_DESCRIPTION,
-    keywords: ['ShadowTalk', 'AI chat', 'chatbot', 'AI assistant', 'agentic AI'],
+    keywords: [
+      'ShadowTalk',
+      'Zain Ahmed Fahad Patel',
+      'Zain Ahmed founder ShadowTalk',
+      'AI chat',
+      'chatbot',
+      'agentic AI',
+      'Karachi AI founder',
+    ],
     canonical: 'https://www.shadowtalk-ai.com/',
   },
   docs: {
