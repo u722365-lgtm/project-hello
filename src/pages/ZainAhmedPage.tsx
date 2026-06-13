@@ -13,8 +13,10 @@ import {
   FOUNDER_CITATION,
   FOUNDER_NOT_THE_SAME_AS,
   FOUNDER_SEARCH_PHRASES,
+  FOUNDER_SOCIAL_PROFILES,
 } from "@/lib/founderIdentity";
 import { SocialLinks } from "@/components/SocialLinks";
+import { Instagram, Linkedin } from "lucide-react";
 import zainImage from "@/assets/zain-ahmed.png";
 
 const ZainAhmedPage = () => {
@@ -67,6 +69,44 @@ const ZainAhmedPage = () => {
               <SocialLinks />
             </div>
           </div>
+
+          <Card className="mb-8 border-border/50">
+            <CardContent className="p-6">
+              <h2 className="text-lg font-semibold mb-4">LinkedIn &amp; Instagram</h2>
+              <div className="grid sm:grid-cols-2 gap-3">
+                <a
+                  href={FOUNDER_SOCIAL_PROFILES.linkedin.url}
+                  target="_blank"
+                  rel="noopener noreferrer me"
+                  className="flex items-center gap-3 p-4 rounded-lg border border-border/50 hover:border-primary/40 transition-colors"
+                >
+                  <Linkedin className="h-5 w-5 text-primary shrink-0" />
+                  <div className="min-w-0">
+                    <p className="font-medium text-sm">LinkedIn</p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {FOUNDER_SOCIAL_PROFILES.linkedin.url.replace("https://www.", "")}
+                    </p>
+                  </div>
+                  <ExternalLink className="h-3 w-3 ml-auto shrink-0 text-muted-foreground" />
+                </a>
+                <a
+                  href={FOUNDER_SOCIAL_PROFILES.instagram.url}
+                  target="_blank"
+                  rel="noopener noreferrer me"
+                  className="flex items-center gap-3 p-4 rounded-lg border border-border/50 hover:border-primary/40 transition-colors"
+                >
+                  <Instagram className="h-5 w-5 text-primary shrink-0" />
+                  <div className="min-w-0">
+                    <p className="font-medium text-sm">Instagram</p>
+                    <p className="text-xs text-muted-foreground">
+                      {FOUNDER_SOCIAL_PROFILES.instagram.handle}
+                    </p>
+                  </div>
+                  <ExternalLink className="h-3 w-3 ml-auto shrink-0 text-muted-foreground" />
+                </a>
+              </div>
+            </CardContent>
+          </Card>
 
           <Card className="mb-8 border-primary/20 bg-primary/5">
             <CardContent className="p-6 space-y-3">

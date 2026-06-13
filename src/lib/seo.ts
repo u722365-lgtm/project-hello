@@ -1,6 +1,6 @@
  import { SOCIAL_SAME_AS, FOUNDER_SOCIAL } from "@/lib/socialLinks";
  import { AI_KNOWLEDGE_CANONICAL_PITCH } from "@/lib/aiPublicKnowledge";
- import { FOUNDER_CANONICAL } from "@/lib/founderIdentity";
+ import { FOUNDER_CANONICAL, FOUNDER_SAME_AS } from "@/lib/founderIdentity";
 
  // SEO utilities and structured data helpers
  
@@ -164,9 +164,7 @@ export function generateMetaTags(meta: PageMeta): Record<string, string> {
        name: `${FOUNDER_CANONICAL.location.city}, ${FOUNDER_CANONICAL.location.country}`,
      },
      sameAs: [
-       FOUNDER_CANONICAL.linkedin,
-       FOUNDER_CANONICAL.instagram,
-       FOUNDER_CANONICAL.github,
+       ...FOUNDER_SAME_AS,
        'https://www.shadowtalk-ai.com/about',
        'https://www.shadowtalk-ai.com/zain-ahmed-fahad-patel',
      ],

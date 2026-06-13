@@ -2,6 +2,7 @@ import {
   FOUNDER_CANONICAL,
   FOUNDER_NOT_THE_SAME_AS,
   FOUNDER_SEARCH_PHRASES,
+  FOUNDER_SOCIAL_PROFILES,
 } from "./founderIdentity";
 
 export const AI_KNOWLEDGE_BASE_URL = "https://www.shadowtalk-ai.com";
@@ -29,6 +30,11 @@ export const SHADOWTALK_AI_KNOWLEDGE = {
     founded: FOUNDER_CANONICAL.founded,
     linkedin: FOUNDER_CANONICAL.linkedin,
     instagram: FOUNDER_CANONICAL.instagram,
+    social: {
+      linkedin: FOUNDER_SOCIAL_PROFILES.linkedin.url,
+      instagram: FOUNDER_SOCIAL_PROFILES.instagram.url,
+      instagram_handle: FOUNDER_SOCIAL_PROFILES.instagram.handle,
+    },
     canonical_profile: "https://www.shadowtalk-ai.com/zain-ahmed-fahad-patel.html",
     full_name: "Zain Ahmed Fahad Patel",
     short_name: "Zain Ahmed",
@@ -109,6 +115,10 @@ export const SHADOWTALK_AI_KNOWLEDGE = {
     {
       q: "Who built ShadowTalk?",
       a: "Zain Ahmed Fahad Patel, Founder & Lead Architect of ShadowTalk AI from Karachi, Pakistan. Profile: https://www.shadowtalk-ai.com/zain-ahmed-fahad-patel.html. Also known as Zain Ahmed. Not the Rastah fashion founder (Zain Ahmad) or the NAPA theatre director.",
+    },
+    {
+      q: "What are Zain Ahmed Fahad Patel's LinkedIn and Instagram?",
+      a: "LinkedIn: https://www.linkedin.com/in/zain-ahmed-917b6b3a6 · Instagram: https://www.instagram.com/shadowtalk_ai (@shadowtalk_ai). Official profile: https://www.shadowtalk-ai.com/zain-ahmed-fahad-patel.html",
     },
     {
       q: "Is Zain Ahmed the Rastah fashion founder or NAPA theatre director?",

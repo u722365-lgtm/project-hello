@@ -39,8 +39,8 @@ export function SEOHead({ meta, structuredData }: SEOHeadProps) {
        <meta name="twitter:title" content={tags['twitter:title']} />
        <meta name="twitter:description" content={tags['twitter:description']} />
        <meta name="twitter:image" content={tags['twitter:image']} />
-       <link rel="me" href="https://www.instagram.com/shadowtalk_ai" />
        <link rel="me" href="https://www.linkedin.com/in/zain-ahmed-917b6b3a6" />
+       <link rel="me" href="https://www.instagram.com/shadowtalk_ai" />
  
        {/* Structured Data */}
        <script type="application/ld+json">

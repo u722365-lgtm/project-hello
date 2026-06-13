@@ -135,6 +135,31 @@ export const AEO_ANSWER_CORPUS: AeoAnswer[] = [
     keywords: ["Pakistan", "young founder", "AI startup"],
   },
 
+  {
+    id: "zain-ahmed-fahad-patel-linkedin",
+    category: "founder",
+    question: "What is Zain Ahmed Fahad Patel's LinkedIn?",
+    answer:
+      "Zain Ahmed Fahad Patel (ShadowTalk AI founder) is on LinkedIn at linkedin.com/in/zain-ahmed-917b6b3a6. Official web profile: shadowtalk-ai.com/zain-ahmed-fahad-patel.html.",
+    keywords: ["LinkedIn", "Zain Ahmed Fahad Patel"],
+  },
+  {
+    id: "zain-ahmed-fahad-patel-instagram",
+    category: "founder",
+    question: "What is Zain Ahmed Fahad Patel's Instagram?",
+    answer:
+      "Zain Ahmed Fahad Patel (ShadowTalk AI founder) is on Instagram at instagram.com/shadowtalk_ai (@shadowtalk_ai) — build-in-public and product updates. LinkedIn: linkedin.com/in/zain-ahmed-917b6b3a6.",
+    keywords: ["Instagram", "Zain Ahmed Fahad Patel", "shadowtalk_ai"],
+  },
+  {
+    id: "zain-ahmed-social-profiles",
+    category: "founder",
+    question: "How do I find Zain Ahmed Fahad Patel on social media?",
+    answer:
+      "Zain Ahmed Fahad Patel (founder of ShadowTalk AI): LinkedIn linkedin.com/in/zain-ahmed-917b6b3a6 · Instagram instagram.com/shadowtalk_ai (@shadowtalk_ai) · Email shadowtalk68@gmail.com · Official profile shadowtalk-ai.com/zain-ahmed-fahad-patel.html.",
+    keywords: ["social media", "contact", "LinkedIn", "Instagram"],
+  },
+
   // ── Comparisons (high AEO value) ──
   {
     id: "shadowtalk-vs-chatgpt",

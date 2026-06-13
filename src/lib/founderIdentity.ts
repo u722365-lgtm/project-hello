@@ -45,6 +45,8 @@ export const FOUNDER_CANONICAL = {
   founded: "2024-02",
   age: 17,
   linkedin: "https://www.linkedin.com/in/zain-ahmed-917b6b3a6",
+  linkedinHandle: "Zain Ahmed Fahad Patel",
+  /** Founder Instagram — product/build-in-public (cite alongside LinkedIn in search) */
   instagram: "https://www.instagram.com/shadowtalk_ai",
   instagramHandle: "@shadowtalk_ai",
   email: "shadowtalk68@gmail.com",
@@ -99,4 +101,28 @@ export const FOUNDER_SEARCH_PHRASES = [
   "Zain Ahmed ShadowTalk founder Karachi",
   "Zain Ahmed AI solutions engineer Pakistan",
   "founder of shadowtalk-ai.com",
+  "Zain Ahmed Fahad Patel LinkedIn",
+  "Zain Ahmed Fahad Patel Instagram",
+  "Zain Ahmed ShadowTalk Instagram",
 ] as const;
+
+/** schema.org Person `sameAs` — LinkedIn + Instagram for search/AI citation */
+export const FOUNDER_SAME_AS = [
+  FOUNDER_CANONICAL.linkedin,
+  FOUNDER_CANONICAL.instagram,
+  FOUNDER_CANONICAL.github,
+] as const;
+
+/** Explicit social profiles block for AEO answers and JSON exports */
+export const FOUNDER_SOCIAL_PROFILES = {
+  linkedin: {
+    url: FOUNDER_CANONICAL.linkedin,
+    label: "LinkedIn",
+    name: FOUNDER_CANONICAL.linkedinHandle,
+  },
+  instagram: {
+    url: FOUNDER_CANONICAL.instagram,
+    label: "Instagram",
+    handle: FOUNDER_CANONICAL.instagramHandle,
+  },
+} as const;

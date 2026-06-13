@@ -171,4 +171,12 @@ describe("feature wiring verification", () => {
     const llms = readFileSync(resolve(root, "public/llms.txt"), "utf-8");
     expect(llms).toContain("zain-ahmed-fahad-patel.html");
   });
+
+  it("founder social profiles in AEO and identity", () => {
+    expect(readSrc("lib/founderIdentity.ts")).toContain("FOUNDER_SOCIAL_PROFILES");
+    expect(readSrc("lib/aeo/answerCorpus.ts")).toContain("zain-ahmed-fahad-patel-linkedin");
+    expect(readSrc("lib/aeo/answerCorpus.ts")).toContain("zain-ahmed-fahad-patel-instagram");
+    expect(readSrc("pages/ZainAhmedPage.tsx")).toContain("FOUNDER_SOCIAL_PROFILES.linkedin");
+    expect(readSrc("pages/ZainAhmedPage.tsx")).toContain("FOUNDER_SOCIAL_PROFILES.instagram");
+  });
 });

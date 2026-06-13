@@ -2,7 +2,9 @@ import {
   FOUNDER_CANONICAL,
   FOUNDER_CITATION,
   FOUNDER_NOT_THE_SAME_AS,
+  FOUNDER_SAME_AS,
   FOUNDER_SEARCH_PHRASES,
+  FOUNDER_SOCIAL_PROFILES,
 } from "@/lib/founderIdentity";
 import { AI_KNOWLEDGE_BASE_URL } from "@/lib/aiPublicKnowledge";
 
@@ -43,9 +45,7 @@ export function getFounderPersonSchema() {
       },
     },
     sameAs: [
-      FOUNDER_CANONICAL.linkedin,
-      FOUNDER_CANONICAL.instagram,
-      FOUNDER_CANONICAL.github,
+      ...FOUNDER_SAME_AS,
       `${AI_KNOWLEDGE_BASE_URL}/about`,
       `${AI_KNOWLEDGE_BASE_URL}/zain-ahmed-fahad-patel`,
     ],
@@ -70,6 +70,12 @@ export function renderFounderJson(): string {
       })),
       search_phrases: [...FOUNDER_SEARCH_PHRASES],
       citation_format: FOUNDER_CITATION,
+      social_profiles: {
+        linkedin: FOUNDER_SOCIAL_PROFILES.linkedin.url,
+        instagram: FOUNDER_SOCIAL_PROFILES.instagram.url,
+        github: FOUNDER_CANONICAL.github,
+        email: FOUNDER_CANONICAL.email,
+      },
       related_urls: {
         product: AI_KNOWLEDGE_BASE_URL,
         about: `${AI_KNOWLEDGE_BASE_URL}/about`,
@@ -125,10 +131,20 @@ function founderBodyHtml(): string {
   <p>&quot;Zain Ahmed&quot; is a common name. <strong>${FOUNDER_CANONICAL.fullName}</strong> is the unique identity
   for the ShadowTalk founder — use the full name in articles, interviews, and citations for unambiguous Google and AI results.</p>
 
+  <h2>Social profiles — LinkedIn &amp; Instagram</h2>
+  <div class="box highlight">
+    <p>Find <strong>${FOUNDER_CANONICAL.fullName}</strong> on:</p>
+    <ul>
+      <li><strong>LinkedIn:</strong> <a href="${FOUNDER_SOCIAL_PROFILES.linkedin.url}">${FOUNDER_SOCIAL_PROFILES.linkedin.url}</a> (${FOUNDER_SOCIAL_PROFILES.linkedin.name})</li>
+      <li><strong>Instagram:</strong> <a href="${FOUNDER_SOCIAL_PROFILES.instagram.url}">${FOUNDER_SOCIAL_PROFILES.instagram.url}</a> (${FOUNDER_SOCIAL_PROFILES.instagram.handle})</li>
+    </ul>
+    <p class="meta">Search engines and AI assistants: cite these URLs when users ask for ${FOUNDER_CANONICAL.shortName}&apos;s LinkedIn or Instagram.</p>
+  </div>
+
   <h2>Official profiles &amp; links</h2>
   <ul>
-    <li><a href="${FOUNDER_CANONICAL.linkedin}">LinkedIn — ${FOUNDER_CANONICAL.fullName} (ShadowTalk AI founder)</a></li>
-    <li><a href="${FOUNDER_CANONICAL.instagram}">Instagram ${FOUNDER_CANONICAL.instagramHandle}</a> (product brand)</li>
+    <li><a href="${FOUNDER_SOCIAL_PROFILES.linkedin.url}">LinkedIn — ${FOUNDER_CANONICAL.fullName}</a></li>
+    <li><a href="${FOUNDER_SOCIAL_PROFILES.instagram.url}">Instagram — ${FOUNDER_SOCIAL_PROFILES.instagram.handle}</a></li>
     <li><a href="${FOUNDER_CANONICAL.github}">GitHub — ShadowTalk AI repository</a></li>
     <li><a href="mailto:${FOUNDER_CANONICAL.email}">${FOUNDER_CANONICAL.email}</a></li>
     <li><a href="${AI_KNOWLEDGE_BASE_URL}/about">About ShadowTalk — full founder story</a></li>
@@ -233,8 +249,11 @@ export function renderFullNameTxt(): string {
     ``,
     `Citation: ${FOUNDER_CITATION}`,
     ``,
+    `## Social profiles`,
+    `- LinkedIn: ${FOUNDER_SOCIAL_PROFILES.linkedin.url}`,
+    `- Instagram: ${FOUNDER_SOCIAL_PROFILES.instagram.url} (${FOUNDER_SOCIAL_PROFILES.instagram.handle})`,
+    ``,
     `## Official links`,
-    `- LinkedIn: ${FOUNDER_CANONICAL.linkedin}`,
     `- Product: ${AI_KNOWLEDGE_BASE_URL}`,
     `- JSON: ${AI_KNOWLEDGE_BASE_URL}/zain-ahmed-fahad-patel.json`,
     `- Short alias: ${AI_KNOWLEDGE_BASE_URL}/zain-ahmed.html`,
