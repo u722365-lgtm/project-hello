@@ -7,6 +7,7 @@ import PrivacyScorePage from "@/pages/PrivacyScorePage";
 import SecurityAuditBoard from "@/components/transparency/SecurityAuditBoard";
 import TrustPage from "@/pages/TrustPage";
 import CyberCommandPage from "@/pages/CyberCommandPage";
+import { PAGE_SEO } from "@/lib/seo";
 import {
   parseSecurityHubMode,
   type SecurityHubMode,
@@ -39,10 +40,7 @@ const SecurityHubPage = () => {
       modes={SECURITY_HUB_MODES.map((m) => ({ ...m, icon: icons[m.id] }))}
       activeMode={mode}
       onModeChange={setMode}
-      seo={{
-        title: "Security & Privacy Center — ShadowTalk",
-        description: "Unified security hub: encrypted vault, privacy score, audits, trust proofs, cyber command.",
-      }}
+      seo={PAGE_SEO.security}
     >
       {mode === "vault" && (
         <div className="h-full overflow-y-auto p-4 md:p-6 max-w-3xl mx-auto">

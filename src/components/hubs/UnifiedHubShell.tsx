@@ -3,6 +3,7 @@ import Navigation from "@/components/Navigation";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { SEOHead } from "@/components/SEOHead";
+import type { PageMeta } from "@/lib/seo";
 import type { ReactNode } from "react";
 
 export interface HubMode<T extends string> {
@@ -21,7 +22,7 @@ interface UnifiedHubShellProps<T extends string> {
   activeMode: T;
   onModeChange: (mode: T) => void;
   children: ReactNode;
-  seo?: { title: string; description: string };
+  seo?: PageMeta;
 }
 
 export function UnifiedHubShell<T extends string>({
@@ -36,7 +37,7 @@ export function UnifiedHubShell<T extends string>({
 }: UnifiedHubShellProps<T>) {
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {seo && <SEOHead meta={{ title: seo.title, description: seo.description, keywords: [], canonical: "" }} />}
+      {seo && <SEOHead meta={seo} />}
       <Navigation />
       <div className="pt-16 flex flex-col flex-1 min-h-0">
         <div className="border-b border-border px-4 py-3 bg-card/60 backdrop-blur shrink-0">

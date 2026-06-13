@@ -353,6 +353,46 @@ export const PAGE_SEO: Record<string, PageMeta> = {
     keywords: ['terms of service', 'terms and conditions', 'legal'],
     canonical: 'https://www.shadowtalk-ai.com/terms',
   },
+  research: {
+    title: 'Shadow Research — Deep Research & Knowledge Hub',
+    description:
+      'Multi-source deep research, knowledge graph, and AI browser in one ShadowTalk workspace — citations, live web, and insert-to-chat.',
+    keywords: ['deep research AI', 'knowledge graph', 'AI browser', 'ShadowTalk research'],
+    canonical: 'https://www.shadowtalk-ai.com/research',
+  },
+  security: {
+    title: 'Security Hub — Vault, Audit & Cyber Command',
+    description:
+      'ShadowTalk Security Hub: Stealth Vault, privacy audit, ShadowSpectre cyber copilot, and compliance tools in one place.',
+    keywords: ['AI security', 'Stealth Vault', 'ShadowSpectre', 'cybersecurity AI'],
+    canonical: 'https://www.shadowtalk-ai.com/security',
+  },
+  insights: {
+    title: 'Insights Hub — Analytics & Intelligence',
+    description:
+      'ShadowTalk Insights: analytics dashboard, perception engine, and business intelligence — unified intelligence hub.',
+    keywords: ['AI analytics', 'business intelligence', 'ShadowTalk insights'],
+    canonical: 'https://www.shadowtalk-ai.com/insights',
+  },
+  forge: {
+    title: 'Creative Forge — Presentations & Media Studio',
+    description:
+      'ShadowTalk Forge: AI presentations, creative studio, and document generation — build decks and media from prompts.',
+    keywords: ['AI presentations', 'creative studio', 'document generation', 'ShadowTalk forge'],
+    canonical: 'https://www.shadowtalk-ai.com/forge',
+  },
+  templates: {
+    title: 'Templates — Ready-to-Use AI Workflows',
+    description: 'Browse ShadowTalk templates for chat, missions, code, and research — start faster with proven prompts.',
+    keywords: ['AI templates', 'prompt templates', 'ShadowTalk workflows'],
+    canonical: 'https://www.shadowtalk-ai.com/templates',
+  },
+  downloads: {
+    title: 'Downloads — Desktop App & Offline AI',
+    description: 'Download ShadowTalk for Windows, PWA, and optional on-device offline AI models.',
+    keywords: ['ShadowTalk download', 'desktop app', 'offline AI', 'PWA'],
+    canonical: 'https://www.shadowtalk-ai.com/downloads',
+  },
   execute: {
     title: 'Shadow Execution - Autonomous AI Workspace',
     description:

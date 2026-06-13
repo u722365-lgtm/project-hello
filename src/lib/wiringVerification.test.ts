@@ -206,4 +206,17 @@ describe("feature wiring verification", () => {
     expect(indexHtml).toContain("zain-ahmed-fahad-patel-shadowtalk");
     expect(indexHtml).toContain('rel="author"');
   });
+
+  it("ShadowTalk strengthen pack wired", () => {
+    expect(readSrc("lib/seo/syncPublicSeoAssets.ts")).toContain("renderSitemapXml");
+    expect(readSrc("lib/seo/generateSitemap.ts")).toContain("/research");
+    expect(readSrc("components/hubs/UnifiedHubShell.tsx")).toContain("PageMeta");
+    expect(readSrc("pages/ChatbotPage.tsx")).toContain("useDailyLimits");
+    expect(readSrc("pages/ChatbotPage.tsx")).toContain("UsageLimitBanner");
+    expect(readSrc("hooks/useFeatureGating.ts")).toContain("FREE_TIER_DAILY");
+    expect(readSrc("contexts/PlatformMetricsContext.tsx")).toContain("get_public_platform_metrics");
+    expect(readFileSync(resolve(root, "package.json"), "utf-8")).toContain('"sync:seo"');
+    expect(readFileSync(resolve(root, "package.json"), "utf-8")).toContain('"prebuild"');
+    expect(readSrc("App.tsx")).toContain('lazy(() => import("./pages/ChatbotPage"))');
+  });
 });

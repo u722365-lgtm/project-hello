@@ -11,6 +11,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest --run",
+    "sync:seo": "vitest run src/lib/seo/syncAllSeoAssets.test.ts",
+    "prebuild": "npm run sync:seo",
     "remediate:deck": "node scripts/remediate-shadowtalk-deck.mjs",
     "desktop:install": "cd electron && npm install",
     "desktop:build": "npm run build && npx cap copy electron",

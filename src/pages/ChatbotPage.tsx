@@ -42,6 +42,7 @@ import { useOfflineAuth } from "@/hooks/useOfflineAuth";
 import { useOfflineChatHistory } from "@/hooks/useOfflineChatHistory";
 import { useGeoLocation } from "@/hooks/useGeoLocation";
 import { useGuestUsage, GUEST_LIMITS } from "@/hooks/useGuestUsage";
+import { useDailyLimits } from "@/hooks/useDailyLimits";
 import { useToolOrchestrator } from "@/hooks/useToolOrchestrator";
 import { useAgenticToolDispatch } from "@/hooks/useAgenticToolDispatch";
 import { detectShadowExecutionFromChat } from "@/lib/execution/inferFromChat";
@@ -151,6 +152,7 @@ import { useShadowTalkModel } from "@/hooks/useShadowTalkModel";
 import { SEOHead } from "@/components/SEOHead";
 import { PAGE_SEO, getFounderHomeStructuredData } from "@/lib/seo";
 import { FounderCrawlStrip } from "@/components/founder/FounderCrawlStrip";
+import { UsageLimitBanner } from "@/components/monetization/UsageLimitBanner";
 import { BRAND } from "@/lib/brand";
 import { ReferralNudgeBanner } from "@/components/growth/ReferralNudgeBanner";
 import { ShareResultDialog } from "@/components/growth/ShareResultDialog";
@@ -218,6 +220,7 @@ const ChatbotPage = () => {
   const [searchParams] = useSearchParams();
   const { user, userPlan, signOut, checkSubscription, isOffline, isAnonymous } = useAuth();
   const guestUsage = useGuestUsage();
+  const dailyLimits = useDailyLimits();
   const enterprise = useEnterpriseExperience();
   const { toast } = useToast();
   
@@ -263,8 +266,10 @@ const ChatbotPage = () => {
   const [nudgeDismissed, setNudgeDismissed] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [conversations, setConversations] = useState<Conversation[]>([]);
+  const messageCount =
+    user && dailyLimits.isLoaded ? dailyLimits.usage.messages : dailyChats;
   const nudge = useSubscriptionNudge(
-    dailyChats,
+    messageCount,
     conversations.filter((c) => !c.archived_at).length,
   );
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
@@ -1379,6 +1384,16 @@ const ChatbotPage = () => {
       }
     }
 
+    if (!isProOrHigher && dailyLimits.isLoaded && !dailyLimits.canPerform("messages") && !isAnonymousAutonomousEnabled()) {
+      toast({
+        title: CHAT_LIMIT_TOAST.title,
+        description: CHAT_LIMIT_TOAST.description,
+        variant: "destructive",
+      });
+      setUpgradeOpen(true);
+      return;
+    }
+
     if (!isProOrHigher && nudge.shouldBlockSend && !isAnonymousAutonomousEnabled()) {
       setUpgradeOpen(true);
       toast({
@@ -1410,7 +1425,11 @@ const ChatbotPage = () => {
     );
 
     if (!isProOrHigher) {
-      setDailyChats(incrementDailyMessageCount());
+      if (user && dailyLimits.isLoaded) {
+        dailyLimits.trackUsage("messages");
+      } else {
+        setDailyChats(incrementDailyMessageCount());
+      }
     }
 
     const chatMessages: Array<{
@@ -2183,7 +2202,7 @@ const ChatbotPage = () => {
               onProviderChange={handleProviderChange}
               hasKeyForProvider={hasKeyForProvider}
               maxChats="∞"
-              dailyChats={dailyChats}
+              dailyChats={messageCount}
               toolsMenuOpen={toolsMenuOpen}
               onToolsMenuOpenChange={setToolsMenuOpen}
             />
@@ -2202,6 +2221,11 @@ const ChatbotPage = () => {
             {BRAND.tagline}
           </motion.p>
           <EnterpriseWelcomeBanner email={user?.email} displayName={userDisplayName} />
+          {!isProOrHigher && dailyLimits.isLoaded && (
+            <div className="px-3 pt-2 max-w-3xl mx-auto w-full">
+              <UsageLimitBanner currentUsage={dailyLimits.usage.messages} action="messages" />
+            </div>
+          )}
           {enterprise.showInviteColleagues && enterprise.tenant && (
             <EnterpriseInviteColleagues tenant={enterprise.tenant} />
           )}

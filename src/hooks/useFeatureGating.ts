@@ -1,6 +1,7 @@
 import { useAuth } from "@/components/AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 import { hasSpecialAccessEmail } from "@/lib/resolveUserPlan";
+import { FREE_TIER_DAILY } from "@/lib/productClaims";
 
 export type PlanTier = 'free' | 'pro' | 'premium' | 'lifetime' | 'elite' | 'enterprise';
 
@@ -16,11 +17,11 @@ export interface FeatureConfig {
 export const FEATURES: Record<string, FeatureConfig> = {
   // Core features - FREE for everyone
   basicChat: { name: "AI Chat", requiredPlan: "free" },
-  dailyMessages: { name: "Daily Messages", requiredPlan: "free", freeLimit: 50 },
+  dailyMessages: { name: "Daily Messages", requiredPlan: "free", freeLimit: FREE_TIER_DAILY.messages },
   advancedCodeGeneration: { name: "Code Generation", requiredPlan: "free" },
   chatExport: { name: "Save & Export", requiredPlan: "free" },
   translation100: { name: "Language Translation", requiredPlan: "free" },
-  imageGeneration: { name: "Image Generation", requiredPlan: "free", freeLimit: 5 },
+  imageGeneration: { name: "Image Generation", requiredPlan: "free", freeLimit: FREE_TIER_DAILY.imageGenerations },
   textToSpeech: { name: "Text-to-Speech", requiredPlan: "free" },
   codeCanvas: { name: "Code Canvas", requiredPlan: "free" },
   documentGeneration: { name: "Document Generation", requiredPlan: "free" },

@@ -5,6 +5,7 @@ import { UnifiedHubShell } from "@/components/hubs/UnifiedHubShell";
 import AnalyticsPage from "@/pages/AnalyticsPage";
 import DataInsightsPanel from "@/components/monetization/DataInsightsPanel";
 import ShadowMemoryPage from "@/pages/ShadowMemoryPage";
+import { PAGE_SEO } from "@/lib/seo";
 import {
   parseInsightsHubMode,
   type InsightsHubMode,
@@ -35,10 +36,7 @@ const InsightsHubPage = () => {
       modes={INSIGHTS_HUB_MODES.map((m) => ({ ...m, icon: icons[m.id] }))}
       activeMode={mode}
       onModeChange={setMode}
-      seo={{
-        title: "Shadow Insights — Usage & Activity Hub",
-        description: "Unified analytics: usage charts, data insights, and shadow memory activity.",
-      }}
+      seo={PAGE_SEO.insights}
     >
       {mode === "usage" && <AnalyticsPage embedded />}
       {mode === "behavior" && (

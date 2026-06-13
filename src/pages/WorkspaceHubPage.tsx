@@ -11,6 +11,7 @@ import {
   type WorkspaceHubMode,
   WORKSPACE_HUB_MODES,
 } from "@/lib/hubs/workspaceHub";
+import { PAGE_SEO } from "@/lib/seo";
 import { queueChatInsert } from "@/lib/pendingChatInsert";
 
 const WorkspaceHubPage = () => {
@@ -49,10 +50,7 @@ const WorkspaceHubPage = () => {
       modes={WORKSPACE_HUB_MODES.map((m) => ({ ...m, icon: icons[m.id] }))}
       activeMode={mode}
       onModeChange={setMode}
-      seo={{
-        title: "Shadow Workspace — Memory, Agents & Automations",
-        description: "Unified AI workspace: business memory, explorer, installed agents, and script automations.",
-      }}
+      seo={PAGE_SEO.workspace}
     >
       {mode === "memory" && <WorkspacePage embedded />}
       {mode === "explore" && (

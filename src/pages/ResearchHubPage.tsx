@@ -10,6 +10,7 @@ import {
   type ResearchHubMode,
   RESEARCH_HUB_MODES,
 } from "@/lib/hubs/researchHub";
+import { PAGE_SEO } from "@/lib/seo";
 import { queueChatInsert } from "@/lib/pendingChatInsert";
 
 const ResearchHubPage = () => {
@@ -51,10 +52,7 @@ const ResearchHubPage = () => {
       modes={RESEARCH_HUB_MODES.map((m) => ({ ...m, icon: icons[m.id] }))}
       activeMode={mode}
       onModeChange={setMode}
-      seo={{
-        title: "Shadow Research — Deep Research & Knowledge Hub",
-        description: "Multi-source research, knowledge graph, and AI browser in one workspace.",
-      }}
+      seo={PAGE_SEO.research}
     >
       {mode === "investigate" && (
         <DeepResearchPanel

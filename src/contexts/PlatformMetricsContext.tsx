@@ -55,6 +55,27 @@ function writeCache(metrics: PlatformMetrics) {
 }
 
 async function fetchMetrics(): Promise<PlatformMetrics> {
+  try {
+    const { data, error } = await supabase.rpc("get_public_platform_metrics");
+    if (!error && data && typeof data === "object") {
+      const row = data as {
+        totalUsers?: number;
+        totalConversations?: number;
+        dailyActiveUsers?: number;
+      };
+      const metrics: PlatformMetrics = {
+        totalUsers: row.totalUsers ?? 0,
+        dailyActiveUsers: row.dailyActiveUsers ?? 0,
+        totalConversations: row.totalConversations ?? 0,
+        isLoading: false,
+      };
+      writeCache(metrics);
+      return metrics;
+    }
+  } catch {
+    /* fall through to legacy queries */
+  }
+
   const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
   const [usersRes, convsRes, activityRes] = await Promise.all([
