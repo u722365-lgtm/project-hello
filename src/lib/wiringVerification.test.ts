@@ -244,4 +244,26 @@ describe("feature wiring verification", () => {
     expect(readFileSync(resolve(root, "supabase/functions/chat/index.ts"), "utf-8")).toContain("checkAndIncrementDailyUsage");
     expect(readFileSync(resolve(root, "supabase/functions/_shared/daily-limits.ts"), "utf-8")).toContain("FREE_TIER_DAILY");
   });
+
+  it("full feature wiring — in-chat modals and onboarding", () => {
+    const chat = readSrc("pages/ChatbotPage.tsx");
+    expect(chat).toContain("AgenticTaskRunner");
+    expect(chat).toContain("AIAgentWorkflows");
+    expect(chat).toContain("AnalyticsDashboard");
+    expect(chat).toContain("GeminiKeyAnalytics");
+    expect(chat).toContain("DataOrganizer");
+    expect(chat).toContain("UncensoredArena");
+    expect(chat).toContain("ShadowCowork");
+    expect(chat).toContain("SignInPrompt");
+    expect(chat).toContain("InterimCloudConsentDialog");
+    expect(chat).toContain("AdBanner");
+    expect(chat).toContain('case "agentic"');
+    expect(chat).toContain('case "uncensored-arena"');
+    expect(readSrc("components/OnboardingFlow.tsx")).toContain("WelcomeDialog");
+    expect(readSrc("components/chat/IntelligenceHub.tsx")).toContain("MemoryPanel");
+    expect(readSrc("components/chat/ChatToolbar.tsx")).toContain("OfflineAIIndicator");
+    expect(readSrc("components/chat/OfflineToolsPanel.tsx")).toContain("OfflineCapabilityIndicator");
+    expect(readSrc("lib/chatCommandRoutes.ts")).toContain('"agentic"');
+    expect(readSrc("lib/chatCommandRoutes.ts")).not.toContain('agentic: "/execute"');
+  });
 });

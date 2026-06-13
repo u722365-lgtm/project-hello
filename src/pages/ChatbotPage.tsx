@@ -95,6 +95,7 @@ import {
   DEVICE_ONLY_BLOCKED_MESSAGE,
   ensureAutoCloudUntilLocalReady,
   shouldPersistChatToCloud,
+  setInterimCloudConsent,
 } from "@/lib/privacy/deviceOnlyPledge";
 import {
   isLocalInferenceReady,
@@ -156,6 +157,16 @@ import { UsageLimitBanner } from "@/components/monetization/UsageLimitBanner";
 import { PlanetaryActionModal } from "@/components/chat/PlanetaryActionModal";
 import { ScreenAgent } from "@/components/chat/ScreenAgent";
 import { VisionAgentModal } from "@/components/chat/VisionAgentModal";
+import { AgenticTaskRunner } from "@/components/chat/AgenticTaskRunner";
+import { AIAgentWorkflows } from "@/components/chat/AIAgentWorkflows";
+import { AnalyticsDashboard } from "@/components/chat/AnalyticsDashboard";
+import { GeminiKeyAnalytics } from "@/components/chat/GeminiKeyAnalytics";
+import { DataOrganizer } from "@/components/chat/DataOrganizer";
+import { UncensoredArena } from "@/components/chat/UncensoredArena";
+import { ShadowCowork } from "@/components/chat/ShadowCowork";
+import { SignInPrompt } from "@/components/chat/SignInPrompt";
+import { InterimCloudConsentDialog } from "@/components/chat/InterimCloudConsentDialog";
+import { AdBanner } from "@/components/chat/AdBanner";
 import { BRAND } from "@/lib/brand";
 import { ReferralNudgeBanner } from "@/components/growth/ReferralNudgeBanner";
 import { ShareResultDialog } from "@/components/growth/ShareResultDialog";
@@ -330,6 +341,15 @@ const ChatbotPage = () => {
   const [showVisionAgent, setShowVisionAgent] = useState(false);
   const [showIntelligenceHub, setShowIntelligenceHub] = useState(false);
   const [showKnowledgeVault, setShowKnowledgeVault] = useState(false);
+  const [showAgenticRunner, setShowAgenticRunner] = useState(false);
+  const [showAgentWorkflows, setShowAgentWorkflows] = useState(false);
+  const [showGeminiAnalytics, setShowGeminiAnalytics] = useState(false);
+  const [showDataOrganizer, setShowDataOrganizer] = useState(false);
+  const [showUncensoredArena, setShowUncensoredArena] = useState(false);
+  const [showShadowCowork, setShowShadowCowork] = useState(false);
+  const [showSignInPrompt, setShowSignInPrompt] = useState(false);
+  const [signInPromptReason, setSignInPromptReason] = useState<"chats" | "images" | "deepResearch" | "general">("chats");
+  const [showInterimCloudConsent, setShowInterimCloudConsent] = useState(false);
   const [showBrowseActivity, setShowBrowseActivity] = useState(false);
   const { browseSession, startBrowseSession, closeBrowseSession } = useAutoBrowse();
   const pushPermissionAskedRef = useRef(false);
@@ -1377,12 +1397,8 @@ const ChatbotPage = () => {
     const isGuestLike = !user || isAnonymous;
     if (isGuestLike && !isAnonymousAutonomousEnabled()) {
       if (guestUsage.isLoaded && !guestUsage.canPerform("chats")) {
-        toast({
-          title: "Guest limit reached",
-          description: `You've used ${GUEST_LIMITS.chats} chats today. Sign in for unlimited access.`,
-          variant: "destructive",
-        });
-        navigate("/auth");
+        setSignInPromptReason("chats");
+        setShowSignInPrompt(true);
         return;
       }
       if (guestUsage.isLoaded) {
@@ -1845,6 +1861,9 @@ const ChatbotPage = () => {
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") return;
       const msg = formatChatFetchError(err);
+      if (msg.includes("Device-only mode") || msg.includes("Stay device-only")) {
+        setShowInterimCloudConsent(true);
+      }
       toast({ title: "Message failed", description: msg, variant: "destructive" });
       setMessages((prev) => [
         ...prev,
@@ -1987,8 +2006,32 @@ const ChatbotPage = () => {
         setShowShadowBrowser(true);
         return;
       case "missions":
-      case "agentic":
         navigate("/execute");
+        return;
+      case "agentic":
+        setShowAgenticRunner(true);
+        return;
+      case "agent-workflows":
+        setShowAgentWorkflows(true);
+        return;
+      case "analytics":
+        setShowAnalytics(true);
+        return;
+      case "gemini-analytics":
+        setShowGeminiAnalytics(true);
+        return;
+      case "organize":
+        setShowDataOrganizer(true);
+        return;
+      case "knowledge-vault":
+      case "knowledge-vault-modal":
+        setShowKnowledgeVault(true);
+        return;
+      case "uncensored-arena":
+        setShowUncensoredArena(true);
+        return;
+      case "shadow-cowork":
+        setShowShadowCowork(true);
         return;
       case "offline-tools":
       case "offline":
@@ -2027,9 +2070,6 @@ const ChatbotPage = () => {
       case "memory-panel":
       case "intelligence-hub":
         setShowIntelligenceHub(true);
-        return;
-      case "knowledge-vault-modal":
-        setShowKnowledgeVault(true);
         return;
       case "bunker": {
         const enabled = localStorage.getItem("shadowtalk_bunker_mode") === "true";
@@ -2192,17 +2232,17 @@ const ChatbotPage = () => {
               onExport={handleExport}
               onManageSubscription={() => navigate("/billing")}
               onSignOut={signOut}
-              onOpenAnalytics={() => navigate("/insights?tab=usage")}
+              onOpenAnalytics={() => setShowAnalytics(true)}
               onOpenScriptAutomation={() => navigate("/workspace?tab=automate")}
               onOpenStealthVault={() => navigate("/security?tab=vault")}
-              onOpenAgentWorkflows={() => navigate("/workspace?tab=agents")}
+              onOpenAgentWorkflows={() => setShowAgentWorkflows(true)}
               onOpenModelFineTuning={() => navigate("/personal-llm")}
               onOpenWhiteLabelBranding={() => navigate("/enterprise")}
-              onOpenGeminiAnalytics={() => navigate("/settings?section=models")}
+              onOpenGeminiAnalytics={() => setShowGeminiAnalytics(true)}
               onOpenCanvas={() => navigate("/ide")}
               onOpenDeepResearch={() => setShowDeepResearch(true)}
               onOpenGoogleIntegration={() => setShowGoogleIntegration(true)}
-              onOpenAgenticRunner={() => navigate("/execute")}
+              onOpenAgenticRunner={() => setShowAgenticRunner(true)}
               onOpenVisualReasoning={() => setShowVisualReasoning(true)}
               onOpenCreativeSynthesis={() => setShowCreativeSynthesis(true)}
               onOpenImageGenerator={() => setShowImageGenerator(true)}
@@ -2241,6 +2281,7 @@ const ChatbotPage = () => {
               <UsageLimitBanner currentUsage={dailyLimits.usage.messages} action="messages" />
             </div>
           )}
+          <AdBanner />
           {enterprise.showInviteColleagues && enterprise.tenant && (
             <EnterpriseInviteColleagues tenant={enterprise.tenant} />
           )}
@@ -2637,6 +2678,74 @@ const ChatbotPage = () => {
           setShowShadowSpectreTerms(false);
           if (chatMode === "shadowspectre") setChatMode("general");
         }}
+      />
+      <AgenticTaskRunner
+        isOpen={showAgenticRunner}
+        onClose={() => setShowAgenticRunner(false)}
+        onTaskComplete={(result) => {
+          insertAssistantToChat(result);
+          setShowAgenticRunner(false);
+        }}
+      />
+      <AIAgentWorkflows
+        isOpen={showAgentWorkflows}
+        onClose={() => setShowAgentWorkflows(false)}
+        onResult={(result) => {
+          insertAssistantToChat(result);
+          setShowAgentWorkflows(false);
+        }}
+      />
+      {showAnalytics && (
+        <AnalyticsDashboard
+          onClose={() => setShowAnalytics(false)}
+          messageCount={messages.length}
+          conversationCount={conversations.length}
+        />
+      )}
+      {showGeminiAnalytics && (
+        <GeminiKeyAnalytics onClose={() => setShowGeminiAnalytics(false)} />
+      )}
+      <DataOrganizer
+        isOpen={showDataOrganizer}
+        onClose={() => setShowDataOrganizer(false)}
+        onOrganize={(input, output) => {
+          insertAssistantToChat(`**Organized data**\n\n${output}`);
+          setShowDataOrganizer(false);
+        }}
+      />
+      <UncensoredArena
+        open={showUncensoredArena}
+        onClose={() => setShowUncensoredArena(false)}
+      />
+      <ShadowCowork
+        isOpen={showShadowCowork}
+        onClose={() => setShowShadowCowork(false)}
+        onInsertToChat={(content) => {
+          setMessage(content);
+          setShowShadowCowork(false);
+        }}
+      />
+      <SignInPrompt
+        open={showSignInPrompt}
+        onOpenChange={setShowSignInPrompt}
+        reason={signInPromptReason}
+        usedCount={guestUsage.usage?.chats}
+        limitCount={GUEST_LIMITS.chats}
+      />
+      <InterimCloudConsentDialog
+        open={showInterimCloudConsent}
+        onOpenChange={setShowInterimCloudConsent}
+        isDownloading={!localModelReady}
+        onUseCloudUntilReady={() => {
+          setInterimCloudConsent(true);
+          setShowInterimCloudConsent(false);
+          toast({ title: "Cloud AI enabled", description: "Temporary until your on-device model is ready." });
+        }}
+        onGoToDownload={() => {
+          setShowInterimCloudConsent(false);
+          navigate("/settings?section=offline");
+        }}
+        onStayDeviceOnly={() => setShowInterimCloudConsent(false)}
       />
       </motion.div>
       <FounderCrawlStrip />

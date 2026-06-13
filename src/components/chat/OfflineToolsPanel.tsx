@@ -27,6 +27,7 @@ import OfflineStrategyAgent from "@/components/chat/OfflineStrategyAgent";
 import OfflineKnowledgeExplorer from "@/components/chat/OfflineKnowledgeExplorer";
 import OfflineAnalyticsPanel from "@/components/chat/OfflineAnalyticsPanel";
 import { OfflineDocumentUpload } from "@/components/chat/OfflineDocumentUpload";
+import { OfflineCapabilityIndicator } from "@/components/chat/OfflineCapabilityIndicator";
 
 interface OfflineToolsPanelProps {
   isOpen: boolean;
@@ -175,6 +176,7 @@ export const OfflineToolsPanel = ({ isOpen, onClose, onInsertToChat }: OfflineTo
           <ScrollArea className="flex-1 p-4">
             {/* Sovereign AI Tab */}
             <TabsContent value="sovereign" className="mt-0 space-y-4">
+              <OfflineCapabilityIndicator />
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">

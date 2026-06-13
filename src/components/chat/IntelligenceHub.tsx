@@ -10,10 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  useIntelligenceHub,
-  AIMemory, DailyInsight, KnowledgeEntry, UserStreak
-} from '@/hooks/useIntelligenceHub';
+import { MemoryPanel } from '@/components/chat/MemoryPanel';
 
 interface IntelligenceHubProps {
   isOpen: boolean;
@@ -112,7 +109,8 @@ export const IntelligenceHub: React.FC<IntelligenceHubProps> = ({ isOpen, onClos
               <OverviewTab memories={memories} insights={insights} knowledge={knowledgeEntries} streak={streak} />
             </TabsContent>
 
-            <TabsContent value="memory" className="mt-0 pb-4">
+            <TabsContent value="memory" className="mt-0 pb-4 space-y-4">
+              <MemoryPanel />
               <MemoryTab memories={memories} onDelete={deleteMemory} />
             </TabsContent>
 

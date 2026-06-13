@@ -508,6 +508,25 @@ export const CommandPalette = ({ open, onOpenChange, onAction }: CommandPaletteP
       badgeVariant: "default" as const,
     },
     
+    {
+      id: "shadow-cowork",
+      label: "Shadow Cowork",
+      description: "AI pair-programming workspace in chat",
+      icon: <Code className="h-4 w-4" />,
+      category: "Productivity",
+      action: () => onAction("shadow-cowork"),
+      keywords: ["cowork", "pair", "programming", "monaco", "ide"],
+    },
+    {
+      id: "uncensored-arena",
+      label: "Uncensored Arena",
+      description: "Advanced security research mode (authorized use)",
+      icon: <Shield className="h-4 w-4" />,
+      category: "Security",
+      action: () => onAction("uncensored-arena"),
+      keywords: ["uncensored", "arena", "red team", "security research"],
+    },
+
     // Knowledge Vault
     {
       id: "knowledge-vault",

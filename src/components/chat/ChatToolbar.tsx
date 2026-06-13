@@ -2,6 +2,8 @@ import { motion } from "framer-motion";
 import { MessageSquarePlus, History, Eraser, Trash2, Settings } from "lucide-react";
 import { ChatEncryptionToggle } from "@/components/chat/ChatEncryptionToggle";
 import { OfflineModeIndicator } from "@/components/chat/OfflineModeIndicator";
+import { OfflineAIIndicator } from "@/components/chat/OfflineAIIndicator";
+import { SovereignModeIndicator } from "@/components/chat/SovereignModeIndicator";
 import { HardwareTurboBadge } from "@/components/chat/HardwareTurboBadge";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -62,6 +64,8 @@ export function ChatToolbar({
         className={`hidden md:flex items-center gap-1 px-4 md:px-6 py-2 border-b border-border/40 glass-subtle shrink-0 overflow-x-auto scrollbar-none ${className}`}
       >
         <OfflineModeIndicator compact />
+        <OfflineAIIndicator />
+        <SovereignModeIndicator />
         <HardwareTurboBadge />
         <div className="ml-auto flex items-center gap-1">
         {onEnableEncryption && onDisableEncryption && (
