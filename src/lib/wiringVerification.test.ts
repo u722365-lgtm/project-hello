@@ -82,9 +82,11 @@ describe("feature wiring verification", () => {
     expect(readSrc("components/chat/ChatToolbar.tsx")).toContain("OfflineModeIndicator");
   });
 
-  it("missioncontrol route preserves goal via MissionControlPage", () => {
+  it("missioncontrol route renders Mission Control UI", () => {
     const app = readSrc("App.tsx");
+    expect(app).toContain('path="/missioncontrol"');
     expect(app).toContain("MissionControlPage");
+    expect(readSrc("pages/MissionControlPage.tsx")).toContain("MissionControl");
     expect(readSrc("pages/MissionControlPage.tsx")).toContain("goal");
   });
 
@@ -166,7 +168,7 @@ describe("feature wiring verification", () => {
 
     const sitemap = readFileSync(resolve(root, "public/sitemap.xml"), "utf-8");
     expect(sitemap).toContain("/zain-ahmed-fahad-patel.html");
-    expect(sitemap).toContain('priority>1.0</priority>');
+    expect(sitemap).toMatch(/priority>1\.0+<\/priority>/);
 
     const llms = readFileSync(resolve(root, "public/llms.txt"), "utf-8");
     expect(llms).toContain("zain-ahmed-fahad-patel.html");
@@ -205,6 +207,18 @@ describe("feature wiring verification", () => {
     expect(indexHtml).toContain("Zain Ahmed Fahad Patel");
     expect(indexHtml).toContain("zain-ahmed-fahad-patel-shadowtalk");
     expect(indexHtml).toContain('rel="author"');
+  });
+
+  it("feature wiring pack — modals, limits, legacy routes", () => {
+    expect(readSrc("pages/MissionControlPage.tsx")).toContain("MissionControl");
+    expect(readSrc("pages/ChatbotPage.tsx")).toContain("PlanetaryActionModal");
+    expect(readSrc("pages/ChatbotPage.tsx")).toContain("ScreenAgent");
+    expect(readSrc("components/chat/ShadowTalkLive.tsx")).toContain("useVoiceSessionLimits");
+    expect(readSrc("components/hubs/panels/KnowledgeHubPanel.tsx")).toContain("OfflineAnalyticsPanel");
+    expect(readSrc("components/chat/ChatToolbar.tsx")).toContain("HardwareTurboBadge");
+    expect(readSrc("lib/chatCommandRoutes.ts")).toContain('"eco"');
+    expect(readSrc("App.tsx")).toContain("/deep-research");
+    expect(readSrc("components/chat/SovereignDataDashboard.tsx")).toContain("/security?tab=vault");
   });
 
   it("ShadowTalk strengthen pack wired", () => {

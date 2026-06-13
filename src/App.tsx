@@ -238,6 +238,8 @@ const AnimatedRoutes = () => {
           <Route path="/referral" element={<PageTransition><ReferralPage /></PageTransition>} />
           <Route path="/research" element={<PageTransition><ResearchHubPage /></PageTransition>} />
           <Route path="/knowledge" element={<Navigate to="/research?tab=knowledge" replace />} />
+          <Route path="/deep-research" element={<Navigate to="/research?tab=investigate" replace />} />
+          <Route path="/knowledge-graph" element={<Navigate to="/research?tab=knowledge" replace />} />
           <Route path="/strategy-lab" element={<PageTransition><StrategyLabPage /></PageTransition>} />
           <Route path="/sovereign-data" element={<PageTransition><SovereignDataPage /></PageTransition>} />
           <Route path="/wallet" element={<PageTransition><SovereignWalletPage /></PageTransition>} />

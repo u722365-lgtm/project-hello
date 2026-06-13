@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 
 const pages = [
+  { name: "Home", href: "/home", icon: LayoutGrid, desc: "Marketing landing page" },
   { name: "Chatbot", href: "/chatbot", icon: MessageSquare, desc: "AI chat assistant" },
   { name: "Pricing", href: "/pricing", icon: Shield, desc: "Plans & pricing" },
   { name: "ShadowTalk Desktop", href: "/downloads", icon: Monitor, desc: "shadowtalk-setup.exe — Windows, macOS, Linux" },
@@ -35,6 +36,7 @@ const pages = [
   { name: "Code IDE", href: "/ide", icon: Code, desc: "Monaco editor & live preview" },
   { name: "Marketplace", href: "/marketplace", icon: Store, desc: "Agent marketplace" },
   { name: "Shadow Execution", href: "/execute", icon: Target, desc: "Multi-step missions & deliverables" },
+  { name: "Mission Control", href: "/missioncontrol", icon: Rocket, desc: "Mission templates & quota dashboard" },
   { name: "Content Forge", href: "/forge", icon: Presentation, desc: "Slides, documents, studio & Beast Mode" },
   { name: "Video Studio", href: "/video-studio", icon: Clapperboard, desc: "Pro & Elite viral short generator — no API key" },
   { name: "Developers", href: "/developers", icon: Terminal, desc: "Developer tools" },
@@ -51,6 +53,7 @@ const pages = [
   { name: "Profile", href: "/profile", icon: User, desc: "Your profile" },
   { name: "Personal LLM", href: "/personal-llm", icon: Brain, desc: "Fine-tune local models" },
   { name: "Active Sessions", href: "/sessions", icon: Monitor, desc: "Manage signed-in devices" },
+  { name: "Self-Healing", href: "/self-healing", icon: Activity, desc: "Diagnostics & auto-repair" },
   { name: "Billing", href: "/billing", icon: CreditCard, desc: "Manage billing" },
   { name: "Founder Access", href: "/founder-access", icon: Rocket, desc: "Founder perks" },
   { name: "Strategy Lab", href: "/strategy-lab", icon: FlaskConical, desc: "Strategy experiments" },

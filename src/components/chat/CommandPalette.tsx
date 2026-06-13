@@ -485,6 +485,15 @@ export const CommandPalette = ({ open, onOpenChange, onAction }: CommandPaletteP
       action: () => onAction("eco"),
       keywords: ["eco", "green", "carbon", "sustainability", "planet", "environment"],
     },
+    {
+      id: "screen-agent",
+      label: "Screen Agent",
+      description: "Share your screen for AI analysis and code extraction",
+      icon: <MonitorSmartphone className="h-4 w-4" />,
+      category: "AI Tools",
+      action: () => onAction("screen-agent"),
+      keywords: ["screen", "share", "capture", "analyze", "screen agent"],
+    },
     
     // Shadow Execution (Strategy + Missions unified)
     {
@@ -659,7 +668,7 @@ export const CommandPalette = ({ open, onOpenChange, onAction }: CommandPaletteP
       description: "Check your digital privacy rating",
       icon: <Activity className="h-4 w-4" />,
       category: "Privacy",
-      action: () => navigate("/privacy-score"),
+      action: () => onAction("privacy-score"),
       keywords: ["privacy", "score", "rating", "digital", "footprint"],
     },
   ], [onAction, navigate, signOut]);

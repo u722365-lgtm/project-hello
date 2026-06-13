@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Search, Database, BookOpen, Sparkles, FileText } from "lucide-react";
+import OfflineAnalyticsPanel from "@/components/chat/OfflineAnalyticsPanel";
 import {
   searchKnowledgeBase,
   getKBStats,
@@ -48,6 +49,7 @@ export function KnowledgeHubPanel() {
         <TabsList className="mb-4">
           <TabsTrigger value="graph">Knowledge Graph</TabsTrigger>
           <TabsTrigger value="kb">Knowledge Base</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
         <TabsContent value="graph" className="h-[calc(100vh-14rem)] mt-0">
           <VisualKnowledgeGraph />
@@ -90,6 +92,9 @@ export function KnowledgeHubPanel() {
               ))}
             </div>
           </ScrollArea>
+        </TabsContent>
+        <TabsContent value="analytics" className="mt-0">
+          <OfflineAnalyticsPanel />
         </TabsContent>
       </Tabs>
     </div>

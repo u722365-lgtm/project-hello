@@ -14,7 +14,6 @@ export const CHAT_COMMAND_NAV_ROUTES: Record<string, string> = {
   "knowledge-vault": "/research?tab=knowledge",
   code: "/ide",
   organize: "/workspace",
-  eco: "/transparency",
   agentic: "/execute",
   computer: "/computer",
   "canvas-document": "/ide",
@@ -52,4 +51,6 @@ export const CHAT_COMMAND_MODAL_ACTIONS = new Set([
   "wordle",
   "bunker",
   "branching",
+  "eco",
+  "screen-agent",
 ]);

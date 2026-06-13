@@ -153,6 +153,8 @@ import { SEOHead } from "@/components/SEOHead";
 import { PAGE_SEO, getFounderHomeStructuredData } from "@/lib/seo";
 import { FounderCrawlStrip } from "@/components/founder/FounderCrawlStrip";
 import { UsageLimitBanner } from "@/components/monetization/UsageLimitBanner";
+import { PlanetaryActionModal } from "@/components/chat/PlanetaryActionModal";
+import { ScreenAgent } from "@/components/chat/ScreenAgent";
 import { BRAND } from "@/lib/brand";
 import { ReferralNudgeBanner } from "@/components/growth/ReferralNudgeBanner";
 import { ShareResultDialog } from "@/components/growth/ShareResultDialog";
@@ -322,6 +324,8 @@ const ChatbotPage = () => {
   const [showVisualReasoning, setShowVisualReasoning] = useState(false);
   const [showImageDecoder, setShowImageDecoder] = useState(false);
   const [showDailyPlanner, setShowDailyPlanner] = useState(false);
+  const [showPlanetaryActions, setShowPlanetaryActions] = useState(false);
+  const [showScreenAgent, setShowScreenAgent] = useState(false);
   const [showIntelligenceHub, setShowIntelligenceHub] = useState(false);
   const [showKnowledgeVault, setShowKnowledgeVault] = useState(false);
   const [showBrowseActivity, setShowBrowseActivity] = useState(false);
@@ -2004,6 +2008,12 @@ const ChatbotPage = () => {
       case "planner":
         setShowDailyPlanner(true);
         return;
+      case "eco":
+        setShowPlanetaryActions(true);
+        return;
+      case "screen-agent":
+        setShowScreenAgent(true);
+        return;
       case "cognitive-loop":
         setCognitiveQuery(message.trim() || "Analyze this decision from multiple expert perspectives.");
         setShowCognitiveLoop(true);
@@ -2536,6 +2546,18 @@ const ChatbotPage = () => {
           }}
         />
       )}
+      <PlanetaryActionModal
+        isOpen={showPlanetaryActions}
+        onClose={() => setShowPlanetaryActions(false)}
+      />
+      <ScreenAgent
+        isOpen={showScreenAgent}
+        onClose={() => setShowScreenAgent(false)}
+        onSendToChat={(text) => {
+          setMessage(text);
+          setShowScreenAgent(false);
+        }}
+      />
       {showIntelligenceHub && (
         <IntelligenceHub isOpen={showIntelligenceHub} onClose={() => setShowIntelligenceHub(false)} />
       )}

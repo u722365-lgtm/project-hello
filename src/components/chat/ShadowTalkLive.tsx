@@ -10,6 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
+import { useVoiceSessionLimits } from "@/hooks/useVoiceSessionLimits";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useConversation } from "@elevenlabs/react";
@@ -274,6 +275,7 @@ interface TranscriptItem {
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 export const ShadowTalkLive = ({ isOpen, onClose, onInsertToChat, autoConnect = false, onSessionEnd }: ShadowTalkLiveProps) => {
   const { toast } = useToast();
+  const voiceLimits = useVoiceSessionLimits();
 
   const [isConnecting, setIsConnecting] = useState(false);
   const [connectionError, setConnectionError] = useState<string | null>(null);
@@ -380,6 +382,17 @@ export const ShadowTalkLive = ({ isOpen, onClose, onInsertToChat, autoConnect = 
 
   const startConnection = useCallback(async () => {
     if (isConnecting || isConnected) return;
+    if (!voiceLimits.canStart) {
+      toast({
+        title: "Daily voice limit reached",
+        description:
+          voiceLimits.limit === Infinity
+            ? "Unable to start voice session."
+            : `You've used ${voiceLimits.count}/${voiceLimits.limit} voice sessions today. Upgrade for unlimited.`,
+        variant: "destructive",
+      });
+      return;
+    }
     setIsConnecting(true);
     setConnectionError(null);
     try {
@@ -388,6 +401,7 @@ export const ShadowTalkLive = ({ isOpen, onClose, onInsertToChat, autoConnect = 
       if (error) throw new Error(error.message || "Failed to get conversation token");
       if (!data?.token) throw new Error(data?.error || "No token received.");
       await conversation.startSession({ conversationToken: data.token, connectionType: "webrtc" });
+      voiceLimits.trackSession();
     } catch (error) {
       setConnectionError(error instanceof Error ? error.message : "Could not start voice session");
       toast({
@@ -398,7 +412,7 @@ export const ShadowTalkLive = ({ isOpen, onClose, onInsertToChat, autoConnect = 
     } finally {
       setIsConnecting(false);
     }
-  }, [conversation, isConnected, isConnecting, toast]);
+  }, [conversation, isConnected, isConnecting, toast, voiceLimits]);
 
   useEffect(() => {
     if (isOpen && autoConnect && !isConnected && !isConnecting) {
