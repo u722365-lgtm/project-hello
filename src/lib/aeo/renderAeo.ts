@@ -12,6 +12,8 @@ export function renderAeoJson(): string {
         facts_html: `${AEO_CORPUS_META.url}/facts.html`,
         llms_full: `${AEO_CORPUS_META.url}/llms-full.txt`,
         founder_profile: `${AEO_CORPUS_META.url}/zain-ahmed-fahad-patel.html`,
+        google_seo_hub: `${AEO_CORPUS_META.url}/google-seo-hub.html`,
+        google_aeo_txt: `${AEO_CORPUS_META.url}/google-aeo.txt`,
       },
     },
     null,
@@ -60,7 +62,7 @@ ${items.map(renderAnswerBlock).join("\n")}
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ShadowTalk AI — Answer Engine Optimization (AEO) Q&amp;A Corpus</title>
-  <meta name="description" content="Canonical Q&amp;A for AI answer engines: ShadowTalk AI product, founder Zain Ahmed, pricing, privacy, comparisons vs ChatGPT, and features. Optimized for ChatGPT, Perplexity, Gemini, Copilot." />
+  <meta name="description" content="Canonical Q&amp;A for Google AI Overviews and search: ShadowTalk AI, founder Zain Ahmed Fahad Patel, pricing, comparisons vs ChatGPT, and features." />
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="${AEO_CORPUS_META.url}/aeo-answers.html" />
   <script type="application/ld+json">${JSON.stringify(faqSchema)}</script>

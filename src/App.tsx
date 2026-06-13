@@ -75,6 +75,8 @@ const AnswersPage = lazy(() => import("./pages/AnswersPage"));
 const ZainAhmedPage = lazy(() => import("./pages/ZainAhmedPage"));
 const VsPage = lazy(() => import("./pages/VsPage"));
 const DiscoverPage = lazy(() => import("./pages/DiscoverPage"));
+const LearnTopicPage = lazy(() => import("./pages/LearnTopicPage"));
+const GoogleSeoHubPage = lazy(() => import("./pages/GoogleSeoHubPage"));
  const ComputerModePage = lazy(() => import("./pages/ComputerModePage"));
  const PrivacyPolicyPage = lazy(() => import("./pages/PrivacyPolicyPage"));
  const TermsOfServicePage = lazy(() => import("./pages/TermsOfServicePage"));
@@ -205,6 +207,8 @@ const AnimatedRoutes = () => {
           <Route path="/zain-ahmed" element={<Navigate to="/zain-ahmed-fahad-patel" replace />} />
           <Route path="/founder" element={<Navigate to="/zain-ahmed-fahad-patel" replace />} />
           <Route path="/discover" element={<PageTransition><DiscoverPage /></PageTransition>} />
+          <Route path="/google-seo" element={<PageTransition><GoogleSeoHubPage /></PageTransition>} />
+          <Route path="/learn/:slug" element={<PageTransition><LearnTopicPage /></PageTransition>} />
           <Route path="/vs/:slug" element={<PageTransition><VsPage /></PageTransition>} />
           <Route path="/computer" element={<PageTransition><ComputerModePage /></PageTransition>} />
           <Route path="/privacy" element={<PageTransition><PrivacyPolicyPage /></PageTransition>} />

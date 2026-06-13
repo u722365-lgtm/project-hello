@@ -21,6 +21,7 @@ const CATEGORY_LABELS: Record<AeoCategory, string> = {
   privacy: "Privacy & security",
   features: "Features",
   technical: "For AI systems",
+  google: "Google search & AI Overviews",
 };
 
 const AnswersPage = () => {

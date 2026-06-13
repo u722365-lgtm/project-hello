@@ -187,4 +187,12 @@ describe("feature wiring verification", () => {
     expect(readSrc("lib/viral/syncViralAssets.test.ts")).toContain("discover.html");
     expect(readFileSync(resolve(root, "public/og-image.svg"), "utf-8")).toContain("ShadowTalk AI");
   });
+
+  it("Google SEO+AEO hub wired", () => {
+    expect(readSrc("App.tsx")).toContain('path="/google-seo"');
+    expect(readSrc("App.tsx")).toContain('path="/learn/:slug"');
+    expect(readSrc("lib/googleSeo/topicPages.ts")).toContain("best-agentic-ai-workspace");
+    expect(readSrc("lib/aeo/answerCorpus.ts")).toContain('category: "google"');
+    expect(readSrc("lib/googleSeo/syncGoogleSeoAssets.test.ts")).toContain("google-seo-hub.html");
+  });
 });

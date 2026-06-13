@@ -280,10 +280,17 @@ export const PAGE_SEO: Record<string, PageMeta> = {
   answers: {
     title: 'ShadowTalk Answers — SEO & AEO Knowledge Base',
     description:
-      'Canonical Q&A for ShadowTalk AI: product, founder Zain Ahmed, pricing, privacy, comparisons, and Answer Engine Optimization (AEO) for ChatGPT, Perplexity, Gemini, and Copilot.',
-    keywords: ['AEO', 'Answer Engine Optimization', 'ShadowTalk FAQ', 'AI citations', 'Zain Ahmed ShadowTalk'],
+      'Canonical Q&A for ShadowTalk AI: product, founder Zain Ahmed Fahad Patel, pricing, privacy, comparisons, and Answer Engine Optimization for Google AI Overviews.',
+    keywords: ['AEO', 'Google AI Overviews', 'ShadowTalk FAQ', 'SEO', 'Zain Ahmed Fahad Patel'],
     canonical: 'https://www.shadowtalk-ai.com/answers',
     ogType: 'article',
+  },
+  googleSeo: {
+    title: 'Google SEO & AEO Index — ShadowTalk AI',
+    description:
+      'ShadowTalk AI pages optimized for Google Search and AI Overviews: founder Zain Ahmed Fahad Patel, topic guides, FAQ schema, and comparison pages.',
+    keywords: ['Google SEO', 'AEO', 'ShadowTalk', 'Zain Ahmed Fahad Patel', 'agentic AI'],
+    canonical: 'https://www.shadowtalk-ai.com/google-seo',
   },
   contact: {
     title: 'Contact Us',

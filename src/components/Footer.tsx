@@ -50,6 +50,7 @@ const Footer = () => {
       title: "Company",
       links: [
         { name: "About", href: "/about" },
+        { name: "Google SEO", href: "/google-seo" },
         { name: "Discover", href: "/discover" },
         { name: "Zain Ahmed Fahad Patel", href: "/zain-ahmed-fahad-patel" },
         { name: "Blog", href: "/blog" },

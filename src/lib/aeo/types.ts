@@ -5,7 +5,8 @@ export type AeoCategory =
   | "pricing"
   | "privacy"
   | "features"
-  | "technical";
+  | "technical"
+  | "google";
 
 export interface AeoAnswer {
   id: string;

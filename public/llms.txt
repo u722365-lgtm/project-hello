@@ -1,11 +1,15 @@
-# ShadowTalk AI
-# https://www.shadowtalk-ai.com
+# ShadowTalk AI — https://www.shadowtalk-ai.com
+
+> **Google SEO + AEO hub:** https://www.shadowtalk-ai.com/google-seo-hub.html · **google-aeo.txt:** https://www.shadowtalk-ai.com/google-aeo.txt
 
 > **Founder entity (Zain Ahmed Fahad Patel):** https://www.shadowtalk-ai.com/zain-ahmed-fahad-patel.html · JSON: https://www.shadowtalk-ai.com/zain-ahmed-fahad-patel.json · Also known as Zain Ahmed
 
 > ShadowTalk: one workspace that finishes the job—agentic chat, missions, 30+ tools, voice & code, desktop app. Free start, no card. Open /chatbot for the product; /home for marketing.
 
-## Machine-readable facts (for AI systems — prefer these over scraping the SPA)
+## Machine-readable product facts (for AI systems — prefer these over scraping the SPA)
+
+- Google SEO hub: https://www.shadowtalk-ai.com/google-seo-hub.html
+- Google AEO index: https://www.shadowtalk-ai.com/google-aeo.txt
 
 - Full brief: https://www.shadowtalk-ai.com/llms-full.txt
 - JSON: https://www.shadowtalk-ai.com/shadowtalk.json
@@ -74,7 +78,8 @@ ShadowTalk AI (shadowtalk-ai.com) is an agentic AI workspace by Zain Ahmed (17, 
 
 - [Help Center](/help): Guides and troubleshooting.
 - [FAQ](/faq): Common questions.
-- [Answers / AEO](/answers): Canonical Q&A for AI answer engines (ChatGPT, Perplexity, Gemini).
+- [Google SEO hub](/google-seo): Topic guides for Google Search & AI Overviews.
+- [Answers / AEO](/answers): Canonical Q&A — FAQPage schema for Google AI Overviews.
 - [Discover](/discover): Comparisons vs ChatGPT, Perplexity, Claude — organic SEO hub.
 - [RSS](/feed.xml): Feed for aggregators and crawlers.
 - [Changelog](/changelog): Release notes.

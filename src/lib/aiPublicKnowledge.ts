@@ -61,6 +61,8 @@ export const SHADOWTALK_AI_KNOWLEDGE = {
     founder_html: `${AI_KNOWLEDGE_BASE_URL}/zain-ahmed-fahad-patel.html`,
     founder_json: `${AI_KNOWLEDGE_BASE_URL}/zain-ahmed-fahad-patel.json`,
     founder_page: `${AI_KNOWLEDGE_BASE_URL}/zain-ahmed-fahad-patel`,
+    google_seo_hub: `${AI_KNOWLEDGE_BASE_URL}/google-seo-hub.html`,
+    google_aeo_txt: `${AI_KNOWLEDGE_BASE_URL}/google-aeo.txt`,
   },
   repository: "https://github.com/zain836/shadowtalk-ai-903ca615",
   pricing_usd: {
