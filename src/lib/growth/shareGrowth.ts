@@ -5,7 +5,7 @@ export type ShareKind = "mission" | "presentation" | "chat";
 const SITE_ORIGIN =
   typeof window !== "undefined" ? window.location.origin : "https://www.shadowtalk-ai.com";
 
-const DEFAULT_OG_IMAGE = `${SITE_ORIGIN}/og-image.png`;
+const DEFAULT_OG_IMAGE = `${SITE_ORIGIN}/og-image.svg`;
 
 export type ShareUtm = {
   source: string;

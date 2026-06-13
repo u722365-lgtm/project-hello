@@ -10,9 +10,10 @@ const SHARE_BANNER_DAY_KEY = "shadowtalk_share_banner_day";
 /** Substantive AI replies are worth a one-tap share prompt. */
 export function isShareWorthyReply(text: string): boolean {
   const t = text.trim();
-  if (t.length >= 400) return true;
-  if (/```[\s\S]{60,}/.test(t)) return true;
-  if (/^#{1,3}\s+\S/m.test(t) && t.length >= 180) return true;
+  const minLen = isShareAmplificationActive() ? 280 : 400;
+  if (t.length >= minLen) return true;
+  if (/```[\s\S]{40,}/.test(t)) return true;
+  if (/^#{1,3}\s+\S/m.test(t) && t.length >= (isShareAmplificationActive() ? 140 : 180)) return true;
   return false;
 }
 
@@ -91,7 +92,7 @@ export function shouldShowChatShareBanner(): boolean {
 }
 
 function getShareBannerDailyCap(): number {
-  return isShareAmplificationActive() ? 5 : 2;
+  return isShareAmplificationActive() ? 8 : 3;
 }
 
 export function recordChatShareBannerShown(): void {

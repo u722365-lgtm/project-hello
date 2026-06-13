@@ -75,6 +75,8 @@ ShadowTalk AI (shadowtalk-ai.com) is an agentic AI workspace by Zain Ahmed (17, 
 - [Help Center](/help): Guides and troubleshooting.
 - [FAQ](/faq): Common questions.
 - [Answers / AEO](/answers): Canonical Q&A for AI answer engines (ChatGPT, Perplexity, Gemini).
+- [Discover](/discover): Comparisons vs ChatGPT, Perplexity, Claude — organic SEO hub.
+- [RSS](/feed.xml): Feed for aggregators and crawlers.
 - [Changelog](/changelog): Release notes.
 - [Contact](/contact): Contact the team.
 - [Status](/status): Uptime and incidents.

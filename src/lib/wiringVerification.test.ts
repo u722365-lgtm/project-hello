@@ -179,4 +179,12 @@ describe("feature wiring verification", () => {
     expect(readSrc("pages/ZainAhmedPage.tsx")).toContain("FOUNDER_SOCIAL_PROFILES.linkedin");
     expect(readSrc("pages/ZainAhmedPage.tsx")).toContain("FOUNDER_SOCIAL_PROFILES.instagram");
   });
+
+  it("viral autonomous assets wired", () => {
+    expect(readSrc("App.tsx")).toContain('path="/discover"');
+    expect(readSrc("App.tsx")).toContain('path="/vs/:slug"');
+    expect(readSrc("lib/viral/comparisonCorpus.ts")).toContain('"chatgpt"');
+    expect(readSrc("lib/viral/syncViralAssets.test.ts")).toContain("discover.html");
+    expect(readFileSync(resolve(root, "public/og-image.svg"), "utf-8")).toContain("ShadowTalk AI");
+  });
 });

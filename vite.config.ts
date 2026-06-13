@@ -98,6 +98,10 @@ export default defineConfig(({ mode }) => {
           "zain-ahmed.json",
           "zain-ahmed.txt",
           "founder-zain-ahmed.html",
+          "og-image.svg",
+          "discover.html",
+          "feed.xml",
+          "embed/shadowtalk-badge.js",
         ],
         manifest: {
           name: "ShadowTalk AI",

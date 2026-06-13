@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getCorsHeaders, handleCorsOptions } from "../_shared/cors.ts";
 
 const SITE = "https://www.shadowtalk-ai.com";
-const DEFAULT_IMAGE = `${SITE}/og-image.png`;
+const DEFAULT_IMAGE = `${SITE}/og-image.svg`;
 
 function escapeHtml(s: string): string {
   return s

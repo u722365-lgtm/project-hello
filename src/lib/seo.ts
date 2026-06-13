@@ -29,7 +29,7 @@ export interface PageMeta {
 export function generateMetaTags(meta: PageMeta): Record<string, string> {
   const baseUrl = 'https://www.shadowtalk-ai.com';
   // Use our own branded OG image (sits in /public). Falls back gracefully if missing.
-  const defaultImage = `${baseUrl}/og-image.png`;
+  const defaultImage = `${baseUrl}/og-image.svg`;
   const brand = 'ShadowTalk AI';
   // Avoid double-branding the title if it already contains the brand name.
   const fullTitle = meta.title.toLowerCase().includes('shadowtalk')
