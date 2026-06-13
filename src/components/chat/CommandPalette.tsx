@@ -264,8 +264,8 @@ export const CommandPalette = ({ open, onOpenChange, onAction }: CommandPaletteP
       icon: <Eye className="h-4 w-4" />,
       shortcut: "⌘⇧X",
       category: "Voice & Vision",
-      action: () => onAction("vision"),
-      keywords: ["vision", "screen", "watch", "monitor"],
+      action: () => onAction("vision-agent"),
+      keywords: ["vision", "screen", "watch", "monitor", "agent"],
     },
     
     // Productivity

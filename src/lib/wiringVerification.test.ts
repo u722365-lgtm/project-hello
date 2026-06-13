@@ -233,4 +233,15 @@ describe("feature wiring verification", () => {
     expect(readFileSync(resolve(root, "package.json"), "utf-8")).toContain('"prebuild"');
     expect(readSrc("App.tsx")).toContain('lazy(() => import("./pages/ChatbotPage"))');
   });
+
+  it("feature wiring phase 2 — vision agent, memory hooks, edge limits", () => {
+    expect(readSrc("pages/ChatbotPage.tsx")).toContain("VisionAgentModal");
+    expect(readSrc("pages/ChatbotPage.tsx")).toContain('case "vision-agent"');
+    expect(readSrc("lib/chatCommandRoutes.ts")).toContain('"vision-agent"');
+    expect(readSrc("components/chat/VisualKnowledgeGraph.tsx")).toContain("useMemoryGraph");
+    expect(readSrc("components/chat/VisualKnowledgeGraph.tsx")).toContain("useKnowledgeSnapshot");
+    expect(readSrc("components/chat/ModelFineTuning.tsx")).toContain("usePersonalLLMStore");
+    expect(readFileSync(resolve(root, "supabase/functions/chat/index.ts"), "utf-8")).toContain("checkAndIncrementDailyUsage");
+    expect(readFileSync(resolve(root, "supabase/functions/_shared/daily-limits.ts"), "utf-8")).toContain("FREE_TIER_DAILY");
+  });
 });

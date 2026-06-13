@@ -53,4 +53,5 @@ export const CHAT_COMMAND_MODAL_ACTIONS = new Set([
   "branching",
   "eco",
   "screen-agent",
+  "vision-agent",
 ]);

@@ -14,6 +14,8 @@ describe("chatCommandRoutes wiring", () => {
       "creative",
       "vision",
       "camera",
+      "vision-agent",
+      "screen-agent",
       "planner",
       "image-decoder",
       "cognitive-loop",

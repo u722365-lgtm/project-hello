@@ -18,6 +18,7 @@ import {
   type KimiLengthType,
   type KimiToneType,
 } from "../_shared/kimiDocumentPrompts.ts";
+import { checkAndIncrementDailyUsage } from "../_shared/daily-limits.ts";
 
 // ============================================================================
 // SPRINT 1: CHAT INTELLIGENCE ENGINE
@@ -1469,6 +1470,38 @@ Return ONLY valid JSON in this exact format:
         }
       } catch (contextErr) {
         console.error("[CONTEXT ENGINE] Non-fatal context fetch error:", contextErr);
+      }
+    }
+
+    // Server-side daily message limit for authenticated free-tier users
+    if (authUserId && supabaseUrl && serviceRoleKey) {
+      try {
+        const adminClient = createClient(supabaseUrl, serviceRoleKey);
+        const usage = await checkAndIncrementDailyUsage(adminClient, authUserId, "messages");
+        if (!usage.allowed) {
+          console.log(`[DAILY LIMIT] User ${authUserId} blocked: ${usage.current}/${usage.limit} messages`);
+          return new Response(
+            JSON.stringify({
+              success: false,
+              error: "Daily message limit reached",
+              code: "DAILY_LIMIT_EXCEEDED",
+              limit: usage.limit,
+              current: usage.current,
+              plan: usage.plan,
+            }),
+            {
+              status: 429,
+              headers: {
+                ...corsHeaders,
+                "Content-Type": "application/json",
+                "X-Daily-Limit": String(usage.limit),
+                "X-Daily-Remaining": "0",
+              },
+            }
+          );
+        }
+      } catch (limitErr) {
+        console.error("[DAILY LIMIT] Non-fatal enforcement error:", limitErr);
       }
     }
 

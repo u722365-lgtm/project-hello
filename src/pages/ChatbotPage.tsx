@@ -155,6 +155,7 @@ import { FounderCrawlStrip } from "@/components/founder/FounderCrawlStrip";
 import { UsageLimitBanner } from "@/components/monetization/UsageLimitBanner";
 import { PlanetaryActionModal } from "@/components/chat/PlanetaryActionModal";
 import { ScreenAgent } from "@/components/chat/ScreenAgent";
+import { VisionAgentModal } from "@/components/chat/VisionAgentModal";
 import { BRAND } from "@/lib/brand";
 import { ReferralNudgeBanner } from "@/components/growth/ReferralNudgeBanner";
 import { ShareResultDialog } from "@/components/growth/ShareResultDialog";
@@ -326,6 +327,7 @@ const ChatbotPage = () => {
   const [showDailyPlanner, setShowDailyPlanner] = useState(false);
   const [showPlanetaryActions, setShowPlanetaryActions] = useState(false);
   const [showScreenAgent, setShowScreenAgent] = useState(false);
+  const [showVisionAgent, setShowVisionAgent] = useState(false);
   const [showIntelligenceHub, setShowIntelligenceHub] = useState(false);
   const [showKnowledgeVault, setShowKnowledgeVault] = useState(false);
   const [showBrowseActivity, setShowBrowseActivity] = useState(false);
@@ -2014,6 +2016,9 @@ const ChatbotPage = () => {
       case "screen-agent":
         setShowScreenAgent(true);
         return;
+      case "vision-agent":
+        setShowVisionAgent(true);
+        return;
       case "cognitive-loop":
         setCognitiveQuery(message.trim() || "Analyze this decision from multiple expert perspectives.");
         setShowCognitiveLoop(true);
@@ -2556,6 +2561,17 @@ const ChatbotPage = () => {
         onSendToChat={(text) => {
           setMessage(text);
           setShowScreenAgent(false);
+        }}
+      />
+      <VisionAgentModal
+        isOpen={showVisionAgent}
+        onClose={() => setShowVisionAgent(false)}
+        onMessage={(text, isProactive) => {
+          if (isProactive) {
+            insertAssistantToChat(text);
+          } else {
+            setMessage(text);
+          }
         }}
       />
       {showIntelligenceHub && (

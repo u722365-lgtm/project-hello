@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import { usePersonalLLMStore } from "@/hooks/usePersonalLLMStore";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
 
@@ -39,6 +40,14 @@ interface ModelFineTuningProps {
 export const ModelFineTuning = ({ onClose }: ModelFineTuningProps) => {
   const { toast } = useToast();
   const { user } = useAuth();
+  const {
+    conversations,
+    settings: personalLlmSettings,
+    isSyncing,
+    isAuthenticated: personalLlmAuthed,
+    updateSettings: updatePersonalLlmSettings,
+    syncToCloud,
+  } = usePersonalLLMStore();
   const [activeTab, setActiveTab] = useState("config");
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -164,6 +173,13 @@ export const ModelFineTuning = ({ onClose }: ModelFineTuningProps) => {
     setModels(updatedModels);
     localStorage.setItem('custom-models', JSON.stringify(updatedModels));
 
+    if (currentModel.isActive || currentModel.systemPrompt) {
+      void updatePersonalLlmSettings({
+        preferredModel: currentModel.isActive ? currentModel.name : personalLlmSettings.preferredModel,
+        defaultSystemPrompt: currentModel.systemPrompt,
+      });
+    }
+
     // Save to cloud if user is authenticated
     if (user) {
       try {
@@ -256,6 +272,11 @@ export const ModelFineTuning = ({ onClose }: ModelFineTuningProps) => {
     localStorage.setItem('custom-models', JSON.stringify(updated));
     localStorage.setItem('active-custom-model', name);
 
+    void updatePersonalLlmSettings({
+      preferredModel: name,
+      defaultSystemPrompt: models.find(m => m.name === name)?.systemPrompt ?? personalLlmSettings.defaultSystemPrompt,
+    });
+
     // Update in cloud if user is authenticated
     if (user) {
       try {
@@ -292,11 +313,31 @@ export const ModelFineTuning = ({ onClose }: ModelFineTuningProps) => {
             </div>
             <div>
               <h2 className="font-semibold">Model Fine-Tuning</h2>
-              <p className="text-xs text-muted-foreground flex items-center gap-1">
+              <p className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap">
                 {user ? (
                   <>
-                    <Cloud className="h-3 w-3" />
-                    Cloud sync enabled
+                    <span className="inline-flex items-center gap-1">
+                      <Cloud className="h-3 w-3" />
+                      Cloud sync enabled
+                    </span>
+                    {personalLlmAuthed && (
+                      <>
+                        <span>·</span>
+                        <span>{conversations.length} local conversations</span>
+                        {isSyncing && (
+                          <span className="inline-flex items-center gap-1 text-primary">
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                            syncing
+                          </span>
+                        )}
+                        {personalLlmSettings.preferredModel && (
+                          <>
+                            <span>·</span>
+                            <span>Active: {personalLlmSettings.preferredModel}</span>
+                          </>
+                        )}
+                      </>
+                    )}
                   </>
                 ) : (
                   <>
@@ -307,9 +348,23 @@ export const ModelFineTuning = ({ onClose }: ModelFineTuningProps) => {
               </p>
             </div>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose} className="rounded-xl">
+          <div className="flex items-center gap-2">
+            {personalLlmAuthed && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs"
+                disabled={isSyncing}
+                onClick={() => void syncToCloud()}
+              >
+                {isSyncing ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Cloud className="h-3 w-3 mr-1" />}
+                Sync conversations
+              </Button>
+            )}
+            <Button variant="ghost" size="icon" onClick={onClose} className="rounded-xl">
             <X className="h-4 w-4" />
           </Button>
+          </div>
         </div>
 
         {/* Content */}

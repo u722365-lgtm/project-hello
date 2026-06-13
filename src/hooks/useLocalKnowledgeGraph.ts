@@ -328,7 +328,33 @@ export const useLocalKnowledgeGraph = () => {
     });
   }, [getDB]);
 
-  // Delete a node and its edges
+  const importGraph = useCallback(async (
+    importNodes: KnowledgeNode[],
+    importEdges: KnowledgeEdge[]
+  ) => {
+    const db = await getDB();
+    const tx = db.transaction([NODES_STORE, EDGES_STORE], "readwrite");
+
+    for (const node of importNodes) {
+      await tx.objectStore(NODES_STORE).put({
+        ...node,
+        lastMentioned: node.lastMentioned ? new Date(node.lastMentioned) : new Date(),
+      });
+    }
+
+    for (const edge of importEdges) {
+      await tx.objectStore(EDGES_STORE).put(edge);
+    }
+
+    await tx.done;
+
+    setState(prev => ({
+      ...prev,
+      nodes: importNodes,
+      edges: importEdges,
+    }));
+  }, [getDB]);
+
   const deleteNode = useCallback(async (nodeId: string) => {
     const db = await getDB();
     await db.delete(NODES_STORE, nodeId);
@@ -364,5 +390,6 @@ export const useLocalKnowledgeGraph = () => {
     getStatistics,
     clearGraph,
     deleteNode,
+    importGraph,
   };
 };

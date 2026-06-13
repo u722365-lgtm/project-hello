@@ -1,13 +1,14 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Network, Search, Trash2, Lightbulb, BarChart3, ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
+import { Network, Search, Trash2, Lightbulb, BarChart3, ZoomIn, ZoomOut, Maximize2, Save, Download, Brain, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLocalKnowledgeGraph } from "@/hooks/useLocalKnowledgeGraph";
-import { cn } from "@/lib/utils";
+import { useMemoryGraph } from "@/hooks/useMemoryGraph";
+import { useKnowledgeSnapshot } from "@/hooks/useKnowledgeSnapshot";
+import { useToast } from "@/hooks/use-toast";
 
 const TYPE_COLORS: Record<string, { bg: string; border: string; text: string }> = {
   entity: { bg: "hsl(var(--primary) / 0.15)", border: "hsl(var(--primary) / 0.5)", text: "hsl(var(--primary))" },
@@ -28,6 +29,7 @@ interface NodePosition {
 }
 
 const VisualKnowledgeGraph = () => {
+  const { toast } = useToast();
   const {
     nodes,
     edges,
@@ -38,7 +40,12 @@ const VisualKnowledgeGraph = () => {
     deleteNode,
     clearGraph,
     getRelatedNodes,
+    importGraph,
   } = useLocalKnowledgeGraph();
+
+  const { isReady: memoryReady, stats: memoryStats } = useMemoryGraph();
+  const { saveSnapshot, loadLatestSnapshot } = useKnowledgeSnapshot();
+  const [snapshotBusy, setSnapshotBusy] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
@@ -309,6 +316,78 @@ const VisualKnowledgeGraph = () => {
     setZoom(prev => Math.max(0.3, Math.min(3, prev - e.deltaY * 0.001)));
   }, []);
 
+  const handleSaveSnapshot = useCallback(async () => {
+    setSnapshotBusy(true);
+    const ok = await saveSnapshot(nodes, edges);
+    setSnapshotBusy(false);
+    toast({
+      title: ok ? "Snapshot saved" : "Sign in to save",
+      description: ok
+        ? `${nodes.length} entities backed up to your cloud vault`
+        : "Cloud snapshots require an authenticated account",
+      variant: ok ? "default" : "destructive",
+    });
+  }, [nodes, edges, saveSnapshot, toast]);
+
+  const handleRestoreSnapshot = useCallback(async () => {
+    setSnapshotBusy(true);
+    const snapshot = await loadLatestSnapshot();
+    setSnapshotBusy(false);
+
+    if (!snapshot?.snapshot_data) {
+      toast({
+        title: "No snapshot found",
+        description: "Save a snapshot first or sign in to restore from cloud",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const data = snapshot.snapshot_data as {
+      entities?: Array<{
+        id?: string;
+        label?: string;
+        type?: string;
+        content?: string;
+        frequency?: number;
+        lastMentioned?: string | Date;
+        metadata?: Record<string, unknown>;
+      }>;
+      relationships?: Array<{ source?: string; target?: string; relationship?: string; weight?: number }>;
+    };
+
+    const entities = data.entities ?? [];
+    const relationships = data.relationships ?? [];
+
+    const importNodes = entities
+      .filter((e) => e.id && e.label && e.type)
+      .map((e) => ({
+        id: e.id!,
+        label: e.label!,
+        type: e.type as "entity" | "concept" | "topic" | "memory",
+        content: e.content || e.label!,
+        frequency: e.frequency ?? 1,
+        lastMentioned: e.lastMentioned ? new Date(e.lastMentioned) : new Date(),
+        metadata: e.metadata,
+      }));
+
+    const importEdges = relationships
+      .filter((r) => r.source && r.target)
+      .map((r) => ({
+        source: r.source!,
+        target: r.target!,
+        relationship: r.relationship || "related",
+        weight: r.weight ?? 1,
+      }));
+
+    await importGraph(importNodes, importEdges);
+
+    toast({
+      title: "Snapshot restored",
+      description: `Loaded ${entities.length} entities and ${relationships.length} relationships`,
+    });
+  }, [loadLatestSnapshot, importGraph, toast]);
+
   return (
     <div className="flex flex-col h-full gap-4">
       {/* Header */}
@@ -323,6 +402,26 @@ const VisualKnowledgeGraph = () => {
           </p>
         </div>
         <div className="flex items-center gap-1">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1 text-xs"
+            disabled={snapshotBusy || nodes.length === 0}
+            onClick={handleSaveSnapshot}
+          >
+            {snapshotBusy ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
+            Save
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1 text-xs"
+            disabled={snapshotBusy}
+            onClick={handleRestoreSnapshot}
+          >
+            <Download className="h-3 w-3" />
+            Restore
+          </Button>
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setZoom(z => Math.min(3, z + 0.2))}>
             <ZoomIn className="h-3.5 w-3.5" />
           </Button>
@@ -334,6 +433,23 @@ const VisualKnowledgeGraph = () => {
           </Button>
         </div>
       </div>
+
+      {/* Contextual memory layers (IndexedDB) */}
+      {memoryReady && (
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border/50 bg-muted/20 px-3 py-2 text-xs">
+          <Brain className="h-3.5 w-3.5 text-primary shrink-0" />
+          <span className="text-muted-foreground">Memory graph:</span>
+          <Badge variant="secondary" className="text-[10px] h-5">
+            {memoryStats.episodicCount} episodic
+          </Badge>
+          <Badge variant="secondary" className="text-[10px] h-5">
+            {memoryStats.semanticCount} semantic
+          </Badge>
+          <Badge variant="secondary" className="text-[10px] h-5">
+            {memoryStats.proceduralCount} procedural
+          </Badge>
+        </div>
+      )}
 
       {/* Search */}
       <div className="relative">
