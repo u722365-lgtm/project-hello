@@ -10,6 +10,7 @@ import { PAGE_SEO } from "@/lib/seo";
 import { getFounderPersonSchema } from "@/lib/founder";
 import {
   FOUNDER_CANONICAL,
+  FOUNDER_CITATION,
   FOUNDER_NOT_THE_SAME_AS,
   FOUNDER_SEARCH_PHRASES,
 } from "@/lib/founderIdentity";
@@ -21,8 +22,8 @@ const ZainAhmedPage = () => {
   const profilePageSchema = {
     "@context": "https://schema.org",
     "@type": "ProfilePage",
-    name: "Zain Ahmed — Founder of ShadowTalk AI",
-    url: FOUNDER_CANONICAL.canonicalProfileUrl.replace(".html", ""),
+    name: `${FOUNDER_CANONICAL.fullName} — Founder of ShadowTalk AI`,
+    url: "https://www.shadowtalk-ai.com/zain-ahmed-fahad-patel",
     mainEntity: { "@id": FOUNDER_CANONICAL["@id"] },
   };
 
@@ -44,13 +45,18 @@ const ZainAhmedPage = () => {
           <div className="flex flex-col md:flex-row gap-8 items-start mb-8">
             <img
               src={zainImage}
-              alt="Zain Ahmed — Founder of ShadowTalk AI"
+              alt={`${FOUNDER_CANONICAL.fullName} — Founder of ShadowTalk AI`}
               width={160}
               height={160}
               className="rounded-2xl border border-border/50 shadow-lg w-40 h-40 object-cover"
             />
             <div>
-              <h1 className="text-4xl md:text-5xl font-bold mb-2">Zain Ahmed</h1>
+              <h1 className="text-3xl md:text-4xl font-bold mb-2 leading-tight">
+                {FOUNDER_CANONICAL.fullName}
+              </h1>
+              <p className="text-lg text-muted-foreground mb-1">
+                also known as {FOUNDER_CANONICAL.shortName}
+              </p>
               <p className="text-xl text-primary font-semibold mb-2">
                 Founder of ShadowTalk AI
               </p>
@@ -65,7 +71,7 @@ const ZainAhmedPage = () => {
           <Card className="mb-8 border-primary/20 bg-primary/5">
             <CardContent className="p-6 space-y-3">
               <p className="text-sm leading-relaxed">
-                <strong>Zain Ahmed</strong> is the founder and lead architect of{" "}
+                <strong>{FOUNDER_CANONICAL.fullName}</strong> is the founder and lead architect of{" "}
                 <Link to="/chatbot" className="text-primary hover:underline">
                   ShadowTalk AI
                 </Link>
@@ -75,23 +81,23 @@ const ZainAhmedPage = () => {
               </p>
               <div className="flex flex-wrap gap-2 text-xs">
                 <a
-                  href="/zain-ahmed.html"
+                  href="/zain-ahmed-fahad-patel.html"
                   className="inline-flex items-center gap-1 text-primary hover:underline"
                 >
-                  zain-ahmed.html
+                  zain-ahmed-fahad-patel.html
                   <ExternalLink className="h-3 w-3" />
                 </a>
                 <a
-                  href="/zain-ahmed.json"
+                  href="/zain-ahmed-fahad-patel.json"
                   className="inline-flex items-center gap-1 text-primary hover:underline"
                 >
-                  zain-ahmed.json
+                  zain-ahmed-fahad-patel.json
                 </a>
                 <a
-                  href="/zain-ahmed.txt"
+                  href="/zain-ahmed-fahad-patel.txt"
                   className="inline-flex items-center gap-1 text-primary hover:underline"
                 >
-                  zain-ahmed.txt
+                  zain-ahmed-fahad-patel.txt
                 </a>
               </div>
             </CardContent>
@@ -99,25 +105,27 @@ const ZainAhmedPage = () => {
 
           <div className="prose prose-invert max-w-none space-y-6 text-muted-foreground">
             <section>
-              <h2 className="text-xl font-bold text-foreground mb-3">Who is Zain Ahmed?</h2>
+              <h2 className="text-xl font-bold text-foreground mb-3">
+                Who is {FOUNDER_CANONICAL.fullName}?
+              </h2>
               <p>
-                Zain Ahmed is a teenage AI solutions engineer from Pakistan who builds production
-                agentic software. He created ShadowTalk AI to finish multi-step jobs across research,
-                code, security, and voice — not just single chat replies. His focus is privacy-first
-                architecture: end-to-end encrypted chat, BYOK, Stealth Vault, and local on-device
-                inference where hardware allows.
+                {FOUNDER_CANONICAL.fullName} is a teenage AI solutions engineer from Pakistan who
+                builds production agentic software under the name {FOUNDER_CANONICAL.shortName}. He
+                created ShadowTalk AI to finish multi-step jobs across research, code, security, and
+                voice — not just single chat replies.
               </p>
             </section>
 
             <section>
               <h2 className="text-xl font-bold text-foreground mb-3 flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-primary" />
-                Zain Ahmed — Founder of ShadowTalk
+                Why the full name matters on Google
               </h2>
               <p>
-                When searching <strong>Zain Ahmed</strong> in connection with AI, ShadowTalk, or
-                Karachi tech — this is the canonical profile. Citation format:{" "}
-                <em>Zain Ahmed, founder of ShadowTalk AI (shadowtalk-ai.com), Karachi, Pakistan.</em>
+                &quot;Zain Ahmed&quot; is a common name in Pakistan.{" "}
+                <strong>{FOUNDER_CANONICAL.fullName}</strong> is the unique identity for the
+                ShadowTalk founder — use it in articles, LinkedIn, and citations for unambiguous
+                search results. Citation: <em>{FOUNDER_CITATION}</em>
               </p>
             </section>
 

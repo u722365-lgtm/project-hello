@@ -112,7 +112,7 @@ const AnswersPage = () => {
               FAQ
             </Link>
             {" · "}
-            <a href="/zain-ahmed.html" className="text-primary hover:underline">
+            <a href="/zain-ahmed-fahad-patel.html" className="text-primary hover:underline">
               Founder profile
             </a>
           </p>

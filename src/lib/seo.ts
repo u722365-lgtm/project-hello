@@ -141,7 +141,10 @@ export function generateMetaTags(meta: PageMeta): Record<string, string> {
      '@context': 'https://schema.org',
      '@type': 'Person',
      '@id': FOUNDER_CANONICAL['@id'],
-     name: FOUNDER_CANONICAL.name,
+     name: FOUNDER_CANONICAL.fullName,
+     givenName: FOUNDER_CANONICAL.givenName,
+     additionalName: FOUNDER_CANONICAL.additionalName,
+     familyName: FOUNDER_CANONICAL.familyName,
      alternateName: [...FOUNDER_CANONICAL.alternateName],
      jobTitle: FOUNDER_CANONICAL.jobTitle,
      description: FOUNDER_CANONICAL.description,
@@ -165,7 +168,7 @@ export function generateMetaTags(meta: PageMeta): Record<string, string> {
        FOUNDER_CANONICAL.instagram,
        FOUNDER_CANONICAL.github,
        'https://www.shadowtalk-ai.com/about',
-       'https://www.shadowtalk-ai.com/zain-ahmed',
+       'https://www.shadowtalk-ai.com/zain-ahmed-fahad-patel',
      ],
    };
  }
@@ -234,14 +237,13 @@ export const PAGE_SEO: Record<string, PageMeta> = {
     canonical: 'https://www.shadowtalk-ai.com/docs',
   },
   about: {
-    title: 'Zain Ahmed — Founder of ShadowTalk AI',
+    title: 'Zain Ahmed Fahad Patel — Founder of ShadowTalk AI',
     description:
-      'Meet Zain Ahmed, founder and lead architect of ShadowTalk AI. 17-year-old AI solutions engineer from Karachi, Pakistan building sovereign agentic AI — encrypted chat, missions, and offline models.',
+      'Meet Zain Ahmed Fahad Patel (Zain Ahmed), founder and lead architect of ShadowTalk AI. 17-year-old AI solutions engineer from Karachi, Pakistan building sovereign agentic AI.',
     keywords: [
-      'Zain Ahmed',
+      'Zain Ahmed Fahad Patel',
       'Zain Ahmed ShadowTalk',
       'Zain Ahmed founder',
-      'Zain Ahmed AI',
       'ShadowTalk AI founder',
       'Karachi AI founder',
     ],
@@ -249,17 +251,18 @@ export const PAGE_SEO: Record<string, PageMeta> = {
     ogType: 'profile',
   },
   zainAhmed: {
-    title: 'Zain Ahmed — Founder of ShadowTalk AI',
+    title: 'Zain Ahmed Fahad Patel — Founder of ShadowTalk AI',
     description:
-      'Official profile: Zain Ahmed, founder of ShadowTalk AI (shadowtalk-ai.com). AI solutions engineer, age 17, Karachi Pakistan. Not the Rastah fashion founder or NAPA theatre director.',
+      'Official profile: Zain Ahmed Fahad Patel, founder of ShadowTalk AI (shadowtalk-ai.com). AI solutions engineer, age 17, Karachi Pakistan. Also known as Zain Ahmed.',
     keywords: [
-      'Zain Ahmed',
-      'Zain Ahmed founder',
+      'Zain Ahmed Fahad Patel',
+      'Zain Ahmed Fahad Patel ShadowTalk',
+      'Zain Ahmed Fahad Patel founder',
       'Zain Ahmed ShadowTalk AI',
-      'Zain Ahmed Pakistan',
-      'Zain Ahmed AI founder',
+      'Zain Ahmed founder',
+      'ShadowTalk AI founder Karachi',
     ],
-    canonical: 'https://www.shadowtalk-ai.com/zain-ahmed',
+    canonical: 'https://www.shadowtalk-ai.com/zain-ahmed-fahad-patel',
     ogType: 'profile',
   },
   computer: {

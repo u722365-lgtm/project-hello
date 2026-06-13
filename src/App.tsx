@@ -199,8 +199,9 @@ const AnimatedRoutes = () => {
           <Route path="/press" element={<PageTransition><PressPage /></PageTransition>} />
           <Route path="/facts" element={<PageTransition><FactsPage /></PageTransition>} />
           <Route path="/answers" element={<PageTransition><AnswersPage /></PageTransition>} />
-          <Route path="/zain-ahmed" element={<PageTransition><ZainAhmedPage /></PageTransition>} />
-          <Route path="/founder" element={<Navigate to="/zain-ahmed" replace />} />
+          <Route path="/zain-ahmed-fahad-patel" element={<PageTransition><ZainAhmedPage /></PageTransition>} />
+          <Route path="/zain-ahmed" element={<Navigate to="/zain-ahmed-fahad-patel" replace />} />
+          <Route path="/founder" element={<Navigate to="/zain-ahmed-fahad-patel" replace />} />
           <Route path="/computer" element={<PageTransition><ComputerModePage /></PageTransition>} />
           <Route path="/privacy" element={<PageTransition><PrivacyPolicyPage /></PageTransition>} />
           <Route path="/terms" element={<PageTransition><TermsOfServicePage /></PageTransition>} />

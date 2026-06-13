@@ -10,7 +10,7 @@ export const FOUNDER_SOCIAL = {
   linkedin: {
     url: "https://www.linkedin.com/in/zain-ahmed-917b6b3a6",
     label: "LinkedIn",
-    name: "Zain Ahmed",
+    name: "Zain Ahmed Fahad Patel",
   },
 } as const;
 

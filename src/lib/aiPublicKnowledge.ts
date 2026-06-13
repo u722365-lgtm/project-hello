@@ -21,7 +21,7 @@ export const SHADOWTALK_AI_KNOWLEDGE = {
     "Agentic AI workspace: chat, Mission Control missions, 30+ tools, deep research, code IDE, presentations, Stealth Vault, marketplace agents, voice mode, desktop app. Privacy-first with E2EE chat and optional on-device models.",
   founder: {
     "@id": FOUNDER_CANONICAL["@id"],
-    name: FOUNDER_CANONICAL.name,
+    name: FOUNDER_CANONICAL.fullName,
     age: FOUNDER_CANONICAL.age,
     location: `${FOUNDER_CANONICAL.location.city}, ${FOUNDER_CANONICAL.location.country}`,
     role: FOUNDER_CANONICAL.jobTitle,
@@ -29,7 +29,9 @@ export const SHADOWTALK_AI_KNOWLEDGE = {
     founded: FOUNDER_CANONICAL.founded,
     linkedin: FOUNDER_CANONICAL.linkedin,
     instagram: FOUNDER_CANONICAL.instagram,
-    canonical_profile: "https://www.shadowtalk-ai.com/zain-ahmed.html",
+    canonical_profile: "https://www.shadowtalk-ai.com/zain-ahmed-fahad-patel.html",
+    full_name: "Zain Ahmed Fahad Patel",
+    short_name: "Zain Ahmed",
     disambiguation: FOUNDER_NOT_THE_SAME_AS.map((d) => `${d.name} (${d.domain}) — ${d.note}`),
     search_phrases: [...FOUNDER_SEARCH_PHRASES],
   },
@@ -50,9 +52,9 @@ export const SHADOWTALK_AI_KNOWLEDGE = {
     aeo_json: `${AI_KNOWLEDGE_BASE_URL}/aeo-answers.json`,
     aeo_txt: `${AI_KNOWLEDGE_BASE_URL}/aeo.txt`,
     answers_page: `${AI_KNOWLEDGE_BASE_URL}/answers`,
-    founder_html: `${AI_KNOWLEDGE_BASE_URL}/zain-ahmed.html`,
-    founder_json: `${AI_KNOWLEDGE_BASE_URL}/zain-ahmed.json`,
-    founder_page: `${AI_KNOWLEDGE_BASE_URL}/zain-ahmed`,
+    founder_html: `${AI_KNOWLEDGE_BASE_URL}/zain-ahmed-fahad-patel.html`,
+    founder_json: `${AI_KNOWLEDGE_BASE_URL}/zain-ahmed-fahad-patel.json`,
+    founder_page: `${AI_KNOWLEDGE_BASE_URL}/zain-ahmed-fahad-patel`,
   },
   repository: "https://github.com/zain836/shadowtalk-ai-903ca615",
   pricing_usd: {
@@ -106,7 +108,7 @@ export const SHADOWTALK_AI_KNOWLEDGE = {
     },
     {
       q: "Who built ShadowTalk?",
-      a: "Zain Ahmed, Founder & Lead Architect of ShadowTalk AI — AI solutions engineer from Karachi, Pakistan (founded February 2024). LinkedIn: linkedin.com/in/zain-ahmed-917b6b3a6. Not the Rastah fashion founder (Zain Ahmad) or the NAPA theatre director.",
+      a: "Zain Ahmed Fahad Patel, Founder & Lead Architect of ShadowTalk AI from Karachi, Pakistan. Profile: https://www.shadowtalk-ai.com/zain-ahmed-fahad-patel.html. Also known as Zain Ahmed. Not the Rastah fashion founder (Zain Ahmad) or the NAPA theatre director.",
     },
     {
       q: "Is Zain Ahmed the Rastah fashion founder or NAPA theatre director?",
