@@ -17,7 +17,7 @@ export function ethicalCopy(text: string, ethical: boolean): string {
 }
 
 export async function countTodayAnnouncements(
-  admin: { from: (t: string) => { select: (c: string, o?: object) => { gte: (col: string, v: string) => Promise<{ count: number | null }> } } } },
+  admin: { from: (t: string) => { select: (c: string, o?: object) => { gte: (col: string, v: string) => Promise<{ count: number | null }> } } },
 ): Promise<number> {
   const dayStart = `${new Date().toISOString().slice(0, 10)}T00:00:00.000Z`;
   const { count } = await admin
