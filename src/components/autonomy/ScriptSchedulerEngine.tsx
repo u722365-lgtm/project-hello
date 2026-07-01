@@ -64,7 +64,7 @@ export function ScriptSchedulerEngine() {
             continue;
           }
 
-          const nextConfig = advanceScheduleConfig(schedule);
+          const nextConfig = advanceScheduleConfig(schedule as unknown as Record<string, unknown>);
           const runCount = (row.run_count ?? 0) + 1;
 
           await supabase
@@ -72,7 +72,7 @@ export function ScriptSchedulerEngine() {
             .update({
               run_count: runCount,
               last_run_at: new Date().toISOString(),
-              trigger_config: nextConfig,
+              trigger_config: nextConfig as unknown as Record<string, string | number | null>,
               updated_at: new Date().toISOString(),
             })
             .eq("id", row.id);

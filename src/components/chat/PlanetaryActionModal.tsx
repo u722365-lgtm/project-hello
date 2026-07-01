@@ -20,10 +20,8 @@ export function PlanetaryActionModal({ isOpen, onClose }: PlanetaryActionModalPr
       });
       if (error) throw error;
       const actions = Array.isArray(data) ? data : [];
-      return actions.map((a: Record<string, unknown>) => ({
-        ...a,
-        completed: false,
-      }));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return actions.map((a: Record<string, unknown>) => ({ ...a, completed: false })) as any;
     } finally {
       setLoading(false);
     }

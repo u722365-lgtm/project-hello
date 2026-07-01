@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MemoryPanel } from '@/components/chat/MemoryPanel';
+import { useIntelligenceHub, type AIMemory, type DailyInsight, type KnowledgeEntry, type UserStreak } from '@/hooks/useIntelligenceHub';
 
 interface IntelligenceHubProps {
   isOpen: boolean;

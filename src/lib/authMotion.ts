@@ -178,7 +178,7 @@ export function authOAuthItem(profile: AuthMotionProfile, index: number): Varian
 
 export function authGridDrift(profile: AuthMotionProfile): Transition | false {
   if (profile.reduced) return false;
-  return { duration: profile.mobile ? 40 : 28, repeat: Infinity, ease: "linear" };
+  return { duration: profile.mobile ? 40 : 28, repeat: Infinity, ease: "linear" as const };
 }
 
 export function authHeaderStagger(profile: AuthMotionProfile): Variants {
@@ -230,6 +230,6 @@ export function authGlassFloat(profile: AuthMotionProfile) {
   if (profile.reduced) return undefined;
   return {
     y: profile.mobile ? [-4, 4, -4] : [-8, 8, -8],
-    transition: { duration: 6, repeat: Infinity, ease: "easeInOut" },
+    transition: { duration: 6, repeat: Infinity, ease: "easeInOut" as const },
   };
 }

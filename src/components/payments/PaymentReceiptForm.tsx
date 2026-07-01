@@ -87,7 +87,7 @@ export function PaymentReceiptForm({ planKey, defaultMethod = "jazzcash", curren
       toast({ title: "Could not submit", description: result.error, variant: "destructive" });
       return;
     }
-    setSubmittedId(result.id);
+    setSubmittedId(result.id ?? null);
     toast({ title: "Submitted!", description: "We'll activate your plan within 24h." });
   };
 

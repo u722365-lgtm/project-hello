@@ -17,7 +17,7 @@ export interface SubmitManualPaymentInput {
 
 export async function submitManualPayment(
   input: SubmitManualPaymentInput,
-): Promise<{ ok: true; id: string } | { ok: false; error: string }> {
+): Promise<{ ok: boolean; id?: string; error?: string }> {
   const { data: auth } = await supabase.auth.getUser();
   const user = auth.user;
   if (!user?.email) {

@@ -23,7 +23,7 @@ export function InternationalCardButton({ planKey }: Props) {
       toast({ title: "Card checkout unavailable", description: result.error, variant: "destructive" });
       return;
     }
-    window.location.href = result.url;
+    if (result.url) window.location.href = result.url;
   };
 
   return (
