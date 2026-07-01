@@ -2,9 +2,12 @@ import { supabase } from "@/integrations/supabase/client";
 
 export type IntegrationProvider = "google" | "github" | "slack" | "notion";
 
-export type OAuthConnectResult =
-  | { ok: true; provider: IntegrationProvider }
-  | { ok: false; error: string; redirecting?: boolean };
+export type OAuthConnectResult = {
+  ok: boolean;
+  provider?: IntegrationProvider;
+  error?: string;
+  redirecting?: boolean;
+};
 
 const REDIRECT_PATH = "/profile?tab=linked";
 

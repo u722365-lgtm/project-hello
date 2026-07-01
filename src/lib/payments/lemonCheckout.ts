@@ -12,7 +12,7 @@ export function isLemonCheckoutAvailable(planKey: string): boolean {
   return Boolean(v && String(v).length > 0);
 }
 
-export async function startLemonCheckout(planKey: string): Promise<{ ok: true; url: string } | { ok: false; error: string }> {
+export async function startLemonCheckout(planKey: string): Promise<{ ok: boolean; url?: string; error?: string }> {
   const variantId = VARIANT_BY_PLAN[planKey];
   if (!variantId) {
     return { ok: false, error: "Card checkout is not configured yet. Use JazzCash, Easypaisa, or USDT below." };

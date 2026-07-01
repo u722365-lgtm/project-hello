@@ -164,9 +164,9 @@ export function ShadowSpectrePanel({ open, onClose }: Props) {
                           {getShadowSpectreHeadLabel(m.head)}
                         </Badge>
                       )}
-                      <ReactMarkdown className="prose prose-invert prose-sm max-w-none">
-                        {m.content}
-                      </ReactMarkdown>
+                      <div className="prose prose-invert prose-sm max-w-none">
+                        <ReactMarkdown>{m.content}</ReactMarkdown>
+                      </div>
                     </div>
                   ))}
                 </div>

@@ -56,7 +56,7 @@ function writeCache(metrics: PlatformMetrics) {
 
 async function fetchMetrics(): Promise<PlatformMetrics> {
   try {
-    const { data, error } = await supabase.rpc("get_public_platform_metrics");
+    const { data, error } = await (supabase as unknown as { rpc: (name: string) => Promise<{ data: unknown; error: unknown }> }).rpc("get_public_platform_metrics");
     if (!error && data && typeof data === "object") {
       const row = data as {
         totalUsers?: number;

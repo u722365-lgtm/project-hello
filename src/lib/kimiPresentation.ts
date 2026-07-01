@@ -81,7 +81,7 @@ export async function generateKimiPresentation(
 
   const presentation = data as PresentationData;
   const themeColors = THEME_MAP[style] || THEME_MAP.corporate;
-  postProcessPresentation(presentation, {
+  postProcessPresentation(presentation as unknown as { slides: import("@/lib/presentation/slideQuality").SlideLike[] }, {
     bg: themeColors.bg,
     accent: themeColors.accent,
     accentEnd: themeColors.accentEnd ?? themeColors.accent,

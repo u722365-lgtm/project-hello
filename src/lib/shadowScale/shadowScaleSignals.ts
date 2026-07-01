@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { supabaseLoose } from "@/integrations/supabase/loose";
 
 export interface ShadowScaleClientSignals {
   amplify_shares: boolean;
@@ -23,7 +24,7 @@ export function getShadowScaleSignals(): ShadowScaleClientSignals {
 
 export async function refreshShadowScaleSignals(): Promise<ShadowScaleClientSignals> {
   try {
-    const { data } = await supabase.from("shadowscale_client_signals").select("*").eq("id", 1).maybeSingle();
+    const { data } = await supabaseLoose.from("shadowscale_client_signals").select("*").eq("id", 1).maybeSingle();
     if (data) {
       cached = {
         amplify_shares: Boolean(data.amplify_shares),

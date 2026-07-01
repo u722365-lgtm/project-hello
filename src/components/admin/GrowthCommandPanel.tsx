@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { supabaseLoose } from "@/integrations/supabase/loose";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -52,17 +53,17 @@ export function GrowthCommandPanel() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const { data: cfg } = await supabase.from("shadowscale_config").select("*").limit(1).maybeSingle();
+    const { data: cfg } = await supabaseLoose.from("shadowscale_config").select("*").limit(1).maybeSingle();
     setConfig((cfg as ScaleConfig | null) ?? null);
 
-    const { data: acts } = await supabase
+    const { data: acts } = await supabaseLoose
       .from("shadowscale_action_queue")
       .select("*")
       .order("created_at", { ascending: false })
       .limit(50);
     setActions((acts ?? []) as ScaleAction[]);
 
-    const { data: m } = await supabase
+    const { data: m } = await supabaseLoose
       .from("shadowscale_metrics_daily")
       .select("*")
       .order("metric_date", { ascending: false })
@@ -85,7 +86,7 @@ export function GrowthCommandPanel() {
 
   const updateConfig = async (patch: Partial<ScaleConfig>) => {
     if (!config?.id) return;
-    const { error } = await supabase.from("shadowscale_config").update(patch).eq("id", config.id);
+    const { error } = await supabaseLoose.from("shadowscale_config").update(patch).eq("id", config.id);
     if (error) toast.error(error.message);
     else {
       setConfig({ ...config, ...patch });
@@ -101,14 +102,14 @@ export function GrowthCommandPanel() {
   };
 
   const approve = async (id: string) => {
-    await supabase.from("shadowscale_action_queue").update({ status: "approved" }).eq("id", id);
+    await supabaseLoose.from("shadowscale_action_queue").update({ status: "approved" }).eq("id", id);
     await runWorker();
     toast.success("Approved and executed");
     void load();
   };
 
   const reject = async (id: string) => {
-    await supabase.from("shadowscale_action_queue").update({ status: "rejected" }).eq("id", id);
+    await supabaseLoose.from("shadowscale_action_queue").update({ status: "rejected" }).eq("id", id);
     void load();
   };
 

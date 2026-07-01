@@ -24,7 +24,7 @@ async function sendHeartbeat(
   if (!isSelfHealRemoteEnabled()) return;
   try {
     const { data: { user } } = await supabase.auth.getUser();
-    await supabase.from("shadowtalk_heal_heartbeats").insert({
+    await (supabase as unknown as { from: (t: string) => { insert: (v: unknown) => Promise<unknown> } }).from("shadowtalk_heal_heartbeats").insert({
       client_id: getHealClientId(),
       user_id: user?.id ?? null,
       route,

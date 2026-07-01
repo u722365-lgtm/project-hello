@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { supabaseLoose } from "@/integrations/supabase/loose";
 import { motion } from "framer-motion";
 import {
   Zap, Users, Star, Gift, TrendingUp,
@@ -78,7 +79,7 @@ export const AutonomousReferralEngine = () => {
 
   useEffect(() => {
     void (async () => {
-      const { data } = await supabase
+      const { data } = await supabaseLoose
         .from("shadowscale_action_queue")
         .select("id, payload, status")
         .eq("action_type", "referral_campaign")
@@ -113,7 +114,7 @@ export const AutonomousReferralEngine = () => {
   };
 
   const activateOffer = async (offerId: string) => {
-    await supabase.from("shadowscale_action_queue").update({ status: "approved" }).eq("id", offerId);
+    await supabaseLoose.from("shadowscale_action_queue").update({ status: "approved" }).eq("id", offerId);
     setActivatedOffers(prev => new Set([...prev, offerId]));
     toast({
       title: "Offer Activated",

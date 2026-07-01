@@ -176,9 +176,9 @@ export default function CyberAICopilot() {
                           {getShadowSpectreHeadLabel(msg.head)}
                         </Badge>
                       )}
-                      <ReactMarkdown className="prose prose-sm dark:prose-invert max-w-none">
-                        {msg.content}
-                      </ReactMarkdown>
+                      <div className="prose prose-sm dark:prose-invert max-w-none">
+                        <ReactMarkdown>{msg.content}</ReactMarkdown>
+                      </div>
                     </motion.div>
                   ))}
                 </AnimatePresence>

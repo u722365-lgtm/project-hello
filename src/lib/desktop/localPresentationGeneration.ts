@@ -60,7 +60,7 @@ Return ONLY valid JSON:
   }
 
   const themeColors = THEMES[style] || THEMES.corporate;
-  postProcessPresentation(presentation, {
+  postProcessPresentation(presentation as unknown as { slides: import("@/lib/presentation/slideQuality").SlideLike[] }, {
     bg: themeColors.bg,
     accent: themeColors.accent,
     accentEnd: themeColors.accentEnd ?? themeColors.accent,
