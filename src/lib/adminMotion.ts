@@ -157,7 +157,7 @@ export function adminLoadingPulse(profile: AdminMotionProfile): Variants {
           opacity: [0.45, 1, 0.45],
           scale: [0.92, 1.04, 0.92],
           rotate: [0, 4, -4, 0],
-          transition: { duration: 2.2, repeat: Infinity, ease: "easeInOut" },
+          transition: { duration: 2.2, repeat: Infinity, ease: "easeInOut" as const },
         },
   };
 }
@@ -166,6 +166,6 @@ export function adminShimmerSweep(profile: AdminMotionProfile) {
   if (profile.reduced) return undefined;
   return {
     x: ["-100%", "200%"],
-    transition: { duration: 2.8, repeat: Infinity, repeatDelay: 2, ease: "easeInOut" },
+    transition: { duration: 2.8, repeat: Infinity, repeatDelay: 2, ease: "easeInOut" as const },
   };
 }
