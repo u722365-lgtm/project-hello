@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabaseLoose } from "@/integrations/supabase/loose";
 
 const DEFAULT_SHARE_CTA = "Share ShadowTalk with someone who needs private AI";
 
@@ -9,7 +9,7 @@ export function useMarketingExperiments() {
 
   useEffect(() => {
     void (async () => {
-      const { data } = await supabase
+      const { data } = await supabaseLoose
         .from("shadowscale_experiments")
         .select("key, active_variant, variants")
         .in("key", ["share_cta", "video_hook"]);

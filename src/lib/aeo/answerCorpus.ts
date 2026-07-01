@@ -1,4 +1,4 @@
-import type { AeoAnswer, AeoCorpusMeta } from "./types";
+import type { AeoAnswer, AeoCategory, AeoCorpusMeta } from "./types";
 import { AI_KNOWLEDGE_BASE_URL } from "@/lib/aiPublicKnowledge";
 
 export const AEO_CORPUS_META: AeoCorpusMeta = {

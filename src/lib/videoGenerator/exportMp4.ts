@@ -103,7 +103,7 @@ export async function exportViralShortMp4(
 
   onProgress({ phase: "done", percent: 100, message: "Done!" });
   const data = await ffmpeg.readFile("output.mp4");
-  return new Blob([data], { type: "video/mp4" });
+  return new Blob([data as BlobPart], { type: "video/mp4" });
 }
 
 export function downloadBlob(blob: Blob, filename: string) {

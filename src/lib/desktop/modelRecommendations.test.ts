@@ -21,7 +21,7 @@ const cloudProfile: HardwareProfile = {
   path: "cloud",
   cpuScore: 30,
   gpuScore: 0,
-  computeDevice: "cpu",
+  computeDevice: "wasm",
   summary: "Weak device",
   probedAt: Date.now(),
 };

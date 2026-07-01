@@ -227,7 +227,7 @@ const AdminPage = () => {
       setFeedback(feedbackData || []);
 
       const uniqueUserIds = new Set(convData?.map(c => c.user_id) || []);
-      const { count: growthPending } = await supabase
+      const { count: growthPending } = await (supabase as unknown as { from: (t: string) => { select: (c: string, o?: object) => { eq: (col: string, v: string) => Promise<{ count: number | null }> } } })
         .from('shadowscale_action_queue')
         .select('id', { count: 'exact', head: true })
         .eq('status', 'pending');

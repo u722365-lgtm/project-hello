@@ -107,7 +107,7 @@ const EnterpriseSettingsPage = () => {
             id: m.id,
             role: m.role,
             user_id: m.user_id,
-            display_name: (m.profiles as { display_name: string | null } | null)?.display_name ?? null,
+            display_name: (m.profiles as unknown as { display_name: string | null } | null)?.display_name ?? null,
           })),
         );
         setPendingInvites(invites ?? []);
