@@ -42,7 +42,7 @@
     "@ffmpeg/ffmpeg": "^0.12.15",
     "@ffmpeg/util": "^0.12.2",
     "@hookform/resolvers": "^3.10.0",
-    "@huggingface/transformers": "^4.0.0-next.11",
+    "@huggingface/transformers": "^4.2.0",
     "@lovable.dev/cloud-auth-js": "^1.0.0",
     "@mlc-ai/web-llm": "^0.2.80",
     "@monaco-editor/react": "^4.7.0",
@@ -120,7 +120,7 @@
     "three": "^0.170.0",
     "vaul": "^0.9.9",
     "vite-plugin-pwa": "0.19.8",
-    "vitest": "^4.0.17",
+    "vitest": "^4.1.9",
     "zod": "^3.25.76"
   },
   "devDependencies": {
