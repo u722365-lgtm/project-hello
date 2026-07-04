@@ -2083,6 +2083,7 @@ export type Database = {
           paid_at: string | null
           referral_code: string
           referred_email: string
+          referred_email_masked: string | null
           referred_user_id: string | null
           referrer_id: string
           status: string
@@ -2096,6 +2097,7 @@ export type Database = {
           paid_at?: string | null
           referral_code: string
           referred_email: string
+          referred_email_masked?: string | null
           referred_user_id?: string | null
           referrer_id: string
           status?: string
@@ -2109,6 +2111,7 @@ export type Database = {
           paid_at?: string | null
           referral_code?: string
           referred_email?: string
+          referred_email_masked?: string | null
           referred_user_id?: string | null
           referrer_id?: string
           status?: string

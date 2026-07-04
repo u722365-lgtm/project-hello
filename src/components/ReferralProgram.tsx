@@ -27,12 +27,13 @@ interface ReferralStats {
 
 interface Referral {
   id: string;
-  referred_email: string;
+  referred_email_masked: string | null;
   status: string;
   commission_amount: number;
   created_at: string;
   converted_at: string | null;
 }
+
 
 const ReferralProgram = () => {
   const { user } = useAuth();
@@ -76,9 +77,10 @@ const ReferralProgram = () => {
 
       const { data: referralData } = await supabase
         .from("referrals")
-        .select("*")
+        .select("id, referred_email_masked, status, commission_amount, created_at, converted_at")
         .eq("referrer_id", user.id)
         .order("created_at", { ascending: false });
+
 
       if (referralData) setReferrals(referralData as Referral[]);
     } catch (error) {
@@ -401,7 +403,7 @@ const ReferralProgram = () => {
                   className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
                 >
                   <div>
-                    <p className="font-medium text-sm">{referral.referred_email}</p>
+                    <p className="font-medium text-sm">{referral.referred_email_masked ?? "Referred user"}</p>
                     <p className="text-xs text-muted-foreground">
                       {new Date(referral.created_at).toLocaleDateString()}
                     </p>
