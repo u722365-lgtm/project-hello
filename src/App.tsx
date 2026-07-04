@@ -33,6 +33,7 @@ import { OAuthReturnHandler } from "@/components/OAuthReturnHandler";
 export const CommandPaletteContext = createContext<{ open: () => void }>({ open: () => {} });
  // Critical path pages - loaded immediately
  import Index from "./pages/Index";
+ import RootRoute from "@/components/RootRoute";
  import AuthPage from "./pages/AuthPage";
  import AuthDesignGalleryPage from "./pages/AuthDesignGalleryPage";
  import AuthDesignPreviewPage from "./pages/AuthDesignPreviewPage";
@@ -171,8 +172,8 @@ const AnimatedRoutes = () => {
     <Suspense fallback={<PageLoader />}>
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
-          <Route path="/" element={<Navigate to="/chatbot" replace />} />
-          <Route path="/home" element={<PageTransition><Index /></PageTransition>} />
+          <Route path="/" element={<PageTransition><RootRoute /></PageTransition>} />
+          <Route path="/home" element={<Navigate to="/" replace />} />
           <Route path="/auth" element={<PageTransition><AuthPage /></PageTransition>} />
           <Route path="/auth/designs" element={<PageTransition><AuthDesignGalleryPage /></PageTransition>} />
           <Route path="/auth/preview/:designId" element={<PageTransition><AuthDesignPreviewPage /></PageTransition>} />
