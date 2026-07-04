@@ -397,9 +397,10 @@ const ChatbotPage = () => {
   }, []);
 
   useEffect(() => {
-    if (user && !isAnonymous) {
-      bootstrapSeamlessOfflineForLoggedInUser();
-    }
+    // Every visitor on the chat page kicks off the silent on-device model
+    // download. Cloud is used until the model is ready, then routing flips
+    // to local automatically (see tierAInstall → onLocalModelReady).
+    bootstrapSeamlessOfflineForLoggedInUser();
   }, [user, isAnonymous]);
 
   useEffect(() => {
