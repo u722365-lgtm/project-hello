@@ -41,7 +41,7 @@ Upgrade paths: **/pricing**, **/founder-access**, Profile → subscription.
 - **E2EE:** Users unlock workspace with a master passphrase; messages encrypted at rest.
 - **Personalities:** friendly, sarcastic, professional, creative, meticulous, curious, diplomatic, witty, pragmatic, inquisitive (and spicy where enabled).
 - **Chat modes (Mode selector):** general, code, translate, summarize, debug, brainstorm, image, explain, creative, music, math, camera, organize, academic, email, proofread, research, ppag (eco/planetary actions), hsca (security audit), shadowspectre (elite uncensored cybersecurity model — recon, exploit, blue, IR, intel, reports, GRC, hardening), uncensored arena (elite, security training with accepted terms).
-- **ShadowSpectre:** Dedicated edge function `/functions/v1/shadowspectre` — auto-routes to specialist heads; Cyber Command Center copilot uses it. Authorization scope stored client-side.
+- **ShadowSpectre:** Dedicated edge function \`/functions/v1/shadowspectre\` — auto-routes to specialist heads; Cyber Command Center copilot uses it. Authorization scope stored client-side.
 - **Panels from chat/header:** Image Generator, Deep Research, Shadow Browser, ShadowTalk Live (voice), Analytics, Command Palette, Code Canvas.
 - **ShadowTalk Live:** Real-time voice — user says "open live mode" / "launch ShadowTalk Live" or taps the mic; opens the voice panel (not a separate app).
 - **Usage tracking** for insights and limits.
