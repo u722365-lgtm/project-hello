@@ -33,6 +33,7 @@ import { OAuthReturnHandler } from "@/components/OAuthReturnHandler";
 export const CommandPaletteContext = createContext<{ open: () => void }>({ open: () => {} });
  // Critical path pages - loaded immediately
  import Index from "./pages/Index";
+ import RootRoute from "@/components/RootRoute";
  import AuthPage from "./pages/AuthPage";
  import AuthDesignGalleryPage from "./pages/AuthDesignGalleryPage";
  import AuthDesignPreviewPage from "./pages/AuthDesignPreviewPage";
