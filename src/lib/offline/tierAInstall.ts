@@ -1,8 +1,12 @@
 /**
- * Tier A silent install — triggered after signup (no banner).
+ * Tier A silent install — triggered on first chat visit (no banner).
+ * When the on-device model finishes loading, we automatically cut cloud
+ * routing and flip ShadowTalk to local-only for normal chat.
  */
 
 import { getSmolLMEngine } from "./smollmEngine";
+import { onLocalModelReady } from "@/lib/privacy/deviceOnlyPledge";
+import { dispatchLocalModelReady } from "@/lib/privacy/localInferenceReady";
 
 export const SILENT_TIER_A_KEY = "shadowtalk_offline_silent_install";
 export const BOOTSTRAP_DONE_KEY = "shadowtalk_offline_tier_a_done";
@@ -22,12 +26,23 @@ export function isSilentTierAEnabled(): boolean {
 /** Background download; safe to call without awaiting */
 export function startSilentTierAInstall(): void {
   enableSilentTierAInstall();
-  if (getSmolLMEngine().isReady || getSmolLMEngine().isLoading) return;
+  const engine = getSmolLMEngine();
+  if (engine.isReady) {
+    // Already loaded — make sure routing is switched to local.
+    onLocalModelReady();
+    dispatchLocalModelReady();
+    return;
+  }
+  if (engine.isLoading) return;
 
-  getSmolLMEngine()
+  engine
     .ensureLoaded()
     .then((ok) => {
-      if (ok) localStorage.setItem(BOOTSTRAP_DONE_KEY, "1");
+      if (!ok) return;
+      localStorage.setItem(BOOTSTRAP_DONE_KEY, "1");
+      // Auto cut-over: stop using cloud, prefer on-device from now on.
+      onLocalModelReady();
+      dispatchLocalModelReady();
     })
     .catch((e) => console.warn("[Tier A silent]", e));
 }
