@@ -9,6 +9,7 @@ import LandingSectionFallback from "@/components/landing/LandingSectionFallback"
 import { LandingMotionProvider } from "@/components/landing/LandingMotionProvider";
 import { PlatformMetricsProvider } from "@/contexts/PlatformMetricsContext";
 
+const WhatIsShadowTalk = lazy(() => import("@/components/landing/WhatIsShadowTalk"));
 const BrandManifestoSection = lazy(() => import("@/components/brand/BrandManifestoSection"));
 const CompetitiveComparison = lazy(() => import("@/components/CompetitiveComparison"));
 const FeaturesSection = lazy(() => import("@/components/FeaturesSection"));
@@ -30,6 +31,11 @@ const Index = () => {
             <div className="min-h-screen bg-background text-foreground landing-page-content">
               <LandingNavigation />
               <HeroSection />
+              <Suspense fallback={<LandingSectionFallback />}>
+                <LandingSectionReveal preset="fadeUp">
+                  <WhatIsShadowTalk />
+                </LandingSectionReveal>
+              </Suspense>
               <Suspense fallback={<LandingSectionFallback />}>
                 <LandingSectionReveal preset="fadeUp">
                   <BrandManifestoSection />
