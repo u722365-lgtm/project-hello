@@ -21,6 +21,7 @@ import SEOHead from "@/components/SEOHead";
 import { FollowUsSection } from "@/components/FollowUsSection";
 import { PAGE_SEO } from "@/lib/seo";
 import NewsletterSignup from "@/components/blog/NewsletterSignup";
+import PostCTA from "@/components/blog/PostCTA";
 
 
 
