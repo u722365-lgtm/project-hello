@@ -45,7 +45,6 @@ const WhatIsShadowTalk = () => {
           }
           subtitle={`${BRAND.name} chains 30+ tools, runs multi-step missions, and keeps your work in one place — chat, research, code, voice, presentations, vault, and an optional on-device model. Free to start. No card.`}
           className="mb-10 sm:mb-14"
-          titleId="what-is-shadowtalk-title"
         />
 
         {/* Live traction strip — real numbers pulled from platform metrics */}
