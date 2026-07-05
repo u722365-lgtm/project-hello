@@ -33,6 +33,11 @@ const Index = () => {
               <HeroSection />
               <Suspense fallback={<LandingSectionFallback />}>
                 <LandingSectionReveal preset="fadeUp">
+                  <WhatIsShadowTalk />
+                </LandingSectionReveal>
+              </Suspense>
+              <Suspense fallback={<LandingSectionFallback />}>
+                <LandingSectionReveal preset="fadeUp">
                   <BrandManifestoSection />
                 </LandingSectionReveal>
               </Suspense>
