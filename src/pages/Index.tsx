@@ -19,6 +19,7 @@ const CommunitySection = lazy(() => import("@/components/CommunitySection"));
 const FAQSection = lazy(() => import("@/components/FAQSection"));
 const CommunityBuildingBlock = lazy(() => import("@/components/growth/CommunityBuildingBlock"));
 const FounderSpotlightSection = lazy(() => import("@/components/founder/FounderSpotlightSection"));
+const GrowthAmplifier = lazy(() => import("@/components/landing/GrowthAmplifier"));
 const Footer = lazy(() => import("@/components/Footer"));
 
 const Index = () => {
