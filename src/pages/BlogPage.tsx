@@ -21,6 +21,7 @@ import SEOHead from "@/components/SEOHead";
 import { FollowUsSection } from "@/components/FollowUsSection";
 import { PAGE_SEO } from "@/lib/seo";
 import NewsletterSignup from "@/components/blog/NewsletterSignup";
+import PostCTA from "@/components/blog/PostCTA";
 
 
 
@@ -255,6 +256,7 @@ const BlogPage = () => {
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>
                     {selectedPost.content}
                   </ReactMarkdown>
+                  <PostCTA title={selectedPost.title} postId={selectedPost.id} />
                 </div>
               </ScrollArea>
             </>
