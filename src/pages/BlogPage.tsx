@@ -256,6 +256,7 @@ const BlogPage = () => {
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>
                     {selectedPost.content}
                   </ReactMarkdown>
+                  <PostCTA title={selectedPost.title} postId={selectedPost.id} />
                 </div>
               </ScrollArea>
             </>
