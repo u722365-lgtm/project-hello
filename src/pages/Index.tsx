@@ -83,6 +83,11 @@ const Index = () => {
                 </LandingSectionReveal>
               </Suspense>
               <Suspense fallback={<LandingSectionFallback />}>
+                <LandingSectionReveal preset="fadeUp">
+                  <GrowthAmplifier />
+                </LandingSectionReveal>
+              </Suspense>
+              <Suspense fallback={<LandingSectionFallback />}>
                 <LandingSectionReveal preset="slideDown">
                   <Footer />
                 </LandingSectionReveal>
