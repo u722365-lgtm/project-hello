@@ -3817,6 +3817,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      has_valid_workspace_invitation: {
+        Args: { _role: string; _user_id: string; _workspace_id: string }
+        Returns: boolean
+      }
       is_workspace_admin: {
         Args: { _user_id: string; _workspace_id: string }
         Returns: boolean
