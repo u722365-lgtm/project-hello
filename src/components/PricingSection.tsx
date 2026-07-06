@@ -112,7 +112,7 @@ const PricingSection = () => {
           >
             <Gift className="h-5 w-5 text-primary" />
             <span className="text-sm">
-              <span className="font-semibold text-primary">Earn 20% commission</span> on every referral!{" "}
+              <span className="font-semibold text-primary">Earn 20-40% commission</span> on every referral!{" "}
               <Button variant="link" className="text-primary p-0 ml-1 h-auto text-xs" onClick={() => navigate('/profile')}>
                 Get your link →
               </Button>

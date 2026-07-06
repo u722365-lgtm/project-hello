@@ -543,6 +543,11 @@ const FounderAccessPage = () => {
                     />
 
                     <div className="space-y-3">
+                      <div className="rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-center">
+                        <span className="font-semibold text-foreground">Limited active offer:</span>{" "}
+                        <span className="text-muted-foreground">this pricing closes soon and plan upgrades are activated first-come, first-served.</span>
+                      </div>
+
                       <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
                         <Button 
                           size="lg" 
