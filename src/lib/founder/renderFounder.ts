@@ -208,9 +208,14 @@ function founderPageHtml(options: { canonical: string; title: string; isAlias?: 
     .warn { border-color: #7f1d1d; background: #1a0a0a; }
     .meta { font-size: 0.9rem; color: #a0a0b8; }
     code { background: #1e1e28; padding: 0.1em 0.35em; border-radius: 4px; font-size: 0.85em; }
+    .photo { width: 160px; height: 160px; object-fit: cover; border-radius: 999px; border: 2px solid #3b4f9a; margin: 1rem 0; }
+    .photo-wrap { background: #12162a; border: 1px solid #3b4f9a; padding: 10px; border-radius: 12px; display: inline-block; }
   </style>
 </head>
 <body>
+<div class="photo-wrap">
+  <img class="photo" src="${AI_KNOWLEDGE_BASE_URL}/zain-ahmed-founder.png" alt="${FOUNDER_CANONICAL.fullName} — founder photo" />
+</div>
 ${aliasNote}
 ${founderBodyHtml()}
 </body>
