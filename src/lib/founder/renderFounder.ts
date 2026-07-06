@@ -24,7 +24,7 @@ export function getFounderPersonSchema() {
     jobTitle: FOUNDER_CANONICAL.jobTitle,
     description: FOUNDER_CANONICAL.description,
     url: CANONICAL,
-    image: `${AI_KNOWLEDGE_BASE_URL}/pwa-512x512.png`,
+    image: `${AI_KNOWLEDGE_BASE_URL}/zain-ahmed-founder.png`,
     email: FOUNDER_CANONICAL.email,
     worksFor: FOUNDER_CANONICAL.worksFor,
     founder: {
@@ -192,9 +192,15 @@ function founderPageHtml(options: { canonical: string; title: string; isAlias?: 
   <meta property="og:title" content="${FOUNDER_CANONICAL.fullName} — Founder of ShadowTalk AI" />
   <meta property="og:url" content="${CANONICAL}" />
   <meta property="og:site_name" content="ShadowTalk AI" />
-  <meta property="og:image" content="${AI_KNOWLEDGE_BASE_URL}/pwa-512x512.png" />
+  <meta property="og:image" content="${AI_KNOWLEDGE_BASE_URL}/zain-ahmed-founder.png" />
   <meta property="profile:first_name" content="${FOUNDER_CANONICAL.givenName}" />
   <meta property="profile:last_name" content="${FOUNDER_CANONICAL.familyName}" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="${AI_KNOWLEDGE_BASE_URL}/zain-ahmed-founder.png" />
+  <meta name="twitter:title" content="${FOUNDER_CANONICAL.fullName} — Founder of ShadowTalk AI" />
+  <meta name="twitter:description" content="Founder & Lead Architect of ShadowTalk AI, Karachi, Pakistan." />
+  <link rel="image_src" href="${AI_KNOWLEDGE_BASE_URL}/zain-ahmed-founder.png" />
+  <script type="application/ld+json">${JSON.stringify({"@context":"https://schema.org","@type":"ImageObject","name":`${FOUNDER_CANONICAL.fullName} — ShadowTalk AI founder photo`,"description":`Official founder photo for ${FOUNDER_CANONICAL.fullName}, founder of ShadowTalk AI.`,"url":`${AI_KNOWLEDGE_BASE_URL}/zain-ahmed-founder.png`,"thumbnailUrl":`${AI_KNOWLEDGE_BASE_URL}/zain-ahmed-founder.png`,"caption":`${FOUNDER_CANONICAL.fullName}, founder and lead architect of ShadowTalk AI, from Karachi, Pakistan.`,"license":`${AI_KNOWLEDGE_BASE_URL}/terms`,"acquireLicensePage":`${AI_KNOWLEDGE_BASE_URL}/terms`},null,2)}</script>
   <script type="application/ld+json">${schema}</script>
   <script type="application/ld+json">${profilePageSchema}</script>
   <style>
