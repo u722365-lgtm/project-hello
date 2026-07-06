@@ -3,7 +3,22 @@
  * Synced to public/vs/*.html for crawlers + React routes at /vs/:slug
  */
 
-export type ComparisonSlug = "chatgpt" | "perplexity" | "claude" | "gemini" | "copilot";
+export type ComparisonSlug =
+  | "chatgpt"
+  | "perplexity"
+  | "claude"
+  | "gemini"
+  | "copilot"
+  | "chatgpt-privacy"
+  | "chatgpt-startups"
+  | "chatgpt-students"
+  | "chatgpt-marketers"
+  | "perplexity-research"
+  | "claude-writing"
+  | "copilot-code"
+  | "shadowtalk-better-chatgpt"
+  | "free-ai-chatbot";
+
 
 export interface ComparisonPage {
   slug: ComparisonSlug;
@@ -129,6 +144,213 @@ export const COMPARISON_PAGES: ComparisonPage[] = [
       "Enterprise Microsoft security compliance stack",
     ],
     keywords: ["Copilot alternative", "ShadowTalk vs Copilot", "developer AI workspace"],
+  },
+  {
+    slug: "chatgpt-privacy",
+    competitor: "ChatGPT",
+    title: "ShadowTalk vs ChatGPT for Privacy — Chat Without Surveillance",
+    metaDescription:
+      "Privacy-first comparison: ShadowTalk AI vs ChatGPT for encrypted chat, local models, data minimization, and sovereign workspace control.",
+    h1: "ShadowTalk vs ChatGPT for Privacy",
+    verdict:
+      "ChatGPT is convenient, but privacy is not its default. ShadowTalk is built around encryption, transparency, and optional offline models from the ground up.",
+    shadowtalkWins: [
+      "End-to-end encrypted chat with passphrase unlock",
+      "Optional on-device local inference — data never leaves your machine",
+      "Stealth Vault for sensitive notes and keys",
+      "Transparent data handling and usage disclosure",
+      "BYOK — you control which model provider powers responses",
+    ],
+    competitorWins: [
+      "Broad public model recognition and training scale",
+      "Huge plugin ecosystem for third-party integrations",
+      "Strong general baseline for everyday Q&A",
+    ],
+    keywords: ["ChatGPT privacy alternative", "private AI chat", "secure chatbot no tracking"],
+  },
+  {
+    slug: "chatgpt-startups",
+    competitor: "ChatGPT",
+    title: "ShadowTalk vs ChatGPT for Startups — Do Real Work, Not Just Chat",
+    metaDescription:
+      "For startups, ShadowTalk AI adds agentic missions, strategy reports, code workspace, and deploy-ready outputs beyond ordinary chat.",
+    h1: "ShadowTalk vs ChatGPT for Startups",
+    verdict:
+      "ChatGPT is useful for drafting copy. ShadowTalk is built to run startups: strategy briefs, offer analysis, competitive research, PDF export, and autonomous missions.",
+    shadowtalkWins: [
+      "Strategy/market research + PDF export from one prompt",
+      "Mission Control for multi-step go-to-market tasks",
+      "In-browser code workspace and document generation",
+      "Affiliate and referral tools built in",
+      "Pro from $5/mo with transparent usage caps",
+    ],
+    competitorWins: [
+      "Huge immediate helper text quality out of the box",
+      "Wide consumer familiarity inside teams",
+      "Strong plugin integrations",
+    ],
+    keywords: ["AI for startups", "best AI for founders", "startup AI assistant"],
+  },
+  {
+    slug: "chatgpt-students",
+    competitor: "ChatGPT",
+    title: "ShadowTalk vs ChatGPT for Students — Study Smarter Privately",
+    metaDescription:
+      "Compare ShadowTalk AI vs ChatGPT for students: free AI chatbot access, document help, research-support tools, and private study environment.",
+    h1: "ShadowTalk vs ChatGPT for Students",
+    verdict:
+      "Students need more than quick answers. ShadowTalk helps with research synthesis, formula outputs, PDF-ready notes, and privacy—no forced login dependency.",
+    shadowtalkWins: [
+      "Free start without mandatory signup friction",
+      "Research + structured outputs for study notes",
+      "Privacy-focused study environment",
+      "Document generation and export tools",
+      "Local offline option for sensitive coursework",
+    ],
+    competitorWins: [
+      "High familiarity among students and educators",
+      "Large shared prompt library",
+      "Strong broad-subject baseline",
+    ],
+    keywords: ["AI for students", "free AI chatbot for studying", "private study AI"],
+  },
+  {
+    slug: "chatgpt-marketers",
+    competitor: "ChatGPT",
+    title: "ShadowTalk vs ChatGPT for Marketers — From Brief to Campaign Faster",
+    metaDescription:
+      "For marketers, ShadowTalk AI compares to ChatGPT with embedded strategy workflows, channel plans, and shareable AI outputs tied to campaigns.",
+    h1: "ShadowTalk vs ChatGPT for Marketers",
+    verdict:
+      "ChatGPT drafts copy. ShadowTalk executes marketing work: channel strategy, competitive briefs, social scripts, and shareable outputs ready for distribution.",
+    shadowtalkWins: [
+      "Marketing strategy agent with structured outputs",
+      "Competitive and positioning briefs in one workflow",
+      "Shareable results with embedded ShadowTalk trial links",
+      "Affiliate/referral program for campaigns",
+      "Privacy-safe handling of campaign assets",
+    ],
+    competitorWins: [
+      "Very fast headline and caption generation",
+      "Large number of marketing-focused templates",
+      "Familiar baseline across marketing teams",
+    ],
+    keywords: ["AI marketing assistant", "AI strategy planner free", "marketing AI tools"],
+  },
+  {
+    slug: "perplexity-research",
+    competitor: "Perplexity",
+    title: "ShadowTalk vs Perplexity for Research — Cited Answers Plus Finished Work",
+    metaDescription:
+      "Research comparison: Perplexity gives citations fast; ShadowTalk adds execution with code, documents, and encrypted project memory.",
+    h1: "ShadowTalk vs Perplexity for Research",
+    verdict:
+      "Perplexity is strong at citation-first lookup. ShadowTalk continues research into execution: synthesis, code, exports, and encrypted project context.",
+    shadowtalkWins: [
+      "Multi-step research missions with approval gates",
+      "Citations plus executable follow-up work",
+      "PDF/DOCX export and presentation builder",
+      "Encrypted project memory across sessions",
+      "Integrated tool chain beyond search",
+    ],
+    competitorWins: [
+      "Cleaner search-style source cards",
+      "Very fast single-topic lookup",
+      "Good factual retrieval UX",
+    ],
+    keywords: ["AI research tool", "best AI for research", "cited AI research alternative"],
+  },
+  {
+    slug: "claude-writing",
+    competitor: "Claude",
+    title: "ShadowTalk vs Claude for Writing — Long-Form Outputs That Get Published",
+    metaDescription:
+      "Writing comparison: Claude produces strong prose; ShadowTalk turns drafts into publishable workflows with research, formatting, and exports.",
+    h1: "ShadowTalk vs Claude for Writing",
+    verdict:
+      "Claude is excellent for long-form reasoning and writing. ShadowTalk adds formatting, research support, document export, and privacy controls around your drafts.",
+    shadowtalkWins: [
+      "Document and presentation export from draft",
+      "Privacy vault for unpublished writing",
+      "Research augmentation inside the same workspace",
+      "Optional BYOK for Anthropic models",
+      "Desktop and PWA access for writing anywhere",
+    ],
+    competitorWins: [
+      "Exceptional long-context writing quality",
+      "Polished artifact-first rendering",
+      "Strong tone adaptation across styles",
+    ],
+    keywords: ["AI writing tool", "long-form AI writing", "AI copywriting workspace"],
+  },
+  {
+    slug: "copilot-code",
+    competitor: "Microsoft Copilot",
+    title: "ShadowTalk vs Copilot for Coding — IDE + Agentic Execution Built In",
+    metaDescription:
+      "Code-focused comparison: Copilot fits Office and GitHub; ShadowTalk gives Monaco IDE, missions, offline mode, and BYOK outside Microsoft lock-in.",
+    h1: "ShadowTalk vs Copilot for Coding",
+    verdict:
+      "Copilot assists inside Microsoft toolchains. ShadowTalk gives an in-browser Monaco IDE, autonomous missions, local inference, and provider flexibility.",
+    shadowtalkWins: [
+      "Full in-browser Monaco IDE with live preview",
+      "Autonomous code and research missions",
+      "BYOK + optional local model inference",
+      "Marketplace specialist agents",
+      "No Microsoft 365 subscription required",
+    ],
+    competitorWins: [
+      "Deep GitHub and IDE auto-complete experience",
+      "Enterprise Microsoft compliance stack",
+      "Strong Word/Excel/PowerPoint generation",
+    ],
+    keywords: ["AI coding assistant", "browser IDE alternative", "developer AI workspace"],
+  },
+  {
+    slug: "shadowtalk-better-chatgpt",
+    competitor: "ChatGPT",
+    title: "Why ShadowTalk Feels Better Than ChatGPT for Real Use Cases",
+    metaDescription:
+      "Why ShadowTalk AI can feel better than ChatGPT: combined chat, research, code, presentations, vault, and desktop app in one sovereign workspace.",
+    h1: "Why ShadowTalk Feels Better Than ChatGPT",
+    verdict:
+      "ChatGPT is great at chat. ShadowTalk is built for finished work: missions, documents, code, research, private vault, and a desktop experience in one place.",
+    shadowtalkWins: [
+      "Mission Control for multi-step autonomous tasks",
+      "Built-in code IDE and document generation",
+      "Encrypted vault and privacy controls",
+      "Free start, no card, transparent limits",
+      "Offline-capable desktop app",
+    ],
+    competitorWins: [
+      "Strong brand trust and large user base",
+      "Good single-turn natural language fluency",
+      "Broad integrations through ecosystem partners",
+    ],
+    keywords: ["better than ChatGPT", "ShadowTalk alternative", "agentic AI workspace"],
+  },
+  {
+    slug: "free-ai-chatbot",
+    competitor: "Free AI Chatbots",
+    title: "Best Free AI Chatbot — ShadowTalk vs Generic Free Chatbots",
+    metaDescription:
+      "Compare free AI chatbots by privacy, features, and usability. ShadowTalk offers free start, no-login chat path, tools, and encrypted workspace.",
+    h1: "Best Free AI Chatbot",
+    verdict:
+      "Many free chatbots trade privacy for usage. ShadowTalk keeps a usable free tier while adding encryption, tool chains, and optional local models.",
+    shadowtalkWins: [
+      "Free tier with stated limits and no hidden gating",
+      "End-to-end encrypted chat option",
+      "30+ tools beyond basic chat",
+      "Local offline models for sensitive use",
+      "Clear upgrade path: Pro, Premium, Elite",
+    ],
+    competitorWins: [
+      "Some free tiers have larger public model access",
+      "Lower setup friction for casual questions",
+      "Broader mainstream familiarity",
+    ],
+    keywords: ["free AI chatbot", "no login AI chat", "best free chatbot"],
   },
 ];
 
