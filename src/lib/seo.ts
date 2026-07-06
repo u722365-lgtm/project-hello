@@ -498,10 +498,16 @@ export const PAGE_SEO: Record<string, PageMeta> = {
     canonical: 'https://www.shadowtalk-ai.com/privacy-score',
   },
   founderAccess: {
-    title: 'Founder Access Program',
-    description: 'Exclusive early access program for founders. Get premium features and direct support.',
-    keywords: ['founder access', 'early access', 'exclusive', 'premium'],
+    title: 'Founder Access — Direct Activation for Pakistan & International',
+    description: 'Activate subscriptions and paid features directly: JazzCash, Easypaisa, bank, USDT, or international card. Document generation and premium tiers available.',
+    keywords: ['founder access', 'JazzCash', 'Easypaisa', 'bank transfer Pakistan', 'USDT', 'document generation', 'direct activation'],
     canonical: 'https://www.shadowtalk-ai.com/founder-access',
+  },
+  referral: {
+    title: 'Referral Program — Earn 20–40% Commission',
+    description: 'Share ShadowTalk AI and earn 20–40% recurring commission. Launch a tracked affiliate link from your dashboard.',
+    keywords: ['ShadowTalk referral', 'affiliate program', '20% commission', '40% commission', 'earn recurring commission'],
+    canonical: 'https://www.shadowtalk-ai.com/referral',
   },
   cookies: {
     title: 'Cookie Policy',

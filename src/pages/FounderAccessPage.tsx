@@ -26,6 +26,8 @@ import {
 import Navigation from "@/components/Navigation";
 import { PaymentReceiptForm } from "@/components/payments/PaymentReceiptForm";
 import { InternationalCardButton } from "@/components/payments/InternationalCardButton";
+import SEOHead from "@/components/SEOHead";
+import { PAGE_SEO } from "@/lib/seo";
 import { PKR_MONTHLY, type PaidPlanId } from "@/lib/payments/planPricing";
 
 const VALID_PLAN_IDS = new Set(["free", "pro", "premium", "elite"]);
@@ -145,8 +147,10 @@ const FounderAccessPage = () => {
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
+      <SEOHead meta={PAGE_SEO.founderAccess} structuredData={undefined} />
+      <SEOHead meta={PAGE_SEO.founderAccess} structuredData={undefined} />
       <Navigation />
-      
+
       {/* Background effects */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.08),transparent_70%)]" />

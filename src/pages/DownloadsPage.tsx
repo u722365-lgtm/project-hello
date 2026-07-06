@@ -34,6 +34,7 @@ import {
 } from "@/lib/desktopDownloadResolve";
 import { DesktopDownloadButton } from "@/components/downloads/DesktopDownloadButton";
 import { useToast } from "@/hooks/use-toast";
+import { PAGE_SEO } from "@/lib/seo";
 
 const DESKTOP_FEATURES = [
   {
@@ -138,20 +139,7 @@ const DownloadsPage = () => {
 
   return (
     <>
-      <SEOHead
-        meta={{
-          title: "Download ShadowTalk Desktop — Windows, macOS, Linux",
-          description:
-            "Download shadowtalk-setup.exe and installers for Mac and Linux. Install ShadowTalk AI as desktop software from the official downloads page.",
-          keywords: [
-            "ShadowTalk download",
-            "shadowtalk-setup.exe",
-            "ShadowTalk desktop",
-            "Windows installer",
-          ],
-          canonical: "https://www.shadowtalk-ai.com/downloads",
-        }}
-      />
+      <SEOHead meta={PAGE_SEO.downloads} structuredData={undefined} />
       <div className="min-h-screen bg-background">
         <Navigation />
         <div className="container mx-auto px-4 pt-24 pb-16 max-w-5xl">

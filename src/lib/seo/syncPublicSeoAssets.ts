@@ -23,9 +23,9 @@ import {
   renderEmbedBadgeJs,
   renderRssFeed,
 } from "@/lib/viral/renderViral";
-import { renderSitemapXml } from "./generateSitemap";
+import { renderSitemapXml, renderAeoSitemapXml } from "@/lib/seo/generateSitemap";
 
-/** Sync all public SEO/AEO/crawler assets from TypeScript source of truth */
+
 export function syncPublicSeoAssets(rootDir?: string): void {
   const root = rootDir ?? resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 
@@ -62,4 +62,5 @@ export function syncPublicSeoAssets(rootDir?: string): void {
   writeFileSync(resolve(embedDir, "shadowtalk-badge.js"), renderEmbedBadgeJs());
 
   writeFileSync(resolve(root, "public/sitemap.xml"), renderSitemapXml());
+  writeFileSync(resolve(root, "public/aeo-sitemap.xml"), renderAeoSitemapXml());
 }

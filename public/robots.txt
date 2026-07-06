@@ -1,16 +1,12 @@
 # ShadowTalk AI — https://www.shadowtalk-ai.com
 # Machine-readable product facts: /llms.txt /llms-full.txt /shadowtalk.json /facts.html
+# Split by crawler type for clearer access control
 
+# Standard search crawlers
 User-agent: Googlebot
 Allow: /
 
 User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
 Allow: /
 
 User-agent: Slurp
@@ -25,7 +21,14 @@ Allow: /
 User-agent: YandexBot
 Allow: /
 
-# OpenAI (ChatGPT indexing & browse)
+# Social/referrers
+User-agent: Twitterbot
+Allow: /
+
+User-agent: facebookexternalhit
+Allow: /
+
+# AI / answer engine crawlers
 User-agent: GPTBot
 Allow: /
 
@@ -35,7 +38,6 @@ Allow: /
 User-agent: OAI-SearchBot
 Allow: /
 
-# Anthropic (Claude)
 User-agent: ClaudeBot
 Allow: /
 
@@ -45,19 +47,15 @@ Allow: /
 User-agent: anthropic-ai
 Allow: /
 
-# Google Gemini / AI training
 User-agent: Google-Extended
 Allow: /
 
-# Perplexity
 User-agent: PerplexityBot
 Allow: /
 
-# Apple Intelligence
 User-agent: Applebot-Extended
 Allow: /
 
-# Common AI / research crawlers
 User-agent: CCBot
 Allow: /
 
@@ -67,11 +65,41 @@ Allow: /
 User-agent: Bytespider
 Allow: /
 
+# Generic fallback
 User-agent: *
 Allow: /
 Disallow: /admin
 Disallow: /api/
+Disallow: /internal
+Disallow: /secret
+Disallow: /cdn-cgi
+
+# Internal/core assets explicitly allowed
+Allow: /llms.txt
+Allow: /llms-full.txt
+Allow: /shadowtalk.json
+Allow: /facts.html
+Allow: /aeo-answers.html
+Allow: /aeo-answers.json
+Allow: /aeo.txt
+Allow: /aeo-sitemap.xml
+Allow: /google-aeo.txt
+Allow: /google-seo-hub.html
+Allow: /discover.html
+Allow: /feed.xml
+Allow: /zain-ahmed-fahad-patel.html
+Allow: /zain-ahmed-fahad-patel.json
+Allow: /zain-ahmed-fahad-patel.txt
+Allow: /zain-ahmed.html
+Allow: /zain-ahmed.json
+Allow: /zain-ahmed.txt
+Allow: /founder-zain-ahmed.html
+Allow: /learn/*.html
+Allow: /vs/*.html
+Allow: /sitemap.xml
+Allow: /aeo-sitemap.xml
 
 Sitemap: https://www.shadowtalk-ai.com/sitemap.xml
+Sitemap: https://www.shadowtalk-ai.com/aeo-sitemap.xml
 
-Crawl-delay: 1
+Crawl-delay: 0

@@ -11,6 +11,31 @@ export type SitemapEntry = {
   lastmod?: string;
 };
 
+const AEO_ENTRIES: SitemapEntry[] = [
+  { path: "/aeo-answers.html", priority: 0.92, changefreq: "monthly" },
+  { path: "/aeo-answers.json", priority: 0.88, changefreq: "monthly" },
+  { path: "/aeo.txt", priority: 0.85, changefreq: "monthly" },
+  { path: "/facts.html", priority: 0.9, changefreq: "monthly" },
+  { path: "/shadowtalk.json", priority: 0.85, changefreq: "monthly" },
+  { path: "/llms.txt", priority: 0.82, changefreq: "monthly" },
+  { path: "/llms-full.txt", priority: 0.85, changefreq: "monthly" },
+  { path: "/google-seo-hub.html", priority: 0.98, changefreq: "weekly" },
+  { path: "/google-aeo.txt", priority: 0.9, changefreq: "weekly" },
+  { path: "/answers", priority: 0.9, changefreq: "monthly" },
+  { path: "/faq", priority: 0.55, changefreq: "monthly" },
+  { path: "/zain-ahmed-fahad-patel.html", priority: 1.0, changefreq: "monthly" },
+  { path: "/zain-ahmed.html", priority: 0.92, changefreq: "monthly" },
+  { path: "/founder-zain-ahmed.html", priority: 0.88, changefreq: "monthly" },
+  { path: "/discover.html", priority: 0.95, changefreq: "weekly" },
+  { path: "/feed.xml", priority: 0.85, changefreq: "daily" },
+  ...GOOGLE_TOPIC_PAGES.flatMap((p) => [
+    { path: `/learn/${p.slug}.html`, priority: 0.95, changefreq: "weekly" as const },
+  ]),
+  ...COMPARISON_PAGES.flatMap((p) => [
+    { path: `/vs/${p.slug}.html`, priority: 0.92, changefreq: "weekly" as const },
+  ]),
+];
+
 /** Public routes and crawler assets — deduped by path */
 export const SITEMAP_ENTRIES: SitemapEntry[] = [
   { path: "/", priority: 1.0, changefreq: "daily" },
@@ -53,24 +78,6 @@ export const SITEMAP_ENTRIES: SitemapEntry[] = [
   { path: "/auth", priority: 0.5, changefreq: "monthly" },
   { path: "/founder-access", priority: 0.5, changefreq: "monthly" },
   { path: "/referral", priority: 0.5, changefreq: "monthly" },
-  { path: "/facts.html", priority: 0.85, changefreq: "monthly" },
-  { path: "/aeo-answers.html", priority: 0.92, changefreq: "monthly" },
-  { path: "/aeo-answers.json", priority: 0.88, changefreq: "monthly" },
-  { path: "/aeo.txt", priority: 0.85, changefreq: "monthly" },
-  { path: "/google-seo-hub.html", priority: 0.98, changefreq: "weekly" },
-  { path: "/google-aeo.txt", priority: 0.9, changefreq: "weekly" },
-  { path: "/discover.html", priority: 0.95, changefreq: "weekly" },
-  { path: "/feed.xml", priority: 0.85, changefreq: "daily" },
-  { path: "/llms.txt", priority: 0.8, changefreq: "monthly" },
-  { path: "/llms-full.txt", priority: 0.85, changefreq: "monthly" },
-  { path: "/shadowtalk.json", priority: 0.8, changefreq: "monthly" },
-  { path: "/zain-ahmed-fahad-patel.html", priority: 1.0, changefreq: "monthly" },
-  { path: "/zain-ahmed-fahad-patel.json", priority: 0.98, changefreq: "monthly" },
-  { path: "/zain-ahmed-fahad-patel.txt", priority: 0.95, changefreq: "monthly" },
-  { path: "/zain-ahmed.html", priority: 0.9, changefreq: "monthly" },
-  { path: "/zain-ahmed.json", priority: 0.95, changefreq: "monthly" },
-  { path: "/zain-ahmed.txt", priority: 0.9, changefreq: "monthly" },
-  { path: "/founder-zain-ahmed.html", priority: 0.85, changefreq: "monthly" },
   ...GOOGLE_TOPIC_PAGES.flatMap((p) => [
     { path: `/learn/${p.slug}`, priority: 0.94, changefreq: "weekly" as const },
     { path: `/learn/${p.slug}.html`, priority: 0.95, changefreq: "weekly" as const },
@@ -89,22 +96,21 @@ function dedupeEntries(entries: SitemapEntry[]): SitemapEntry[] {
   return [...seen.values()].sort((a, b) => b.priority - a.priority || a.path.localeCompare(b.path));
 }
 
-export function renderSitemapXml(entries: SitemapEntry[] = SITEMAP_ENTRIES): string {
+function buildUrlset(entries: SitemapEntry[]): string {
   const unique = dedupeEntries(entries);
   const urls = unique
     .map(
-      (e) => `  <url>
-    <loc>${BASE}${e.path}</loc>
-    <lastmod>${e.lastmod ?? TODAY}</lastmod>
-    <changefreq>${e.changefreq}</changefreq>
-    <priority>${e.priority.toFixed(2)}</priority>
-  </url>`,
+      (e) => `  <url>\n    <loc>${BASE}${e.path}</loc>\n    <lastmod>${e.lastmod ?? TODAY}</lastmod>\n    <changefreq>${e.changefreq}</changefreq>\n    <priority>${e.priority.toFixed(2)}</priority>\n  </url>`,
     )
     .join("\n");
 
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls}
-</urlset>
-`;
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;
+}
+
+export function renderSitemapXml(entries: SitemapEntry[] = SITEMAP_ENTRIES): string {
+  return buildUrlset(entries);
+}
+
+export function renderAeoSitemapXml(): string {
+  return buildUrlset(AEO_ENTRIES);
 }
