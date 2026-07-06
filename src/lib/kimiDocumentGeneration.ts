@@ -59,25 +59,69 @@ const LENGTH_GUIDE: Record<KimiLengthType, string> = {
   epic: "Up to 10,000 words — exhaustive but still tight prose (no filler paragraphs).",
 };
 
-const TONE_GUIDE: Record<KimiToneType, string> = {
-  professional: "Formal business English. Neutral, authoritative, client-ready.",
-  casual: "Clear and approachable but still polished — no slang.",
-  academic: "Scholarly register with formal structure and References section.",
-  persuasive: "Evidence-led argumentation with explicit recommendations.",
-  creative: "Literary quality permitted; still clean formatting.",
-};
+const toneGuide = {
+  professional: "formal business English. Neutral, authoritative, client-ready.",
+  casual: "clear and approachable but still polished — no slang.",
+  academic: "scholarly register with formal structure and references.",
+  persuasive: "evidence-led argumentation with explicit recommendations.",
+  creative: "literary quality permitted; still clean formatting.",
+} as const;
 
 export function getKimiDocumentSystemPrompt(
   type: KimiDocumentType,
   tone: KimiToneType,
   length: KimiLengthType
 ): string {
-  return `You are a senior document specialist producing client-ready deliverables.
+  const typeGuide = {
+    article: "Lead with a sharp angle, support with specific evidence, avoid overview fluff, end with a clear takeaway.",
+    email: "Use urgent-but-polite subject framing, tight bullets, scannable paragraphs, and exactly one clear next step.",
+    report: "Start with conclusion-first executive summary, use numbered findings, back claims with specifics, avoid filler.",
+    proposal: "Pricing/problem-value framing first, then narrow scope, exact timeline, investment, and concrete next steps.",
+    blog: "Front thesis in paragraph 1, use short subheads, concrete examples, no AI voice markers.",
+    resume: "Quantified achievements first, remove vague duties, use impact verbs, keep one page if brief.",
+    letter: "Respect the format; keep paragraphs short, state intent early, close with a single ask.",
+    book_extract: "Scene-driven prose, sensory detail, character action; avoid exposition dumps.",
+    case_study: "Show impact with client/challenge/solution/outcome structure; include metrics.",
+    whitepaper: "Abstract, then methodical argument with cited evidence, tables, and defensible conclusion.",
+    sop: "Bullet steps first, then detailed workflow, checklists, edge cases, definition section.",
+    creative_story: "Active voice, specific imagery, rising tension; remove generic descriptions.",
+    essay: "Debatable thesis, layered argument, counterpoint, synthesis; no dictionary definitions.",
+    memo: "Bottom-line-up-front, context, explicit ask, and owner/deadline.",
+    press_release: "Newsroom style: headline, subhead, dateline, quote, boilerplate, contact.",
+    business_plan: "Specific revenue model, startup costs, CAC, unit economics, GTM timeline, risks.",
+    thesis: "Research question, methodology, results, discussion; keep writing academic but readable.",
+    contract: "Parties, recitals, numbered terms, defined terms, signature blocks.",
+  } as const;
 
-Document type: ${type}
-Tone: ${TONE_GUIDE[tone]}
-Length: ${LENGTH_GUIDE[length]}
-${PROFESSIONAL_DOCUMENT_STANDARDS}`;
+  const lengthGuide = {
+    brief: "Write ~150 words. No fluff.",
+    short: "~500 words. One short section per required heading.",
+    medium: "~1,500 words with concise sections.",
+    long: "~3,500 words with examples, tables if useful, explicit references.",
+    comprehensive: "~6,000 words board-ready. Tight argument, no repetition.",
+    epic: "~10,000 words maximum. Exhaustive but still high-signal. Remove filler aggressively.",
+  } as const;
+
+  return `You are a senior document specialist. This draft must pass publication review without rewrites.
+
+RULES
+- Output ONLY the finished document. No chat preface, no meta commentary.
+- Write ${toneGuide[tone] || 'in a clear professional style.'}
+- Use ${lengthGuide[length]}.
+- Exactly one H1 title. Use H2/H3 only where genuinely needed.
+- Paragraphs must advance the argument; delete throat-clearing and repetition.
+- For ${type}: ${typeGuide[type] || 'Use clear headings, scannable sections, and a strong conclusion.'}
+
+FORBIDDEN
+- Opening filler: "Sure!", "Here is", "I'd be happy to", "Below is"
+- Emojis, hashtags, exclamation marks unless sourced from user material
+- Meta commentary about AI/assistant
+- Placeholder text: [TBD], [Insert], lorem ipsum, generic company names
+- Random bolding of full sentences
+
+OUTPUT
+- Final Markdown only.
+- If references/citations are used, include a ## References section.`;
 }
 
 export function inferDocumentTypeFromMessage(message: string): KimiDocumentType | undefined {
