@@ -68,7 +68,7 @@ export interface PolishOptions {
 /** Clean AI markdown into publication-ready shape (client-safe). */
 export function polishProfessionalMarkdown(
   raw: string,
-  options: PolishOptions = {}
+  options: PolishOptions = {},
 ): string {
   const tone = options.tone ?? "professional";
   let text = raw.trim();
@@ -77,8 +77,24 @@ export function polishProfessionalMarkdown(
   const fenced = text.match(/^```(?:markdown|md)?\s*\n([\s\S]*?)```\s*$/i);
   if (fenced) text = fenced[1].trim();
 
-  for (const pattern of PREAMBLE_PATTERNS) {
+  // Remove obvious meta/prefacing AI behavior
+  const preamblePatterns = [
+    /^(?:Sure[!,.]?|Certainly[!,.]?|Of course[!,.]?|Here(?:'s| is)|Below is|I(?:'d| will) be happy to|As an AI language model|As an AI assistant)[^\n]*\n+/i,
+    /^(?:#+\s*)?(?:Draft|Generated)\s+(?:document|report|markdown output)[^\n]*\n+/i,
+    /^(?:\s*Here(?:'s| is) a\s+)(?:draft|sample|version|template)[^\n]*\n*/i,
+  ];
+  for (const pattern of preamblePatterns) {
     text = text.replace(pattern, "");
+  }
+
+  // Remove AI-process commentary injected after the document
+  const tailBlocks = [
+    /(^|\n)##?\s*(Notes|Disclaimer|A quick note|One note|Heads up|Reminder)[^\n]*\n(?:.*\n){0,8}$/i,
+    /(^|\n)\s*(I aimed for|I focused on|This draft follows|If you need|Happy to|Let me know if)[^\n]*$/i,
+  ];
+  for (const pattern of tailBlocks) {
+    const removed = text.replace(pattern, "$1");
+    if (removed !== text && removed.trim().length > 60) text = removed;
   }
 
   if (tone === "professional" || tone === "academic" || options.stripEmojis !== false) {
@@ -114,6 +130,13 @@ export function polishProfessionalMarkdown(
       return line;
     })
     .join("\n");
+
+  // Enforce minimal structure: if length implies report-like depth, ensure standard closing section exists
+  const trimmed = text.trim();
+  const words = trimmed.split(/\s+/).filter(Boolean).length;
+  if (words > 900 && !/\n##\s+(Conclusion|Recommendations|Next Steps)\b/i.test(trimmed)) {
+    text = `${text.trim()}\n\n## Conclusion\nThis document summarizes the key findings above. Recommendations should be reviewed and prioritized before sharing.`;
+  }
 
   return text.trim();
 }

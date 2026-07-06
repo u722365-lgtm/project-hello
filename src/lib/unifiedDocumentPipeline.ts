@@ -19,6 +19,7 @@ import {
 } from "@/lib/kimiDocumentGeneration";
 import { stringifyChatBody } from "@/lib/chatRequest";
 import { upsertDocumentProjectFromRun } from "@/lib/documentForgeProjects";
+import { polishProfessionalMarkdown } from "@/lib/professionalDocument";
 
 export type DocumentPipelinePhase =
   | "idle"
@@ -225,17 +226,17 @@ export async function runUnifiedDocumentPipeline(
   onPhase?.("drafting");
   const draftContext = buildDraftContext(plan, request.additionalContext, researchBrief);
 
-  const content = shouldUseLocalAgent()
-    ? await streamLocalKimiDocument({
+  let content = await (shouldUseLocalAgent()
+    ? streamLocalKimiDocument({
         topic: plan.topic,
         docType: plan.docType,
         tone: plan.tone,
         length: plan.length,
         additionalContext: draftContext,
         signal,
-        onChunk: (chunk) => onChunk?.(chunk),
+        onChunk,
       })
-    : await streamKimiDocument({
+    : streamKimiDocument({
         topic: plan.topic,
         docType: plan.docType,
         tone: plan.tone,
@@ -243,27 +244,53 @@ export async function runUnifiedDocumentPipeline(
         additionalContext: draftContext,
         accessToken,
         signal,
-        onChunk: (chunk) => onChunk?.(chunk),
-      });
+        onChunk,
+      }));
 
-  onPhase?.("polishing");
+  const words = content.split(/\s+/).filter(Boolean).length;
+  const minWords = plan.length === "brief" ? 100 : plan.length === "short" ? 350 : 900;
+  if (words < minWords && !signal?.aborted) {
+    const redraftContext = `${draftContext}\n\nReturn a complete deliverable only with no prefacing text.`;
+    const second = await (shouldUseLocalAgent()
+      ? streamLocalKimiDocument({
+          topic: plan.topic,
+          docType: plan.docType,
+          tone: plan.tone,
+          length: plan.length,
+          additionalContext: redraftContext,
+          signal,
+          onChunk,
+        })
+      : streamKimiDocument({
+          topic: plan.topic,
+          docType: plan.docType,
+          tone: plan.tone,
+          length: plan.length,
+          additionalContext: redraftContext,
+          accessToken,
+          signal,
+          onChunk,
+        }));
+    if (second.split(/\s+/).filter(Boolean).length > words) {
+      content = second;
+    }
+  }
 
-  upsertDocumentProjectFromRun({
+  const polished = polishProfessionalMarkdown(content, { tone: plan.tone });
+  onChunk(polished);
+
+  await upsertDocumentProjectFromRun({
     topic: plan.topic,
     docType: plan.docType,
-    tone: plan.tone,
-    length: plan.length,
-    audience: plan.audience,
-    standards: request.additionalContext,
-    enableResearch: plan.enableResearch,
+    content: polished,
+    researchBrief,
+    wordCount: polished.split(/\s+/).filter(Boolean).length,
   });
 
-  onPhase?.("done");
-
   return {
-    content,
+    content: polished,
     plan,
     researchBrief,
-    wordCount: content.split(/\s+/).filter(Boolean).length,
+    wordCount: polished.split(/\s+/).filter(Boolean).length,
   };
 }
