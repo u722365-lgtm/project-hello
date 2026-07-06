@@ -175,7 +175,7 @@ const FounderAccessPage = () => {
               Founder's <span className="gradient-text">Vault</span>
             </h1>
             <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-              Pakistan: JazzCash / Easypaisa / bank. International: card (when enabled) or USDT. Submit receipt — activated within 24h.
+              Pakistan: JazzCash / Easypaisa / bank. International: card (when enabled) or USDT. Submit receipt — activated within 2h.
             </p>
           </motion.div>
 

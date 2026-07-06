@@ -138,8 +138,24 @@ const HeroSection = () => {
             {BRAND.heroSubtitle}
           </motion.p>
 
-          <motion.div variants={variants.fadeSlideUp} className="mb-8 sm:mb-10 min-h-[2rem] flex justify-center px-2">
+          <motion.div
+            variants={variants.fadeSlideUp}
+            className="mb-8 sm:mb-10 min-h-[2rem] flex justify-center px-2"
+          >
             <RotatingHookText hooks={BRAND_HOOKS} className="text-sm sm:text-base font-medium" />
+          </motion.div>
+
+          <motion.div
+            variants={variants.fadeSlideUp}
+            className="mb-3 w-full max-w-2xl mx-auto px-2"
+          >
+            <div className="glass-subtle rounded-xl border border-success/25 bg-success/5 px-4 py-2.5 text-sm sm:text-center">
+              <span className="font-semibold text-success">Early access pricing now:</span>
+              <span className="text-muted-foreground"> Unlimited plans from </span>
+              <span className="font-semibold text-foreground">$5</span>
+              <span className="text-muted-foreground">/mo</span>
+              <span className="text-muted-foreground"> · activate within 2h · 30-day guarantee · cancel anytime.</span>
+            </div>
           </motion.div>
 
           <motion.div
