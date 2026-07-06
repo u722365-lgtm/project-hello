@@ -21,6 +21,9 @@ const CommunityBuildingBlock = lazy(() => import("@/components/growth/CommunityB
 const FounderSpotlightSection = lazy(() => import("@/components/founder/FounderSpotlightSection"));
 const GrowthAmplifier = lazy(() => import("@/components/landing/GrowthAmplifier"));
 const Footer = lazy(() => import("@/components/Footer"));
+const StickyTryCTA = lazy(() => import("@/components/landing/StickyTryCTA"));
+const ExitIntentPrompt = lazy(() => import("@/components/landing/ExitIntentPrompt"));
+const FreeTierViralPrompt = lazy(() => import("@/components/growth/FreeTierViralPrompt"));
 
 const Index = () => {
   return (
