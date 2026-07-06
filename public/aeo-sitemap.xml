@@ -13,6 +13,12 @@
     <priority>0.98</priority>
   </url>
   <url>
+    <loc>https://www.shadowtalk-ai.com/aeo-answers.html</loc>
+    <lastmod>2026-07-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+  </url>
+  <url>
     <loc>https://www.shadowtalk-ai.com/discover.html</loc>
     <lastmod>2026-07-06</lastmod>
     <changefreq>weekly</changefreq>
@@ -49,13 +55,37 @@
     <priority>0.95</priority>
   </url>
   <url>
-    <loc>https://www.shadowtalk-ai.com/aeo-answers.html</loc>
+    <loc>https://www.shadowtalk-ai.com/vs/chatgpt-marketers.html</loc>
     <lastmod>2026-07-06</lastmod>
-    <changefreq>monthly</changefreq>
+    <changefreq>weekly</changefreq>
+    <priority>0.92</priority>
+  </url>
+  <url>
+    <loc>https://www.shadowtalk-ai.com/vs/chatgpt-privacy.html</loc>
+    <lastmod>2026-07-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.92</priority>
+  </url>
+  <url>
+    <loc>https://www.shadowtalk-ai.com/vs/chatgpt-startups.html</loc>
+    <lastmod>2026-07-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.92</priority>
+  </url>
+  <url>
+    <loc>https://www.shadowtalk-ai.com/vs/chatgpt-students.html</loc>
+    <lastmod>2026-07-06</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.92</priority>
   </url>
   <url>
     <loc>https://www.shadowtalk-ai.com/vs/chatgpt.html</loc>
+    <lastmod>2026-07-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.92</priority>
+  </url>
+  <url>
+    <loc>https://www.shadowtalk-ai.com/vs/claude-writing.html</loc>
     <lastmod>2026-07-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.92</priority>
@@ -67,7 +97,19 @@
     <priority>0.92</priority>
   </url>
   <url>
+    <loc>https://www.shadowtalk-ai.com/vs/copilot-code.html</loc>
+    <lastmod>2026-07-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.92</priority>
+  </url>
+  <url>
     <loc>https://www.shadowtalk-ai.com/vs/copilot.html</loc>
+    <lastmod>2026-07-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.92</priority>
+  </url>
+  <url>
+    <loc>https://www.shadowtalk-ai.com/vs/free-ai-chatbot.html</loc>
     <lastmod>2026-07-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.92</priority>
@@ -79,7 +121,19 @@
     <priority>0.92</priority>
   </url>
   <url>
+    <loc>https://www.shadowtalk-ai.com/vs/perplexity-research.html</loc>
+    <lastmod>2026-07-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.92</priority>
+  </url>
+  <url>
     <loc>https://www.shadowtalk-ai.com/vs/perplexity.html</loc>
+    <lastmod>2026-07-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.92</priority>
+  </url>
+  <url>
+    <loc>https://www.shadowtalk-ai.com/vs/shadowtalk-better-chatgpt.html</loc>
     <lastmod>2026-07-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.92</priority>
