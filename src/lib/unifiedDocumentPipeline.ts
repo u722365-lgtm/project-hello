@@ -282,9 +282,11 @@ export async function runUnifiedDocumentPipeline(
   await upsertDocumentProjectFromRun({
     topic: plan.topic,
     docType: plan.docType,
-    content: polished,
-    researchBrief,
-    wordCount: polished.split(/\s+/).filter(Boolean).length,
+    tone: plan.tone,
+    length: plan.length,
+    audience: plan.audience,
+    standards: request.additionalContext,
+    enableResearch: plan.enableResearch,
   });
 
   return {
