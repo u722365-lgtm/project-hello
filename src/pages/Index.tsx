@@ -94,6 +94,10 @@ const Index = () => {
                 <LandingSectionReveal preset="slideDown">
                   <Footer />
                 </LandingSectionReveal>
+              <Suspense fallback={null}>
+                <StickyTryCTA />
+                <ExitIntentPrompt />
+                <FreeTierViralPrompt />
               </Suspense>
             </div>
           </LandingMotionProvider>
