@@ -122,6 +122,8 @@ const StrategyAgent = () => {
   const steps = runner.steps;
 
   const [activeTab, setActiveTab] = useState("input");
+  const [runStartedAt, setRunStartedAt] = useState<number | null>(null);
+  const [runFinishedAt, setRunFinishedAt] = useState<number | null>(null);
   
   const [businessIdea, setBusinessIdea] = useState<BusinessIdea>({
     name: "",
