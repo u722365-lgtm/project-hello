@@ -114,7 +114,7 @@ export function ShareResultDialog({
 
         <div className="space-y-3">
           <div className="flex gap-2">
-            <Input readOnly value={social.link} className="text-xs font-mono" />
+            <Input readOnly value={linkToShare} className="text-xs font-mono" />
             <Button type="button" variant="outline" size="icon" onClick={copyLink} aria-label="Copy link">
               {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
             </Button>
@@ -134,18 +134,18 @@ export function ShareResultDialog({
               </a>
             </Button>
             <Button type="button" variant="outline" size="sm" asChild>
-              <a href={social.linkedin} target="_blank" rel="noopener noreferrer">
+              <a href={linkedinUrl} target="_blank" rel="noopener noreferrer">
                 <Share2 className="h-4 w-4 mr-2" />
                 Share link
               </a>
             </Button>
             <Button type="button" variant="outline" size="sm" asChild>
-              <a href={social.whatsapp} target="_blank" rel="noopener noreferrer">
+              <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
                 WhatsApp
               </a>
             </Button>
             <Button type="button" variant="outline" size="sm" asChild>
-              <a href={social.email}>
+              <a href={emailUrl}>
                 <Mail className="h-4 w-4 mr-2" />
                 Email
               </a>
