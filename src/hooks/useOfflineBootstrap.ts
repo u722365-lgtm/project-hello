@@ -11,7 +11,7 @@ import { getGemmaEngine } from "@/lib/offline/gemmaEngine";
 import { isShadowTalkDesktop, getDesktopInfo } from "@/lib/desktopBridge";
 import { shouldSkipTierABootstrap } from "@/lib/offline/offlineAICapability";
 
-import { BOOTSTRAP_CONSENT_KEY, BOOTSTRAP_DONE_KEY, isSilentTierAEnabled } from "@/lib/offline/tierAInstall";
+import { getSuccessfulSessionCount } from "@/lib/growth/sessionMilestones";
 
 const BOOTSTRAP_SKIP_KEY = "shadowtalk_offline_tier_a_skip";
 export type BootstrapPhase =
@@ -34,6 +34,11 @@ export function useOfflineBootstrap() {
   const [isDesktopBundled, setIsDesktopBundled] = useState(false);
 
   const checkState = useCallback(async () => {
+    if (getSuccessfulSessionCount() < 1) {
+      setPhase("idle");
+      return;
+    }
+
     if (localStorage.getItem(BOOTSTRAP_SKIP_KEY) === "1") {
       setPhase("skipped");
       return;
@@ -75,6 +80,9 @@ export function useOfflineBootstrap() {
 
   useEffect(() => {
     void checkState();
+    const onMilestone = () => void checkState();
+    window.addEventListener("shadowtalk-session-milestone", onMilestone);
+    return () => window.removeEventListener("shadowtalk-session-milestone", onMilestone);
   }, [checkState]);
 
   const acceptAndInstall = useCallback(async () => {

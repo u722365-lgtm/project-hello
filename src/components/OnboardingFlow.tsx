@@ -9,7 +9,7 @@ const OnboardingFlow = () => {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    if (location.pathname === "/auth") return;
+    if (location.pathname !== "/chatbot") return;
     try {
       if (!localStorage.getItem(WELCOME_SEEN_KEY)) {
         setOpen(true);

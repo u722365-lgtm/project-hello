@@ -134,12 +134,13 @@ describe("feature wiring verification", () => {
 
   it("ShadowScale growth engine and admin Growth Command wired", () => {
     expect(readSrc("App.tsx")).toContain("ShadowScaleEngine");
-    expect(readSrc("App.tsx")).toContain("ShadowScaleGrowthBanner");
+    expect(readSrc("App.tsx")).toContain("GrowthBanners");
+    expect(readSrc("components/GrowthBanners.tsx")).toContain("ShadowScaleGrowthBanner");
     expect(readSrc("components/shadowScale/ShadowScaleEngine.tsx")).toContain("startShadowScaleEngine");
     expect(readSrc("components/admin/GrowthCommandPanel.tsx")).toContain("Growth Command");
     expect(readSrc("components/admin/GrowthCommandPanel.tsx")).toContain("run_worker_only");
     expect(readSrc("components/admin/adminNav.ts")).toContain("growth-command");
-    expect(readSrc("App.tsx")).toContain("AnnouncementBanner");
+    expect(readSrc("App.tsx")).toContain("GrowthBanners");
   });
 
   it("AEO corpus wired for SEO and answer engines", () => {
@@ -265,5 +266,15 @@ describe("feature wiring verification", () => {
     expect(readSrc("components/chat/OfflineToolsPanel.tsx")).toContain("OfflineCapabilityIndicator");
     expect(readSrc("lib/chatCommandRoutes.ts")).toContain('"agentic"');
     expect(readSrc("lib/chatCommandRoutes.ts")).not.toContain('agentic: "/execute"');
+  });
+
+  it("bounce rate fixes wired", () => {
+    expect(readSrc("components/RootRoute.tsx")).toContain("shouldSkipLandingForReturnVisitor");
+    expect(readSrc("pages/ChatbotPage.tsx")).toContain("resolveConversationId");
+    expect(readSrc("pages/ChatbotPage.tsx")).toContain("handleQuickPrompt");
+    expect(readSrc("pages/ChatbotPage.tsx")).toContain("recordFunnelEvent");
+    expect(readSrc("App.tsx")).toContain("GrowthBanners");
+    expect(readSrc("hooks/useOfflineBootstrap.ts")).toContain("getSuccessfulSessionCount");
+    expect(readSrc("components/chat/ChatEmptyState.tsx")).toContain("Try ShadowTalk");
   });
 });

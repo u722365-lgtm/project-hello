@@ -28,6 +28,7 @@ import { BackToHomeButton } from "@/components/BackToHomeButton";
 import { useReferralCapture } from "./hooks/useReferralTracking";
 import PersistedAuthRedirect from "@/components/PersistedAuthRedirect";
 import WorkspacePathRemember from "@/components/WorkspacePathRemember";
+import { GrowthBanners } from "@/components/GrowthBanners";
 import { OAuthReturnHandler } from "@/components/OAuthReturnHandler";
 
 export const CommandPaletteContext = createContext<{ open: () => void }>({ open: () => {} });
@@ -126,15 +127,6 @@ const ShadowHealEngine = lazy(() =>
 );
 const ShadowScaleEngine = lazy(() =>
   import("./components/shadowScale/ShadowScaleEngine").then((m) => ({ default: m.ShadowScaleEngine })),
-);
-const AnnouncementBanner = lazy(() =>
-  import("./components/AnnouncementBanner").then((m) => ({ default: m.AnnouncementBanner })),
-);
-const ShadowScaleGrowthBanner = lazy(() =>
-  import("./components/shadowScale/ShadowScaleGrowthBanner").then((m) => ({ default: m.ShadowScaleGrowthBanner })),
-);
-const MarketingDailyBanner = lazy(() =>
-  import("./components/growth/MarketingDailyBanner").then((m) => ({ default: m.MarketingDailyBanner })),
 );
 const OfflineBootstrapBanner = lazy(() =>
   import("./components/offline/OfflineBootstrapBanner").then((m) => ({ default: m.OfflineBootstrapBanner })),
@@ -348,11 +340,7 @@ const App = () => {
                      <OAuthReturnHandler />
                      <WorkspacePathRemember />
                       <NotificationPermissionRequester />
-                     <Suspense fallback={null}>
-                       <AnnouncementBanner />
-                       <MarketingDailyBanner />
-                       <ShadowScaleGrowthBanner />
-                     </Suspense>
+                     <GrowthBanners />
                      <AnimatedRoutes />
                      <BackToHomeButton />
                    </SitePageShell>

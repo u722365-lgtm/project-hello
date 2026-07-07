@@ -2,7 +2,18 @@ const EVENTS_KEY = "shadowscale_pending_events";
 const MAX = 30;
 
 export type GrowthEvent = {
-  type: "share" | "referral_click" | "session_milestone" | "signup";
+  type:
+    | "share"
+    | "referral_click"
+    | "session_milestone"
+    | "signup"
+    | "landing_view"
+    | "chatbot_view"
+    | "quick_prompt"
+    | "first_send_attempt"
+    | "first_reply"
+    | "send_blocked"
+    | "send_error";
   detail?: string;
   at: number;
 };

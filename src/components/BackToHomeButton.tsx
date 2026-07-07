@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { isChatSessionActive } from "@/lib/growth/firstVisit";
 
 export function BackToHomeButton({ className }: { className?: string }) {
   const navigate = useNavigate();
@@ -16,6 +16,7 @@ export function BackToHomeButton({ className }: { className?: string }) {
   const isChat = path === "/chatbot";
 
   if (isHome) return null;
+  if (isChat && isChatSessionActive()) return null;
 
   return (
     <div

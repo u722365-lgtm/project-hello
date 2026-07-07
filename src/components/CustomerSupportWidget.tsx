@@ -11,6 +11,7 @@ import { useProactiveOptIn } from "@/hooks/useProactiveOptIn";
 import ProactiveOptInPrompt from "@/components/growth/ProactiveOptInPrompt";
 import { getProactiveTypeLabel, PROACTIVE_ETHICS } from "@/lib/ethicalGrowth";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Message {
@@ -44,6 +45,7 @@ function getTypeBadge(type: string) {
 const PROMPT_DISMISSED_KEY = "shadowtalk-proactive-prompt-dismissed";
 
 const CustomerSupportWidget = () => {
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     { role: "assistant", content: "Hi! I'm your 24/7 AI support assistant. How can I help you today?" }
@@ -303,6 +305,8 @@ Product context: ShadowTalk AI offers Free, Pro ($19/mo), Premium ($49/mo), and 
       </div>
     );
   }
+
+  if (location.pathname === "/chatbot") return null;
 
   return (
     <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 w-[calc(100vw-2rem)] sm:w-80 md:w-96 max-h-[70vh] sm:max-h-[500px]">

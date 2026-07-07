@@ -171,7 +171,9 @@ import { BRAND } from "@/lib/brand";
 import { ReferralNudgeBanner } from "@/components/growth/ReferralNudgeBanner";
 import { ShareResultDialog } from "@/components/growth/ShareResultDialog";
 import { ShareWinBanner } from "@/components/growth/ShareWinBanner";
-import { recordSuccessfulChatSession } from "@/lib/growth/sessionMilestones";
+import { recordSuccessfulChatSession, getSuccessfulSessionCount } from "@/lib/growth/sessionMilestones";
+import { markHasChatted, completeQuickPrompt, hasChattedBefore } from "@/lib/growth/firstVisit";
+import { recordFunnelEvent, recordChatbotView } from "@/lib/growth/funnelEvents";
 import { isAnonymousAutonomousEnabled } from "@/lib/anonymousAutonomousMode";
 import {
   buildChatShareSubtitle,
@@ -398,6 +400,19 @@ const ChatbotPage = () => {
   }, []);
 
   useEffect(() => {
+    recordChatbotView();
+  }, []);
+
+  useEffect(() => {
+    if (currentConversationId || user) return;
+    const guestConvId = `guest-${Date.now()}`;
+    setCurrentConversationId(guestConvId);
+    setConversations([
+      { id: guestConvId, title: "Guest Conversation", created_at: new Date().toISOString() },
+    ]);
+  }, [currentConversationId, user]);
+
+  useEffect(() => {
     // Every visitor on the chat page kicks off the silent on-device model
     // download. Cloud is used until the model is ready, then routing flips
     // to local automatically (see tierAInstall → onLocalModelReady).
@@ -616,6 +631,9 @@ const ChatbotPage = () => {
   };
 
   const getWelcomeMessage = () => {
+    if (!hasChattedBefore() && getSuccessfulSessionCount() === 0) {
+      return "👋 Welcome to ShadowTalk! Tap a prompt below or type a message — I'll reply in seconds.";
+    }
     return "👋 Welcome back! Your neural workspace is ready.";
   };
 
@@ -881,6 +899,29 @@ const ChatbotPage = () => {
       ...prev,
     ]);
     return data.id;
+  };
+
+  const resolveConversationId = async (): Promise<string | null> => {
+    if (user) {
+      const id = await ensureConversation();
+      if (!id) {
+        toast({
+          title: "Could not start chat",
+          description: "Check your connection and try again.",
+          variant: "destructive",
+        });
+        recordFunnelEvent("send_blocked", "ensure_conversation_failed");
+      }
+      return id;
+    }
+    if (currentConversationId) return currentConversationId;
+    const guestConvId = `guest-${Date.now()}`;
+    setCurrentConversationId(guestConvId);
+    setConversations((prev) => [
+      { id: guestConvId, title: "Guest Conversation", created_at: new Date().toISOString() },
+      ...prev,
+    ]);
+    return guestConvId;
   };
 
   const saveMessage = async (content: string, role: 'user' | 'assistant', conversationId: string) => {
@@ -1329,6 +1370,8 @@ const ChatbotPage = () => {
       }
       if (assistantContent.trim().length > 0) {
         recordSuccessfulChatSession();
+        recordFunnelEvent("first_reply");
+        markHasChatted();
       }
       return assistantContent || undefined;
     },
@@ -1376,7 +1419,7 @@ const ChatbotPage = () => {
 
     if (chatMessages.length === 0) return;
 
-    const conversationId = user ? await ensureConversation() : currentConversationId;
+    const conversationId = await resolveConversationId();
     if (!conversationId) return;
 
     setMessages(prior);
@@ -1393,8 +1436,9 @@ const ChatbotPage = () => {
     }
   };
 
-  const handleSendMessage = async () => {
-    if ((!message.trim() && !selectedFile) || isLoading) return;
+  const handleSendMessage = async (overrideText?: string) => {
+    const msgContent = (overrideText ?? message).trim();
+    if ((!msgContent && !selectedFile) || isLoading) return;
 
     const isGuestLike = !user || isAnonymous;
     if (isGuestLike && !isAnonymousAutonomousEnabled()) {
@@ -1428,10 +1472,15 @@ const ChatbotPage = () => {
       return;
     }
 
-    const conversationId = user ? await ensureConversation() : currentConversationId;
-    if (!conversationId) return;
+    recordFunnelEvent("first_send_attempt");
+    markHasChatted();
 
-    const msgContent = message;
+    const conversationId = await resolveConversationId();
+    if (!conversationId) {
+      recordFunnelEvent("send_blocked", "no_conversation_id");
+      return;
+    }
+
     const userMessage: Message = {
       id: crypto.randomUUID(),
       type: "user",
@@ -1440,7 +1489,9 @@ const ChatbotPage = () => {
       attachment: selectedFile || undefined,
     };
     setMessages((prev) => [...prev, userMessage]);
-    setMessage("");
+    if (!overrideText) {
+      setMessage("");
+    }
     setSelectedFile(null);
     setIsLoading(true);
     // SPEED: persist user message in the background; don't block the AI call on a DB write.
@@ -1866,6 +1917,7 @@ const ChatbotPage = () => {
       if (msg.includes("Device-only mode") || msg.includes("Stay device-only")) {
         setShowInterimCloudConsent(true);
       }
+      recordFunnelEvent("send_error", msg.slice(0, 80));
       toast({ title: "Message failed", description: msg, variant: "destructive" });
       setMessages((prev) => [
         ...prev,
@@ -1989,6 +2041,15 @@ const ChatbotPage = () => {
       toast({ title: "Inserted into chat", description: "Content added from Research or Browser." });
     }
   }, [insertAssistantToChat, toast]);
+
+  const handleQuickPrompt = useCallback(
+    (prompt: string) => {
+      const text = completeQuickPrompt(prompt);
+      recordFunnelEvent("quick_prompt", text.slice(0, 48));
+      void handleSendMessage(text);
+    },
+    [handleSendMessage],
+  );
 
   const handleCommandAction = (action: string) => {
     setShowCommandPalette(false);
@@ -2130,8 +2191,8 @@ const ChatbotPage = () => {
   const chatInputProps = {
     message,
     onMessageChange: setMessage,
-    onSend: handleSendMessage,
-    onKeyPress: (e: React.KeyboardEvent) => e.key === "Enter" && handleSendMessage(),
+    onSend: () => void handleSendMessage(),
+    onKeyPress: (e: React.KeyboardEvent) => e.key === "Enter" && void handleSendMessage(),
     isLoading,
     isListening,
     onToggleVoice: () => setShowShadowTalkLive(true),
@@ -2378,7 +2439,7 @@ const ChatbotPage = () => {
                 >
                   <ChatEmptyState
                     userDisplayName={userDisplayName}
-                    onSelectPrompt={setMessage}
+                    onSelectPrompt={handleQuickPrompt}
                     apiConnectedLabel={
                       hasVerifiedKey && aiConfig.useCustomKey
                         ? `${aiConfig.preferredProvider} API connected`
@@ -2414,7 +2475,7 @@ const ChatbotPage = () => {
                     userPlan={userPlan}
                     speakingMessageId={speakingMessageId}
                     isSpeaking={isSpeaking}
-                    onSelectPrompt={setMessage}
+                    onSelectPrompt={handleQuickPrompt}
                     onEdit={handleEditMessage}
                     onRegenerate={handleRegenerateMessage}
                     onTextToSpeech={speakMessage}

@@ -2,6 +2,9 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "@/components/AuthProvider";
 import Index from "@/pages/Index";
 import { PageLoader } from "@/components/PageLoader";
+import { shouldSkipLandingForReturnVisitor } from "@/lib/growth/firstVisit";
+import { recordLandingView } from "@/lib/growth/funnelEvents";
+import { useEffect } from "react";
 
 /**
  * Root route. Anonymous visitors see the full landing page (value prop,
@@ -12,7 +15,12 @@ import { PageLoader } from "@/components/PageLoader";
 export default function RootRoute() {
   const { user, isAnonymous, loading } = useAuth();
 
+  useEffect(() => {
+    if (!loading) recordLandingView("/");
+  }, [loading]);
+
   if (loading) return <PageLoader />;
   if (user && !isAnonymous) return <Navigate to="/chatbot" replace />;
+  if (shouldSkipLandingForReturnVisitor()) return <Navigate to="/chatbot" replace />;
   return <Index />;
 }

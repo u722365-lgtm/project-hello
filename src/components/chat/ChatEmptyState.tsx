@@ -9,6 +9,7 @@ import { resolveEnterpriseTenant } from "@/lib/enterpriseTenants";
 import { useAuth } from "@/components/AuthProvider";
 
 const DEFAULT_QUICK_PROMPTS = [
+  { label: "Try ShadowTalk", prompt: "What can ShadowTalk AI do for me? Give me a quick 30-second overview.", icon: Sparkles },
   { label: "Brainstorm ideas", prompt: "Help me brainstorm creative ideas for ", icon: Sparkles },
   { label: "Write code", prompt: "Write clean, production-ready code for ", icon: Code2 },
   { label: "Deep research", prompt: "Research and summarize ", icon: Search },
