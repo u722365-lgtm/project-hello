@@ -26,6 +26,8 @@ type ShareResultDialogProps = {
   referralCode?: string | null;
   colleagueMode?: boolean;
   orgName?: string;
+  /** Optional public URL to share instead of the default computed link (e.g. /s/:slug). */
+  customLink?: string;
 };
 
 export function ShareResultDialog({
@@ -37,6 +39,7 @@ export function ShareResultDialog({
   referralCode,
   colleagueMode,
   orgName,
+  customLink,
 }: ShareResultDialogProps) {
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
@@ -48,6 +51,21 @@ export function ShareResultDialog({
     ref: colleagueMode ? null : referralCode,
     kind,
   });
+  const linkToShare = customLink ?? social.link;
+  const encodedCustom = customLink ? encodeURIComponent(customLink) : null;
+  const encodedTitle = encodeURIComponent(title);
+  const twitterUrl = customLink
+    ? `https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedCustom}`
+    : social.twitter;
+  const linkedinUrl = customLink
+    ? `https://www.linkedin.com/sharing/share-offsite/?url=${encodedCustom}`
+    : social.linkedin;
+  const whatsappUrl = customLink
+    ? `https://wa.me/?text=${encodedTitle}%20${encodedCustom}`
+    : social.whatsapp;
+  const emailUrl = customLink
+    ? `mailto:?subject=${encodedTitle}&body=${encodedCustom}`
+    : social.email;
 
   const copyLink = async () => {
     try {
