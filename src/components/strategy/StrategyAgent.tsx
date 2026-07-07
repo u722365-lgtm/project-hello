@@ -314,8 +314,22 @@ const StrategyAgent = () => {
                 </div>
               )}
             </div>
+            {(isRunning || steps.length > 0) && phase !== "complete" && (
+              <StrategyLiveCounters steps={steps} running={isRunning} startedAt={runStartedAt} />
+            )}
           </CardContent>
         </Card>
+
+        {phase === "complete" && result && (
+          <StrategyHeroScore
+            idea={businessIdea}
+            result={result}
+            steps={steps}
+            elapsedSec={runStartedAt && runFinishedAt ? Math.floor((runFinishedAt - runStartedAt) / 1000) : 0}
+            onShare={handleShareStrategy}
+            partial={usedFallback}
+          />
+        )}
 
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
