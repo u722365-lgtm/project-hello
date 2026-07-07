@@ -27,9 +27,9 @@ ShadowTalk AI (shadowtalk-ai.com) is an agentic AI workspace by Zain Ahmed (17, 
 
 ## Entry & navigation
 
-- [/](/): Redirects to /chatbot (workspace).
+- [/](/): Marketing home — hero, features, pricing, use cases, trust signals.
+- [/home](/home): Alias for `/` (marketing landing).
 - [/chatbot](/chatbot): Primary AI workspace — chat, tools, missions, marketplace agents.
-- [/home](/home): Marketing landing — features, pricing section, neural dock navigation.
 - [/facts.html](/facts.html): Static facts page for crawlers and LLMs (no JavaScript).
 - [/auth](/auth): Sign in or link account (session persists; anonymous auto-sign-in unless user signed out).
 

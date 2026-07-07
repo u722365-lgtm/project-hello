@@ -269,7 +269,8 @@ describe("feature wiring verification", () => {
   });
 
   it("bounce rate fixes wired", () => {
-    expect(readSrc("components/RootRoute.tsx")).toContain("shouldSkipLandingForReturnVisitor");
+    expect(readSrc("components/RootRoute.tsx")).toContain("<Index />");
+    expect(readSrc("components/RootRoute.tsx")).not.toContain('to="/chatbot"');
     expect(readSrc("pages/ChatbotPage.tsx")).toContain("resolveConversationId");
     expect(readSrc("pages/ChatbotPage.tsx")).toContain("handleQuickPrompt");
     expect(readSrc("pages/ChatbotPage.tsx")).toContain("recordFunnelEvent");
