@@ -172,8 +172,11 @@ const StrategyAgent = () => {
     if (!canUseStrategy) return;
 
     setActiveTab("research");
+    setRunStartedAt(Date.now());
+    setRunFinishedAt(null);
     try {
       const out = await runner.run(businessIdea, user.id);
+      setRunFinishedAt(Date.now());
       if (!out) return;
       await recordUsage(businessIdea.name, businessIdea.industry);
       setActiveTab("overview");
@@ -184,11 +187,39 @@ const StrategyAgent = () => {
           : "Your business strategy is ready with web-backed research.",
       });
     } catch {
+      setRunFinishedAt(Date.now());
       toast({
         title: "Strategy failed",
         description: error || "Please try again.",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleShareStrategy = async () => {
+    if (!result) return;
+    toast({ title: "Publishing strategy…", description: "Creating a shareable link." });
+    try {
+      const summary = [
+        `# Strategy for ${businessIdea.name}`,
+        `**Industry:** ${businessIdea.industry} · **Location:** ${businessIdea.location}`,
+        "",
+        "## Executive summary",
+        result.executiveSummary,
+        "",
+        "## Top recommendations",
+        ...(result.recommendations ?? []).slice(0, 5).map((r) => `- ${r}`),
+      ].join("\n");
+      const published = await publishSharedAnswer({
+        prompt: `Strategy for ${businessIdea.name} (${businessIdea.industry}, ${businessIdea.location})`,
+        answer: summary,
+        title: `${businessIdea.name} — AI Strategy Report`,
+        source: "strategy",
+      });
+      await navigator.clipboard.writeText(published.url);
+      toast({ title: "Share link copied", description: published.url });
+    } catch (e) {
+      toast({ title: "Could not publish", description: e instanceof Error ? e.message : "Try again", variant: "destructive" });
     }
   };
 
