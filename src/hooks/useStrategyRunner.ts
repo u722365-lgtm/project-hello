@@ -154,8 +154,10 @@ export function useStrategyRunner() {
         await finalizeStrategyReport(persistedId, finalResult, executed, fallback);
       }
 
+      clearTimeout(runDeadline);
       return { result: finalResult, usedFallback: fallback };
     } catch (err) {
+      clearTimeout(runDeadline);
       if (err instanceof DOMException && err.name === "AbortError") {
         setPhase("idle");
         return;
