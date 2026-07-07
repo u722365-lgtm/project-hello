@@ -288,7 +288,7 @@ const StrategyAgent = () => {
 
         {/* Status Bar */}
         <Card className="border-2 border-primary/20 bg-card/80 backdrop-blur">
-          <CardContent className="p-4">
+          <CardContent className="p-4 space-y-4">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-3">
                 <div className={`p-2 rounded-full bg-primary/10 ${phaseMeta.color}`}>
