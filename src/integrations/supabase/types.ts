@@ -2714,6 +2714,45 @@ export type Database = {
         }
         Relationships: []
       }
+      shared_answers: {
+        Row: {
+          answer: string
+          created_at: string
+          id: string
+          model: string | null
+          prompt: string
+          slug: string
+          source: string
+          title: string | null
+          user_id: string | null
+          views: number
+        }
+        Insert: {
+          answer: string
+          created_at?: string
+          id?: string
+          model?: string | null
+          prompt: string
+          slug: string
+          source?: string
+          title?: string | null
+          user_id?: string | null
+          views?: number
+        }
+        Update: {
+          answer?: string
+          created_at?: string
+          id?: string
+          model?: string | null
+          prompt?: string
+          slug?: string
+          source?: string
+          title?: string | null
+          user_id?: string | null
+          views?: number
+        }
+        Relationships: []
+      }
       sponsor_partners: {
         Row: {
           affiliate_url: string | null

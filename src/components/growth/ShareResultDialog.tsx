@@ -26,6 +26,8 @@ type ShareResultDialogProps = {
   referralCode?: string | null;
   colleagueMode?: boolean;
   orgName?: string;
+  /** Optional public URL to share instead of the default computed link (e.g. /s/:slug). */
+  customLink?: string;
 };
 
 export function ShareResultDialog({
@@ -37,6 +39,7 @@ export function ShareResultDialog({
   referralCode,
   colleagueMode,
   orgName,
+  customLink,
 }: ShareResultDialogProps) {
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
@@ -48,10 +51,25 @@ export function ShareResultDialog({
     ref: colleagueMode ? null : referralCode,
     kind,
   });
+  const linkToShare = customLink ?? social.link;
+  const encodedCustom = customLink ? encodeURIComponent(customLink) : null;
+  const encodedTitle = encodeURIComponent(title);
+  const twitterUrl = customLink
+    ? `https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedCustom}`
+    : social.twitter;
+  const linkedinUrl = customLink
+    ? `https://www.linkedin.com/sharing/share-offsite/?url=${encodedCustom}`
+    : social.linkedin;
+  const whatsappUrl = customLink
+    ? `https://wa.me/?text=${encodedTitle}%20${encodedCustom}`
+    : social.whatsapp;
+  const emailUrl = customLink
+    ? `mailto:?subject=${encodedTitle}&body=${encodedCustom}`
+    : social.email;
 
   const copyLink = async () => {
     try {
-      await navigator.clipboard.writeText(social.link);
+      await navigator.clipboard.writeText(linkToShare);
       setCopied(true);
       toast({ title: "Link copied", description: "Share anywhere — previews load automatically." });
       setTimeout(() => setCopied(false), 2000);
@@ -96,7 +114,7 @@ export function ShareResultDialog({
 
         <div className="space-y-3">
           <div className="flex gap-2">
-            <Input readOnly value={social.link} className="text-xs font-mono" />
+            <Input readOnly value={linkToShare} className="text-xs font-mono" />
             <Button type="button" variant="outline" size="icon" onClick={copyLink} aria-label="Copy link">
               {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
             </Button>
@@ -116,18 +134,18 @@ export function ShareResultDialog({
               </a>
             </Button>
             <Button type="button" variant="outline" size="sm" asChild>
-              <a href={social.linkedin} target="_blank" rel="noopener noreferrer">
+              <a href={linkedinUrl} target="_blank" rel="noopener noreferrer">
                 <Share2 className="h-4 w-4 mr-2" />
                 Share link
               </a>
             </Button>
             <Button type="button" variant="outline" size="sm" asChild>
-              <a href={social.whatsapp} target="_blank" rel="noopener noreferrer">
+              <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
                 WhatsApp
               </a>
             </Button>
             <Button type="button" variant="outline" size="sm" asChild>
-              <a href={social.email}>
+              <a href={emailUrl}>
                 <Mail className="h-4 w-4 mr-2" />
                 Email
               </a>

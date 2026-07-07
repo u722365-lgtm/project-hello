@@ -45,6 +45,9 @@ import { ProactiveInsights } from "./ProactiveInsights";
 import { AutonomousReferralEngine } from "./AutonomousReferralEngine";
 import { StrategyStepTimeline } from "./StrategyStepTimeline";
 import { StrategyReportHistory, type HistoryReport } from "./StrategyReportHistory";
+import { StrategyHeroScore } from "./StrategyHeroScore";
+import { StrategyLiveCounters } from "./StrategyLiveCounters";
+import { publishSharedAnswer } from "@/lib/growth/publishSharedAnswer";
 import type { BusinessIdea, StrategyResult } from "@/lib/strategy/types";
 
 export type { BusinessIdea, StrategyResult } from "@/lib/strategy/types";
@@ -119,6 +122,8 @@ const StrategyAgent = () => {
   const steps = runner.steps;
 
   const [activeTab, setActiveTab] = useState("input");
+  const [runStartedAt, setRunStartedAt] = useState<number | null>(null);
+  const [runFinishedAt, setRunFinishedAt] = useState<number | null>(null);
   
   const [businessIdea, setBusinessIdea] = useState<BusinessIdea>({
     name: "",
@@ -167,8 +172,11 @@ const StrategyAgent = () => {
     if (!canUseStrategy) return;
 
     setActiveTab("research");
+    setRunStartedAt(Date.now());
+    setRunFinishedAt(null);
     try {
       const out = await runner.run(businessIdea, user.id);
+      setRunFinishedAt(Date.now());
       if (!out) return;
       await recordUsage(businessIdea.name, businessIdea.industry);
       setActiveTab("overview");
@@ -179,11 +187,39 @@ const StrategyAgent = () => {
           : "Your business strategy is ready with web-backed research.",
       });
     } catch {
+      setRunFinishedAt(Date.now());
       toast({
         title: "Strategy failed",
         description: error || "Please try again.",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleShareStrategy = async () => {
+    if (!result) return;
+    toast({ title: "Publishing strategy…", description: "Creating a shareable link." });
+    try {
+      const summary = [
+        `# Strategy for ${businessIdea.name}`,
+        `**Industry:** ${businessIdea.industry} · **Location:** ${businessIdea.location}`,
+        "",
+        "## Executive summary",
+        result.executiveSummary,
+        "",
+        "## Top recommendations",
+        ...(result.recommendations ?? []).slice(0, 5).map((r) => `- ${r}`),
+      ].join("\n");
+      const published = await publishSharedAnswer({
+        prompt: `Strategy for ${businessIdea.name} (${businessIdea.industry}, ${businessIdea.location})`,
+        answer: summary,
+        title: `${businessIdea.name} — AI Strategy Report`,
+        source: "strategy",
+      });
+      await navigator.clipboard.writeText(published.url);
+      toast({ title: "Share link copied", description: published.url });
+    } catch (e) {
+      toast({ title: "Could not publish", description: e instanceof Error ? e.message : "Try again", variant: "destructive" });
     }
   };
 
@@ -252,7 +288,7 @@ const StrategyAgent = () => {
 
         {/* Status Bar */}
         <Card className="border-2 border-primary/20 bg-card/80 backdrop-blur">
-          <CardContent className="p-4">
+          <CardContent className="p-4 space-y-4">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-3">
                 <div className={`p-2 rounded-full bg-primary/10 ${phaseMeta.color}`}>
@@ -278,8 +314,22 @@ const StrategyAgent = () => {
                 </div>
               )}
             </div>
+            {(isRunning || steps.length > 0) && phase !== "complete" && (
+              <StrategyLiveCounters steps={steps} running={isRunning} startedAt={runStartedAt} />
+            )}
           </CardContent>
         </Card>
+
+        {phase === "complete" && result && (
+          <StrategyHeroScore
+            idea={businessIdea}
+            result={result}
+            steps={steps}
+            elapsedSec={runStartedAt && runFinishedAt ? Math.floor((runFinishedAt - runStartedAt) / 1000) : 0}
+            onShare={handleShareStrategy}
+            partial={usedFallback}
+          />
+        )}
 
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">

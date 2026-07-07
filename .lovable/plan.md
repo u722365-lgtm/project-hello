@@ -1,94 +1,90 @@
-## Goal
+# Free-tier virality + Strategy Agent demo-readiness
 
-1. **Never let a user see "credits exhausted" as a dead-end.** When Lovable credits run out (HTTP 402) — or platform gateway is unavailable — automatically fall back to the user's stored BYOK key. If they don't have one, surface a one-tap CTA to add one and retry.
-2. **Make first-token latency as low as we can** without changing the chat surface.
-
-The BYOK plumbing already exists (`user_provider_keys`, `streamWithUserKey`, `customApiKeys.ts`, ProviderSelector). We're wiring an automatic fallback path and shaving startup latency.
+Two workstreams, shipped in one pass.
 
 ---
 
-## Part 1 — Auto-BYOK fallback (edge function)
+## Workstream A — Free-tier "users become marketers"
 
-**File:** `supabase/functions/chat/index.ts`
+### 1. Shareable answer links (biggest lever)
 
-Today the platform path returns a hard 402:
-```text
-if (response.status === 402)  →  JSON { error: "AI credits exhausted..." }, status 402
-```
+Every assistant reply gets a "Share" button that produces a public read-only page.
 
-Change it to:
+- New table `public.shared_answers`: `slug` (short id), `user_id` (nullable), `prompt` (text), `answer` (text), `model` (text), `views` (int), `created_at`. RLS: anyone can SELECT (public reads), only owner can INSERT, no UPDATE/DELETE by users.
+- New edge function `share-answer` (service_role) that mints a random 8-char slug, inserts the row, returns `{ slug, url }`.
+- New route `/s/:slug` → `SharedAnswerPage`:
+  - Server-friendly SSR-style static shell in `index.html` isn't possible on Vite SPA, so we generate OG image at request time via a tiny `og-answer` edge function that returns a 1200×630 SVG rendered as PNG (using Satori-style hand-built SVG). Cached with long `Cache-Control`.
+  - Set `<title>` and `<meta og:*>` in the React page + inject a `link rel="canonical"`.
+  - Bottom CTA: "Try ShadowTalk free — no login" → `/chatbot` with UTM tag `?utm_source=shared_answer&utm_medium=viral`.
+- New component `<ShareAnswerButton message={m}/>` added into `ChatbotPage` message actions row. On click: POST → `share-answer` → copy link + open share sheet (X, LinkedIn, WhatsApp, Reddit).
 
-```text
-on 402 (or 503 with no retry budget):
-  if authUserId && serviceRoleKey:
-     userKey = fetchUserProviderKey(admin, authUserId)   // any verified default key
-     if userKey:
-        log "[CHAT] Platform credits exhausted — auto-failover to BYOK (<provider>)"
-        return streamWithUserKey(userKey.provider, userKey.apiKey, systemPrompt, trimmedMessages)
-  // No key available — return structured error the client can act on
-  return 402 { error: "credits_exhausted", code: "PLATFORM_CREDITS_EXHAUSTED", needsByok: true,
-               message: "Platform AI credits are exhausted. Add your own API key to continue (free, ~2 min)." }
-```
+### 2. In-chat "share for credits" nudge
 
-Same wrapper applies if `customAiChatCompletions` throws / returns 5xx with no upstream key.
+- New hook `useViralMoment()`. Triggers a subtle toast on: copy-to-clipboard, thumbs-up, or 3rd message sent per session (once per 24h, localStorage-gated).
+- Toast body: "Loved this answer? Share ShadowTalk → 100 Pro credits when a friend signs up." CTA opens `<ShareAnswerButton>` for the last assistant message.
 
----
+### 3. Speed pass for free tier
 
-## Part 2 — Frontend handles the structured 402
-
-**Files:**
-- `src/lib/api-error-handler.ts` — recognize `needsByok: true` in the JSON body and re-export a typed `CreditsExhaustedError`.
-- `src/components/chat/ChatInput.tsx` (or wherever the chat send handler lives — find with grep) — on `CreditsExhaustedError`:
-  - Show a non-blocking toast: "Out of platform credits — add your API key to keep chatting."
-  - Open a lightweight modal `ByokFallbackPrompt` (new) with provider quick-pick (Gemini / OpenRouter), inline key field, "Where do I get a key?" links pulled from `AI_PROVIDER_OPTIONS`.
-  - On save: write via existing `saveCustomAiConfig` + retry the last user message automatically.
-- `src/components/chat/ByokFallbackPrompt.tsx` (new, ~120 lines) — small dialog, no new design tokens; reuses shadcn `Dialog`, `Input`, `Button`, semantic tokens only.
-
-No DB migration needed — the existing `user_provider_keys` table and localStorage `shadowtalk_custom_ai_keys` both work.
+- Ensure the free-tier chat endpoint (`chat` edge fn) streams (SSE) — verify `streamText().toUIMessageStreamResponse()` or equivalent is used. If not, migrate the free path to streaming.
+- Add a warm-up: `Index.tsx` fires a tiny `HEAD` ping to `/functions/v1/chat` on landing to boot the isolate.
+- Composer shows an instant optimistic bubble + shimmer for first token (already there — verify).
+- Preload the chat route on landing (dynamic `import()` prefetch when hero enters viewport) — cuts route-transition JS to near-zero.
 
 ---
 
-## Part 3 — Speed wins (low-risk, measurable)
+## Workstream B — Strategy Agent: demo-ready for an ad
 
-**`index.html`**
-- Add `<link rel="preconnect" href="https://axsudmhjpfzffcicfvuj.supabase.co" crossorigin>` and `<link rel="dns-prefetch" href="https://ai.gateway.lovable.dev">` — shaves ~80–250ms off the first request.
+Not rebuilding the agent — hardening it so a screen-recording is impressive and reliable.
 
-**`supabase/functions/chat/index.ts`**
-- For SIMPLE-tier queries, skip the post-stream quality re-score (already done) **and** skip the secondary system-prompt augmentation block when `trimmedMessages.length === 1` and total chars < 400 — saves a few ms of prompt assembly.
-- Lower the default `model` for SIMPLE tier from whatever Router V2 picks to `google/gemini-3-flash-preview` when no override is set (already the chat default per AI-gateway guidance) — confirms our fastest path is the default.
+### Audit checklist
 
-**Frontend — `src/components/chat/ChatInput.tsx`**
-- On composer focus, fire a `fetch(CHAT_URL, { method: 'OPTIONS' })` to warm the edge function (already cold-start friendly but verifies preconnect).
-- Render the optimistic assistant bubble *before* the network call returns (current code already does this — verify).
+- Verify these edge functions exist and respond: `web-search`, `firecrawl-scrape`, `website-security-scan`, `shadow-agent-tools`, `chat`. Deploy any that are missing.
+- Run one live end-to-end trial via `curl_edge_functions` on `chat` to confirm the synthesis call returns strategy JSON, not an error.
+- Fix any 402/429 handling in `synthesizeStrategyReport` so failures degrade gracefully to fallback (already partial — make it visible in UI with a "using cached playbook" chip instead of silent).
 
-Speed work is intentionally minimal and reversible. Bigger wins (regional pinning, persistent EventSource) are out of scope for today.
+### Demo polish (visible in a 30-second clip)
+
+- **Cinematic run mode**: add a `?demo=1` query param that:
+  - Pre-fills a compelling example ("Launch a privacy-first AI copilot for Pakistani SMEs, target market: 200k SMBs, budget $50k").
+  - Slows step reveal to a satisfying 600ms/step (only in demo mode).
+  - Auto-scrolls to each step as it flips to "completed".
+- **Live counters** in the header while running: "Sources analyzed: 12 · Signals: 47 · Time: 00:34" — driven by `steps[]`.
+- **Result hero card**: after `complete`, show a big "Strategy Score: 87 / 100" gradient card computed from `result.swot` completeness + sources count. This is the money shot for an ad.
+- **One-click "Share this strategy"** — same infra as Workstream A but with a strategy-tuned OG image (title = idea name, subtitle = "Generated by ShadowTalk in 42s").
+
+### Reliability floor
+
+- Wrap `run()` with a 3-min hard timeout that surfaces a real error instead of hanging.
+- If any tool step fails, keep going (already does) but mark the final report `partial: true` and show an amber banner: "Partial data — retry for full report."
+- Add a `Retry failed steps only` button when `partial: true`.
 
 ---
 
-## Technical notes
+## Files to add / edit
 
-- `fetchUserProviderKey(admin, userId)` already orders by `is_default DESC` then any verified key — exactly what auto-fallback needs.
-- `streamWithUserKey` returns a streaming Response; we forward it with `corsHeaders` just like the existing BYOK branch (lines 1714–1735).
-- The structured 402 payload is backwards-compatible: old clients still see `error` string; new clients also check `code === "PLATFORM_CREDITS_EXHAUSTED"`.
-- BYOK auto-fallback is silent for the user (response just works). The CTA modal only opens when there is **no** stored key.
-- No new env vars, no migrations, no new secrets.
+**New**
+- `supabase/migrations/<ts>_shared_answers.sql`
+- `supabase/functions/share-answer/index.ts`
+- `supabase/functions/og-answer/index.ts`
+- `src/pages/SharedAnswerPage.tsx` + route in `App.tsx`
+- `src/components/chat/ShareAnswerButton.tsx`
+- `src/hooks/useViralMoment.ts`
+- `src/components/strategy/StrategyHeroScore.tsx`
+- `src/components/strategy/StrategyLiveCounters.tsx`
+
+**Edit**
+- `src/pages/ChatbotPage.tsx` — message actions row, viral moment triggers
+- `src/pages/Index.tsx` — chat route prefetch + warm ping
+- `src/components/strategy/StrategyAgent.tsx` — demo mode, hero score, counters, share button, partial banner
+- `src/hooks/useStrategyRunner.ts` — 3-min hard timeout, `partial` flag, retry-failed helper
+- `supabase/functions/chat/index.ts` (only if it's not streaming today)
+
+## Out of scope
+
+- No new campaign email system (told you last time — Lovable is transactional-only; use Resend broadcasts).
+- No bulk outreach to existing users.
+- No rebuild of the underlying execution planner / tool executor.
 
 ---
 
-## Files touched
-
-```text
-supabase/functions/chat/index.ts          (modify ~30 lines around 1756–1778)
-index.html                                (add 2 preconnect lines)
-src/lib/api-error-handler.ts              (typed error)
-src/components/chat/ChatInput.tsx         (catch + retry)
-src/components/chat/ByokFallbackPrompt.tsx (new, ~120 lines)
-```
-
-Estimated diff: ~250 lines net new.
-
-## Out of scope (call out, don't build today)
-
-- Regional edge replicas / Cloudflare Workers — needs infra change.
-- Local-first SmolLM auto-fallback on 402 — already exists per memory, but wiring it as a third tier on top of BYOK is a separate plan.
-- Encrypting localStorage BYOK keys at rest — already documented as device-local; broader rework.
+Approve and I'll ship it in one pass. If you want a smaller first slice (e.g. Workstream A only, or just the Strategy demo polish), say the word.

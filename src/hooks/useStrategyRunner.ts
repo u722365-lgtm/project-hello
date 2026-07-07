@@ -22,6 +22,7 @@ import type {
 } from "@/lib/strategy/types";
 
 const STEP_TIMEOUT_MS = 90_000;
+const RUN_TIMEOUT_MS = 180_000; // hard 3-min ceiling on the whole run
 const MAX_STEPS = 6;
 
 export function useStrategyRunner() {
@@ -48,6 +49,7 @@ export function useStrategyRunner() {
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
+    const runDeadline = setTimeout(() => controller.abort(new DOMException("Run exceeded 3 minutes", "AbortError")), RUN_TIMEOUT_MS);
 
     setError(null);
     setResult(null);
@@ -152,8 +154,10 @@ export function useStrategyRunner() {
         await finalizeStrategyReport(persistedId, finalResult, executed, fallback);
       }
 
+      clearTimeout(runDeadline);
       return { result: finalResult, usedFallback: fallback };
     } catch (err) {
+      clearTimeout(runDeadline);
       if (err instanceof DOMException && err.name === "AbortError") {
         setPhase("idle");
         return;

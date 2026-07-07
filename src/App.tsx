@@ -39,6 +39,7 @@ export const CommandPaletteContext = createContext<{ open: () => void }>({ open:
  import AuthDesignPreviewPage from "./pages/AuthDesignPreviewPage";
  const BackendFlowsPage = lazy(() => import("./pages/BackendFlowsPage"));
  const NotFound = lazy(() => import("./pages/NotFound"));
+ const SharedAnswerPage = lazy(() => import("./pages/SharedAnswerPage"));
  import SessionsPage from "./pages/SessionsPage";
  import SelfHealingPage from "./pages/SelfHealingPage";
  import { SelfHealingProvider } from "./components/selfHealing/SelfHealingProvider";
@@ -181,6 +182,7 @@ const AnimatedRoutes = () => {
           <Route path="/pricing" element={<PageTransition><PricingPage /></PageTransition>} />
           {/* Chat workspace: no PageTransition — avoids opacity-0 flash and flex height collapse */}
           <Route path="/chatbot" element={<ChatbotPage />} />
+          <Route path="/s/:slug" element={<Suspense fallback={<PageLoader />}><SharedAnswerPage /></Suspense>} />
           <Route path="/flows" element={<PageTransition><BackendFlowsPage /></PageTransition>} />
           <Route path="/whatsapp" element={<PageTransition><WhatsAppContactsPage /></PageTransition>} />
           <Route path="/admin" element={<PageTransition><AdminPage /></PageTransition>} />

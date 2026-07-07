@@ -327,8 +327,9 @@ const ChatbotPage = () => {
   const [showCommandPalette, setShowCommandPalette] = useState(false);
   const [showOfflineTools, setShowOfflineTools] = useState(false);
   const [toolsMenuOpen, setToolsMenuOpen] = useState(false);
-  const [chatShareOffer, setChatShareOffer] = useState<{ title: string; subtitle?: string } | null>(null);
+  const [chatShareOffer, setChatShareOffer] = useState<{ title: string; subtitle?: string; prompt?: string; answer?: string } | null>(null);
   const [chatShareDialogOpen, setChatShareDialogOpen] = useState(false);
+  const [chatShareCustomLink, setChatShareCustomLink] = useState<string | null>(null);
   const [showCognitiveLoop, setShowCognitiveLoop] = useState(false);
   const [cognitiveQuery, setCognitiveQuery] = useState("");
   const [showMultiModel, setShowMultiModel] = useState(false);
@@ -1903,14 +1904,36 @@ const ChatbotPage = () => {
         userPrompt ??
         [...messages].reverse().find((m) => m.type === "user" && m.id !== "welcome")?.content ??
         "";
+      const title = buildChatShareTitle(lastUser, assistantContent);
       setChatShareOffer({
-        title: buildChatShareTitle(lastUser, assistantContent),
+        title,
         subtitle: buildChatShareSubtitle(lastUser),
+        prompt: lastUser,
+        answer: assistantContent,
       });
+      setChatShareCustomLink(null);
       setChatShareDialogOpen(true);
+
+      // Publish a public /s/:slug URL in the background so the dialog can
+      // upgrade the copy-link and social buttons to point to the shareable page.
+      void (async () => {
+        try {
+          const mod = await import("@/lib/growth/publishSharedAnswer");
+          const published = await mod.publishSharedAnswer({
+            prompt: lastUser || "AI conversation",
+            answer: assistantContent,
+            title,
+            source: "chat",
+          });
+          setChatShareCustomLink(published.url);
+        } catch {
+          // silent: dialog falls back to default share link
+        }
+      })();
     },
     [messages],
   );
+
 
   const handleExport = () => {
     try {
@@ -2467,7 +2490,10 @@ const ChatbotPage = () => {
             open={chatShareDialogOpen}
             onOpenChange={(open) => {
               setChatShareDialogOpen(open);
-              if (!open) setChatShareOffer(null);
+              if (!open) {
+                setChatShareOffer(null);
+                setChatShareCustomLink(null);
+              }
             }}
             kind="chat"
             title={chatShareOffer?.title ?? "Built with ShadowTalk AI"}
@@ -2475,6 +2501,7 @@ const ChatbotPage = () => {
             referralCode={enterprise.includeReferralInShare ? referralCode : null}
             colleagueMode={enterprise.isEnterpriseUser}
             orgName={enterprise.tenant?.name ?? enterprise.displayOrgName ?? undefined}
+            customLink={chatShareCustomLink ?? undefined}
           />
         </ChatMainPanel>
       {showImageGenerator && <ImageGenerator onClose={() => setShowImageGenerator(false)} onImageGenerated={(url) => setMessages(prev => [...prev, { id: crypto.randomUUID(), type: 'ai', content: '🎨 Generated image', timestamp: new Date(), imageUrl: url }])} />}
