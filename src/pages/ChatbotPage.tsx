@@ -1904,14 +1904,36 @@ const ChatbotPage = () => {
         userPrompt ??
         [...messages].reverse().find((m) => m.type === "user" && m.id !== "welcome")?.content ??
         "";
+      const title = buildChatShareTitle(lastUser, assistantContent);
       setChatShareOffer({
-        title: buildChatShareTitle(lastUser, assistantContent),
+        title,
         subtitle: buildChatShareSubtitle(lastUser),
+        prompt: lastUser,
+        answer: assistantContent,
       });
+      setChatShareCustomLink(null);
       setChatShareDialogOpen(true);
+
+      // Publish a public /s/:slug URL in the background so the dialog can
+      // upgrade the copy-link and social buttons to point to the shareable page.
+      void (async () => {
+        try {
+          const mod = await import("@/lib/growth/publishSharedAnswer");
+          const published = await mod.publishSharedAnswer({
+            prompt: lastUser || "AI conversation",
+            answer: assistantContent,
+            title,
+            source: "chat",
+          });
+          setChatShareCustomLink(published.url);
+        } catch {
+          // silent: dialog falls back to default share link
+        }
+      })();
     },
     [messages],
   );
+
 
   const handleExport = () => {
     try {
