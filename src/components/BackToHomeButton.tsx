@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { isChatSessionActive } from "@/lib/growth/firstVisit";
+import { cn } from "@/lib/utils";
 
 export function BackToHomeButton({ className }: { className?: string }) {
   const navigate = useNavigate();
