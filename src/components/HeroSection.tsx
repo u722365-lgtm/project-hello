@@ -225,14 +225,39 @@ const HeroSection = () => {
             </div>
           </motion.div>
 
-          <motion.p
+          <motion.div
             variants={variants.scaleFadeIn}
             className="mt-6 text-xs sm:text-sm text-muted-foreground/90"
           >
             {metrics.isLoading
               ? "Loading live metrics…"
               : `${formatTractionUsers(metrics.totalUsers)} · ${formatTractionDaily(metrics.dailyActiveUsers)}`}
-          </motion.p>
+          </motion.div>
+
+          <motion.div
+            variants={variants.scaleFadeIn}
+            className="mt-6 flex flex-wrap items-center justify-center gap-2 sm:gap-3 px-2"
+          >
+            {[
+              { label: "Anonymous AI", href: "/anonymous-ai" },
+              { label: "AI Strategy Consultant", href: "/ai-strategy-consultant" },
+              { label: "Multilingual AI", href: "/multilingual-ai" },
+              { label: "Best AI non-English", href: "/best-ai-non-english" },
+              { label: "GEO Docs", href: "/docs/geos" },
+            ].map((link, i) => (
+              <motion.a
+                key={link.href}
+                href={link.href}
+                whileHover={hoverLift}
+                className="glass-subtle rounded-lg px-3 py-1.5 sm:px-4 sm:py-2 text-[10px] sm:text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.2 + i * 0.06 }}
+              >
+                {link.label}
+              </motion.a>
+            ))}
+          </motion.div>
 
           <motion.div
             variants={variants.scaleFadeIn}

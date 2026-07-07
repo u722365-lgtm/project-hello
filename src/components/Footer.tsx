@@ -47,17 +47,32 @@ const Footer = () => {
       ],
     },
     {
+      title: "Use Cases",
+      links: [
+        { name: "Anonymous AI", href: "/anonymous-ai" },
+        { name: "AI Strategy Consultant", href: "/ai-strategy-consultant" },
+        { name: "AI Business Planner", href: "/ai-business-planner" },
+        { name: "Multilingual AI", href: "/multilingual-ai" },
+        { name: "Referral Program", href: "/referral" },
+      ],
+    },
+    {
+      title: "Learn",
+      links: [
+        { name: "Google SEO Hub", href: "/google-seo" },
+        { name: "Blog", href: "/blog" },
+        { name: "Discover", href: "/discover" },
+        { name: "Case Study: AI Strategy PSF", href: "/case-study-ai-strategy-psf" },
+      ],
+    },
+    {
       title: "Company",
       links: [
         { name: "About", href: "/about" },
-        { name: "Google SEO", href: "/google-seo" },
-        { name: "Discover", href: "/discover" },
         { name: "Zain Ahmed Fahad Patel", href: "/zain-ahmed-fahad-patel" },
-        { name: "Blog", href: "/blog" },
-        { name: "Careers", href: "/careers" },
         { name: "Press", href: "/press" },
+        { name: "Careers", href: "/careers" },
         { name: "Founder Access", href: "/founder-access" },
-        { name: "AI Facts", href: "/facts" },
       ],
     },
     {

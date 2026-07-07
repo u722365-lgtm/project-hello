@@ -212,8 +212,33 @@ const AnimatedRoutes = () => {
           <Route path="/vs/:slug" element={<PageTransition><VsPage /></PageTransition>} />
           <Route path="/ai-strategy-consultant" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
           <Route path="/ai-business-planner" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
+          <Route path="/ai-marketing-planner" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
           <Route path="/anonymous-ai" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
+          <Route path="/private-ai-no-training" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
+          <Route path="/no-login-ai-chat" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
           <Route path="/multilingual-ai" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
+          <Route path="/best-ai-non-english" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
+          <Route path="/ai-translation-chat" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
+          <Route path="/support/20-languages" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
+          <Route path="/translator/ai-chat-translator" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
+          <Route path="/case-study-ai-strategy-psf" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
+          <Route path="/zain-ahmed-fahad-patel-founder" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
+          <Route path="/pricing/team-enterprise" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
+          <Route path="/pricing/co-marketing" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
+          <Route path="/partnerships/notion-integration" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
+          <Route path="/partnerships/slack-bot" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
+          <Route path="/partnerships/complementary-tools" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
+          <Route path="/docs/geos" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
+          <Route path="/resources/strategy-planner" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
+          <Route path="/resources/code-snippets" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
+          <Route path="/resources/meme-pack" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
+          <Route path="/resources/privacy-checklist" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
+          <Route path="/review-platforms/g2-listing" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
+          <Route path="/review-platforms/capterra-listing" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
+          <Route path="/review-platforms/producthunt-listing" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
+          <Route path="/review-platforms/review-ask-email" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
+          <Route path="/referral/activation-guide" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
+          <Route path="/referral/social-share-templates" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
           <Route path="/case-studies" element={<PageTransition><CaseStudiesPage /></PageTransition>} />
           <Route path="/partnerships" element={<PageTransition><PartnershipsPage /></PageTransition>} />
           <Route path="/computer" element={<PageTransition><ComputerModePage /></PageTransition>} />
