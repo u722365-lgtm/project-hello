@@ -5,6 +5,8 @@
 
 import { requestPersistentStorage } from "./opfsModelStore";
 import { configureTransformersEnv, probeWebGPU } from "@/lib/webgpuRuntime";
+import { mergeMessagesForTierA } from "./offlineDefaultBrain";
+import { seedDefaultModelKnowledge } from "./seedDefaultModelKnowledge";
 
 export const TIER_A_MODEL_ID = "SmolLM2-135M-Instruct-q4f16_1-MLC";
 export const TIER_A_SIZE_MB = 130;
@@ -95,6 +97,7 @@ class SmolLMEngine {
       this.engine = engine as unknown as typeof this.engine;
       report({ progress: 1, text: "Offline AI ready" });
       localStorage.setItem("shadowtalk_tier_a_model", TIER_A_MODEL_ID);
+      void seedDefaultModelKnowledge();
       return true;
     } catch (e) {
       console.error("[SmolLM]", e);
@@ -111,12 +114,7 @@ class SmolLMEngine {
     onToken?: (t: string) => void,
   ): Promise<string> {
     if (!this.engine) throw new Error("SmolLM not loaded");
-    const systemPrompt =
-      "You are ShadowTalk AI running on-device. Be concise, accurate, and helpful. Use markdown when useful.";
-    const formatted = [
-      { role: "system" as const, content: systemPrompt },
-      ...messages.slice(-12),
-    ];
+    const formatted = mergeMessagesForTierA(messages);
 
     let full = "";
     const stream = await this.engine.chat.completions.create({

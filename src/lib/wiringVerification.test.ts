@@ -296,4 +296,11 @@ describe("feature wiring verification", () => {
     expect(readSrc("components/Footer.tsx")).toContain("AI Strategy Consultant");
     expect(readSrc("components/growth/UseCaseQuickLinks.tsx")).toContain("anonymous-ai");
   });
+
+  it("offline default model brain wired for Tier A SmolLM", () => {
+    expect(readSrc("lib/offline/smollmEngine.ts")).toContain("mergeMessagesForTierA");
+    expect(readSrc("lib/offline/smollmEngine.ts")).toContain("seedDefaultModelKnowledge");
+    expect(readSrc("lib/offline/offlineDefaultBrain.ts")).toContain("retrieveOfflineKnowledge");
+    expect(readSrc("lib/offline/seedDefaultModelKnowledge.ts")).toContain("AEO_ANSWER_CORPUS");
+  });
 });
