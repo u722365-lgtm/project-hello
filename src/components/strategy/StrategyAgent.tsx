@@ -45,6 +45,9 @@ import { ProactiveInsights } from "./ProactiveInsights";
 import { AutonomousReferralEngine } from "./AutonomousReferralEngine";
 import { StrategyStepTimeline } from "./StrategyStepTimeline";
 import { StrategyReportHistory, type HistoryReport } from "./StrategyReportHistory";
+import { StrategyHeroScore } from "./StrategyHeroScore";
+import { StrategyLiveCounters } from "./StrategyLiveCounters";
+import { publishSharedAnswer } from "@/lib/growth/publishSharedAnswer";
 import type { BusinessIdea, StrategyResult } from "@/lib/strategy/types";
 
 export type { BusinessIdea, StrategyResult } from "@/lib/strategy/types";
