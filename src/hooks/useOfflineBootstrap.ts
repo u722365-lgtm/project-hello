@@ -10,6 +10,11 @@ import { isAnyLocalModelReady } from "@/lib/offline/localChat";
 import { getGemmaEngine } from "@/lib/offline/gemmaEngine";
 import { isShadowTalkDesktop, getDesktopInfo } from "@/lib/desktopBridge";
 import { shouldSkipTierABootstrap } from "@/lib/offline/offlineAICapability";
+import {
+  BOOTSTRAP_CONSENT_KEY,
+  BOOTSTRAP_DONE_KEY,
+  isSilentTierAEnabled,
+} from "@/lib/offline/tierAInstall";
 
 import { getSuccessfulSessionCount } from "@/lib/growth/sessionMilestones";
 
