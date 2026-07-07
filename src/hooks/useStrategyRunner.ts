@@ -49,6 +49,7 @@ export function useStrategyRunner() {
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
+    const runDeadline = setTimeout(() => controller.abort(new DOMException("Run exceeded 3 minutes", "AbortError")), RUN_TIMEOUT_MS);
 
     setError(null);
     setResult(null);
