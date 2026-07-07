@@ -2490,7 +2490,10 @@ const ChatbotPage = () => {
             open={chatShareDialogOpen}
             onOpenChange={(open) => {
               setChatShareDialogOpen(open);
-              if (!open) setChatShareOffer(null);
+              if (!open) {
+                setChatShareOffer(null);
+                setChatShareCustomLink(null);
+              }
             }}
             kind="chat"
             title={chatShareOffer?.title ?? "Built with ShadowTalk AI"}
@@ -2498,6 +2501,7 @@ const ChatbotPage = () => {
             referralCode={enterprise.includeReferralInShare ? referralCode : null}
             colleagueMode={enterprise.isEnterpriseUser}
             orgName={enterprise.tenant?.name ?? enterprise.displayOrgName ?? undefined}
+            customLink={chatShareCustomLink ?? undefined}
           />
         </ChatMainPanel>
       {showImageGenerator && <ImageGenerator onClose={() => setShowImageGenerator(false)} onImageGenerated={(url) => setMessages(prev => [...prev, { id: crypto.randomUUID(), type: 'ai', content: '🎨 Generated image', timestamp: new Date(), imageUrl: url }])} />}
