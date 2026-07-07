@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { BRAND } from "@/lib/brand";
 import { resolveEnterpriseTenant } from "@/lib/enterpriseTenants";
 import { useAuth } from "@/components/AuthProvider";
+import { UseCaseQuickLinks } from "@/components/growth/UseCaseQuickLinks";
 
 const DEFAULT_QUICK_PROMPTS = [
   { label: "Try ShadowTalk", prompt: "What can ShadowTalk AI do for me? Give me a quick 30-second overview.", icon: Sparkles },
@@ -97,6 +98,10 @@ export function ChatEmptyState({
             </motion.button>
           );
         })}
+      </motion.div>
+
+      <motion.div variants={staggerItem} className="mt-4 max-w-lg px-2">
+        <UseCaseQuickLinks source="chat_empty" />
       </motion.div>
 
       <motion.div

@@ -53,16 +53,19 @@ const Footer = () => {
         { name: "AI Strategy Consultant", href: "/ai-strategy-consultant" },
         { name: "AI Business Planner", href: "/ai-business-planner" },
         { name: "Multilingual AI", href: "/multilingual-ai" },
-        { name: "Referral Program", href: "/referral" },
+        { name: "Best AI non-English", href: "/best-ai-non-english" },
+        { name: "AI Translator Chat", href: "/ai-translation-chat" },
+        { name: "20+ Languages", href: "/support/20-languages" },
       ],
     },
     {
       title: "Learn",
       links: [
         { name: "Google SEO Hub", href: "/google-seo" },
+        { name: "GEO Docs", href: "/docs/geos" },
+        { name: "Case Study: AI Strategy PSF", href: "/case-study-ai-strategy-psf" },
         { name: "Blog", href: "/blog" },
         { name: "Discover", href: "/discover" },
-        { name: "Case Study: AI Strategy PSF", href: "/case-study-ai-strategy-psf" },
       ],
     },
     {
