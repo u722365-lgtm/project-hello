@@ -69,7 +69,7 @@ export function ShareResultDialog({
 
   const copyLink = async () => {
     try {
-      await navigator.clipboard.writeText(social.link);
+      await navigator.clipboard.writeText(linkToShare);
       setCopied(true);
       toast({ title: "Link copied", description: "Share anywhere — previews load automatically." });
       setTimeout(() => setCopied(false), 2000);
