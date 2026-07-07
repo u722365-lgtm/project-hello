@@ -81,6 +81,9 @@ const VsPage = lazy(() => import("./pages/VsPage"));
 const DiscoverPage = lazy(() => import("./pages/DiscoverPage"));
 const LearnTopicPage = lazy(() => import("./pages/LearnTopicPage"));
 const GoogleSeoHubPage = lazy(() => import("./pages/GoogleSeoHubPage"));
+const WedgeLandingPage = lazy(() => import("./pages/WedgeLandingPage"));
+const CaseStudiesPage = lazy(() => import("./pages/CaseStudiesPage"));
+const PartnershipsPage = lazy(() => import("./pages/PartnershipsPage"));
  const ComputerModePage = lazy(() => import("./pages/ComputerModePage"));
  const PrivacyPolicyPage = lazy(() => import("./pages/PrivacyPolicyPage"));
  const TermsOfServicePage = lazy(() => import("./pages/TermsOfServicePage"));
@@ -207,6 +210,12 @@ const AnimatedRoutes = () => {
           <Route path="/google-seo" element={<PageTransition><GoogleSeoHubPage /></PageTransition>} />
           <Route path="/learn/:slug" element={<PageTransition><LearnTopicPage /></PageTransition>} />
           <Route path="/vs/:slug" element={<PageTransition><VsPage /></PageTransition>} />
+          <Route path="/ai-strategy-consultant" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
+          <Route path="/ai-business-planner" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
+          <Route path="/anonymous-ai" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
+          <Route path="/multilingual-ai" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
+          <Route path="/case-studies" element={<PageTransition><CaseStudiesPage /></PageTransition>} />
+          <Route path="/partnerships" element={<PageTransition><PartnershipsPage /></PageTransition>} />
           <Route path="/computer" element={<PageTransition><ComputerModePage /></PageTransition>} />
           <Route path="/privacy" element={<PageTransition><PrivacyPolicyPage /></PageTransition>} />
           <Route path="/terms" element={<PageTransition><TermsOfServicePage /></PageTransition>} />

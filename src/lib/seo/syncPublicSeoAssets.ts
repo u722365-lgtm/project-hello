@@ -24,6 +24,10 @@ import {
   renderRssFeed,
 } from "@/lib/viral/renderViral";
 import { renderSitemapXml, renderAeoSitemapXml } from "@/lib/seo/generateSitemap";
+import { WEDGE_PAGES } from "@/lib/marketing/wedgePages";
+import { renderWedgeHtml } from "@/lib/marketing/renderWedge";
+import { HOW_TO_GUIDES } from "@/lib/marketing/howToGuides";
+import { renderHowToHtml } from "@/lib/marketing/renderHowTo";
 
 
 export function syncPublicSeoAssets(rootDir?: string): void {
@@ -63,4 +67,12 @@ export function syncPublicSeoAssets(rootDir?: string): void {
 
   writeFileSync(resolve(root, "public/sitemap.xml"), renderSitemapXml());
   writeFileSync(resolve(root, "public/aeo-sitemap.xml"), renderAeoSitemapXml());
+
+  for (const page of WEDGE_PAGES) {
+    writeFileSync(resolve(root, `public/${page.slug}.html`), renderWedgeHtml(page));
+  }
+
+  for (const guide of HOW_TO_GUIDES) {
+    writeFileSync(resolve(root, `public/${guide.filename}`), renderHowToHtml(guide));
+  }
 }

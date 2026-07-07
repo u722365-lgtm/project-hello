@@ -7,6 +7,7 @@ import SEOHead from "@/components/SEOHead";
 import { COMPARISON_PAGES } from "@/lib/viral";
 import { FOUNDER_CANONICAL } from "@/lib/founderIdentity";
 import { BRAND } from "@/lib/brand";
+import { WEDGE_PAGES } from "@/lib/marketing/wedgePages";
 
 const DiscoverPage = () => {
   const meta = {
@@ -53,6 +54,21 @@ const DiscoverPage = () => {
               >
                 <p className="font-semibold">{p.h1}</p>
                 <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{p.verdict}</p>
+              </Link>
+            ))}
+          </div>
+
+          <h2 className="text-2xl font-bold mb-4">Niche wedges</h2>
+          <div className="space-y-3 mb-10">
+            {WEDGE_PAGES.map((p) => (
+              <Link
+                key={p.slug}
+                to={`/${p.slug}`}
+                className="block rounded-xl border border-primary/20 p-4 hover:border-primary/40 transition-colors"
+              >
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">{p.badge}</p>
+                <p className="font-semibold mt-1">{p.h1}</p>
+                <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{p.snippet}</p>
               </Link>
             ))}
           </div>

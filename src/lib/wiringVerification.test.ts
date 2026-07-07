@@ -277,4 +277,20 @@ describe("feature wiring verification", () => {
     expect(readSrc("hooks/useOfflineBootstrap.ts")).toContain("getSuccessfulSessionCount");
     expect(readSrc("components/chat/ChatEmptyState.tsx")).toContain("Try ShadowTalk");
   });
+
+  it("marketing growth plan wired — trust strip, wedges, GEO", () => {
+    expect(readSrc("pages/ChatbotPage.tsx")).toContain("ChatbotTrustStrip");
+    expect(readSrc("components/chat/ChatbotTrustStrip.tsx")).toContain("What is ShadowTalk");
+    expect(readSrc("lib/marketing/wedgePages.ts")).toContain("ai-strategy-consultant");
+    expect(readSrc("lib/marketing/wedgePages.ts")).toContain("anonymous-ai");
+    expect(readSrc("App.tsx")).toContain('path="/ai-strategy-consultant"');
+    expect(readSrc("App.tsx")).toContain('path="/partnerships"');
+    expect(readSrc("App.tsx")).toContain('path="/case-studies"');
+    expect(readSrc("lib/marketing/caseStudies.ts")).toContain("PSOF");
+    expect(readSrc("lib/seo/syncPublicSeoAssets.ts")).toContain("renderWedgeHtml");
+    expect(readSrc("lib/seo/generateSitemap.ts")).toContain("WEDGE_PAGES");
+    expect(readSrc("lib/viral/comparisonCorpus.ts")).toContain("chatgpt-strategy");
+    expect(readSrc("lib/aeo/answerCorpus.ts")).toContain("best-ai-strategy-consultant");
+    expect(readSrc("components/growth/EmbedTryCTA.tsx")).toContain("product_led");
+  });
 });

@@ -8,6 +8,7 @@ import { PAGE_SEO } from "@/lib/seo";
 import { GOOGLE_SEO_HUB, GOOGLE_TOPIC_PAGES } from "@/lib/googleSeo";
 import { AEO_ANSWER_CORPUS } from "@/lib/aeo";
 import { FOUNDER_CANONICAL } from "@/lib/founderIdentity";
+import { WEDGE_PAGES } from "@/lib/marketing/wedgePages";
 
 const GoogleSeoHubPage = () => {
   const googleAnswers = AEO_ANSWER_CORPUS.filter((a) => a.category === "google");
@@ -41,6 +42,21 @@ const GoogleSeoHubPage = () => {
                 className="block rounded-xl border border-border/50 p-4 hover:border-primary/40"
               >
                 <p className="font-semibold">{p.h1}</p>
+                <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{p.snippet}</p>
+              </Link>
+            ))}
+          </div>
+
+          <h2 className="text-2xl font-bold mb-4">Wedge landing pages</h2>
+          <div className="space-y-3 mb-10">
+            {WEDGE_PAGES.map((p) => (
+              <Link
+                key={p.slug}
+                to={`/${p.slug}`}
+                className="block rounded-xl border border-primary/20 p-4 hover:border-primary/40"
+              >
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">{p.badge}</p>
+                <p className="font-semibold mt-1">{p.h1}</p>
                 <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{p.snippet}</p>
               </Link>
             ))}

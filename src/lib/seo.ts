@@ -509,6 +509,24 @@ export const PAGE_SEO: Record<string, PageMeta> = {
     keywords: ['ShadowTalk referral', 'affiliate program', '20% commission', '40% commission', 'earn recurring commission'],
     canonical: 'https://www.shadowtalk-ai.com/referral',
   },
+  partnerships: {
+    title: 'Partnerships & Integrations — ShadowTalk AI',
+    description: 'Integrate ShadowTalk with Notion, Slack, Discord, and complementary tools. Team pricing, co-marketing, and referral credits.',
+    keywords: ['ShadowTalk integrations', 'AI partnerships', 'enterprise AI', 'Slack AI'],
+    canonical: 'https://www.shadowtalk-ai.com/partnerships',
+  },
+  caseStudies: {
+    title: 'Case Studies — ShadowTalk AI (PSOF)',
+    description: 'Problem-Solution-Outcome-Framework case studies: founder GTM, anonymous research, multilingual ops. Try ShadowTalk free.',
+    keywords: ['ShadowTalk case study', 'AI strategy outcomes', 'PSOF'],
+    canonical: 'https://www.shadowtalk-ai.com/case-studies',
+  },
+  aiStrategyConsultant: {
+    title: 'AI Strategy Consultant — CEO Playbooks | ShadowTalk',
+    description: 'Free AI strategy consultant: CEO playbooks, marketing plans, competitive analysis. Mission Control executes multi-step strategy.',
+    keywords: ['AI strategy consultant', 'best AI for business strategy', 'CEO playbook AI'],
+    canonical: 'https://www.shadowtalk-ai.com/ai-strategy-consultant',
+  },
   cookies: {
     title: 'Cookie Policy',
     description: 'Learn about how ShadowTalk AI uses cookies and tracking technologies.',
