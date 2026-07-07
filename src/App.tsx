@@ -39,6 +39,7 @@ export const CommandPaletteContext = createContext<{ open: () => void }>({ open:
  import AuthDesignPreviewPage from "./pages/AuthDesignPreviewPage";
  const BackendFlowsPage = lazy(() => import("./pages/BackendFlowsPage"));
  const NotFound = lazy(() => import("./pages/NotFound"));
+ const SharedAnswerPage = lazy(() => import("./pages/SharedAnswerPage"));
  import SessionsPage from "./pages/SessionsPage";
  import SelfHealingPage from "./pages/SelfHealingPage";
  import { SelfHealingProvider } from "./components/selfHealing/SelfHealingProvider";
