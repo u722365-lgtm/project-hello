@@ -48,6 +48,7 @@ import { useAgenticToolDispatch } from "@/hooks/useAgenticToolDispatch";
 import { detectShadowExecutionFromChat } from "@/lib/execution/inferFromChat";
 import { ChatAmbientBackground } from "@/components/chat/ChatAmbientBackground";
 import { ChatEmptyState } from "@/components/chat/ChatEmptyState";
+import { ChatbotTrustStrip } from "@/components/chat/ChatbotTrustStrip";
 import { ChatMainPanel } from "@/components/chat/ChatMainPanel";
 import { SETTINGS_SPRING } from "@/lib/settingsMotion";
 import { useChatSidebarCollapse } from "@/hooks/useChatSidebarCollapse";
@@ -2426,7 +2427,7 @@ const ChatbotPage = () => {
               requiredPlan="premium"
             />
           )}
-          <div className={`flex-1 min-h-0 overflow-hidden relative flex flex-col ${isEmptyChat ? "justify-center" : ""}`}>
+          <div className={`flex-1 min-h-0 relative flex flex-col ${isEmptyChat ? "overflow-y-auto" : "overflow-hidden"}`}>
             <AnimatePresence mode="wait">
               {isEmptyChat ? (
                 <motion.div
@@ -2435,8 +2436,9 @@ const ChatbotPage = () => {
                   animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
                   exit={{ opacity: 0, scale: 0.99, filter: isMobile ? "blur(0px)" : "blur(4px)" }}
                   transition={SETTINGS_SPRING}
-                  className="flex-1 flex flex-col justify-center"
+                  className="flex-1 flex flex-col justify-center min-h-0"
                 >
+                  <ChatbotTrustStrip />
                   <ChatEmptyState
                     userDisplayName={userDisplayName}
                     onSelectPrompt={handleQuickPrompt}

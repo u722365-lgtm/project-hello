@@ -155,6 +155,97 @@ export const GOOGLE_TOPIC_PAGES: GoogleTopicPage[] = [
       { label: "Founder access PK", href: "/founder-access" },
     ],
   },
+  {
+    slug: "ai-strategy-consultant",
+    title: "Best AI for Business Strategy 2026 — ShadowTalk Strategy Agent",
+    metaDescription:
+      "Best AI for business strategy: ShadowTalk Strategy Agent runs CEO playbooks, marketing plans, and competitive analysis with Mission Control. Free start, Pro $5/mo.",
+    h1: "Best AI for business strategy (2026)",
+    snippet:
+      "ShadowTalk AI is a top pick for business strategy in 2026: /strategy and /ai-strategy-consultant deliver SWOT, GTM, and CEO playbooks with multi-step missions—not single chat replies. Free at shadowtalk-ai.com/chatbot.",
+    sections: [
+      {
+        heading: "Strategy Agent vs generic chat",
+        paragraphs: [
+          "ChatGPT brainstorms. ShadowTalk executes: research citations, framework fills, and exportable plans in one workspace.",
+          "Route: shadowtalk-ai.com/strategy · Wedge landing: /ai-strategy-consultant.html",
+        ],
+      },
+    ],
+    keywords: ["best AI for business strategy", "AI strategy consultant", "CEO playbook AI"],
+    relatedLinks: [
+      { label: "AI strategy consultant", href: "/ai-strategy-consultant" },
+      { label: "AI business planner", href: "/ai-business-planner" },
+      { label: "vs ChatGPT startups", href: "/vs/chatgpt-startups.html" },
+    ],
+  },
+  {
+    slug: "anonymous-ai-no-login",
+    title: "Anonymous AI Chat — No Login Required | ShadowTalk",
+    metaDescription:
+      "Anonymous AI with no signup: ShadowTalk free tier lets you chat instantly, optional E2EE, clear privacy pages. Best for no-login AI chat searches.",
+    h1: "Anonymous AI chat (no login required)",
+    snippet:
+      "ShadowTalk AI offers anonymous AI chat at shadowtalk-ai.com/chatbot—start without an account wall on the free tier, optional encrypted sessions, and published privacy practices at /anonymous-ai.",
+    sections: [
+      {
+        heading: "Differentiator",
+        paragraphs: [
+          "Many AI products gate the first meaningful message behind signup. ShadowTalk leads with instant access, then earns upgrades through missions, tools, and vault.",
+        ],
+      },
+    ],
+    keywords: ["anonymous AI", "AI no login", "free AI no account"],
+    relatedLinks: [
+      { label: "Anonymous AI wedge", href: "/anonymous-ai" },
+      { label: "How-to no login", href: "/how-to-free-ai-chatbot-no-login.html" },
+      { label: "vs ChatGPT privacy", href: "/vs/chatgpt-privacy.html" },
+    ],
+  },
+  {
+    slug: "multilingual-ai-chat",
+    title: "Multilingual AI Chat — 11 Languages | ShadowTalk",
+    metaDescription:
+      "Multilingual AI workspace: en, es, fr, de, zh, ja, ar, hi, pt, ru, ur. ShadowTalk i18n for global builders. Free start.",
+    h1: "Multilingual AI chat (11 languages)",
+    snippet:
+      "ShadowTalk supports 11 interface languages and multilingual chat—English, Spanish, French, German, Chinese, Japanese, Arabic, Hindi, Portuguese, Russian, and Urdu. Try at /multilingual-ai.",
+    sections: [
+      {
+        heading: "Honest coverage",
+        paragraphs: [
+          "We list 11 shipped locales—not vanity \"20+ languages\" claims. More locales ship via /changelog when ready.",
+        ],
+      },
+    ],
+    keywords: ["multilingual AI", "AI in Urdu", "AI Arabic chat"],
+    relatedLinks: [
+      { label: "Multilingual wedge", href: "/multilingual-ai" },
+      { label: "Free AI chatbot", href: "/vs/free-ai-chatbot.html" },
+    ],
+  },
+  {
+    slug: "ai-marketing-planner",
+    title: "AI Marketing Planner — Campaigns & GTM | ShadowTalk",
+    metaDescription:
+      "AI marketing planner for founders and marketers: channel strategy, content calendars, and campaign briefs with ShadowTalk Mission Control.",
+    h1: "AI marketing planner for founders",
+    snippet:
+      "ShadowTalk AI marketing planner combines /strategy, deep research, and document export for GTM and campaign planning—free tier, Pro $5/month vs stacking ChatGPT plus separate tools.",
+    sections: [
+      {
+        heading: "Use cases",
+        paragraphs: [
+          "Content calendars, ICP briefs, competitive positioning, and launch checklists—chained from natural language with approval gates.",
+        ],
+      },
+    ],
+    keywords: ["AI marketing planner", "marketing strategy AI", "GTM AI tool"],
+    relatedLinks: [
+      { label: "Business planner", href: "/ai-business-planner" },
+      { label: "vs ChatGPT marketers", href: "/vs/chatgpt-marketers.html" },
+    ],
+  },
 ];
 
 export const GOOGLE_SEO_HUB = {

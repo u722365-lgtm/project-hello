@@ -87,6 +87,13 @@ ShadowTalk AI (shadowtalk-ai.com) is an agentic AI workspace by Zain Ahmed (17, 
 - [Google SEO hub](/google-seo): Topic guides for Google Search & AI Overviews.
 - [Answers / AEO](/answers): Canonical Q&A — FAQPage schema for Google AI Overviews.
 - [Discover](/discover): Comparisons vs ChatGPT, Perplexity, Claude — organic SEO hub.
+- [Wedge: AI strategy consultant](/ai-strategy-consultant): CEO playbooks, marketing strategy niche.
+- [Wedge: AI business planner](/ai-business-planner): GTM, business plans, founder workflows.
+- [Wedge: Anonymous AI](/anonymous-ai): No-login chat differentiator.
+- [Wedge: Multilingual AI](/multilingual-ai): 11 languages (en, es, fr, de, zh, ja, ar, hi, pt, ru, ur).
+- [Case studies (PSOF)](/case-studies): Problem-Solution-Outcome-Framework for GEO.
+- [Partnerships](/partnerships): Integrations (Slack, Notion, Discord roadmap), team pricing, referrals.
+- [Referral program](/referral): Share ShadowTalk, earn 20–40% commission / Pro credits.
 - [RSS](/feed.xml): Feed for aggregators and crawlers.
 - [Changelog](/changelog): Release notes.
 - [Contact](/contact): Contact the team.

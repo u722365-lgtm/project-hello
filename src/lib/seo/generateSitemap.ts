@@ -1,5 +1,7 @@
 import { GOOGLE_TOPIC_PAGES } from "@/lib/googleSeo/topicPages";
 import { COMPARISON_PAGES } from "@/lib/viral/comparisonCorpus";
+import { WEDGE_PAGES } from "@/lib/marketing/wedgePages";
+import { HOW_TO_GUIDES } from "@/lib/marketing/howToGuides";
 
 const BASE = "https://www.shadowtalk-ai.com";
 const TODAY = new Date().toISOString().slice(0, 10);
@@ -81,10 +83,22 @@ export const SITEMAP_ENTRIES: SitemapEntry[] = [
   { path: "/auth", priority: 0.5, changefreq: "monthly" },
   { path: "/founder-access", priority: 0.5, changefreq: "monthly" },
   { path: "/referral", priority: 0.5, changefreq: "monthly" },
+  { path: "/partnerships", priority: 0.88, changefreq: "monthly" },
+  { path: "/case-studies", priority: 0.9, changefreq: "monthly" },
+  ...WEDGE_PAGES.flatMap((p) => [
+    { path: `/${p.slug}`, priority: 0.96, changefreq: "weekly" as const },
+    { path: `/${p.slug}.html`, priority: 0.97, changefreq: "weekly" as const },
+  ]),
+  ...HOW_TO_GUIDES.map((g) => ({
+    path: `/${g.filename}`,
+    priority: 0.94,
+    changefreq: "weekly" as const,
+  })),
   { path: "/free-ai-tools.html", priority: 0.95, changefreq: "weekly" },
   { path: "/how-to-free-ai-chatbot-no-login.html", priority: 0.95, changefreq: "weekly" },
   { path: "/how-to-ai-strategy-planner-free.html", priority: 0.95, changefreq: "weekly" },
   { path: "/how-to-private-ai-chat.html", priority: 0.92, changefreq: "weekly" },
+  { path: "/how-to-shadowtalk-vs-chatgpt-strategy.html", priority: 0.92, changefreq: "weekly" },
   { path: "/blog/ai-strategy-planner-free.html", priority: 0.92, changefreq: "weekly" },
   { path: "/embed-widget.js", priority: 0.6, changefreq: "monthly" },
   { path: "/shareables/strategy-planner-template.json", priority: 0.5, changefreq: "monthly" },

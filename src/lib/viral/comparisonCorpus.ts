@@ -17,7 +17,9 @@ export type ComparisonSlug =
   | "claude-writing"
   | "copilot-code"
   | "shadowtalk-better-chatgpt"
-  | "free-ai-chatbot";
+  | "free-ai-chatbot"
+  | "chatgpt-strategy"
+  | "chatgpt-business-plan";
 
 
 export interface ComparisonPage {
@@ -351,6 +353,60 @@ export const COMPARISON_PAGES: ComparisonPage[] = [
       "Broader mainstream familiarity",
     ],
     keywords: ["free AI chatbot", "no login AI chat", "best free chatbot"],
+  },
+  {
+    slug: "chatgpt-strategy",
+    competitor: "ChatGPT",
+    title: "ShadowTalk vs ChatGPT for Business Strategy — Consultant vs Chat",
+    metaDescription:
+      "Strategy comparison: ChatGPT for brainstorming vs ShadowTalk Strategy Agent for CEO playbooks, GTM plans, and multi-step missions with exports.",
+    h1: "ShadowTalk vs ChatGPT for business strategy",
+    verdict:
+      "ChatGPT excels at single-turn strategy brainstorming. ShadowTalk adds /strategy, Mission Control, cited research, and exportable plans—built for founders who need finished playbooks.",
+    shadowtalkWins: [
+      "Strategy Agent + /ai-strategy-consultant wedge landing",
+      "Multi-step missions with human approval",
+      "Deep research with citations in same workspace",
+      "Document and presentation export",
+      "Pro $5/mo vs ChatGPT Plus for integrated tooling",
+    ],
+    competitorWins: [
+      "Strong brand for quick strategy Q&A",
+      "Polished prose on first reply",
+      "Large ecosystem of third-party plugins",
+    ],
+    keywords: [
+      "ShadowTalk vs ChatGPT strategy",
+      "best AI for business strategy",
+      "AI strategy consultant",
+    ],
+  },
+  {
+    slug: "chatgpt-business-plan",
+    competitor: "ChatGPT",
+    title: "ShadowTalk vs ChatGPT for Business Planning — Plans That Ship",
+    metaDescription:
+      "Business plan comparison: ShadowTalk AI business planner vs ChatGPT for market sizing, financial models, and GTM—agentic execution wins.",
+    h1: "ShadowTalk vs ChatGPT for business planning",
+    verdict:
+      "ChatGPT drafts outlines. ShadowTalk /ai-business-planner chains research, templates, and exports so founders ship investor-ready artifacts—not orphaned bullet lists.",
+    shadowtalkWins: [
+      "AI business planner landing + /execute hub",
+      "Workspace memory for business context",
+      "Integrated research, docs, and IDE",
+      "Case studies with PSOF framework at /case-studies",
+      "Transparent free tier with stated daily limits",
+    ],
+    competitorWins: [
+      "Fast outline generation for simple plans",
+      "Familiar UI for casual users",
+      "Wide consumer awareness",
+    ],
+    keywords: [
+      "AI business planner",
+      "ShadowTalk vs ChatGPT business plan",
+      "AI marketing planner",
+    ],
   },
 ];
 
