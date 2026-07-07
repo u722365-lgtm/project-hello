@@ -10,6 +10,7 @@ import { LandingMotionProvider } from "@/components/landing/LandingMotionProvide
 import { PlatformMetricsProvider } from "@/contexts/PlatformMetricsContext";
 
 const WhatIsShadowTalk = lazy(() => import("@/components/landing/WhatIsShadowTalk"));
+const UseCaseWedgesSection = lazy(() => import("@/components/landing/UseCaseWedgesSection"));
 const BrandManifestoSection = lazy(() => import("@/components/brand/BrandManifestoSection"));
 const CompetitiveComparison = lazy(() => import("@/components/CompetitiveComparison"));
 const FeaturesSection = lazy(() => import("@/components/FeaturesSection"));
@@ -38,6 +39,11 @@ const Index = () => {
               <Suspense fallback={<LandingSectionFallback />}>
                 <LandingSectionReveal preset="fadeUp">
                   <WhatIsShadowTalk />
+                </LandingSectionReveal>
+              </Suspense>
+              <Suspense fallback={<LandingSectionFallback />}>
+                <LandingSectionReveal preset="fadeUp">
+                  <UseCaseWedgesSection />
                 </LandingSectionReveal>
               </Suspense>
               <Suspense fallback={<LandingSectionFallback />}>

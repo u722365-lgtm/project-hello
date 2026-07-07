@@ -47,6 +47,17 @@ const Footer = () => {
       ],
     },
     {
+      title: "Use cases",
+      links: [
+        { name: "AI Strategy Consultant", href: "/ai-strategy-consultant" },
+        { name: "AI Business Planner", href: "/ai-business-planner" },
+        { name: "Anonymous AI (no login)", href: "/anonymous-ai" },
+        { name: "Multilingual AI", href: "/multilingual-ai" },
+        { name: "Case Studies", href: "/case-studies" },
+        { name: "Partnerships", href: "/partnerships" },
+      ],
+    },
+    {
       title: "Company",
       links: [
         { name: "About", href: "/about" },
@@ -87,7 +98,7 @@ const Footer = () => {
       />
 
       <div className="container mx-auto px-4 py-12 sm:py-16 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-8 sm:gap-10 mb-12 sm:mb-14">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-8 gap-8 sm:gap-10 mb-12 sm:mb-14">
           <LandingAnimate preset="slideLeft" className="lg:col-span-2">
             <div className="flex items-center space-x-2.5 mb-5 sm:mb-6">
               <div className="relative">

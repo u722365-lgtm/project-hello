@@ -292,5 +292,8 @@ describe("feature wiring verification", () => {
     expect(readSrc("lib/viral/comparisonCorpus.ts")).toContain("chatgpt-strategy");
     expect(readSrc("lib/aeo/answerCorpus.ts")).toContain("best-ai-strategy-consultant");
     expect(readSrc("components/growth/EmbedTryCTA.tsx")).toContain("product_led");
+    expect(readSrc("pages/Index.tsx")).toContain("UseCaseWedgesSection");
+    expect(readSrc("components/Footer.tsx")).toContain("AI Strategy Consultant");
+    expect(readSrc("components/growth/UseCaseQuickLinks.tsx")).toContain("anonymous-ai");
   });
 });
