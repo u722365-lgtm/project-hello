@@ -327,7 +327,7 @@ const ChatbotPage = () => {
   const [showCommandPalette, setShowCommandPalette] = useState(false);
   const [showOfflineTools, setShowOfflineTools] = useState(false);
   const [toolsMenuOpen, setToolsMenuOpen] = useState(false);
-  const [chatShareOffer, setChatShareOffer] = useState<{ title: string; subtitle?: string; prompt: string; answer: string } | null>(null);
+  const [chatShareOffer, setChatShareOffer] = useState<{ title: string; subtitle?: string; prompt?: string; answer?: string } | null>(null);
   const [chatShareDialogOpen, setChatShareDialogOpen] = useState(false);
   const [chatShareCustomLink, setChatShareCustomLink] = useState<string | null>(null);
   const [showCognitiveLoop, setShowCognitiveLoop] = useState(false);
