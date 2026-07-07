@@ -22,6 +22,7 @@ import type {
 } from "@/lib/strategy/types";
 
 const STEP_TIMEOUT_MS = 90_000;
+const RUN_TIMEOUT_MS = 180_000; // hard 3-min ceiling on the whole run
 const MAX_STEPS = 6;
 
 export function useStrategyRunner() {
