@@ -77,6 +77,13 @@ import { resolveAgentRuntime } from "@/lib/marketplace/resolveAgentConfig";
 import { prependAgentSystemPrompt } from "@/lib/marketplace/applyAgentToChat";
 import { prependChatKnowledgeContext } from "@/lib/shadowTalkProductKnowledge";
 import {
+  ensureDefaultPersonalModel,
+  getActivePersonalModel,
+  getPersonalModelSampling,
+  learnPersonalExampleFromTurn,
+  prependPersonalModelToMessages,
+} from "@/lib/personalModel";
+import {
   clearActiveMarketplaceAgent,
   getActiveMarketplaceSession,
   setActiveMarketplaceAgent,
@@ -389,6 +396,7 @@ const ChatbotPage = () => {
   useEffect(() => {
     warmHardwareProfile();
     prewarmFastestLocalPath();
+    ensureDefaultPersonalModel();
     void bootstrapCachedLocalModel().then((ok) => {
       if (ok) setLocalModelReady(true);
     });
@@ -494,9 +502,12 @@ const ChatbotPage = () => {
 
   const learnFromTurn = useCallback(
     (userMsg: string, assistantReply: string | undefined, conversationId: string) => {
-      if (!assistantReply?.trim() || !user) return;
-      void extractMemories(userMsg, assistantReply);
-      void extractKnowledge(userMsg, assistantReply, conversationId);
+      if (!assistantReply?.trim()) return;
+      if (user) {
+        void extractMemories(userMsg, assistantReply);
+        void extractKnowledge(userMsg, assistantReply, conversationId);
+      }
+      learnPersonalExampleFromTurn(userMsg, assistantReply);
     },
     [extractMemories, extractKnowledge, user],
   );
@@ -1012,6 +1023,12 @@ const ChatbotPage = () => {
           : Array.isArray(lastUserMsg?.content)
             ? (lastUserMsg.content.find((p) => p.type === "text") as { text?: string } | undefined)?.text?.trim() ?? ""
             : "";
+
+      augmented = prependPersonalModelToMessages(
+        augmented,
+        getActivePersonalModel(),
+        lastUser,
+      );
 
       if (aiProvider === "shadowtalk" && sovereignModel.enabled && lastUser) {
         const learned = await sovereignModel.getLearnedSystemPrompt(lastUser);

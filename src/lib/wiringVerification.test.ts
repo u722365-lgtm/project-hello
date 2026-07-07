@@ -303,4 +303,12 @@ describe("feature wiring verification", () => {
     expect(readSrc("lib/offline/offlineDefaultBrain.ts")).toContain("retrieveOfflineKnowledge");
     expect(readSrc("lib/offline/seedDefaultModelKnowledge.ts")).toContain("AEO_ANSWER_CORPUS");
   });
+
+  it("personal ShadowTalk model wired to chat inference", () => {
+    expect(readSrc("pages/ChatbotPage.tsx")).toContain("prependPersonalModelToMessages");
+    expect(readSrc("pages/ChatbotPage.tsx")).toContain("learnPersonalExampleFromTurn");
+    expect(readSrc("pages/ChatbotPage.tsx")).toContain("ensureDefaultPersonalModel");
+    expect(readSrc("lib/personalModel/types.ts")).toContain("My ShadowTalk");
+    expect(readSrc("components/chat/ModelFineTuning.tsx")).toContain("Personal ShadowTalk Model");
+  });
 });

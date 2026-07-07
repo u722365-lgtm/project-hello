@@ -6,9 +6,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { usePersonalLLMStore } from "@/hooks/usePersonalLLMStore";
+import { syncPersonalExamplesToSovereign } from "@/lib/personalModel";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
 
@@ -30,6 +32,7 @@ interface ModelConfig {
   systemPrompt: string;
   trainingExamples: TrainingExample[];
   isActive: boolean;
+  autoLearnFromChat?: boolean;
   syncedToCloud?: boolean;
 }
 
@@ -67,6 +70,7 @@ export const ModelFineTuning = ({ onClose }: ModelFineTuningProps) => {
     systemPrompt: "You are a helpful AI assistant.",
     trainingExamples: [],
     isActive: false,
+    autoLearnFromChat: true,
   });
 
   const [newExample, setNewExample] = useState({ userMessage: "", assistantResponse: "" });
@@ -107,6 +111,7 @@ export const ModelFineTuning = ({ onClose }: ModelFineTuningProps) => {
                 assistantResponse: ex.assistantResponse || '',
               })),
               isActive: model.is_active || false,
+              autoLearnFromChat: (config.autoLearnFromChat as boolean | undefined) ?? true,
               syncedToCloud: true,
             };
           });
@@ -172,6 +177,10 @@ export const ModelFineTuning = ({ onClose }: ModelFineTuningProps) => {
 
     setModels(updatedModels);
     localStorage.setItem('custom-models', JSON.stringify(updatedModels));
+    void syncPersonalExamplesToSovereign({
+      ...currentModel,
+      autoLearnFromChat: currentModel.autoLearnFromChat ?? true,
+    });
 
     if (currentModel.isActive || currentModel.systemPrompt) {
       void updatePersonalLlmSettings({
@@ -197,6 +206,7 @@ export const ModelFineTuning = ({ onClose }: ModelFineTuningProps) => {
             systemPrompt: currentModel.systemPrompt,
             trainingExamples: currentModel.trainingExamples,
             isActive: currentModel.isActive,
+            autoLearnFromChat: currentModel.autoLearnFromChat ?? true,
           },
         });
 
@@ -271,6 +281,13 @@ export const ModelFineTuning = ({ onClose }: ModelFineTuningProps) => {
     setModels(updated);
     localStorage.setItem('custom-models', JSON.stringify(updated));
     localStorage.setItem('active-custom-model', name);
+    const activated = updated.find((m) => m.name === name);
+    if (activated) {
+      void syncPersonalExamplesToSovereign({
+        ...activated,
+        autoLearnFromChat: activated.autoLearnFromChat ?? true,
+      });
+    }
 
     void updatePersonalLlmSettings({
       preferredModel: name,
@@ -312,8 +329,9 @@ export const ModelFineTuning = ({ onClose }: ModelFineTuningProps) => {
               <Brain className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h2 className="font-semibold">Model Fine-Tuning</h2>
+              <h2 className="font-semibold">Personal ShadowTalk Model</h2>
               <p className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap">
+                Applied to every reply (cloud + offline). Add examples or let it learn from chat.
                 {user ? (
                   <>
                     <span className="inline-flex items-center gap-1">
@@ -402,6 +420,28 @@ export const ModelFineTuning = ({ onClose }: ModelFineTuningProps) => {
                     placeholder="Define your AI's personality and behavior..."
                     className="rounded-xl min-h-[100px]"
                   />
+                </div>
+
+                <div className="flex items-start gap-3 rounded-xl border border-border/50 p-4">
+                  <Checkbox
+                    id="auto-learn-chat"
+                    checked={currentModel.autoLearnFromChat !== false}
+                    onCheckedChange={(checked) =>
+                      setCurrentModel({
+                        ...currentModel,
+                        autoLearnFromChat: checked === true,
+                      })
+                    }
+                  />
+                  <div className="space-y-1">
+                    <Label htmlFor="auto-learn-chat" className="cursor-pointer">
+                      Learn from every chat (personal training)
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      Saves user/assistant turns as private training examples on this device — used
+                      offline and online.
+                    </p>
+                  </div>
                 </div>
 
                 {/* Parameters */}

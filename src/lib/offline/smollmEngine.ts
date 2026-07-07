@@ -7,6 +7,7 @@ import { requestPersistentStorage } from "./opfsModelStore";
 import { configureTransformersEnv, probeWebGPU } from "@/lib/webgpuRuntime";
 import { mergeMessagesForTierA } from "./offlineDefaultBrain";
 import { seedDefaultModelKnowledge } from "./seedDefaultModelKnowledge";
+import { getPersonalModelSampling, getActivePersonalModel } from "@/lib/personalModel";
 
 export const TIER_A_MODEL_ID = "SmolLM2-135M-Instruct-q4f16_1-MLC";
 export const TIER_A_SIZE_MB = 130;
@@ -115,13 +116,14 @@ class SmolLMEngine {
   ): Promise<string> {
     if (!this.engine) throw new Error("SmolLM not loaded");
     const formatted = mergeMessagesForTierA(messages);
+    const sampling = getPersonalModelSampling(getActivePersonalModel());
 
     let full = "";
     const stream = await this.engine.chat.completions.create({
       messages: formatted,
       stream: true,
-      max_tokens: 768,
-      temperature: 0.65,
+      max_tokens: sampling.maxTokens,
+      temperature: sampling.temperature,
     });
 
     for await (const chunk of stream) {
