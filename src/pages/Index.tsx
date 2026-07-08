@@ -2,12 +2,19 @@ import { lazy, Suspense } from "react";
 import LandingNavigation from "@/components/landing/LandingNavigation";
 import HeroSection from "@/components/HeroSection";
 import { SEOHead } from "@/components/SEOHead";
-import { PAGE_SEO } from "@/lib/seo";
+import {
+  PAGE_SEO,
+  getItemListSchema,
+  getSoftwareApplicationSchema,
+  getWebPageSchema,
+  getWebSiteSchema,
+} from "@/lib/seo";
 import LandingPageShell from "@/components/landing/LandingPageShell";
 import LandingSectionReveal from "@/components/landing/LandingSectionReveal";
 import LandingSectionFallback from "@/components/landing/LandingSectionFallback";
 import { LandingMotionProvider } from "@/components/landing/LandingMotionProvider";
 import { PlatformMetricsProvider } from "@/contexts/PlatformMetricsContext";
+import { COMPARISON_PAGES } from "@/lib/comparisonPages";
 
 const BrandManifestoSection = lazy(() => import("@/components/brand/BrandManifestoSection"));
 const CompetitiveComparison = lazy(() => import("@/components/CompetitiveComparison"));
@@ -20,9 +27,33 @@ const CommunityBuildingBlock = lazy(() => import("@/components/growth/CommunityB
 const Footer = lazy(() => import("@/components/Footer"));
 
 const Index = () => {
+  const structuredData = [
+    getWebSiteSchema(),
+    getSoftwareApplicationSchema(),
+    getWebPageSchema({
+      title: PAGE_SEO.home.title,
+      description: PAGE_SEO.home.description,
+      url: PAGE_SEO.home.canonical || "https://www.shadowtalk-ai.com/home",
+      about: [
+        "agentic AI workspace",
+        "AI agents",
+        "offline AI",
+        "deep research",
+        "AI comparison pages",
+      ],
+    }),
+    getItemListSchema(
+      COMPARISON_PAGES.map((page) => ({
+        name: page.title,
+        url: page.canonical,
+        description: page.description,
+      })),
+    ),
+  ];
+
   return (
     <>
-      <SEOHead meta={PAGE_SEO.home} />
+      <SEOHead meta={PAGE_SEO.home} structuredData={structuredData} />
       <PlatformMetricsProvider>
         <LandingPageShell>
           <LandingMotionProvider>

@@ -1,9 +1,13 @@
 import { useEffect } from "react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import { Shield, Cloud, Globe, Code, Lock, Users, DollarSign, Cpu, Network, CheckCircle2, XCircle, Minus, ArrowRight, Zap, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import SEOHead from "@/components/SEOHead";
+import { COMPARISON_PAGES } from "@/lib/comparisonPages";
+import { getBreadcrumbSchema, getItemListSchema, getWebPageSchema } from "@/lib/seo";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -63,8 +67,45 @@ const CompetitivePage = () => {
     document.title = "ShadowTalk AI vs Kimi 2.5 vs Macron AI — Competitive Comparison";
   }, []);
 
+  const structuredData = [
+    getWebPageSchema({
+      title: "ShadowTalk AI competitive comparisons",
+      description:
+        "Comparison hub covering ShadowTalk AI against major AI tools for privacy, execution, research, and product breadth.",
+      url: "https://www.shadowtalk-ai.com/competitive",
+      about: ["AI comparison pages", "ShadowTalk AI", "AI buyers", "agentic AI"],
+    }),
+    getBreadcrumbSchema([
+      { name: "Home", url: "https://www.shadowtalk-ai.com/home" },
+      { name: "Comparisons", url: "https://www.shadowtalk-ai.com/competitive" },
+    ]),
+    getItemListSchema(
+      COMPARISON_PAGES.map((page) => ({
+        name: page.title,
+        url: page.canonical,
+        description: page.description,
+      })),
+    ),
+  ];
+
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        meta={{
+          title: "ShadowTalk AI Comparisons & Alternatives",
+          description:
+            "Structured comparison hub for ShadowTalk AI vs ChatGPT, Claude, and Perplexity. Evaluate privacy, missions, research, pricing, and offline capabilities.",
+          canonical: "https://www.shadowtalk-ai.com/competitive",
+          keywords: [
+            "ShadowTalk AI alternative",
+            "ShadowTalk AI vs ChatGPT",
+            "ShadowTalk AI vs Claude",
+            "ShadowTalk AI vs Perplexity",
+            "AI comparison pages",
+          ],
+        }}
+        structuredData={structuredData}
+      />
       <Navigation />
 
       {/* Hero */}
@@ -161,6 +202,31 @@ const CompetitivePage = () => {
                   ))}
                 </div>
               </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="pb-20 px-4">
+        <div className="container mx-auto max-w-5xl">
+          <motion.h2
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-2xl font-bold mb-8 text-center"
+          >
+            Structured alternatives buyers can compare
+          </motion.h2>
+          <div className="grid md:grid-cols-3 gap-5">
+            {COMPARISON_PAGES.map((page) => (
+              <Link
+                key={page.slug}
+                to={`/compare/${page.slug}`}
+                className="rounded-2xl border border-border/50 bg-card/50 p-6 transition-colors hover:border-primary/30 hover:bg-primary/5"
+              >
+                <h3 className="text-lg font-semibold mb-2">{page.title}</h3>
+                <p className="text-sm text-muted-foreground">{page.description}</p>
+              </Link>
             ))}
           </div>
         </div>

@@ -1,6 +1,6 @@
- import { Helmet } from 'react-helmet-async';
- import { PageMeta, generateMetaTags, getOrganizationSchema } from '@/lib/seo';
- 
+import { Helmet } from 'react-helmet-async';
+import { PageMeta, generateMetaTags, getOrganizationSchema } from '@/lib/seo';
+
 interface SEOHeadProps {
   meta: PageMeta;
   structuredData?: Record<string, unknown> | Record<string, unknown>[];
@@ -9,7 +9,7 @@ interface SEOHeadProps {
 export function SEOHead({ meta, structuredData }: SEOHeadProps) {
   const tags = generateMetaTags(meta);
   const baseUrl = 'https://www.shadowtalk-ai.com';
-  const extraSchemas = structuredData
+  const structuredDataItems = structuredData
     ? Array.isArray(structuredData)
       ? structuredData
       : [structuredData]
@@ -46,9 +46,9 @@ export function SEOHead({ meta, structuredData }: SEOHeadProps) {
        <script type="application/ld+json">
          {JSON.stringify(getOrganizationSchema())}
        </script>
-      {extraSchemas.map((schema, index) => (
-        <script key={index} type="application/ld+json">
-          {JSON.stringify(schema)}
+      {structuredDataItems.map((item, index) => (
+        <script key={`structured-data-${index}`} type="application/ld+json">
+          {JSON.stringify(item)}
         </script>
       ))}
      </Helmet>
