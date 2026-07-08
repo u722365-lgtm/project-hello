@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useHardwareCapabilities } from './useHardwareCapabilities';
 import { useOfflineRAG } from './useOfflineRAG';
 import { useBusinessMemory } from './useBusinessMemory';
+import { TIER_A_MODEL_ID } from '@/lib/offline/webLlmModelCatalog';
 
 // =============================================================================
 // SOVEREIGN AI ENGINE - WebLLM Powered Offline Intelligence
@@ -170,7 +171,7 @@ const FALLBACK_RESPONSES = {
 };
 
 const PROACTIVE_CACHE_KEY = 'shadowtalk_proactive_cache_attempted';
-const PROACTIVE_MODEL_ID = 'SmolLM2-135M-Instruct-q0f16-MLC';
+const PROACTIVE_MODEL_ID = TIER_A_MODEL_ID;
 
 export const useSovereignAI = () => {
   const { capabilities } = useHardwareCapabilities();

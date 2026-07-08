@@ -3,6 +3,7 @@ import { useHardwareCapabilities } from './useHardwareCapabilities';
 import { useOfflineRAG } from './useOfflineRAG';
 import { useBusinessMemory } from './useBusinessMemory';
 import { SHADOWTALK_SELF_KNOWLEDGE_BRIEF } from '@/lib/shadowTalkProductKnowledge';
+import { TIER_A_MODEL_ID } from '@/lib/offline/webLlmModelCatalog';
 
 interface WebLLMMessage {
   role: 'system' | 'user' | 'assistant';
@@ -34,6 +35,12 @@ interface AdvancedOfflineAIState {
 
 // Extended model catalog with capabilities
 const MODEL_CATALOG: Record<string, Omit<ModelInfo, 'status' | 'downloadProgress'>> = {
+  [TIER_A_MODEL_ID]: {
+    id: TIER_A_MODEL_ID,
+    name: 'SmolLM Nano',
+    size: '135M',
+    capabilities: ['chat', 'fast-responses'],
+  },
   'SmolLM2-360M-Instruct-q4f16_1-MLC': {
     id: 'SmolLM2-360M-Instruct-q4f16_1-MLC',
     name: 'SmolLM2 360M',

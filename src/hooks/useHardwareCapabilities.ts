@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { probeWebGPU } from '@/lib/webgpuRuntime';
+import { TIER_A_MODEL_ID } from '@/lib/offline/webLlmModelCatalog';
 
 export interface HardwareCapabilities {
   // GPU
@@ -46,6 +47,7 @@ const MODEL_TIERS = {
     maxSize: '1B',
     maxSizeBytes: 1_000_000_000,
     models: [
+      TIER_A_MODEL_ID,
       'Llama-3.2-1B-Instruct-q4f16_1-MLC',
       'SmolLM2-360M-Instruct-q4f16_1-MLC',
     ],
@@ -227,7 +229,7 @@ export const useHardwareCapabilities = () => {
   }, [capabilities.maxModelSize]);
 
   const getOptimalModel = useCallback((): string => {
-    return capabilities.recommendedModels[0] || 'SmolLM2-360M-Instruct-q4f16_1-MLC';
+    return capabilities.recommendedModels[0] || TIER_A_MODEL_ID;
   }, [capabilities.recommendedModels]);
 
   const getModelForTask = useCallback((task: 'chat' | 'code' | 'reasoning' | 'fast'): string => {
@@ -235,9 +237,7 @@ export const useHardwareCapabilities = () => {
 
     switch (task) {
       case 'fast':
-        // Always use smallest available for speed
-        if (tier === 'low') return 'Llama-3.2-1B-Instruct-q4f16_1-MLC';
-        return 'Llama-3.2-3B-Instruct-q4f16_1-MLC';
+        return tier === 'low' ? TIER_A_MODEL_ID : recommendedModels[0];
       
       case 'code':
         // Qwen and Llama 8B are better for code

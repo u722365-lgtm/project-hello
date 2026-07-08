@@ -1162,7 +1162,6 @@ const ChatbotPage = () => {
           personality,
           isOnline: navigator.onLine,
           onToken: streamToken,
-          gemmaChat: gemmaOffline.chatLocal,
         });
 
         if (offline?.content) {

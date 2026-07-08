@@ -40,6 +40,7 @@ import {
   Clock,
   Trash2,
 } from 'lucide-react';
+import { WEBLLM_MODEL_CATALOG } from '@/lib/offline/webLlmModelCatalog';
 import { useSilentDownloader } from '@/hooks/useSilentDownloader';
 import { cn } from '@/lib/utils';
 
@@ -117,12 +118,9 @@ export const BunkerModeToggle: React.FC<BunkerModeToggleProps> = ({ className })
     }
   };
 
-  // Quick models to queue
-  const quickQueueModels = [
-    { id: 'Llama-3.2-1B-Instruct-q4f16_1-MLC', name: 'Llama 3.2 1B', size: '800 MB' },
-    { id: 'Llama-3.2-3B-Instruct-q4f16_1-MLC', name: 'Llama 3.2 3B', size: '2.5 GB' },
-    { id: 'Llama-3.1-8B-Instruct-q4f16_1-MLC', name: 'Llama 3.1 8B', size: '5.5 GB' },
-  ];
+  const quickQueueModels = WEBLLM_MODEL_CATALOG.filter((m) => m.tier === "small" || m.tier === "large" || m.tier === "xl").map(
+    (m) => ({ id: m.id, name: m.name, size: `${m.sizeMB} MB` }),
+  );
 
   return (
     <>

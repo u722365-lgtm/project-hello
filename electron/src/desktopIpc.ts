@@ -86,7 +86,7 @@ async function pumpChatSse(wc: WebContents, requestId: string, url: string, head
 
 export function registerDesktopIpc(): void {
   ipcMain.handle(CHANNEL.getInfo, async () => {
-    const bundledDir = join(process.resourcesPath, 'offline-models', 'SmolLM2-135M-Instruct-q4f16_1-MLC');
+    const bundledDir = join(process.resourcesPath, 'offline-models', 'SmolLM2-135M-Instruct-q0f16-MLC');
     let offlineModelBundled = false;
     try {
       await access(bundledDir);

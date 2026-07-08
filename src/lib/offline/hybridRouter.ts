@@ -15,6 +15,7 @@ import {
 } from "@/lib/desktop/sovereignMode";
 import { canUseCloudAI } from "@/lib/privacy/deviceOnlyPledge";
 import { isShadowTalkDesktop } from "@/lib/desktopBridge";
+import { isForceOfflineSessionActive } from "./forceOfflineSession";
 import { isAnyLocalModelReady } from "./localChat";
 import {
   getCachedHardwareProfile,
@@ -131,14 +132,18 @@ export function decideRoute(
     };
   }
 
-  if (mode === "local-only") {
+  if (mode === "local-only" || isForceOfflineSessionActive()) {
     if (localBackend !== "none") {
       return localDecision(
-        localBackend === "ollama" ? "Local-only — Ollama" : "Device-only pledge — on-device AI",
+        isForceOfflineSessionActive()
+          ? "Offline-only session — on-device AI"
+          : localBackend === "ollama"
+            ? "Local-only — Ollama"
+            : "Device-only pledge — on-device AI",
         localBackend,
       );
     }
-    if (canUseCloudAI() && isOnline) {
+    if (!isForceOfflineSessionActive() && canUseCloudAI() && isOnline) {
       return {
         target: "cloud",
         reason: "On-device model still downloading — using cloud until ready",

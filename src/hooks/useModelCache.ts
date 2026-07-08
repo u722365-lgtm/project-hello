@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { ALL_WEBLLM_MODEL_IDS } from '@/lib/offline/webLlmModelCatalog';
 
 // =============================================================================
 // MODEL CACHE MANAGER - Unified cache verification for offline models
@@ -24,16 +25,10 @@ interface ModelCacheState {
   lastChecked: string | null;
 }
 
-// WebLLM model IDs we support
+// WebLLM model IDs we support (catalog + common alternates)
 const SUPPORTED_MODELS = [
-  'Llama-3.2-1B-Instruct-q4f16_1-MLC',
-  'Llama-3.2-3B-Instruct-q4f16_1-MLC',
-  'Llama-3.1-8B-Instruct-q4f16_1-MLC',
-  'Mistral-7B-Instruct-v0.3-q4f16_1-MLC',
+  ...ALL_WEBLLM_MODEL_IDS,
   'Qwen2.5-7B-Instruct-q4f16_1-MLC',
-  'SmolLM2-360M-Instruct-q4f16_1-MLC',
-  'SmolLM2-135M-Instruct-q0f16-MLC',
-  'TinyLlama-1.1B-Chat-v1.0-q4f16_1-MLC',
 ];
 
 export const useModelCache = () => {
@@ -197,7 +192,7 @@ export const useModelCache = () => {
         'Llama-3.2-3B-Instruct-q4f16_1-MLC',
         'Llama-3.2-1B-Instruct-q4f16_1-MLC',
         'SmolLM2-360M-Instruct-q4f16_1-MLC',
-        'TinyLlama-1.1B-Chat-v1.0-q4f16_1-MLC',
+        'TinyLlama-1.1B-Chat-v1.0-q4f16_1-MLC-1k',
       ],
     };
 
