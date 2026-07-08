@@ -13,7 +13,7 @@ export function BackToHomeButton({ className }: { className?: string }) {
     () => (location.pathname || "/").replace(/\/+$/, "") || "/",
     [location.pathname],
   );
-  const isHome = path === "/home";
+  const isHome = path === "/" || path === "/home";
   const isChat = path === "/chatbot";
 
   if (isHome) return null;
@@ -38,7 +38,7 @@ export function BackToHomeButton({ className }: { className?: string }) {
         type="button"
         variant="outline"
         size="sm"
-        onClick={() => navigate("/home")}
+        onClick={() => navigate("/")}
         aria-label="Back to home"
         className={cn(
           "gap-2 rounded-full border-border/60 bg-background/70 backdrop-blur-md shadow-sm",
