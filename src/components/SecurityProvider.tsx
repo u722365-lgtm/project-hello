@@ -1,74 +1,28 @@
-import React, { useEffect, useCallback, useRef } from 'react';
-import { useAuth } from '@/components/AuthProvider';
+import React, { useEffect } from 'react';
 import { useSessionTracking } from '@/hooks/useSessionTracking';
-import { toast } from 'sonner';
-
-const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes inactivity
-const ACTIVITY_EVENTS = ['mousedown', 'keydown', 'scroll', 'touchstart'] as const;
 
 /**
  * SecurityProvider — Global client-side security hardening:
- * 1. Auto-logout on inactivity (30 min)
- * 2. Tab-blur session warning
- * 3. Anti-tampering: freeze critical globals
- * 4. CSP meta tag injection
- * 5. Referrer policy enforcement
+ * 1. Device session heartbeat (remote revocation from /sessions only)
+ * 2. Anti-tampering monitoring
+ * 3. CSP / referrer meta tags
+ *
+ * Sessions stay signed in until the user clicks Log out — no inactivity timeout.
  */
 export const SecurityProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, signOut } = useAuth();
   useSessionTracking();
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const warningRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // === 1. Session timeout on inactivity ===
-  const resetTimer = useCallback(() => {
-    if (!user) return;
-
-    if (warningRef.current) clearTimeout(warningRef.current);
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-
-    // Warn 2 minutes before timeout
-    warningRef.current = setTimeout(() => {
-      toast.warning('Session expiring in 2 minutes due to inactivity', {
-        duration: 10000,
-        id: 'session-warning',
-      });
-    }, SESSION_TIMEOUT_MS - 2 * 60 * 1000);
-
-    timeoutRef.current = setTimeout(() => {
-      toast.error('Session expired — signed out for security');
-      signOut();
-    }, SESSION_TIMEOUT_MS);
-  }, [user, signOut]);
-
-  useEffect(() => {
-    if (!user) return;
-
-    resetTimer();
-
-    const handler = () => resetTimer();
-    ACTIVITY_EVENTS.forEach(evt => window.addEventListener(evt, handler, { passive: true }));
-
-    return () => {
-      ACTIVITY_EVENTS.forEach(evt => window.removeEventListener(evt, handler));
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      if (warningRef.current) clearTimeout(warningRef.current);
-    };
-  }, [user, resetTimer]);
-
-  // === 2. Prototype pollution prevention (logging only) ===
-  // Note: Object.freeze on prototypes breaks many libraries, so we log instead
+  // === Prototype pollution prevention (logging only) ===
   useEffect(() => {
     if (import.meta.env.PROD) {
       console.info('[Security] Prototype pollution monitoring active');
     }
   }, []);
 
-  // === 3. Block right-click context menu in production ===
+  // === Block right-click context menu in production ===
   useEffect(() => {
     if (import.meta.env.PROD) {
       const blockContextMenu = (e: MouseEvent) => {
-        // Allow on input/textarea for usability
         const tag = (e.target as HTMLElement)?.tagName;
         if (tag === 'INPUT' || tag === 'TEXTAREA') return;
         e.preventDefault();
@@ -78,7 +32,7 @@ export const SecurityProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   }, []);
 
-  // === 4. Detect and warn about devtools (production only) ===
+  // === Detect and warn about devtools (production only) ===
   useEffect(() => {
     if (!import.meta.env.PROD) return;
 
@@ -95,9 +49,8 @@ export const SecurityProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return () => clearInterval(interval);
   }, []);
 
-  // === 5. Inject security meta tags ===
+  // === Inject security meta tags ===
   useEffect(() => {
-    // Referrer policy
     let referrerMeta = document.querySelector('meta[name="referrer"]');
     if (!referrerMeta) {
       referrerMeta = document.createElement('meta');
@@ -106,7 +59,6 @@ export const SecurityProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
     referrerMeta.setAttribute('content', 'strict-origin-when-cross-origin');
 
-    // X-Content-Type-Options equivalent via meta
     let xContentType = document.querySelector('meta[http-equiv="X-Content-Type-Options"]');
     if (!xContentType) {
       xContentType = document.createElement('meta');
@@ -116,12 +68,11 @@ export const SecurityProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   }, []);
 
-  // === 6. Clickjacking detection (production only, skip known hosts) ===
+  // === Clickjacking detection (production only, skip known hosts) ===
   useEffect(() => {
     if (!import.meta.env.PROD) return;
     if (window.self !== window.top) {
       try {
-        // Only break out if not in a known trusted frame
         const parentOrigin = document.referrer;
         const trusted = ['lovable.app', 'lovableproject.com', 'shadowtalk-ai.com'];
         const isTrusted = trusted.some(h => parentOrigin.includes(h));
@@ -130,7 +81,6 @@ export const SecurityProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           console.error('Clickjacking detected — content hidden');
         }
       } catch {
-        // Cross-origin frame
         document.body.style.display = 'none';
       }
     }

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
+import { markExplicitSignOut } from "@/lib/persistentAuth";
 
 const SESSION_TOKEN_KEY = "shadowtalk_session_token";
 const HEARTBEAT_MS = 60_000;
@@ -115,7 +116,7 @@ export function useSessionTracking() {
           .maybeSingle();
 
         if (data?.revoked_at) {
-          // Remote revocation → sign out
+          markExplicitSignOut();
           await supabase.auth.signOut();
           localStorage.removeItem(SESSION_TOKEN_KEY);
           window.location.href = "/auth";

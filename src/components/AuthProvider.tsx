@@ -190,11 +190,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     document.addEventListener('visibilitychange', onVisible);
     window.addEventListener('focus', onVisible);
 
+    const refreshInterval = setInterval(() => {
+      void refreshSessionIfNeeded();
+    }, 5 * 60 * 1000);
+
     return () => {
       mounted = false;
       subscription.unsubscribe();
       document.removeEventListener('visibilitychange', onVisible);
       window.removeEventListener('focus', onVisible);
+      clearInterval(refreshInterval);
     };
   }, [applySession, checkSubscription, checkAndAssignAdminRole]);
 
