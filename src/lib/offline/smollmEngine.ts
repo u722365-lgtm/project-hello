@@ -98,7 +98,11 @@ class SmolLMEngine {
       this.engine = engine as unknown as typeof this.engine;
       report({ progress: 1, text: "Offline AI ready" });
       localStorage.setItem("shadowtalk_tier_a_model", TIER_A_MODEL_ID);
-      void seedDefaultModelKnowledge();
+      if (typeof requestIdleCallback !== "undefined") {
+        requestIdleCallback(() => void seedDefaultModelKnowledge(), { timeout: 15000 });
+      } else {
+        setTimeout(() => void seedDefaultModelKnowledge(), 8000);
+      }
       return true;
     } catch (e) {
       console.error("[SmolLM]", e);

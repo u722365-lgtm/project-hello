@@ -19,6 +19,8 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+import { isForceOfflineSessionActive, getActiveQuickModelId } from '@/lib/offline/forceOfflineSession';
+import { QUICK_OFFLINE_MODELS } from '@/lib/offline/quickOfflineModels';
 
 interface OfflineModeIndicatorProps {
   compact?: boolean;
@@ -28,10 +30,13 @@ export const OfflineModeIndicator: React.FC<OfflineModeIndicatorProps> = ({ comp
   const { isOffline, isOfflineModeAvailable, cachedConversations, offlineMessagesQueue } = useOfflineMode();
   const { mode, activeModel, isLoading, loadProgress, encryptionEnabled, isReady } = useSovereignAI();
 
-  if (!isOfflineModeAvailable && !isOffline && mode === 'online') return null;
+  const forceOffline = isForceOfflineSessionActive();
+  const quickModel = QUICK_OFFLINE_MODELS.find((m) => m.id === getActiveQuickModelId());
+
+  if (!isOfflineModeAvailable && !isOffline && mode === 'online' && !forceOffline) return null;
 
   // Determine display mode
-  const isStealthMode = mode === 'stealth' || isOffline;
+  const isStealthMode = forceOffline || mode === 'stealth' || isOffline;
   const isHybridMode = mode === 'hybrid' && !isOffline;
 
   const getIndicatorStyle = () => {
@@ -40,8 +45,8 @@ export const OfflineModeIndicator: React.FC<OfflineModeIndicatorProps> = ({ comp
         bgColor: 'bg-emerald-500/15 border-emerald-500/40',
         textColor: 'text-emerald-500',
         icon: isLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ShieldCheck className="h-3.5 w-3.5" />,
-        label: 'Stealth Vault',
-        sublabel: activeModel ? activeModel.name : 'Offline Mode',
+        label: forceOffline ? 'Offline only' : 'Stealth Vault',
+        sublabel: quickModel?.name ?? (activeModel ? activeModel.name : 'Offline Mode'),
       };
     }
     if (isHybridMode && isReady) {

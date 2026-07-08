@@ -5,7 +5,7 @@
  */
 
 import { getSmolLMEngine } from "./smollmEngine";
-import { onLocalModelReady } from "@/lib/privacy/deviceOnlyPledge";
+import { getGemmaEngine } from "./gemmaEngine";
 import { dispatchLocalModelReady } from "@/lib/privacy/localInferenceReady";
 
 export const SILENT_TIER_A_KEY = "shadowtalk_offline_silent_install";
@@ -28,21 +28,19 @@ export function startSilentTierAInstall(): void {
   enableSilentTierAInstall();
   const engine = getSmolLMEngine();
   if (engine.isReady) {
-    // Already loaded — make sure routing is switched to local.
-    onLocalModelReady();
     dispatchLocalModelReady();
     return;
   }
   if (engine.isLoading) return;
+  if (getGemmaEngine().isLoading) return;
 
   engine
     .ensureLoaded()
     .then((ok) => {
       if (!ok) return;
       localStorage.setItem(BOOTSTRAP_DONE_KEY, "1");
-      // Auto cut-over: stop using cloud, prefer on-device from now on.
-      onLocalModelReady();
       dispatchLocalModelReady();
+      // Routing flip happens only when user taps Configure on Profile quick models.
     })
     .catch((e) => console.warn("[Tier A silent]", e));
 }

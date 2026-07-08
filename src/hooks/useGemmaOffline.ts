@@ -30,8 +30,8 @@ import {
 } from "@/lib/offline/hybridRouter";
 import { requestPersistentStorage } from "@/lib/offline/opfsModelStore";
 import { ACCELERATION_CHANGE_EVENT } from "@/lib/webgpuRuntime";
-import { onLocalModelReady } from "@/lib/privacy/deviceOnlyPledge";
 import { dispatchLocalModelReady } from "@/lib/privacy/localInferenceReady";
+import { setHeavyDownloadInProgress } from "@/lib/offline/forceOfflineSession";
 
 export interface UseGemmaOfflineState {
   isOnline: boolean;
@@ -85,7 +85,6 @@ export function useGemmaOffline() {
         setActiveDevice(engine.activeDevice);
         setActiveDeviceLabel(engine.activeDeviceLabel);
         localStorage.removeItem("shadowtalk_offline_autoresume");
-        onLocalModelReady();
         dispatchLocalModelReady();
       }
     });
@@ -109,12 +108,12 @@ export function useGemmaOffline() {
       if (engine.isLoading) return false;
       setIsLoading(true);
       setError(null);
+      setHeavyDownloadInProgress(true);
       try {
         await requestPersistentStorage();
         await engine.load(modelKey, (p) => setProgress(p));
         setIsReady(true);
         localStorage.removeItem("shadowtalk_offline_autoresume");
-        onLocalModelReady();
         dispatchLocalModelReady();
         return true;
       } catch (err) {
@@ -123,6 +122,7 @@ export function useGemmaOffline() {
         setIsReady(false);
         return false;
       } finally {
+        setHeavyDownloadInProgress(false);
         setIsLoading(false);
       }
     },

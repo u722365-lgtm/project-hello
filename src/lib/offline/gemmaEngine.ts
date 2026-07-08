@@ -24,6 +24,7 @@ import {
   type ComputeDevice,
 } from "@/lib/webgpuRuntime";
 import { buildHardwareProfile, detectHardwareProfile } from "@/lib/hardwareIntelligence";
+import { setHeavyDownloadInProgress } from "./forceOfflineSession";
 
 export type EngineCapabilities = {
   webgpu: boolean;
@@ -168,6 +169,7 @@ export class GemmaEngine {
 
     this.loading = true;
     this.modelKey = modelKey;
+    setHeavyDownloadInProgress(true);
     const off = onProgress ? this.subscribe(onProgress) : null;
     const modelId = GEMMA_MODELS[modelKey].id;
 
@@ -234,6 +236,7 @@ export class GemmaEngine {
       } finally {
         this.loading = false;
         this.currentLoad = null;
+        setHeavyDownloadInProgress(false);
         off?.();
       }
     })();

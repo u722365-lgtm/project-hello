@@ -107,7 +107,8 @@ export const OfflineAISettings = () => {
           </Badge>
         </div>
         <CardDescription>
-          Run a Gemma model fully on your device for offline use. Downloads happen only when you ask.
+          Optional larger Gemma models (1.7–3.2 GB). For reliable offline chat, use <strong>Quick offline models</strong> above first.
+          Large downloads can fail near 85% on devices with limited GPU memory.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
