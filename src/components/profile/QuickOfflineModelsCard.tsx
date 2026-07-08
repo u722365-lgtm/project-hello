@@ -20,6 +20,7 @@ export function QuickOfflineModelsCard() {
     download,
     configureForChat,
     disconnectCloud,
+    lastError,
     isModelReady,
   } = useQuickOfflineModels();
 
@@ -47,7 +48,7 @@ export function QuickOfflineModelsCard() {
           const isLoading = loadingId === model.id;
           const isActive = activeModelId === model.id && forceOffline;
           const isReady = isModelReady(model.id);
-          const showProgress = isLoading && progress?.modelId === model.id;
+          const showProgress = isLoading && progress != null;
 
           return (
             <div
@@ -125,6 +126,12 @@ export function QuickOfflineModelsCard() {
           <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={disconnectCloud}>
             Re-enable cloud chat (turn off offline-only)
           </Button>
+        )}
+
+        {lastError && (
+          <p className="text-xs text-destructive rounded-md border border-destructive/30 bg-destructive/5 p-3">
+            {lastError}
+          </p>
         )}
 
         <p className="text-[11px] text-muted-foreground">

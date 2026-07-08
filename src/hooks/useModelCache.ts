@@ -32,7 +32,7 @@ const SUPPORTED_MODELS = [
   'Mistral-7B-Instruct-v0.3-q4f16_1-MLC',
   'Qwen2.5-7B-Instruct-q4f16_1-MLC',
   'SmolLM2-360M-Instruct-q4f16_1-MLC',
-  'SmolLM2-135M-Instruct-q4f16_1-MLC',
+  'SmolLM2-135M-Instruct-q0f16-MLC',
   'TinyLlama-1.1B-Chat-v1.0-q4f16_1-MLC',
 ];
 

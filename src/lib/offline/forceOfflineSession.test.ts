@@ -16,9 +16,9 @@ describe("forceOfflineSession", () => {
   });
 
   it("activates offline session and blocks cloud routing pref", () => {
-    activateForceOfflineSession("SmolLM2-135M-Instruct-q4f16_1-MLC");
+    activateForceOfflineSession("SmolLM2-135M-Instruct-q0f16-MLC");
     expect(isForceOfflineSessionActive()).toBe(true);
-    expect(getActiveQuickModelId()).toBe("SmolLM2-135M-Instruct-q4f16_1-MLC");
+    expect(getActiveQuickModelId()).toBe("SmolLM2-135M-Instruct-q0f16-MLC");
     expect(getRoutingMode()).toBe("local-only");
   });
 

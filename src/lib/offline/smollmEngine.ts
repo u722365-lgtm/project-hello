@@ -9,7 +9,9 @@ import { mergeMessagesForTierA } from "./offlineDefaultBrain";
 import { seedDefaultModelKnowledge } from "./seedDefaultModelKnowledge";
 import { getPersonalModelSampling, getActivePersonalModel } from "@/lib/personalModel";
 
-export const TIER_A_MODEL_ID = "SmolLM2-135M-Instruct-q4f16_1-MLC";
+/** WebLLM prebuilt id — q4f16_1 is not shipped; q0f16 is the ~130MB nano tier. */
+export const TIER_A_MODEL_ID = "SmolLM2-135M-Instruct-q0f16-MLC";
+export const TIER_A_FALLBACK_MODEL_ID = "SmolLM2-135M-Instruct-q0f32-MLC";
 export const TIER_A_SIZE_MB = 130;
 
 export type SmolLoadProgress = {
@@ -79,31 +81,45 @@ class SmolLMEngine {
       });
 
       const webllm = await import("@mlc-ai/web-llm");
-      const cached = await webllm.hasModelInCache(TIER_A_MODEL_ID).catch(() => false);
+      const modelIds = [TIER_A_MODEL_ID, TIER_A_FALLBACK_MODEL_ID];
+      let lastErr: unknown;
 
-      report({
-        progress: cached ? 0.4 : 0.1,
-        text: cached ? "Starting cached model…" : `Downloading ${TIER_A_SIZE_MB}MB model…`,
-      });
-
-      const engine = await webllm.CreateMLCEngine(TIER_A_MODEL_ID, {
-        initProgressCallback: (r: { progress: number; text: string }) => {
+      for (const modelId of modelIds) {
+        try {
+          const cached = await webllm.hasModelInCache(modelId).catch(() => false);
           report({
-            progress: 0.1 + r.progress * 0.85,
-            text: r.text || "Preparing model…",
+            progress: cached ? 0.4 : 0.1,
+            text: cached
+              ? `Starting cached ${modelId}…`
+              : `Downloading ${TIER_A_SIZE_MB}MB model…`,
           });
-        },
-      });
 
-      this.engine = engine as unknown as typeof this.engine;
-      report({ progress: 1, text: "Offline AI ready" });
-      localStorage.setItem("shadowtalk_tier_a_model", TIER_A_MODEL_ID);
-      if (typeof requestIdleCallback !== "undefined") {
-        requestIdleCallback(() => void seedDefaultModelKnowledge(), { timeout: 15000 });
-      } else {
-        setTimeout(() => void seedDefaultModelKnowledge(), 8000);
+          const engine = await webllm.CreateMLCEngine(modelId, {
+            initProgressCallback: (r: { progress: number; text: string }) => {
+              report({
+                progress: 0.1 + r.progress * 0.85,
+                text: r.text || "Preparing model…",
+              });
+            },
+          });
+
+          this.engine = engine as unknown as typeof this.engine;
+          report({ progress: 1, text: "Offline AI ready" });
+          localStorage.setItem("shadowtalk_tier_a_model", modelId);
+          if (typeof requestIdleCallback !== "undefined") {
+            requestIdleCallback(() => void seedDefaultModelKnowledge(), { timeout: 15000 });
+          } else {
+            setTimeout(() => void seedDefaultModelKnowledge(), 8000);
+          }
+          return true;
+        } catch (e) {
+          lastErr = e;
+          console.warn(`[SmolLM] ${modelId} failed, trying fallback…`, e);
+          this.engine = null;
+        }
       }
-      return true;
+
+      throw lastErr ?? new Error("All SmolLM variants failed to load");
     } catch (e) {
       console.error("[SmolLM]", e);
       this.lastLoadError = e instanceof Error ? e.message : "Load failed";
@@ -156,7 +172,10 @@ export function getSmolLMEngine(): SmolLMEngine {
 export async function isTierAModelCached(): Promise<boolean> {
   try {
     const webllm = await import("@mlc-ai/web-llm");
-    return await webllm.hasModelInCache(TIER_A_MODEL_ID);
+    for (const id of [TIER_A_MODEL_ID, TIER_A_FALLBACK_MODEL_ID]) {
+      if (await webllm.hasModelInCache(id).catch(() => false)) return true;
+    }
+    return false;
   } catch {
     return false;
   }

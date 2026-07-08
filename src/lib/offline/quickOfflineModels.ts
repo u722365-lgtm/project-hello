@@ -3,8 +3,9 @@
  */
 
 import { requestPersistentStorage } from "./opfsModelStore";
-import { configureTransformersEnv, probeWebGPU } from "@/lib/webgpuRuntime";
-import { TIER_A_MODEL_ID, getSmolLMEngine } from "./smollmEngine";
+import { probeWebGPU } from "@/lib/webgpuRuntime";
+import { TIER_A_MODEL_ID, TIER_A_FALLBACK_MODEL_ID, getSmolLMEngine } from "./smollmEngine";
+import { getGemmaEngine } from "./gemmaEngine";
 import { setHeavyDownloadInProgress } from "./forceOfflineSession";
 import { mergeMessagesForTierA } from "./offlineDefaultBrain";
 import { getPersonalModelSampling, getActivePersonalModel } from "@/lib/personalModel";
@@ -101,12 +102,19 @@ class QuickOfflineEngine {
     modelId: string,
     onProgress?: (p: QuickDownloadProgress) => void,
   ): Promise<boolean> {
-    if (modelId === TIER_A_MODEL_ID) {
+    const isTierA =
+      modelId === TIER_A_MODEL_ID || modelId === TIER_A_FALLBACK_MODEL_ID;
+
+    if (isTierA) {
       setHeavyDownloadInProgress(true);
       try {
+        if (getGemmaEngine().isLoading) {
+          this.lastError = "Large model download in progress — wait or cancel it first.";
+          return false;
+        }
         const ok = await getSmolLMEngine().ensureLoaded((p) => {
           const progress = {
-            modelId,
+            modelId: TIER_A_MODEL_ID,
             percent: Math.round(p.progress * 100),
             message: p.text,
           };
@@ -114,8 +122,11 @@ class QuickOfflineEngine {
           onProgress?.(progress);
         });
         if (ok) {
-          this.activeModelId = modelId;
+          this.activeModelId = TIER_A_MODEL_ID;
           this.engine = null;
+          this.lastError = null;
+        } else {
+          this.lastError = getSmolLMEngine().loadError ?? "SmolLM download failed";
         }
         return ok;
       } finally {
@@ -147,7 +158,13 @@ class QuickOfflineEngine {
 
     try {
       await requestPersistentStorage();
-      await configureTransformersEnv();
+      if (getGemmaEngine().isReady || getGemmaEngine().isLoading) {
+        try {
+          await getGemmaEngine().dispose();
+        } catch {
+          /* free GPU memory for WebLLM */
+        }
+      }
       const gpu = await probeWebGPU();
       report(
         2,
@@ -224,7 +241,9 @@ class QuickOfflineEngine {
   }
 
   isModelReady(modelId: string): boolean {
-    if (modelId === TIER_A_MODEL_ID) return getSmolLMEngine().isReady;
+    if (modelId === TIER_A_MODEL_ID || modelId === TIER_A_FALLBACK_MODEL_ID) {
+      return getSmolLMEngine().isReady;
+    }
     return this.activeModelId === modelId && !!this.engine;
   }
 }

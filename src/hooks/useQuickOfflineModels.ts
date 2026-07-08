@@ -25,6 +25,7 @@ export function useQuickOfflineModels() {
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [activeModelId, setActiveModelId] = useState<string | null>(getActiveQuickModelId());
   const [forceOffline, setForceOffline] = useState(isForceOfflineSessionActive());
+  const [lastError, setLastError] = useState<string | null>(null);
 
   const refreshCached = useCallback(async () => {
     const next: Record<string, boolean> = {};
@@ -51,18 +52,22 @@ export function useQuickOfflineModels() {
   const download = useCallback(
     async (model: QuickOfflineModel) => {
       setLoadingId(model.id);
+      setLastError(null);
       const ok = await engine.download(model.id, setProgress);
       setLoadingId(null);
       await refreshCached();
       if (ok) {
+        setLastError(null);
         toast({
           title: "Download complete",
           description: `${model.name} is cached on this device. Tap Configure to use it in chat.`,
         });
       } else {
+        const msg = engine.error ?? "Download failed. Check connection and try SmolLM Nano first.";
+        setLastError(msg);
         toast({
           title: "Download failed",
-          description: engine.error ?? "Try a smaller model (SmolLM Nano) first.",
+          description: msg,
           variant: "destructive",
         });
       }
@@ -132,6 +137,7 @@ export function useQuickOfflineModels() {
     configureForChat,
     disconnectCloud,
     refreshCached,
+    lastError,
     isModelReady: (id: string) => engine.isModelReady(id),
   };
 }

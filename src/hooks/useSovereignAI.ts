@@ -49,7 +49,7 @@ interface SovereignAIState {
 const SOVEREIGN_MODELS: SovereignModel[] = [
   // Nano tier - Ultra fast loading (~130MB)
   {
-    id: 'SmolLM2-135M-Instruct-q4f16_1-MLC',
+    id: 'SmolLM2-135M-Instruct-q0f16-MLC',
     name: 'SmolLM2 Nano',
     description: 'Ultra-fast, instant loading. Great for simple tasks.',
     size: '135M',
@@ -170,7 +170,7 @@ const FALLBACK_RESPONSES = {
 };
 
 const PROACTIVE_CACHE_KEY = 'shadowtalk_proactive_cache_attempted';
-const PROACTIVE_MODEL_ID = 'SmolLM2-135M-Instruct-q4f16_1-MLC';
+const PROACTIVE_MODEL_ID = 'SmolLM2-135M-Instruct-q0f16-MLC';
 
 export const useSovereignAI = () => {
   const { capabilities } = useHardwareCapabilities();
