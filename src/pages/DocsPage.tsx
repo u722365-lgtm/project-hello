@@ -2,10 +2,18 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   DOC_TAGLINE,
+  DOC_OVERVIEW,
+  DOC_PRODUCT_PILLARS,
   DOC_QUICK_START,
   DOC_ROUTES,
   DOC_WORKSPACE_GUIDE,
   DOC_FEATURES,
+  DOC_TOOLS,
+  DOC_MISSION_CONTROL,
+  DOC_PRIVACY_SECTIONS,
+  DOC_PRICING_TIERS,
+  DOC_DESKTOP,
+  DOC_GLOSSARY,
   DOC_FAQ,
   DOC_TROUBLESHOOTING,
   docSearchBlob,
@@ -118,55 +126,55 @@ const CodeExample = ({ title, code, language = "bash" }: { title: string; code: 
   </div>
 );
 
+type PlanCell = boolean | string;
+
+const PlanCellValue = ({ value, accent }: { value: PlanCell; accent?: "primary" | "secondary" }) => {
+  if (typeof value === "boolean") {
+    return value ? (
+      <Check className={`h-5 w-5 mx-auto ${accent === "secondary" ? "text-secondary" : "text-primary"}`} />
+    ) : (
+      <X className="h-5 w-5 text-muted-foreground/30 mx-auto" />
+    );
+  }
+  const textClass =
+    accent === "secondary" ? "text-secondary font-medium" : accent === "primary" ? "text-primary font-medium" : "text-muted-foreground";
+  return <span className={textClass}>{value}</span>;
+};
+
 const FeatureComparison = () => (
   <div className="overflow-x-auto">
-    <table className="w-full border-collapse">
+    <table className="w-full border-collapse text-sm">
       <thead>
         <tr className="border-b border-border/30">
-          <th className="text-left p-4 text-foreground/80">Feature</th>
-          <th className="text-center p-4 text-foreground/80">Free</th>
-          <th className="text-center p-4 text-primary font-bold">Pro</th>
-          <th className="text-center p-4 text-secondary font-bold">Elite</th>
+          <th className="text-left p-3 text-foreground/80">Feature</th>
+          <th className="text-center p-3 text-foreground/80">Free</th>
+          <th className="text-center p-3 text-primary font-bold">Pro</th>
+          <th className="text-center p-3 text-foreground/80 font-bold">Premium</th>
+          <th className="text-center p-3 text-secondary font-bold">Elite</th>
         </tr>
       </thead>
       <tbody>
         {[
-          { feature: "Daily Messages", free: "50", pro: "Unlimited", elite: "Unlimited" },
-          { feature: "AI Chat", free: true, pro: true, elite: true },
-          { feature: "ShadowBrowser", free: true, pro: true, elite: true },
-          { feature: "Browse Together", free: true, pro: true, elite: true },
-          { feature: "Voice Input", free: true, pro: true, elite: true },
-          { feature: "Voice Output (TTS)", free: false, pro: true, elite: true },
-          { feature: "Image Generation", free: false, pro: true, elite: true },
-          { feature: "Code Canvas", free: false, pro: true, elite: true },
-          { feature: "Deep Research", free: false, pro: true, elite: true },
-          { feature: "Chat Export", free: false, pro: true, elite: true },
-          { feature: "Collaborative Rooms", free: false, pro: true, elite: true },
-          { feature: "File Uploads", free: "5MB", pro: "50MB", elite: "500MB" },
-          { feature: "Offline Mode", free: false, pro: false, elite: true },
-          { feature: "Stealth Vault", free: false, pro: false, elite: true },
-          { feature: "Model Fine-Tuning", free: false, pro: false, elite: true },
-          { feature: "White-Label Branding", free: false, pro: false, elite: true },
-          { feature: "API Access", free: false, pro: false, elite: true },
-          { feature: "Priority Support", free: false, pro: true, elite: "24/7" },
+          { feature: "Daily messages", free: "50", pro: "Unlimited", premium: "Unlimited", elite: "Unlimited" },
+          { feature: "Image generation", free: "4/day", pro: "20/day", premium: "50/day", elite: "Unlimited" },
+          { feature: "Deep research", free: "5/day", pro: "20/day", premium: "50/day", elite: "Unlimited" },
+          { feature: "Voice sessions", free: "3/day", pro: "Unlimited", premium: "Unlimited", elite: "Unlimited" },
+          { feature: "File uploads", free: "3/day", pro: "50/day", premium: "Unlimited", elite: "Unlimited" },
+          { feature: "ShadowBrowser & IDE", free: true, pro: true, premium: true, elite: true },
+          { feature: "Mission Control (S.E.E.)", free: "3/mo", pro: "15/mo", premium: "30/mo", elite: "50/mo" },
+          { feature: "Collaborative rooms", free: false, pro: true, premium: true, elite: true },
+          { feature: "Chat export", free: false, pro: true, premium: true, elite: true },
+          { feature: "Offline / on-device AI", free: false, pro: false, premium: false, elite: true },
+          { feature: "Stealth Vault", free: false, pro: false, premium: false, elite: true },
+          { feature: "API access", free: false, pro: false, premium: false, elite: true },
+          { feature: "Priority support", free: false, pro: "<4h", premium: "<2h", elite: "24/7" },
         ].map((row, i) => (
           <tr key={i} className="border-b border-border/20 hover:bg-primary/5 transition-colors">
-            <td className="p-4 font-medium text-foreground/90">{row.feature}</td>
-            <td className="text-center p-4">
-              {typeof row.free === 'boolean' ? (
-                row.free ? <Check className="h-5 w-5 text-primary mx-auto" /> : <X className="h-5 w-5 text-muted-foreground/30 mx-auto" />
-              ) : <span className="text-muted-foreground">{row.free}</span>}
-            </td>
-            <td className="text-center p-4">
-              {typeof row.pro === 'boolean' ? (
-                row.pro ? <Check className="h-5 w-5 text-primary mx-auto" /> : <X className="h-5 w-5 text-muted-foreground/30 mx-auto" />
-              ) : <span className="text-primary font-medium">{row.pro}</span>}
-            </td>
-            <td className="text-center p-4">
-              {typeof row.elite === 'boolean' ? (
-                row.elite ? <Check className="h-5 w-5 text-secondary mx-auto" /> : <X className="h-5 w-5 text-muted-foreground/30 mx-auto" />
-              ) : <span className="text-secondary font-medium">{row.elite}</span>}
-            </td>
+            <td className="p-3 font-medium text-foreground/90">{row.feature}</td>
+            <td className="text-center p-3"><PlanCellValue value={row.free} /></td>
+            <td className="text-center p-3"><PlanCellValue value={row.pro} accent="primary" /></td>
+            <td className="text-center p-3"><PlanCellValue value={row.premium} /></td>
+            <td className="text-center p-3"><PlanCellValue value={row.elite} accent="secondary" /></td>
           </tr>
         ))}
       </tbody>
@@ -222,23 +230,78 @@ const DocsPage = () => {
     [q],
   );
 
+  const tools = useMemo(
+    () => DOC_TOOLS.filter((t) => matches(t.name) || matches(t.trigger) || matches(t.description) || matches(t.plan ?? "")),
+    [q],
+  );
+
+  const overviewSections = useMemo(
+    () => DOC_OVERVIEW.filter((o) => matches(o.title) || o.paragraphs.some(matches)),
+    [q],
+  );
+
+  const privacySections = useMemo(
+    () => DOC_PRIVACY_SECTIONS.filter((p) => matches(p.title) || p.items.some(matches)),
+    [q],
+  );
+
+  const pricingTiers = useMemo(
+    () => DOC_PRICING_TIERS.filter((p) => matches(p.name) || matches(p.tagline) || p.highlights.some(matches)),
+    [q],
+  );
+
+  const glossary = useMemo(
+    () => DOC_GLOSSARY.filter((g) => matches(g.term) || matches(g.definition)),
+    [q],
+  );
+
+  const missionSteps = useMemo(
+    () => DOC_MISSION_CONTROL.filter((m) => matches(m.title) || matches(m.description)),
+    [q],
+  );
+
+  const desktopSections = useMemo(
+    () => DOC_DESKTOP.filter((d) => matches(d.title) || d.items.some(matches)),
+    [q],
+  );
+
+  const routeGroups = useMemo(() => {
+    const groups = new Map<string, typeof docRoutes>();
+    for (const route of docRoutes) {
+      const group = route.group ?? "Other";
+      const list = groups.get(group) ?? [];
+      list.push(route);
+      groups.set(group, list);
+    }
+    return [...groups.entries()];
+  }, [docRoutes]);
+
+  const activeTab = q
+    ? {
+        overview: overviewSections.length > 0 || DOC_PRODUCT_PILLARS.some((p) => matches(p.title)),
+        "getting-started": quickStartSteps.length > 0 || docRoutes.length > 0 || desktopSections.length > 0,
+        workspace: workspaceGuide.length > 0,
+        features: features.length > 0,
+        missions: missionSteps.length > 0,
+        tools: tools.length > 0,
+        privacy: privacySections.length > 0,
+        pricing: pricingTiers.length > 0,
+        api: matches("api") || matches("endpoint") || matches("authentication"),
+        help: troubleshooting.length > 0,
+        faq: faqItems.length > 0 || glossary.length > 0,
+      }
+    : null;
+
   const hasSearchResults = useMemo(() => {
     if (!q) return true;
-    return (
-      docSearchBlob({
-        features: DOC_FEATURES,
-        faq: DOC_FAQ,
-        troubleshooting: DOC_TROUBLESHOOTING,
-        workspace: DOC_WORKSPACE_GUIDE,
-      }).includes(q) ||
-      features.length > 0 ||
-      quickStartSteps.length > 0 ||
-      docRoutes.length > 0 ||
-      workspaceGuide.length > 0 ||
-      faqItems.length > 0 ||
-      troubleshooting.length > 0
-    );
-  }, [q, features.length, quickStartSteps.length, docRoutes.length, workspaceGuide.length, faqItems.length, troubleshooting.length]);
+    if (activeTab && Object.values(activeTab).some(Boolean)) return true;
+    return docSearchBlob({
+      features: DOC_FEATURES,
+      faq: DOC_FAQ,
+      troubleshooting: DOC_TROUBLESHOOTING,
+      workspace: DOC_WORKSPACE_GUIDE,
+    }).includes(q);
+  }, [q, activeTab]);
 
   const apiEndpoints = [
     { method: "POST", endpoint: "/functions/v1/chat", description: "Send a message and receive streaming AI response", example: `{\n  "messages": [{"role": "user", "content": "Hello!"}],\n  "personality": "friendly"\n}` },
@@ -331,16 +394,22 @@ const DocsPage = () => {
 
         {/* Main Content */}
         <div className="max-w-6xl mx-auto px-4 py-12">
-          <Tabs defaultValue="getting-started" className="space-y-8">
-            <TabsList className="grid w-full grid-cols-2 md:grid-cols-7 max-w-4xl mx-auto gap-1 glass-subtle border-border/30 p-1">
-              <TabsTrigger value="getting-started">Get Started</TabsTrigger>
-              <TabsTrigger value="workspace">Workspace</TabsTrigger>
-              <TabsTrigger value="features">Features</TabsTrigger>
-              <TabsTrigger value="modes">Chat Modes</TabsTrigger>
-              <TabsTrigger value="api">API</TabsTrigger>
-              <TabsTrigger value="troubleshooting">Help</TabsTrigger>
-              <TabsTrigger value="faq">FAQ</TabsTrigger>
-            </TabsList>
+          <Tabs defaultValue="overview" className="space-y-8">
+            <div className="overflow-x-auto pb-1 -mx-1 px-1">
+              <TabsList className="inline-flex w-max min-w-full md:min-w-0 h-auto flex-wrap gap-1 glass-subtle border-border/30 p-1">
+                <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="getting-started">Get Started</TabsTrigger>
+                <TabsTrigger value="workspace">Workspace</TabsTrigger>
+                <TabsTrigger value="features">Features</TabsTrigger>
+                <TabsTrigger value="missions">Missions</TabsTrigger>
+                <TabsTrigger value="tools">Tools</TabsTrigger>
+                <TabsTrigger value="privacy">Privacy</TabsTrigger>
+                <TabsTrigger value="pricing">Pricing</TabsTrigger>
+                <TabsTrigger value="api">API</TabsTrigger>
+                <TabsTrigger value="help">Help</TabsTrigger>
+                <TabsTrigger value="faq">FAQ</TabsTrigger>
+              </TabsList>
+            </div>
 
             {q && !hasSearchResults && (
               <p className="text-center text-muted-foreground py-8 glass-subtle rounded-xl">
@@ -348,13 +417,53 @@ const DocsPage = () => {
               </p>
             )}
 
+            {/* Overview */}
+            <TabsContent value="overview" className="space-y-8">
+              {overviewSections.map((section) => (
+                <DocSection key={section.title} title={section.title}>
+                  <div className="space-y-4">
+                    {section.paragraphs.map((paragraph, i) => (
+                      <p key={i} className="text-muted-foreground leading-relaxed">{paragraph}</p>
+                    ))}
+                  </div>
+                </DocSection>
+              ))}
+
+              <DocSection title="Product pillars">
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                  {DOC_PRODUCT_PILLARS.map((pillar, i) => (
+                    <motion.div key={pillar.title} custom={i} variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+                      <DocCard
+                        icon={DOC_FEATURE_ICONS[pillar.icon]}
+                        title={pillar.title}
+                        description={pillar.description}
+                        badge={pillar.badge}
+                      />
+                    </motion.div>
+                  ))}
+                </div>
+              </DocSection>
+
+              <DocSection title="Tech stack (summary)">
+                <Card className="card-glass">
+                  <CardContent className="pt-6 grid gap-3 md:grid-cols-2 text-sm text-muted-foreground">
+                    <p><strong className="text-foreground">Frontend:</strong> React 18, Vite, TypeScript, Tailwind, Framer Motion, shadcn/ui</p>
+                    <p><strong className="text-foreground">Backend:</strong> Supabase (Auth, Postgres, RLS, Edge Functions)</p>
+                    <p><strong className="text-foreground">AI routing:</strong> Edge functions → Gemini / OpenRouter / Kimi / local WebGPU</p>
+                    <p><strong className="text-foreground">IDE sandbox:</strong> Monaco + WebContainer (Computer Mode)</p>
+                    <p><strong className="text-foreground">Offline:</strong> SmolLM / Gemma via WebGPU + WASM transformers</p>
+                    <p><strong className="text-foreground">Desktop:</strong> Electron + Capacitor builds at /downloads</p>
+                  </CardContent>
+                </Card>
+              </DocSection>
+            </TabsContent>
+
             {/* Getting Started */}
             <TabsContent value="getting-started" className="space-y-8">
               <DocSection title="Quick Start Guide">
                 <p className="text-muted-foreground mb-6">
-                  Get up and running with ShadowTalk AI in just a few minutes. The app opens at{" "}
-                  <strong className="text-foreground">/chatbot</strong> — no boot screen on the workspace.
-                  Marketing and feature tours live at <strong className="text-foreground">/home</strong>.
+                  Get up and running in minutes. New visitors explore <strong className="text-foreground">/</strong> (marketing home);
+                  returning users and signed-in accounts go straight to <strong className="text-foreground">/chatbot</strong> — no boot screen on the workspace.
                 </p>
                 <div className="grid gap-5 md:grid-cols-2">
                   {quickStartSteps.map((item, i) => {
@@ -392,24 +501,29 @@ const DocsPage = () => {
               </DocSection>
 
               <DocSection title="URLs & navigation">
-                <div className="grid gap-4 md:grid-cols-2">
-                  {docRoutes.map((row) => (
-                    <SpotlightCard key={row.path} className="h-full">
-                    <Card className="card-glass">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-base font-mono text-primary">{row.path}</CardTitle>
-                        <CardDescription className="font-medium text-foreground">{row.label}</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm text-muted-foreground">{row.desc}</p>
-                        <Button variant="link" className="px-0 mt-2 h-auto" onClick={() => navigate(row.path)}>
-                          Open <ChevronRight className="h-3 w-3 ml-1" />
-                        </Button>
-                      </CardContent>
-                    </Card>
-                    </SpotlightCard>
-                  ))}
-                </div>
+                {routeGroups.map(([group, routes]) => (
+                  <div key={group} className="mb-8">
+                    <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3">{group}</h3>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      {routes.map((row) => (
+                        <SpotlightCard key={row.path} className="h-full">
+                          <Card className="card-glass">
+                            <CardHeader className="pb-2">
+                              <CardTitle className="text-base font-mono text-primary">{row.path}</CardTitle>
+                              <CardDescription className="font-medium text-foreground">{row.label}</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                              <p className="text-sm text-muted-foreground">{row.desc}</p>
+                              <Button variant="link" className="px-0 mt-2 h-auto" onClick={() => navigate(row.path)}>
+                                Open <ChevronRight className="h-3 w-3 ml-1" />
+                              </Button>
+                            </CardContent>
+                          </Card>
+                        </SpotlightCard>
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </DocSection>
 
               <DocSection title="System Requirements">
@@ -446,49 +560,38 @@ const DocsPage = () => {
                 </div>
               </DocSection>
 
-              <DocSection title="Installation">
+              <DocSection title="Install & platforms">
                 <p className="text-muted-foreground mb-6">
-                  ShadowTalk AI is a Progressive Web App (PWA) — install on any device for a native experience.
+                  ShadowTalk ships as a web app (PWA), native desktop builds, and mobile-friendly layouts.
                 </p>
                 <div className="grid gap-5 md:grid-cols-3">
-                  {[
-                    { icon: Monitor, title: "Desktop (Chrome)", steps: ["Visit shadowtalk-ai.com/chatbot", "Click the install icon in the address bar", "Click \"Install\" in the prompt", "Launch from your desktop — opens to the workspace"] },
-                    { icon: Smartphone, title: "iOS (Safari)", steps: ["Open Safari and visit shadowtalk-ai.com/chatbot", "Tap the Share button", "Scroll down and tap \"Add to Home Screen\"", "Tap \"Add\" to confirm"] },
-                    { icon: Smartphone, title: "Android (Chrome)", steps: ["Open Chrome and visit shadowtalk-ai.com/chatbot", "Tap the banner or menu (three dots)", "Select \"Install App\"", "Confirm installation"] },
-                  ].map((platform, idx) => (
-                    <motion.div key={idx} custom={idx} variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+                  {desktopSections.map((section, idx) => (
+                    <motion.div key={section.title} custom={idx} variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
                       <SpotlightCard className="h-full">
-                      <Card className="card-glass h-full overflow-hidden">
-                        <CardHeader className="relative z-10">
-                          <CardTitle className="text-lg flex items-center gap-2">
-                            <platform.icon className="h-5 w-5 text-primary" />
-                            {platform.title}
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="relative z-10">
-                          <ol className="space-y-2.5 text-sm">
-                            {platform.steps.map((step, j) => (
-                              <li key={j} className="flex gap-3">
-                                <span className="font-bold text-primary shrink-0">{j + 1}.</span>
-                                <span className="text-muted-foreground">{step}</span>
-                              </li>
-                            ))}
-                          </ol>
-                        </CardContent>
-                      </Card>
+                        <Card className="card-glass h-full overflow-hidden">
+                          <CardHeader className="relative z-10">
+                            <CardTitle className="text-lg">{section.title}</CardTitle>
+                          </CardHeader>
+                          <CardContent className="relative z-10">
+                            <ul className="space-y-2 text-sm">
+                              {section.items.map((item, j) => (
+                                <li key={j} className="flex items-start gap-2">
+                                  <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                                  <span className="text-muted-foreground">{item}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </CardContent>
+                        </Card>
                       </SpotlightCard>
                     </motion.div>
                   ))}
                 </div>
-              </DocSection>
-
-              <DocSection title="Plan Comparison">
-                <p className="text-muted-foreground mb-6">Choose the plan that best fits your needs.</p>
-                <Card className="card-glass overflow-hidden">
-                  <CardContent className="pt-6 relative z-10">
-                    <FeatureComparison />
-                  </CardContent>
-                </Card>
+                <div className="mt-4">
+                  <Button variant="outline" className="rounded-xl" onClick={() => navigate("/downloads")}>
+                    <Download className="h-4 w-4 mr-2" /> Desktop downloads
+                  </Button>
+                </div>
               </DocSection>
             </TabsContent>
 
@@ -496,7 +599,7 @@ const DocsPage = () => {
             <TabsContent value="workspace" className="space-y-8">
               <DocSection title="Using the /chatbot workspace">
                 <p className="text-muted-foreground mb-6">
-                  ShadowTalk opens here by default. This is the main product — not a demo chat widget.
+                  The main product workspace at /chatbot — streaming chat, tools, missions, and history. Returning users land here automatically.
                 </p>
                 <div className="grid gap-5 md:grid-cols-2">
                   {workspaceGuide.map((section, idx) => (
@@ -689,9 +792,70 @@ const DocsPage = () => {
               </DocSection>
             </TabsContent>
 
-            {/* Chat Modes */}
-            <TabsContent value="modes" className="space-y-8">
-              <DocSection title="Specialized Chat Modes">
+            {/* Missions */}
+            <TabsContent value="missions" className="space-y-8">
+              <DocSection title="Mission Control & S.E.E.">
+                <p className="text-muted-foreground mb-6">
+                  ShadowTalk runs multi-step autonomous work through Mission Control (/missioncontrol) and the Shadow Execution Engine (/execute).
+                  Sensitive tool calls pause for your approval before continuing.
+                </p>
+                <div className="grid gap-5 md:grid-cols-2">
+                  {missionSteps.map((step, i) => (
+                    <motion.div key={step.step} custom={i} variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+                      <SpotlightCard className="h-full">
+                        <Card className="card-glass h-full">
+                          <CardHeader>
+                            <Badge variant="outline" className="mb-2 w-fit glass-subtle">Step {step.step}</Badge>
+                            <CardTitle className="text-lg">{step.title}</CardTitle>
+                            <CardDescription className="mt-2">{step.description}</CardDescription>
+                          </CardHeader>
+                        </Card>
+                      </SpotlightCard>
+                    </motion.div>
+                  ))}
+                </div>
+              </DocSection>
+              <div className="flex flex-wrap gap-3">
+                <Button className="btn-glow rounded-xl" onClick={() => navigate("/missioncontrol")}>
+                  <Rocket className="h-4 w-4 mr-2" /> Open Mission Control
+                </Button>
+                <Button variant="outline" className="rounded-xl" onClick={() => navigate("/execute")}>
+                  <Zap className="h-4 w-4 mr-2" /> Shadow Execution
+                </Button>
+              </div>
+            </TabsContent>
+
+            {/* Tools & modes */}
+            <TabsContent value="tools" className="space-y-8">
+              <DocSection title="Chat tools reference">
+                <p className="text-muted-foreground mb-6">
+                  Invoke tools from natural language, the Tools menu (⊞), or ⌘K command palette.
+                </p>
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse text-sm">
+                    <thead>
+                      <tr className="border-b border-border/30">
+                        <th className="text-left p-3">Tool</th>
+                        <th className="text-left p-3">How to trigger</th>
+                        <th className="text-left p-3 hidden md:table-cell">Description</th>
+                        <th className="text-left p-3">Plan</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {tools.map((tool) => (
+                        <tr key={tool.name} className="border-b border-border/20 hover:bg-primary/5">
+                          <td className="p-3 font-medium">{tool.name}</td>
+                          <td className="p-3 font-mono text-xs text-primary">{tool.trigger}</td>
+                          <td className="p-3 text-muted-foreground hidden md:table-cell">{tool.description}</td>
+                          <td className="p-3 text-muted-foreground">{tool.plan ?? "Core"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </DocSection>
+
+              <DocSection title="Specialized chat modes">
                 <p className="text-muted-foreground mb-6">10 specialized modes, each optimized for specific tasks.</p>
                 <div className="grid gap-4 md:grid-cols-2">
                   {chatModes.map((mode, i) => (
@@ -715,11 +879,11 @@ const DocsPage = () => {
                 </div>
               </DocSection>
 
-              <DocSection title="Mode Best Practices">
+              <DocSection title="Mode best practices">
                 <Accordion type="single" collapsible className="space-y-3">
                   {[
                     { value: "code", title: "Code Mode Tips", tips: ["Specify the programming language for better results", "Include context about your project structure", "Use the Code Canvas for interactive editing", "Ask for explanations along with code solutions", "Request unit tests for generated code"] },
-                    { value: "image", title: "Image Generation Tips", tips: ["Be specific about style (photorealistic, cartoon, watercolor, etc.)", "Include details about lighting and mood", "Mention aspect ratio if important", "Use negative prompts to exclude unwanted elements", "Daily limit: 100 images"] },
+                    { value: "image", title: "Image Generation Tips", tips: ["Be specific about style (photorealistic, cartoon, watercolor, etc.)", "Include details about lighting and mood", "Mention aspect ratio if important", "Use negative prompts to exclude unwanted elements", "Check your plan's daily image limit on /pricing"] },
                     { value: "translate", title: "Translation Tips", tips: ["Specify source and target languages", "Provide context for better accuracy", "Ask for formal or informal translations", "Request pronunciation guides when needed", "Supports 100+ languages"] },
                     { value: "summarize", title: "Summarization Tips", tips: ["Specify desired length (bullet points, paragraph, one-liner)", "Ask for key takeaways or action items", "Upload documents for longer content", "Request summaries for specific audiences", "Great for meeting notes and articles"] },
                   ].map((section) => (
@@ -738,6 +902,95 @@ const DocsPage = () => {
                     </AccordionItem>
                   ))}
                 </Accordion>
+              </DocSection>
+            </TabsContent>
+
+            {/* Privacy */}
+            <TabsContent value="privacy" className="space-y-8">
+              <DocSection title="Privacy & security">
+                <p className="text-muted-foreground mb-6">
+                  ShadowTalk is privacy-native: choose cloud routing, BYOK, client-side vault, or on-device inference per task.
+                </p>
+                <div className="grid gap-5 md:grid-cols-2">
+                  {privacySections.map((section, idx) => (
+                    <motion.div key={section.title} custom={idx} variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+                      <SpotlightCard className="h-full">
+                        <Card className="card-glass h-full">
+                          <CardHeader>
+                            <CardTitle className="text-lg flex items-center gap-2">
+                              <Shield className="h-5 w-5 text-primary" />
+                              {section.title}
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <ul className="space-y-2 text-sm">
+                              {section.items.map((item, j) => (
+                                <li key={j} className="flex items-start gap-2">
+                                  <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                                  <span className="text-muted-foreground">{item}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </CardContent>
+                        </Card>
+                      </SpotlightCard>
+                    </motion.div>
+                  ))}
+                </div>
+              </DocSection>
+              <div className="flex flex-wrap gap-3">
+                <Button variant="outline" className="rounded-xl" onClick={() => navigate("/privacy")}>Privacy policy</Button>
+                <Button variant="outline" className="rounded-xl" onClick={() => navigate("/transparency")}>Transparency</Button>
+                <Button variant="outline" className="rounded-xl" onClick={() => navigate("/security")}>Security hub</Button>
+              </div>
+            </TabsContent>
+
+            {/* Pricing */}
+            <TabsContent value="pricing" className="space-y-8">
+              <DocSection title="Plans & limits">
+                <p className="text-muted-foreground mb-6">
+                  Free unlocks all feature types with daily limits. Paid plans remove caps and add vault, offline, and API access.
+                  Pakistan local payments: <button type="button" className="text-primary underline" onClick={() => navigate("/founder-access")}>/founder-access</button>.
+                </p>
+                <div className="grid gap-5 md:grid-cols-2">
+                  {pricingTiers.map((tier, i) => (
+                    <motion.div key={tier.name} custom={i} variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+                      <SpotlightCard className="h-full">
+                        <Card className="card-glass h-full">
+                          <CardHeader>
+                            <div className="flex items-baseline justify-between gap-2">
+                              <CardTitle>{tier.name}</CardTitle>
+                              <span className="text-2xl font-bold text-primary">{tier.price}</span>
+                            </div>
+                            <CardDescription>{tier.tagline}</CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <ul className="space-y-2 text-sm">
+                              {tier.highlights.map((h, j) => (
+                                <li key={j} className="flex items-start gap-2">
+                                  <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                                  <span className="text-muted-foreground">{h}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </CardContent>
+                        </Card>
+                      </SpotlightCard>
+                    </motion.div>
+                  ))}
+                </div>
+              </DocSection>
+              <DocSection title="Feature comparison table">
+                <Card className="card-glass overflow-hidden">
+                  <CardContent className="pt-6">
+                    <FeatureComparison />
+                  </CardContent>
+                </Card>
+                <div className="mt-4">
+                  <Button className="btn-glow rounded-xl" onClick={() => navigate("/pricing")}>
+                    <Crown className="h-4 w-4 mr-2" /> View live pricing
+                  </Button>
+                </div>
               </DocSection>
             </TabsContent>
 
@@ -796,8 +1049,8 @@ const DocsPage = () => {
               </DocSection>
             </TabsContent>
 
-            {/* Troubleshooting */}
-            <TabsContent value="troubleshooting" className="space-y-8">
+            {/* Help */}
+            <TabsContent value="help" className="space-y-8">
               <DocSection title="Troubleshooting Guide">
                 <p className="text-muted-foreground mb-6">Having issues? Find solutions to common problems below.</p>
                 <Accordion type="single" collapsible className="space-y-3">
@@ -886,6 +1139,19 @@ const DocsPage = () => {
                     </AccordionItem>
                   ))}
                 </Accordion>
+              </DocSection>
+
+              <DocSection title="Glossary">
+                <div className="grid gap-3 md:grid-cols-2">
+                  {glossary.map((item) => (
+                    <Card key={item.term} className="card-glass">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base">{item.term}</CardTitle>
+                        <CardDescription>{item.definition}</CardDescription>
+                      </CardHeader>
+                    </Card>
+                  ))}
+                </div>
               </DocSection>
             </TabsContent>
           </Tabs>
