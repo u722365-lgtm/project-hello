@@ -427,9 +427,10 @@ const FounderAccessPage = () => {
                     <div className="space-y-3">
                       <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">How to Complete</h4>
                       <div className="space-y-3">
-                        <StepItem number={1} title="Send payment" description="Use JazzCash, Easypaisa, bank, or USDT details on the left" />
-                        <StepItem number={2} title="Submit proof below" description="Upload receipt — fastest way to activate" />
-                        <StepItem number={3} title="Or WhatsApp" description="Send screenshot if upload fails" />
+                        <StepItem number={1} title="Generate payment invoice" description="Click the invoice button under your chosen method to reveal transfer details" />
+                        <StepItem number={2} title="Send payment" description="Transfer using the revealed bank, wallet, or crypto details" />
+                        <StepItem number={3} title="Submit proof below" description="Upload receipt — fastest way to activate" />
+                        <StepItem number={4} title="Or WhatsApp" description="Send screenshot if upload fails" />
                       </div>
                     </div>
 

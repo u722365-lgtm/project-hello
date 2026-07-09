@@ -6,6 +6,7 @@ export const PAYMENT_CREDENTIALS = {
   bank: {
     bankName: "Meezan Bank",
     accountName: "ShadowTalk AI",
+    accountNumber: "0099170112749131",
     iban: "PK08 MEZN 0099 1701 1274 9131",
     referencePrefix: "ShadowTalk",
   },

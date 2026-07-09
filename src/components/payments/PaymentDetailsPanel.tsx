@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Landmark, Smartphone, Wallet, Globe, FileText, Shield, Lock, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,12 +8,23 @@ import { useToast } from "@/hooks/use-toast";
 import {
   PAYMENT_CREDENTIALS,
   buildPaymentReference,
-  maskCryptoAddress,
-  maskIban,
-  maskPhone,
   type PaymentMethodId,
 } from "@/lib/payments/paymentCredentials";
 import { PKR_MONTHLY, type PaidPlanId } from "@/lib/payments/planPricing";
+
+const invoiceButtonLabels: Record<PaymentMethodId, string> = {
+  bank: "Generate Bank Transfer Invoice",
+  mobile: "Generate Mobile Wallet Invoice",
+  crypto: "Generate Crypto Transfer Invoice",
+  wire: "Generate Wire Transfer Invoice",
+};
+
+const invoiceMethodLabels: Record<PaymentMethodId, string> = {
+  bank: "bank transfer",
+  mobile: "mobile wallet",
+  crypto: "crypto",
+  wire: "wire transfer",
+};
 
 const paymentMethods = [
   { id: "bank" as const, name: "Bank Transfer", icon: Landmark, badge: "Local", desc: "Meezan Bank" },
@@ -46,6 +57,10 @@ export function PaymentDetailsPanel({
   );
 
   const isRevealed = revealedMethods.has(activePaymentMethod);
+
+  useEffect(() => {
+    setRevealedMethods(new Set());
+  }, [planKey, activePaymentMethod]);
 
   const revealDetails = () => {
     if (!user) {
@@ -107,20 +122,20 @@ export function PaymentDetailsPanel({
             <div className="space-y-1">
               <p className="font-medium text-sm">Payment details are protected</p>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                For security, full account numbers are hidden from public scrapers. Generate your
-                transfer invoice to reveal bank, wallet, or crypto details for{" "}
-                <span className="font-medium text-foreground">{selectedProductName}</span>.
+                For security, account numbers, IBANs, and wallet addresses stay hidden until you
+                generate an invoice. This prevents scrapers from harvesting your payment details.
+                Selected plan:{" "}
+                <span className="font-medium text-foreground">{selectedProductName}</span> via{" "}
+                <span className="font-medium text-foreground">
+                  {invoiceMethodLabels[activePaymentMethod]}
+                </span>
+                .
               </p>
             </div>
           </div>
-          <div className="rounded-lg border border-border/50 bg-background/60 p-3 text-xs text-muted-foreground space-y-1">
-            <p>Bank: {PAYMENT_CREDENTIALS.bank.bankName}</p>
-            <p>IBAN: {maskIban(PAYMENT_CREDENTIALS.bank.iban)}</p>
-            <p>Mobile: {maskPhone(PAYMENT_CREDENTIALS.mobile.jazzcash)}</p>
-          </div>
           <Button className="w-full gap-2" onClick={revealDetails}>
             <FileText className="h-4 w-4" />
-            Generate transfer invoice
+            {invoiceButtonLabels[activePaymentMethod]}
           </Button>
           {!user && (
             <p className="text-xs text-center text-muted-foreground">
@@ -145,7 +160,8 @@ export function PaymentDetailsPanel({
             {activePaymentMethod === "bank" && (
               <>
                 <PaymentDetailRow label="Bank" value={PAYMENT_CREDENTIALS.bank.bankName} onCopy={() => copyToClipboard(PAYMENT_CREDENTIALS.bank.bankName, "Bank")} copied={copiedField === "Bank"} />
-                <PaymentDetailRow label="Account name" value={PAYMENT_CREDENTIALS.bank.accountName} onCopy={() => copyToClipboard(PAYMENT_CREDENTIALS.bank.accountName, "Account name")} copied={copiedField === "Account name"} />
+                <PaymentDetailRow label="Account title" value={PAYMENT_CREDENTIALS.bank.accountName} onCopy={() => copyToClipboard(PAYMENT_CREDENTIALS.bank.accountName, "Account title")} copied={copiedField === "Account title"} />
+                <PaymentDetailRow label="Account number" value={PAYMENT_CREDENTIALS.bank.accountNumber} onCopy={() => copyToClipboard(PAYMENT_CREDENTIALS.bank.accountNumber, "Account number")} copied={copiedField === "Account number"} mono />
                 <PaymentDetailRow label="IBAN" value={PAYMENT_CREDENTIALS.bank.iban} onCopy={() => copyToClipboard(PAYMENT_CREDENTIALS.bank.iban, "IBAN")} copied={copiedField === "IBAN"} mono />
                 <PaymentDetailRow label="Reference" value={paymentReference} onCopy={() => copyToClipboard(paymentReference, "Reference")} copied={copiedField === "Reference"} mono />
               </>
