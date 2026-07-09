@@ -59,6 +59,22 @@ export async function submitManualPayment(
     .single();
 
   if (error) return { ok: false, error: error.message };
+
+  void supabase.functions
+    .invoke("notify-manual-payment", {
+      body: {
+        paymentId: data.id,
+        email: user.email,
+        planKey: input.planKey,
+        amount: input.amount,
+        currency: input.currency,
+        paymentMethod: input.paymentMethod,
+      },
+    })
+    .catch(() => {
+      /* notification is best-effort */
+    });
+
   return { ok: true, id: data.id };
 }
 
