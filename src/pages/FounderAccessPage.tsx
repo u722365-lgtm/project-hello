@@ -14,7 +14,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/components/AuthProvider";
 import { 
   SUBSCRIPTION_TIERS, 
@@ -25,18 +24,20 @@ import {
 } from "@/lib/monetization";
 import Navigation from "@/components/Navigation";
 import { PaymentReceiptForm } from "@/components/payments/PaymentReceiptForm";
+import { PaymentDetailsPanel } from "@/components/payments/PaymentDetailsPanel";
+import { PaymentTrustSection } from "@/components/payments/PaymentTrustSection";
 import { InternationalCardButton } from "@/components/payments/InternationalCardButton";
 import SEOHead from "@/components/SEOHead";
 import { PAGE_SEO } from "@/lib/seo";
+import { buildCheckoutWhatsAppUrl } from "@/lib/payments/whatsappCheckout";
+import type { PaymentMethodId } from "@/lib/payments/paymentCredentials";
 import { PKR_MONTHLY, type PaidPlanId } from "@/lib/payments/planPricing";
 
 const VALID_PLAN_IDS = new Set(["free", "pro", "premium", "elite"]);
 
 const FounderAccessPage = () => {
-  const { toast } = useToast();
-  const { userPlan } = useAuth();
+  const { userPlan, user } = useAuth();
   const [searchParams] = useSearchParams();
-  const [copiedField, setCopiedField] = useState<string | null>(null);
   const [selectedTier, setSelectedTier] = useState<string>("premium");
 
   useEffect(() => {
@@ -49,53 +50,19 @@ const FounderAccessPage = () => {
       setSelectedTier(plan);
     }
   }, [searchParams]);
-  const [activePaymentMethod, setActivePaymentMethod] = useState<string>("bank");
+  const [activePaymentMethod, setActivePaymentMethod] = useState<PaymentMethodId>("bank");
 
-  const copyToClipboard = (text: string, field: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedField(field);
-    toast({
-      title: "Copied!",
-      description: `${field} copied to clipboard`,
-    });
-    setTimeout(() => setCopiedField(null), 2000);
-  };
+  const whatsappLink = buildCheckoutWhatsAppUrl({
+    planKey: selectedTier,
+    currency: activePaymentMethod === "mobile" || activePaymentMethod === "bank" ? "PKR" : "USD",
+    userEmail: user?.email,
+  });
 
-  const bankDetails = {
-    bankName: "Meezan Bank",
-    accountName: "ShadowTalk AI",
-    iban: "PK08 MEZN 0099 1701 1274 9131",
-    reference: "ShadowTalk-Elite"
-  };
-
-  const mobileWallet = {
-    easypaisa: "03211798561",
-    jazzcash: "03211798561",
-    name: "ShadowTalk AI"
-  };
-
-  const cryptoDetails = {
-    usdt: "TKfKJ7ESFcnMTd2F1DkrvZ4buCWneAmHqz",
-    network: "Tron (TRC20)"
-  };
-
-  const internationalDetails = {
-    swift: "MEZN PK KA",
-    iban: "PK08 MEZN 0099 1701 1274 9131",
-    bankName: "Meezan Bank Limited",
-    accountName: "ShadowTalk AI"
-  };
-
-  const whatsappMessage = encodeURIComponent(
-    `Salam! I want to purchase ${selectedTier.toUpperCase()} plan. Here is my receipt screenshot. My account email is: [Your Email]`
-  );
-
-  const internationalWhatsappMessage = encodeURIComponent(
-    "I am an International Founder. I have sent [Amount] via [Crypto/Wise]. Here is my TXID/Screenshot. Please activate my account."
-  );
-
-  const whatsappLink = `https://wa.me/923211798561?text=${whatsappMessage}`;
-  const internationalWhatsappLink = `https://wa.me/923211798561?text=${internationalWhatsappMessage}`;
+  const internationalWhatsappLink = buildCheckoutWhatsAppUrl({
+    planKey: selectedTier,
+    userEmail: user?.email,
+    international: true,
+  });
 
   const getTierIcon = (tierId: string) => {
     switch (tierId) {
@@ -127,13 +94,6 @@ const FounderAccessPage = () => {
   };
 
   const selectedProduct = getSelectedProduct();
-
-  const paymentMethods = [
-    { id: 'bank', name: 'Bank Transfer', icon: Landmark, badge: 'Local', desc: 'Meezan Bank' },
-    { id: 'mobile', name: 'Mobile Wallet', icon: Smartphone, badge: 'Instant', desc: 'EasyPaisa / JazzCash' },
-    { id: 'crypto', name: 'Crypto', icon: Wallet, badge: 'Global', desc: 'USDT (TRC20)' },
-    { id: 'wire', name: 'Wire Transfer', icon: Globe, badge: 'International', desc: 'SWIFT / Wise' },
-  ];
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -405,68 +365,13 @@ const FounderAccessPage = () => {
                       Send Payment To
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="p-5 space-y-4">
-                    <div className="grid grid-cols-2 gap-2">
-                      {paymentMethods.map((method) => {
-                        const Icon = method.icon;
-                        const isActive = activePaymentMethod === method.id;
-                        return (
-                          <button
-                            key={method.id}
-                            type="button"
-                            onClick={() => setActivePaymentMethod(method.id)}
-                            className={`rounded-xl p-3 text-left border-2 transition-all ${
-                              isActive
-                                ? "border-primary bg-[hsl(var(--primary)/0.08)]"
-                                : "border-[hsl(var(--border))] hover:border-[hsl(var(--primary)/0.3)]"
-                            }`}
-                          >
-                            <div className="flex items-center gap-2 mb-1">
-                              <Icon className={`w-4 h-4 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
-                              <span className="text-sm font-medium">{method.name}</span>
-                            </div>
-                            <p className="text-[10px] text-muted-foreground">{method.desc}</p>
-                            <Badge variant="outline" className="mt-2 text-[9px]">{method.badge}</Badge>
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    <AnimatePresence mode="wait">
-                      {activePaymentMethod === "bank" && (
-                        <motion.div key="bank" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-2">
-                          <PaymentDetailRow label="Bank" value={bankDetails.bankName} onCopy={() => copyToClipboard(bankDetails.bankName, "Bank")} copied={copiedField === "Bank"} />
-                          <PaymentDetailRow label="Account name" value={bankDetails.accountName} onCopy={() => copyToClipboard(bankDetails.accountName, "Account name")} copied={copiedField === "Account name"} />
-                          <PaymentDetailRow label="IBAN" value={bankDetails.iban} onCopy={() => copyToClipboard(bankDetails.iban, "IBAN")} copied={copiedField === "IBAN"} mono />
-                          <PaymentDetailRow label="Reference" value={`${bankDetails.reference}-${selectedTier}`} onCopy={() => copyToClipboard(`${bankDetails.reference}-${selectedTier}`, "Reference")} copied={copiedField === "Reference"} />
-                        </motion.div>
-                      )}
-                      {activePaymentMethod === "mobile" && (
-                        <motion.div key="mobile" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-2">
-                          <PaymentDetailRow label="JazzCash" value={mobileWallet.jazzcash} onCopy={() => copyToClipboard(mobileWallet.jazzcash, "JazzCash")} copied={copiedField === "JazzCash"} mono />
-                          <PaymentDetailRow label="Easypaisa" value={mobileWallet.easypaisa} onCopy={() => copyToClipboard(mobileWallet.easypaisa, "Easypaisa")} copied={copiedField === "Easypaisa"} mono />
-                          <PaymentDetailRow label="Account title" value={mobileWallet.name} onCopy={() => copyToClipboard(mobileWallet.name, "Wallet name")} copied={copiedField === "Wallet name"} />
-                          {(["pro", "premium", "elite"] as PaidPlanId[]).includes(selectedTier as PaidPlanId) && (
-                            <p className="text-xs text-muted-foreground pt-1">
-                              Send Rs {PKR_MONTHLY[selectedTier as PaidPlanId].toLocaleString()} for {selectedProduct.name}
-                            </p>
-                          )}
-                        </motion.div>
-                      )}
-                      {activePaymentMethod === "crypto" && (
-                        <motion.div key="crypto" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-2">
-                          <PaymentDetailRow label="USDT address" value={cryptoDetails.usdt} onCopy={() => copyToClipboard(cryptoDetails.usdt, "USDT")} copied={copiedField === "USDT"} mono />
-                          <PaymentDetailRow label="Network" value={cryptoDetails.network} onCopy={() => copyToClipboard(cryptoDetails.network, "Network")} copied={copiedField === "Network"} />
-                        </motion.div>
-                      )}
-                      {activePaymentMethod === "wire" && (
-                        <motion.div key="wire" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-2">
-                          <PaymentDetailRow label="Bank" value={internationalDetails.bankName} onCopy={() => copyToClipboard(internationalDetails.bankName, "Intl bank")} copied={copiedField === "Intl bank"} />
-                          <PaymentDetailRow label="SWIFT" value={internationalDetails.swift} onCopy={() => copyToClipboard(internationalDetails.swift, "SWIFT")} copied={copiedField === "SWIFT"} mono />
-                          <PaymentDetailRow label="IBAN" value={internationalDetails.iban} onCopy={() => copyToClipboard(internationalDetails.iban, "Intl IBAN")} copied={copiedField === "Intl IBAN"} mono />
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                  <CardContent className="p-5">
+                    <PaymentDetailsPanel
+                      planKey={selectedTier}
+                      selectedProductName={selectedProduct.name}
+                      activePaymentMethod={activePaymentMethod}
+                      onPaymentMethodChange={setActivePaymentMethod}
+                    />
                   </CardContent>
                 </Card>
               </motion.div>
@@ -557,11 +462,13 @@ const FounderAccessPage = () => {
                           size="lg" 
                           variant="outline"
                           className="w-full gap-2"
-                          onClick={() => window.open(whatsappLink, '_blank')}
+                          asChild
                         >
-                          <MessageCircle className="w-5 h-5" />
-                          Send receipt on WhatsApp
-                          <ArrowUpRight className="w-4 h-4" />
+                          <a href={whatsappLink} target="_blank" rel="noopener noreferrer">
+                            <MessageCircle className="w-5 h-5" />
+                            Send receipt on WhatsApp
+                            <ArrowUpRight className="w-4 h-4" />
+                          </a>
                         </Button>
                       </motion.div>
 
@@ -569,10 +476,12 @@ const FounderAccessPage = () => {
                         variant="ghost" 
                         size="sm" 
                         className="w-full gap-2 text-muted-foreground"
-                        onClick={() => window.open(internationalWhatsappLink, '_blank')}
+                        asChild
                       >
-                        <Globe className="w-4 h-4" />
-                        International support (Wise / crypto)
+                        <a href={internationalWhatsappLink} target="_blank" rel="noopener noreferrer">
+                          <Globe className="w-4 h-4" />
+                          International support (Wise / crypto)
+                        </a>
                       </Button>
                     </div>
 
@@ -612,6 +521,8 @@ const FounderAccessPage = () => {
             </div>
           </div>
 
+          <PaymentTrustSection />
+
           {/* Footer Trust Bar */}
           <motion.div 
             className="flex flex-wrap items-center justify-center gap-6 md:gap-8 mt-12 py-6 border-t border-[hsl(var(--border))]"
@@ -635,31 +546,6 @@ const FounderAccessPage = () => {
 };
 
 // Helper Components  
-const PaymentDetailRow = ({ 
-  label, value, onCopy, copied, mono = false 
-}: { label: string; value: string; onCopy: () => void; copied: boolean; mono?: boolean }) => (
-  <div className="flex items-center justify-between gap-3 p-3 bg-[hsl(var(--card))] rounded-lg border border-[hsl(var(--border))] group hover:border-[hsl(var(--primary)/0.3)] transition-colors">
-    <div className="min-w-0">
-      <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">{label}</p>
-      <p className={`font-medium truncate mt-0.5 ${mono ? 'font-mono text-sm' : ''}`}>
-        {value}
-      </p>
-    </div>
-    <Button 
-      variant="ghost" 
-      size="icon" 
-      className="h-8 w-8 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity"
-      onClick={onCopy}
-    >
-      {copied ? (
-        <Check className="w-4 h-4 text-[hsl(var(--success))]" />
-      ) : (
-        <Copy className="w-4 h-4" />
-      )}
-    </Button>
-  </div>
-);
-
 const StepItem = ({ number, title, description }: { number: number; title: string; description: string }) => (
   <div className="flex items-start gap-3">
     <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary to-[hsl(var(--secondary))] text-primary-foreground text-xs font-bold flex items-center justify-center shrink-0 mt-0.5 shadow-[0_0_12px_hsl(var(--primary)/0.3)]">
