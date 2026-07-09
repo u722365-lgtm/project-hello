@@ -27,6 +27,10 @@ import { PaymentReceiptForm } from "@/components/payments/PaymentReceiptForm";
 import { PaymentDetailsPanel } from "@/components/payments/PaymentDetailsPanel";
 import { PaymentProofOptions } from "@/components/payments/PaymentProofOptions";
 import { PaymentTrustSection } from "@/components/payments/PaymentTrustSection";
+import { PaymentGuaranteeBar } from "@/components/payments/PaymentGuaranteeBar";
+import { PaymentFounderCard } from "@/components/payments/PaymentFounderCard";
+import { PaymentStatusPanel } from "@/components/payments/PaymentStatusPanel";
+import { PaymentTrustFAQ } from "@/components/payments/PaymentTrustFAQ";
 import { InternationalCardButton } from "@/components/payments/InternationalCardButton";
 import SEOHead from "@/components/SEOHead";
 import { PAGE_SEO } from "@/lib/seo";
@@ -96,7 +100,6 @@ const FounderAccessPage = () => {
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
       <SEOHead meta={PAGE_SEO.founderAccess} structuredData={undefined} />
-      <SEOHead meta={PAGE_SEO.founderAccess} structuredData={undefined} />
       <Navigation />
 
       {/* Background effects */}
@@ -127,8 +130,12 @@ const FounderAccessPage = () => {
               Founder's <span className="gradient-text">Vault</span>
             </h1>
             <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-              Pakistan: JazzCash / Easypaisa / bank. International: card (when enabled) or USDT. Submit receipt — activated within 2h.
+              Pakistan: JazzCash / Easypaisa / bank. International: card or USDT. Founder-verified checkout — activated within 24h.
             </p>
+          </motion.div>
+
+          <motion.div variants={itemVariants} className="mb-8">
+            <PaymentGuaranteeBar />
           </motion.div>
 
           {/* Main Layout */}
@@ -423,6 +430,10 @@ const FounderAccessPage = () => {
 
                     <Separator className="bg-[hsl(var(--border))]" />
 
+                    <PaymentFounderCard planKey={selectedTier} />
+
+                    <PaymentStatusPanel />
+
                     <InternationalCardButton planKey={selectedTier} />
 
                     <PaymentProofOptions
@@ -446,17 +457,19 @@ const FounderAccessPage = () => {
                       }
                     />
 
-                    <div className="rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-center">
-                      <span className="font-semibold text-foreground">Limited active offer:</span>{" "}
-                      <span className="text-muted-foreground">this pricing closes soon and plan upgrades are activated first-come, first-served.</span>
+                    <div className="rounded-lg border border-green-500/20 bg-green-500/5 px-3 py-2.5 text-xs text-center space-y-1">
+                      <p className="font-semibold text-foreground">7-day refund promise</p>
+                      <p className="text-muted-foreground">
+                        If we cannot verify your payment within 24 hours, message us on WhatsApp — full refund within 7 days.
+                      </p>
                     </div>
 
                     {/* Trust Badges */}
                     <div className="grid grid-cols-3 gap-2 pt-2">
                       {[
-                        { icon: ShieldCheck, label: "Secure", color: "text-[hsl(var(--success))]" },
-                        { icon: Clock, label: "Instant", color: "text-primary" },
-                        { icon: Verified, label: "Verified", color: "text-[hsl(var(--warning))]" },
+                        { icon: ShieldCheck, label: "Encrypted", color: "text-[hsl(var(--success))]" },
+                        { icon: Clock, label: "24h support", color: "text-primary" },
+                        { icon: Verified, label: "Founder-led", color: "text-[hsl(var(--warning))]" },
                       ].map((badge) => (
                         <div key={badge.label} className="text-center p-2.5 rounded-lg bg-[hsl(var(--muted)/0.3)] border border-[hsl(var(--border)/0.5)]">
                           <badge.icon className={`w-4 h-4 mx-auto mb-1 ${badge.color}`} />
@@ -486,6 +499,10 @@ const FounderAccessPage = () => {
               </motion.div>
             </div>
           </div>
+
+          <motion.div variants={itemVariants} className="mt-10">
+            <PaymentTrustFAQ />
+          </motion.div>
 
           <PaymentTrustSection />
 

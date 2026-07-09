@@ -7,6 +7,7 @@ import {
 } from "@/lib/payments/whatsappCheckout";
 import type { ManualPaymentMethod } from "@/lib/payments/submitManualPayment";
 import type { PaymentMethodId } from "@/lib/payments/paymentCredentials";
+import { PAYMENT_VERIFICATION_FLOW } from "@/lib/payments/paymentTrustCopy";
 
 interface Props {
   planKey: string;
@@ -94,6 +95,20 @@ export function PaymentProofOptions({ planKey, currency, activePaymentMethod, us
           International support (Wise / crypto)
         </a>
       </Button>
+
+      <div className="rounded-lg border border-border/40 bg-background/50 p-3 space-y-2">
+        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+          What happens after you submit
+        </p>
+        <ol className="space-y-1.5">
+          {PAYMENT_VERIFICATION_FLOW.slice(1).map((step) => (
+            <li key={step.step} className="text-xs text-muted-foreground flex gap-2">
+              <span className="font-mono text-primary shrink-0">{step.step}.</span>
+              <span>{step.title}</span>
+            </li>
+          ))}
+        </ol>
+      </div>
     </div>
   );
 }

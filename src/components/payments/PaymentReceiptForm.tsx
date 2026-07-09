@@ -88,6 +88,7 @@ export function PaymentReceiptForm({ planKey, defaultMethod = "jazzcash", curren
       return;
     }
     setSubmittedId(result.id ?? null);
+    window.dispatchEvent(new CustomEvent("manual-payment-submitted"));
     toast({ title: "Submitted!", description: "We'll activate your plan within 24h." });
   };
 

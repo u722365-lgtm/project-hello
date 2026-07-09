@@ -71,6 +71,7 @@ export function QuickReceiptUpload({
     }
 
     setSubmittedId(result.id ?? null);
+    window.dispatchEvent(new CustomEvent("manual-payment-submitted"));
     toast({
       title: "Receipt uploaded",
       description: "We notified the team — your plan will be activated after verification.",
