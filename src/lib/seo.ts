@@ -118,6 +118,50 @@ export function generateMetaTags(meta: PageMeta): Record<string, string> {
      ],
    };
  }
+
+export function getWebSiteSchema() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'ShadowTalk AI',
+    url: 'https://www.shadowtalk-ai.com',
+    description: AI_KNOWLEDGE_CANONICAL_PITCH,
+  };
+}
+
+export function getWebPageSchema(page: {
+  title: string;
+  description: string;
+  url: string;
+  about?: string[];
+}) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: page.title,
+    description: page.description,
+    url: page.url,
+    isPartOf: 'https://www.shadowtalk-ai.com',
+    about: page.about?.map((topic) => ({
+      '@type': 'Thing',
+      name: topic,
+    })),
+  };
+}
+
+export function getItemListSchema(items: Array<{ name: string; url: string; description?: string }>) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    itemListElement: items.map((item, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      url: item.url,
+      name: item.name,
+      description: item.description,
+    })),
+  };
+}
  
 /** Founder Q&As for homepage + chatbot FAQ schema (Google / AI Overviews) */
 export const FOUNDER_HOME_FAQ = [

@@ -112,6 +112,7 @@ const EnterpriseLicensePage = lazy(() => import("./pages/EnterpriseLicensePage")
 const TransparencyPage = lazy(() => import("./pages/TransparencyPage"));
 const CommandCenterPage = lazy(() => import("./pages/CommandCenterPage"));
 const CompetitivePage = lazy(() => import("./pages/CompetitivePage"));
+const ComparisonDetailPage = lazy(() => import("./pages/ComparisonDetailPage"));
 const AgentArchitecturePage = lazy(() => import("./pages/AgentArchitecturePage"));
 const ComplianceDashboardPage = lazy(() => import("./pages/ComplianceDashboardPage"));
 const AutoImproveEngine = lazy(() => import("@/components/autoImprove/AutoImproveEngine"));
@@ -281,6 +282,7 @@ const AnimatedRoutes = () => {
           <Route path="/studio" element={<Navigate to="/forge?mode=studio" replace />} />
           <Route path="/command-center" element={<PageTransition><CommandCenterPage /></PageTransition>} />
           <Route path="/competitive" element={<PageTransition><CompetitivePage /></PageTransition>} />
+          <Route path="/compare/:slug" element={<PageTransition><ComparisonDetailPage /></PageTransition>} />
           <Route path="/agents" element={<PageTransition><AgentArchitecturePage /></PageTransition>} />
           <Route path="/compliance" element={<PageTransition><ComplianceDashboardPage /></PageTransition>} />
           <Route path="/personal-llm" element={<PageTransition><PersonalLLMPage /></PageTransition>} />

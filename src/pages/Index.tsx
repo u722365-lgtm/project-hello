@@ -2,12 +2,20 @@ import { lazy, Suspense } from "react";
 import LandingNavigation from "@/components/landing/LandingNavigation";
 import HeroSection from "@/components/HeroSection";
 import { SEOHead } from "@/components/SEOHead";
-import { PAGE_SEO, getFounderHomeStructuredData } from "@/lib/seo";
+import {
+  PAGE_SEO,
+  getFounderHomeStructuredData,
+  getItemListSchema,
+  getSoftwareApplicationSchema,
+  getWebPageSchema,
+  getWebSiteSchema,
+} from "@/lib/seo";
 import LandingPageShell from "@/components/landing/LandingPageShell";
 import LandingSectionReveal from "@/components/landing/LandingSectionReveal";
 import LandingSectionFallback from "@/components/landing/LandingSectionFallback";
 import { LandingMotionProvider } from "@/components/landing/LandingMotionProvider";
 import { PlatformMetricsProvider } from "@/contexts/PlatformMetricsContext";
+import { COMPARISON_PAGES } from "@/lib/comparisonPages";
 
 const WhatIsShadowTalk = lazy(() => import("@/components/landing/WhatIsShadowTalk"));
 const UseCaseWedgesSection = lazy(() => import("@/components/landing/UseCaseWedgesSection"));
@@ -27,9 +35,34 @@ const ExitIntentPrompt = lazy(() => import("@/components/landing/ExitIntentPromp
 const FreeTierViralPrompt = lazy(() => import("@/components/growth/FreeTierViralPrompt"));
 
 const Index = () => {
+  const structuredData = [
+    getWebSiteSchema(),
+    getSoftwareApplicationSchema(),
+    getWebPageSchema({
+      title: PAGE_SEO.home.title,
+      description: PAGE_SEO.home.description,
+      url: PAGE_SEO.home.canonical || "https://www.shadowtalk-ai.com/home",
+      about: [
+        "agentic AI workspace",
+        "AI agents",
+        "offline AI",
+        "deep research",
+        "AI comparison pages",
+      ],
+    }),
+    getItemListSchema(
+      COMPARISON_PAGES.map((page) => ({
+        name: page.title,
+        url: page.canonical,
+        description: page.description,
+      })),
+    ),
+    ...getFounderHomeStructuredData(),
+  ];
+
   return (
     <>
-      <SEOHead meta={PAGE_SEO.home} structuredData={getFounderHomeStructuredData()} />
+      <SEOHead meta={PAGE_SEO.home} structuredData={structuredData} />
       <PlatformMetricsProvider>
         <LandingPageShell>
           <LandingMotionProvider>
