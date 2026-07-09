@@ -14,6 +14,7 @@ interface Props {
   currency: "USD" | "PKR";
   activePaymentMethod: PaymentMethodId;
   userEmail?: string | null;
+  invoiceDraftId?: string | null;
 }
 
 function toManualMethod(method: PaymentMethodId): ManualPaymentMethod {
@@ -31,7 +32,7 @@ function toManualMethod(method: PaymentMethodId): ManualPaymentMethod {
   }
 }
 
-export function PaymentProofOptions({ planKey, currency, activePaymentMethod, userEmail }: Props) {
+export function PaymentProofOptions({ planKey, currency, activePaymentMethod, userEmail, invoiceDraftId }: Props) {
   const whatsappLink = buildCheckoutWhatsAppUrl({
     planKey,
     currency,
@@ -61,6 +62,7 @@ export function PaymentProofOptions({ planKey, currency, activePaymentMethod, us
         planKey={planKey}
         currency={currency}
         defaultMethod={toManualMethod(activePaymentMethod)}
+        invoiceDraftId={invoiceDraftId}
       />
 
       <div className="relative">

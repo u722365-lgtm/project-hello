@@ -34,13 +34,13 @@ export const PAYMENT_VERIFICATION_FLOW = [
   },
   {
     step: 3,
-    title: "Founder approves",
-    description: "Zain verifies the transfer in admin. You get a Discord/Telegram ping internally — we see it fast.",
+    title: "Plan activates automatically",
+    description: "Invoice is emailed to you and pinged to the founder on WhatsApp/Telegram. Your plan goes live instantly.",
   },
   {
     step: 4,
-    title: "Plan activated",
-    description: "Your subscription upgrades in Profile. Email confirmation when verified.",
+    title: "Start using ShadowTalk",
+    description: "Open chat — your subscription tier updates in Profile within seconds.",
   },
 ] as const;
 

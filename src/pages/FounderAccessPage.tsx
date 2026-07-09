@@ -55,6 +55,11 @@ const FounderAccessPage = () => {
     }
   }, [searchParams]);
   const [activePaymentMethod, setActivePaymentMethod] = useState<PaymentMethodId>("bank");
+  const [invoiceDraftId, setInvoiceDraftId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setInvoiceDraftId(null);
+  }, [selectedTier, activePaymentMethod]);
 
   const getTierIcon = (tierId: string) => {
     switch (tierId) {
@@ -366,6 +371,7 @@ const FounderAccessPage = () => {
                       selectedProductName={selectedProduct.name}
                       activePaymentMethod={activePaymentMethod}
                       onPaymentMethodChange={setActivePaymentMethod}
+                      onInvoiceDraft={(draft) => setInvoiceDraftId(draft.invoiceId)}
                     />
                   </CardContent>
                 </Card>
@@ -422,9 +428,9 @@ const FounderAccessPage = () => {
                     <div className="space-y-3">
                       <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">How to Complete</h4>
                       <div className="space-y-3">
-                        <StepItem number={1} title="Generate payment invoice" description="Click the invoice button under your chosen method to reveal transfer details" />
+                        <StepItem number={1} title="Generate payment invoice" description="Creates your invoice and reveals transfer details" />
                         <StepItem number={2} title="Send payment" description="Transfer using the revealed bank, wallet, or crypto details" />
-                        <StepItem number={3} title="Submit proof" description="Upload receipt or open WhatsApp with a pre-filled message" />
+                        <StepItem number={3} title="Upload receipt" description="Invoice is emailed, sent to WhatsApp, and your plan activates automatically" />
                       </div>
                     </div>
 
@@ -441,11 +447,13 @@ const FounderAccessPage = () => {
                       currency={activePaymentMethod === "mobile" || activePaymentMethod === "bank" ? "PKR" : "USD"}
                       activePaymentMethod={activePaymentMethod}
                       userEmail={user?.email}
+                      invoiceDraftId={invoiceDraftId}
                     />
 
                     <PaymentReceiptForm
                       planKey={selectedTier}
                       currency={activePaymentMethod === "mobile" || activePaymentMethod === "bank" ? "PKR" : "USD"}
+                      invoiceDraftId={invoiceDraftId}
                       defaultMethod={
                         activePaymentMethod === "mobile"
                           ? "jazzcash"

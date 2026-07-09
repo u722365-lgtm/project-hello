@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { normalizePlanType, planDisplayName, PKR_MONTHLY, resolvePlanAmountUsd, type PaidPlanId } from "./planPricing";
+import { processManualPaymentAutomation } from "./paymentInvoice";
 
 export type ManualPaymentMethod = "bank_transfer" | "easypaisa" | "jazzcash" | "usdt" | "wise" | "other";
 
@@ -13,11 +14,22 @@ export interface SubmitManualPaymentInput {
   name?: string;
   receiptFile?: File | null;
   notes?: string;
+  invoiceDraftId?: string | null;
+}
+
+export interface SubmitManualPaymentResult {
+  ok: boolean;
+  id?: string;
+  error?: string;
+  invoiceNumber?: string;
+  invoiceHtml?: string;
+  plan?: string;
+  activated?: boolean;
 }
 
 export async function submitManualPayment(
   input: SubmitManualPaymentInput,
-): Promise<{ ok: boolean; id?: string; error?: string }> {
+): Promise<SubmitManualPaymentResult> {
   const { data: auth } = await supabase.auth.getUser();
   const user = auth.user;
   if (!user?.email) {
@@ -60,22 +72,27 @@ export async function submitManualPayment(
 
   if (error) return { ok: false, error: error.message };
 
-  void supabase.functions
-    .invoke("notify-manual-payment", {
-      body: {
-        paymentId: data.id,
-        email: user.email,
-        planKey: input.planKey,
-        amount: input.amount,
-        currency: input.currency,
-        paymentMethod: input.paymentMethod,
-      },
-    })
-    .catch(() => {
-      /* notification is best-effort */
-    });
+  const processed = await processManualPaymentAutomation({
+    paymentId: data.id,
+    invoiceDraftId: input.invoiceDraftId,
+  });
 
-  return { ok: true, id: data.id };
+  if (!processed.ok) {
+    return {
+      ok: true,
+      id: data.id,
+      error: processed.error,
+    };
+  }
+
+  return {
+    ok: true,
+    id: data.id,
+    invoiceNumber: processed.invoiceNumber,
+    invoiceHtml: processed.invoiceHtml,
+    plan: processed.plan,
+    activated: processed.activated,
+  };
 }
 
 export function suggestedAmount(planKey: string, currency: "USD" | "PKR"): number {

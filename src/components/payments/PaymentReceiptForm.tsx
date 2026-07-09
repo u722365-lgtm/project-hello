@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Loader2, Upload, CheckCircle2 } from "lucide-react";
+import { Loader2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,15 +19,22 @@ import {
   type ManualPaymentMethod,
 } from "@/lib/payments/submitManualPayment";
 import { Link } from "react-router-dom";
+import { PaymentInvoiceSuccess } from "@/components/payments/PaymentInvoiceSuccess";
 
 interface Props {
   planKey: string;
   defaultMethod?: ManualPaymentMethod;
   currency?: "USD" | "PKR";
+  invoiceDraftId?: string | null;
 }
 
-export function PaymentReceiptForm({ planKey, defaultMethod = "jazzcash", currency = "PKR" }: Props) {
-  const { user } = useAuth();
+export function PaymentReceiptForm({
+  planKey,
+  defaultMethod = "jazzcash",
+  currency = "PKR",
+  invoiceDraftId,
+}: Props) {
+  const { user, checkSubscription } = useAuth();
   const { toast } = useToast();
   const [method, setMethod] = useState<ManualPaymentMethod>(defaultMethod);
   const [amount, setAmount] = useState(String(suggestedAmount(planKey, currency)));
@@ -36,7 +43,11 @@ export function PaymentReceiptForm({ planKey, defaultMethod = "jazzcash", curren
   const [file, setFile] = useState<File | null>(null);
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [submittedId, setSubmittedId] = useState<string | null>(null);
+  const [invoiceResult, setInvoiceResult] = useState<{
+    invoiceNumber: string;
+    invoiceHtml: string;
+    plan?: string;
+  } | null>(null);
 
   useEffect(() => {
     setAmount(String(suggestedAmount(planKey, currency)));
@@ -53,15 +64,14 @@ export function PaymentReceiptForm({ planKey, defaultMethod = "jazzcash", curren
     );
   }
 
-  if (submittedId) {
+  if (invoiceResult) {
     return (
-      <div className="rounded-xl border border-green-500/30 bg-green-500/10 p-5 space-y-2 text-center">
-        <CheckCircle2 className="h-10 w-10 text-green-500 mx-auto" />
-        <p className="font-semibold">Payment proof received</p>
-        <p className="text-sm text-muted-foreground">
-          We&apos;ll verify within 24 hours and activate your plan. Reference: {submittedId.slice(0, 8)}…
-        </p>
-      </div>
+      <PaymentInvoiceSuccess
+        invoiceNumber={invoiceResult.invoiceNumber}
+        invoiceHtml={invoiceResult.invoiceHtml}
+        plan={invoiceResult.plan}
+        onContinue={() => void checkSubscription()}
+      />
     );
   }
 
@@ -81,15 +91,30 @@ export function PaymentReceiptForm({ planKey, defaultMethod = "jazzcash", curren
       phone: phone || undefined,
       receiptFile: file,
       notes: notes || undefined,
+      invoiceDraftId,
     });
     setSubmitting(false);
     if (!result.ok) {
       toast({ title: "Could not submit", description: result.error, variant: "destructive" });
       return;
     }
-    setSubmittedId(result.id ?? null);
     window.dispatchEvent(new CustomEvent("manual-payment-submitted"));
-    toast({ title: "Submitted!", description: "We'll activate your plan within 24h." });
+    await checkSubscription();
+
+    if (result.invoiceNumber && result.invoiceHtml) {
+      setInvoiceResult({
+        invoiceNumber: result.invoiceNumber,
+        invoiceHtml: result.invoiceHtml,
+        plan: result.plan,
+      });
+      toast({
+        title: "Plan activated",
+        description: `Invoice ${result.invoiceNumber} emailed and sent to WhatsApp.`,
+      });
+      return;
+    }
+
+    toast({ title: "Submitted!", description: result.error ?? "Processing your invoice…" });
   };
 
   return (

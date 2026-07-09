@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { CheckCircle2, Loader2, Upload } from "lucide-react";
+import { Loader2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/AuthProvider";
 import { useToast } from "@/hooks/use-toast";
@@ -8,25 +8,32 @@ import {
   suggestedAmount,
   type ManualPaymentMethod,
 } from "@/lib/payments/submitManualPayment";
+import { PaymentInvoiceSuccess } from "@/components/payments/PaymentInvoiceSuccess";
 import { Link } from "react-router-dom";
 
 interface Props {
   planKey: string;
   currency?: "USD" | "PKR";
   defaultMethod?: ManualPaymentMethod;
+  invoiceDraftId?: string | null;
 }
 
 export function QuickReceiptUpload({
   planKey,
   currency = "PKR",
   defaultMethod = "bank_transfer",
+  invoiceDraftId,
 }: Props) {
-  const { user } = useAuth();
+  const { user, checkSubscription } = useAuth();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [submittedId, setSubmittedId] = useState<string | null>(null);
+  const [invoiceResult, setInvoiceResult] = useState<{
+    invoiceNumber: string;
+    invoiceHtml: string;
+    plan?: string;
+  } | null>(null);
 
   if (!user) {
     return (
@@ -38,13 +45,14 @@ export function QuickReceiptUpload({
     );
   }
 
-  if (submittedId) {
+  if (invoiceResult) {
     return (
-      <div className="rounded-xl border border-green-500/30 bg-green-500/10 p-4 text-center space-y-2">
-        <CheckCircle2 className="h-8 w-8 text-green-500 mx-auto" />
-        <p className="font-medium text-sm">Receipt received — we&apos;ll verify within 24h</p>
-        <p className="text-xs text-muted-foreground">Ref: {submittedId.slice(0, 8)}…</p>
-      </div>
+      <PaymentInvoiceSuccess
+        invoiceNumber={invoiceResult.invoiceNumber}
+        invoiceHtml={invoiceResult.invoiceHtml}
+        plan={invoiceResult.plan}
+        onContinue={() => void checkSubscription()}
+      />
     );
   }
 
@@ -62,6 +70,7 @@ export function QuickReceiptUpload({
       currency,
       receiptFile: file,
       notes: "Quick receipt upload from founder-access",
+      invoiceDraftId,
     });
     setSubmitting(false);
 
@@ -70,11 +79,25 @@ export function QuickReceiptUpload({
       return;
     }
 
-    setSubmittedId(result.id ?? null);
     window.dispatchEvent(new CustomEvent("manual-payment-submitted"));
+    await checkSubscription();
+
+    if (result.invoiceNumber && result.invoiceHtml) {
+      setInvoiceResult({
+        invoiceNumber: result.invoiceNumber,
+        invoiceHtml: result.invoiceHtml,
+        plan: result.plan,
+      });
+      toast({
+        title: "Plan activated",
+        description: `Invoice ${result.invoiceNumber} sent to your email and our WhatsApp.`,
+      });
+      return;
+    }
+
     toast({
       title: "Receipt uploaded",
-      description: "We notified the team — your plan will be activated after verification.",
+      description: result.error ?? "Processing your invoice — refresh in a moment.",
     });
   };
 

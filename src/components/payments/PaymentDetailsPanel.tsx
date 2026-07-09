@@ -11,6 +11,8 @@ import {
   type PaymentMethodId,
 } from "@/lib/payments/paymentCredentials";
 import { PKR_MONTHLY, type PaidPlanId } from "@/lib/payments/planPricing";
+import { suggestedAmount } from "@/lib/payments/submitManualPayment";
+import { createPaymentInvoice } from "@/lib/payments/paymentInvoice";
 
 const invoiceButtonLabels: Record<PaymentMethodId, string> = {
   bank: "Generate Bank Transfer Invoice",
@@ -38,6 +40,26 @@ interface Props {
   selectedProductName: string;
   activePaymentMethod: PaymentMethodId;
   onPaymentMethodChange: (id: PaymentMethodId) => void;
+  onInvoiceDraft?: (draft: {
+    invoiceId: string;
+    invoiceNumber: string;
+    paymentReference: string;
+  }) => void;
+}
+
+function toDbPaymentMethod(method: PaymentMethodId): string {
+  switch (method) {
+    case "mobile":
+      return "jazzcash";
+    case "bank":
+      return "bank_transfer";
+    case "crypto":
+      return "usdt";
+    case "wire":
+      return "wise";
+    default:
+      return "bank_transfer";
+  }
 }
 
 export function PaymentDetailsPanel({
@@ -45,11 +67,15 @@ export function PaymentDetailsPanel({
   selectedProductName,
   activePaymentMethod,
   onPaymentMethodChange,
+  onInvoiceDraft,
 }: Props) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [revealedMethods, setRevealedMethods] = useState<Set<PaymentMethodId>>(new Set());
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [generatingInvoice, setGeneratingInvoice] = useState(false);
+  const [activeInvoiceNumber, setActiveInvoiceNumber] = useState<string | null>(null);
+  const [activePaymentReference, setActivePaymentReference] = useState<string | null>(null);
 
   const paymentReference = useMemo(
     () => buildPaymentReference(planKey, user?.id),
@@ -57,12 +83,18 @@ export function PaymentDetailsPanel({
   );
 
   const isRevealed = revealedMethods.has(activePaymentMethod);
+  const displayReference = activePaymentReference ?? paymentReference;
 
   useEffect(() => {
     setRevealedMethods(new Set());
+    setActiveInvoiceNumber(null);
+    setActivePaymentReference(null);
   }, [planKey, activePaymentMethod]);
 
-  const revealDetails = () => {
+  const currency =
+    activePaymentMethod === "mobile" || activePaymentMethod === "bank" ? "PKR" : "USD";
+
+  const revealDetails = async () => {
     if (!user) {
       toast({
         title: "Sign in to reveal payment details",
@@ -71,10 +103,36 @@ export function PaymentDetailsPanel({
       });
       return;
     }
+
+    setGeneratingInvoice(true);
+    const invoice = await createPaymentInvoice({
+      planKey,
+      paymentMethod: toDbPaymentMethod(activePaymentMethod),
+      amount: suggestedAmount(planKey, currency),
+      currency,
+    });
+    setGeneratingInvoice(false);
+
+    if (!invoice.ok || !invoice.invoiceId || !invoice.invoiceNumber || !invoice.paymentReference) {
+      toast({
+        title: "Could not generate invoice",
+        description: invoice.error ?? "Try again in a moment.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setActiveInvoiceNumber(invoice.invoiceNumber);
+    setActivePaymentReference(invoice.paymentReference);
+    onInvoiceDraft?.({
+      invoiceId: invoice.invoiceId,
+      invoiceNumber: invoice.invoiceNumber,
+      paymentReference: invoice.paymentReference,
+    });
     setRevealedMethods((prev) => new Set(prev).add(activePaymentMethod));
     toast({
-      title: "Payment invoice generated",
-      description: "Use the reference below so we can match your transfer quickly.",
+      title: "Invoice generated",
+      description: `${invoice.invoiceNumber} — pay using the details below, then upload your receipt.`,
     });
   };
 
@@ -133,9 +191,9 @@ export function PaymentDetailsPanel({
               </p>
             </div>
           </div>
-          <Button className="w-full gap-2" onClick={revealDetails}>
+          <Button className="w-full gap-2" onClick={() => void revealDetails()} disabled={generatingInvoice}>
             <FileText className="h-4 w-4" />
-            {invoiceButtonLabels[activePaymentMethod]}
+            {generatingInvoice ? "Generating invoice…" : invoiceButtonLabels[activePaymentMethod]}
           </Button>
           {!user && (
             <p className="text-xs text-center text-muted-foreground">
@@ -154,7 +212,8 @@ export function PaymentDetailsPanel({
           >
             <div className="flex items-center gap-2 rounded-lg border border-green-500/30 bg-green-500/5 px-3 py-2 text-xs text-green-600">
               <Lock className="h-3.5 w-3.5" />
-              Invoice active — reference: <span className="font-mono font-semibold">{paymentReference}</span>
+              Invoice {activeInvoiceNumber ?? paymentReference} — reference{" "}
+              <span className="font-mono font-semibold">{displayReference}</span>
             </div>
 
             {activePaymentMethod === "bank" && (
@@ -163,7 +222,7 @@ export function PaymentDetailsPanel({
                 <PaymentDetailRow label="Account title" value={PAYMENT_CREDENTIALS.bank.accountName} onCopy={() => copyToClipboard(PAYMENT_CREDENTIALS.bank.accountName, "Account title")} copied={copiedField === "Account title"} />
                 <PaymentDetailRow label="Account number" value={PAYMENT_CREDENTIALS.bank.accountNumber} onCopy={() => copyToClipboard(PAYMENT_CREDENTIALS.bank.accountNumber, "Account number")} copied={copiedField === "Account number"} mono />
                 <PaymentDetailRow label="IBAN" value={PAYMENT_CREDENTIALS.bank.iban} onCopy={() => copyToClipboard(PAYMENT_CREDENTIALS.bank.iban, "IBAN")} copied={copiedField === "IBAN"} mono />
-                <PaymentDetailRow label="Reference" value={paymentReference} onCopy={() => copyToClipboard(paymentReference, "Reference")} copied={copiedField === "Reference"} mono />
+                <PaymentDetailRow label="Reference" value={displayReference} onCopy={() => copyToClipboard(displayReference, "Reference")} copied={copiedField === "Reference"} mono />
               </>
             )}
 
