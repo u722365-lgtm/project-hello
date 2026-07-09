@@ -2,7 +2,7 @@ import { PKR_MONTHLY, planDisplayName, resolvePlanAmountUsd, type PaidPlanId } f
 
 const WHATSAPP_NUMBER = "923211798561";
 
-export function buildCheckoutWhatsAppUrl(options: {
+export function buildCheckoutWhatsAppMessage(options: {
   planKey: string;
   currency?: "USD" | "PKR";
   userEmail?: string | null;
@@ -15,7 +15,8 @@ export function buildCheckoutWhatsAppUrl(options: {
 
   let amountLabel: string;
   if (international) {
-    amountLabel = `[Amount] via [Crypto/Wise]`;
+    const usd = resolvePlanAmountUsd(planKey);
+    amountLabel = typeof usd === "number" && usd > 0 ? `$${usd}` : "[amount]";
   } else if (currency === "PKR" && isPaidMonthly) {
     amountLabel = `Rs ${PKR_MONTHLY[planKey as PaidPlanId].toLocaleString()}`;
   } else {
@@ -23,10 +24,20 @@ export function buildCheckoutWhatsAppUrl(options: {
     amountLabel = typeof usd === "number" && usd > 0 ? `$${usd}` : "[amount]";
   }
 
-  const email = userEmail?.trim() || "[your account email]";
-  const text = international
-    ? `Hi Zain, I'm an international founder. I sent ${amountLabel} for the ${planName} plan on ShadowTalk AI. My account email is ${email}. TXID / receipt attached.`
-    : `Hi Zain, I just transferred ${amountLabel} for the ${planName} plan on ShadowTalk AI. My account email is ${email}. Here is my receipt screenshot.`;
+  if (international) {
+    const email = userEmail?.trim() || "[your account email]";
+    return `Hi Zain, I'm an international founder. I sent ${amountLabel} for the ${planName} Plan. My account email is ${email}. Here is my receipt screenshot.`;
+  }
 
+  return `Hi Zain, I just transferred ${amountLabel} for the ${planName} Plan. Here is my receipt screenshot.`;
+}
+
+export function buildCheckoutWhatsAppUrl(options: {
+  planKey: string;
+  currency?: "USD" | "PKR";
+  userEmail?: string | null;
+  international?: boolean;
+}): string {
+  const text = buildCheckoutWhatsAppMessage(options);
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
 }

@@ -25,11 +25,11 @@ import {
 import Navigation from "@/components/Navigation";
 import { PaymentReceiptForm } from "@/components/payments/PaymentReceiptForm";
 import { PaymentDetailsPanel } from "@/components/payments/PaymentDetailsPanel";
+import { PaymentProofOptions } from "@/components/payments/PaymentProofOptions";
 import { PaymentTrustSection } from "@/components/payments/PaymentTrustSection";
 import { InternationalCardButton } from "@/components/payments/InternationalCardButton";
 import SEOHead from "@/components/SEOHead";
 import { PAGE_SEO } from "@/lib/seo";
-import { buildCheckoutWhatsAppUrl } from "@/lib/payments/whatsappCheckout";
 import type { PaymentMethodId } from "@/lib/payments/paymentCredentials";
 import { PKR_MONTHLY, type PaidPlanId } from "@/lib/payments/planPricing";
 
@@ -51,18 +51,6 @@ const FounderAccessPage = () => {
     }
   }, [searchParams]);
   const [activePaymentMethod, setActivePaymentMethod] = useState<PaymentMethodId>("bank");
-
-  const whatsappLink = buildCheckoutWhatsAppUrl({
-    planKey: selectedTier,
-    currency: activePaymentMethod === "mobile" || activePaymentMethod === "bank" ? "PKR" : "USD",
-    userEmail: user?.email,
-  });
-
-  const internationalWhatsappLink = buildCheckoutWhatsAppUrl({
-    planKey: selectedTier,
-    userEmail: user?.email,
-    international: true,
-  });
 
   const getTierIcon = (tierId: string) => {
     switch (tierId) {
@@ -429,14 +417,20 @@ const FounderAccessPage = () => {
                       <div className="space-y-3">
                         <StepItem number={1} title="Generate payment invoice" description="Click the invoice button under your chosen method to reveal transfer details" />
                         <StepItem number={2} title="Send payment" description="Transfer using the revealed bank, wallet, or crypto details" />
-                        <StepItem number={3} title="Submit proof below" description="Upload receipt — fastest way to activate" />
-                        <StepItem number={4} title="Or WhatsApp" description="Send screenshot if upload fails" />
+                        <StepItem number={3} title="Submit proof" description="Upload receipt or open WhatsApp with a pre-filled message" />
                       </div>
                     </div>
 
                     <Separator className="bg-[hsl(var(--border))]" />
 
                     <InternationalCardButton planKey={selectedTier} />
+
+                    <PaymentProofOptions
+                      planKey={selectedTier}
+                      currency={activePaymentMethod === "mobile" || activePaymentMethod === "bank" ? "PKR" : "USD"}
+                      activePaymentMethod={activePaymentMethod}
+                      userEmail={user?.email}
+                    />
 
                     <PaymentReceiptForm
                       planKey={selectedTier}
@@ -452,38 +446,9 @@ const FounderAccessPage = () => {
                       }
                     />
 
-                    <div className="space-y-3">
-                      <div className="rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-center">
-                        <span className="font-semibold text-foreground">Limited active offer:</span>{" "}
-                        <span className="text-muted-foreground">this pricing closes soon and plan upgrades are activated first-come, first-served.</span>
-                      </div>
-
-                      <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
-                        <Button 
-                          size="lg" 
-                          variant="outline"
-                          className="w-full gap-2"
-                          asChild
-                        >
-                          <a href={whatsappLink} target="_blank" rel="noopener noreferrer">
-                            <MessageCircle className="w-5 h-5" />
-                            Send receipt on WhatsApp
-                            <ArrowUpRight className="w-4 h-4" />
-                          </a>
-                        </Button>
-                      </motion.div>
-
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="w-full gap-2 text-muted-foreground"
-                        asChild
-                      >
-                        <a href={internationalWhatsappLink} target="_blank" rel="noopener noreferrer">
-                          <Globe className="w-4 h-4" />
-                          International support (Wise / crypto)
-                        </a>
-                      </Button>
+                    <div className="rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-center">
+                      <span className="font-semibold text-foreground">Limited active offer:</span>{" "}
+                      <span className="text-muted-foreground">this pricing closes soon and plan upgrades are activated first-come, first-served.</span>
                     </div>
 
                     {/* Trust Badges */}

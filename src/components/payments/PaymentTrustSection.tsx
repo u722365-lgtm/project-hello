@@ -9,7 +9,7 @@ export function PaymentTrustSection() {
       <div className="text-center mb-8">
         <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm text-muted-foreground mb-4">
           <BadgeCheck className="h-4 w-4 text-primary" />
-          Trusted by builders worldwide · Active support within 24 hours
+          Trusted by 100+ founders · Active support within 24 hours
         </div>
         <h2 className="text-2xl font-bold tracking-tight">Real feedback from early users</h2>
         <p className="text-sm text-muted-foreground mt-2 max-w-2xl mx-auto">

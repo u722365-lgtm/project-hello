@@ -94,9 +94,9 @@ export function PaymentReceiptForm({ planKey, defaultMethod = "jazzcash", curren
   return (
     <div className="space-y-4 rounded-xl border border-primary/20 bg-card/60 p-4">
       <div>
-        <h4 className="font-semibold text-sm">Activate after payment</h4>
+        <h4 className="font-semibold text-sm">Detailed submission (optional)</h4>
         <p className="text-xs text-muted-foreground mt-1">
-          Use the card option above for instant activation if available, or submit proof here for manual verification — usually within 2h.
+          Add transaction ID, phone, or notes if your bank or wallet requires extra details for verification.
         </p>
       </div>
 
@@ -158,7 +158,7 @@ export function PaymentReceiptForm({ planKey, defaultMethod = "jazzcash", curren
 
       <Button className="w-full" onClick={() => void onSubmit()} disabled={submitting}>
         {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-        Submit for verification
+        Submit receipt screenshot
       </Button>
     </div>
   );
