@@ -7,6 +7,11 @@ export const RETURN_TO_KEY = "shadowtalk_return_to";
 export const LAST_WORKSPACE_KEY = "shadowtalk_last_workspace";
 
 const DEFAULT_WORKSPACE = "/chatbot";
+const AUTH_BOOTSTRAP_TIMEOUT_MS = 20_000;
+const AUTH_BOOTSTRAP_RETRIES = 3;
+/** Refresh access token when less than this many seconds remain. */
+const REFRESH_THRESHOLD_SEC = 600;
+const REFRESH_MAX_ATTEMPTS = 3;
 
 export function markExplicitSignOut() {
   if (typeof localStorage !== "undefined") {
@@ -55,8 +60,6 @@ export function isAnonymousUser(session: Session | null): boolean {
   return session.user.is_anonymous === true;
 }
 
-const AUTH_BOOTSTRAP_TIMEOUT_MS = 12_000;
-
 function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T | null> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<null>((resolve) => {
@@ -71,22 +74,39 @@ function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise
   });
 }
 
+async function getStoredSession(): Promise<Session | null> {
+  for (let attempt = 1; attempt <= AUTH_BOOTSTRAP_RETRIES; attempt++) {
+    const sessionResult = await withTimeout(
+      supabase.auth.getSession(),
+      AUTH_BOOTSTRAP_TIMEOUT_MS,
+      `getSession (attempt ${attempt})`,
+    );
+    if (!sessionResult) {
+      if (attempt < AUTH_BOOTSTRAP_RETRIES) {
+        await new Promise((r) => setTimeout(r, 500 * attempt));
+        continue;
+      }
+      return null;
+    }
+
+    const { data: { session }, error } = sessionResult;
+    if (error) {
+      console.warn("[Auth] getSession failed:", error.message);
+    }
+    if (session) return session;
+    if (attempt < AUTH_BOOTSTRAP_RETRIES) {
+      await new Promise((r) => setTimeout(r, 500 * attempt));
+    }
+  }
+  return null;
+}
+
 /**
  * Restore Supabase session from storage, or create a persistent anonymous session
  * (Gemini-style: open app → already signed in).
  */
 export async function restoreOrCreateSession(): Promise<Session | null> {
-  const sessionResult = await withTimeout(
-    supabase.auth.getSession(),
-    AUTH_BOOTSTRAP_TIMEOUT_MS,
-    "getSession",
-  );
-  if (!sessionResult) return null;
-
-  const { data: { session: existing }, error: getErr } = sessionResult;
-  if (getErr) {
-    console.warn("[Auth] getSession failed:", getErr.message);
-  }
+  const existing = await getStoredSession();
   if (existing) {
     clearExplicitSignOut();
     return existing;
@@ -96,34 +116,65 @@ export async function restoreOrCreateSession(): Promise<Session | null> {
     return null;
   }
 
-  // Enterprise deployments: require work-email sign-in (no anonymous sessions)
   if (import.meta.env.VITE_ENTERPRISE_MODE === "true") {
     return null;
   }
 
-  const anonResult = await withTimeout(
-    supabase.auth.signInAnonymously(),
-    AUTH_BOOTSTRAP_TIMEOUT_MS,
-    "signInAnonymously",
-  );
-  if (!anonResult) return null;
+  for (let attempt = 1; attempt <= AUTH_BOOTSTRAP_RETRIES; attempt++) {
+    const anonResult = await withTimeout(
+      supabase.auth.signInAnonymously(),
+      AUTH_BOOTSTRAP_TIMEOUT_MS,
+      `signInAnonymously (attempt ${attempt})`,
+    );
+    if (!anonResult) {
+      if (attempt < AUTH_BOOTSTRAP_RETRIES) {
+        await new Promise((r) => setTimeout(r, 500 * attempt));
+        continue;
+      }
+      return null;
+    }
 
-  const { data, error } = anonResult;
-  if (error) {
-    console.warn("[Auth] Anonymous session unavailable:", error.message);
-    return null;
+    const { data, error } = anonResult;
+    if (error) {
+      console.warn("[Auth] Anonymous session unavailable:", error.message);
+      return null;
+    }
+
+    clearExplicitSignOut();
+    return data.session ?? null;
   }
 
-  clearExplicitSignOut();
-  return data.session ?? null;
+  return null;
 }
 
-export async function refreshSessionIfNeeded(): Promise<void> {
+/** Proactively refresh JWT so users stay signed in across days/weeks of use. */
+export async function refreshSessionIfNeeded(): Promise<boolean> {
   const { data: { session } } = await supabase.auth.getSession();
-  if (!session) return;
+  if (!session) return false;
+
   const expiresAt = session.expires_at ?? 0;
   const expiresInSec = expiresAt - Math.floor(Date.now() / 1000);
-  if (expiresInSec < 120) {
-    await supabase.auth.refreshSession();
+  if (expiresInSec >= REFRESH_THRESHOLD_SEC) return true;
+
+  for (let attempt = 1; attempt <= REFRESH_MAX_ATTEMPTS; attempt++) {
+    const { data, error } = await supabase.auth.refreshSession();
+    if (!error && data.session) {
+      clearExplicitSignOut();
+      return true;
+    }
+    console.warn(`[Auth] refreshSession attempt ${attempt} failed:`, error?.message);
+    if (attempt < REFRESH_MAX_ATTEMPTS) {
+      await new Promise((r) => setTimeout(r, 1000 * attempt));
+    }
   }
+  return false;
 }
+
+/** Keys that must survive "clear local data" so users stay signed in. */
+export const PRESERVE_ON_LOCAL_CLEAR = [
+  SIGNED_OUT_FLAG,
+  RETURN_TO_KEY,
+  LAST_WORKSPACE_KEY,
+  "shadowtalk_session_token",
+  "shadowtalk_offline_auth",
+] as const;

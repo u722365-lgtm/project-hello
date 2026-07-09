@@ -16,6 +16,7 @@ import {
   setCloudOptIn,
   setDeviceOnlyPledgeActive,
 } from "@/lib/privacy/deviceOnlyPledge";
+import { PRESERVE_ON_LOCAL_CLEAR } from "@/lib/persistentAuth";
 
 const BUNKER_KEY = "shadowtalk_bunker_mode";
 
@@ -48,11 +49,12 @@ export function PrivacyDataCard() {
     ) {
       return;
     }
-    const preserve = new Set([
+    const preserve = new Set<string>([
       "shadowtalk_cookie_consent",
       "shadowtalk_cookie_preferences",
       "shadowtalk-booted",
       "shadowtalk_ui_theme",
+      ...PRESERVE_ON_LOCAL_CLEAR,
     ]);
     const keys = Object.keys(localStorage);
     for (const key of keys) {
@@ -62,7 +64,7 @@ export function PrivacyDataCard() {
     }
     toast({
       title: "Local data cleared",
-      description: "On-device caches were reset. Sign in again if anything looks off.",
+      description: "On-device caches were reset. Your sign-in session was kept.",
     });
   };
 
