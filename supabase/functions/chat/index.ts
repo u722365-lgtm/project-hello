@@ -19,13 +19,78 @@ import {
   type KimiToneType,
 } from "../_shared/kimiDocumentPrompts.ts";
 import { checkAndIncrementDailyUsage } from "../_shared/daily-limits.ts";
+import {
+  getOllamaFallbackConfig,
+  resolveOllamaFallbackStatus,
+  shouldFallbackToOllama,
+  pickOllamaModel,
+  ollamaChat,
+  type OllamaChatResponse,
+} from "../_shared/ollama-fallback.ts";
 
-// ============================================================================
-// SPRINT 1: CHAT INTELLIGENCE ENGINE
-// ============================================================================
+const OLLAMA_STATUS_CACHE_TTL_MS = 10_000;
+let cachedOllamaStatus: { cfg: ReturnType<typeof getOllamaFallbackConfig>; status: Awaited<ReturnType<typeof resolveOllamaFallbackStatus>> } | null = null;
+let cachedOllamaStatusAt = 0;
+let cachedOllamaStatusPromise: Promise<Awaited<ReturnType<typeof resolveOllamaFallbackStatus>>> | null = null;
 
-// --- FEATURE 1: ADAPTIVE CONTEXT ENGINE ---
-// Server-side auto-fetching of memories, knowledge, and AI insights
+async function getOllamaStatus(): Promise<Awaited<ReturnType<typeof resolveOllamaFallbackStatus>> | null> {
+  const cfg = getOllamaFallbackConfig();
+  if (!cfg.enabled) return null;
+  const now = Date.now();
+  if (cachedOllamaStatus && cachedOllamaStatus.cfg === cfg && now - cachedOllamaStatusAt < OLLAMA_STATUS_CACHE_TTL_MS) {
+    return cachedOllamaStatus.status;
+  }
+  if (!cachedOllamaStatusPromise) {
+    cachedOllamaStatusPromise = resolveOllamaFallbackStatus().then((status) => {
+      cachedOllamaStatus = { cfg, status };
+      cachedOllamaStatusAt = Date.now();
+      cachedOllamaStatusPromise = null;
+      return status;
+    });
+  }
+  return cachedOllamaStatusPromise;
+}
+
+async function chatWithLocalOllama(
+  cfg: Awaited<ReturnType<typeof getOllamaFallbackConfig>>,
+  promptText: string,
+  requestedModel?: string,
+): Promise<OllamaChatResponse | null> {
+  return ollamaChat(cfg, {
+    model: requestedModel || cfg.defaultModel,
+    prompt: promptText,
+    stream: false,
+  });
+}
+
+function platformAiUnavailable(corsHeaders: Record<string, string>): Response {
+  return new Response(
+    JSON.stringify({
+      error:
+        "AI is not configured. Add an API key in Profile → API Keys, or enable platform AI (LOVABLE_API_KEY).",
+    }),
+    {
+      status: 503,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    },
+  );
+}
+
+function isCreditsExhaustedLike(status: number, body: unknown): boolean {
+  if (status === 402) return true;
+  if (status === 429 || status === 503) return true;
+  if (typeof body === 'string') {
+    const t = body.toLowerCase();
+    if (t.includes('credits exhausted') || t.includes('quota exceeded') || t.includes('payment required')) return true;
+  }
+  if (body && typeof body === 'object') {
+    const msg = String((body as any)?.error ?? (body as any)?.message ?? '');
+    const t = msg.toLowerCase();
+    if (t.includes('credits exhausted') || t.includes('quota exceeded') || t.includes('payment required')) return true;
+  }
+  return false;
+}
+
 async function fetchAdaptiveContext(userId: string, supabaseUrl: string, serviceRoleKey: string): Promise<string> {
   const admin = createClient(supabaseUrl, serviceRoleKey);
   const sections: string[] = [];
@@ -1797,6 +1862,23 @@ When a user asks you to write, create, draft, or generate any document (email, a
     }
 
     if (!canUsePlatformGateway(LOVABLE_API_KEY, customAi)) {
+      const ollamaStatus = await getOllamaStatus();
+      if (shouldFallbackToOllama(ollamaStatus ?? getOllamaFallbackConfig())) {
+        const lastUserTextForFallback =
+          (typeof lastUserMsg?.content === 'string' ? lastUserMsg.content : '') ||
+          String((messages[messages.length - 1]?.content as unknown as string) ?? '');
+        const ollamaResult = await chatWithLocalOllama(
+          ollamaStatus ?? getOllamaFallbackConfig(),
+          lastUserTextForFallback,
+          routerDecision.model,
+        );
+        if (ollamaResult) {
+          return new Response(
+            JSON.stringify({ ...ollamaResult, fallback: 'ollama' }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+          );
+        }
+      }
       return platformAiUnavailable(corsHeaders);
     }
 
@@ -1807,7 +1889,7 @@ When a user asks you to write, create, draft, or generate any document (email, a
       {
         model,
         messages: [
-          { role: "system", content: systemPrompt },
+          { role: 'system', content: systemPrompt },
           ...trimmedMessages,
         ],
         stream: true,
@@ -1816,59 +1898,60 @@ When a user asks you to write, create, draft, or generate any document (email, a
     );
 
     if (!response.ok) {
+      const exhausted =
+        response.status === 402 ||
+        response.status === 429 ||
+        response.status === 503 ||
+        isCreditsExhaustedLike(response.status, await response.text().catch(() => ''));
+
+      if (exhausted) {
+        const ollamaStatus = await getOllamaStatus();
+        if (shouldFallbackToOllama(ollamaStatus ?? getOllamaFallbackConfig())) {
+          const lastUserTextForFallback =
+            (typeof lastUserMsg?.content === 'string' ? lastUserMsg.content : '') ||
+            String((messages[messages.length - 1]?.content as unknown as string) ?? '');
+          const ollamaResult = await chatWithLocalOllama(
+            ollamaStatus ?? getOllamaFallbackConfig(),
+            lastUserTextForFallback,
+            routerDecision.model,
+          );
+          if (ollamaResult) {
+            return new Response(
+              JSON.stringify({ ...ollamaResult, fallback: 'ollama' }),
+              { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+            );
+          }
+        }
+      }
+
       if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
+        return new Response(JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }), {
           status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
       if (response.status === 402) {
-        // === AUTO-BYOK FALLBACK ===
-        // Platform credits exhausted. If the user has any verified stored API key,
-        // silently switch to it and stream the answer. Only when there's no key do we
-        // surface a structured error so the client can prompt the user to add one.
-        if (!customAi && authUserId && serviceRoleKey) {
-          try {
-            const admin = createClient(supabaseUrl, serviceRoleKey);
-            const userKey = await fetchUserProviderKey(admin, authUserId);
-            if (userKey) {
-              console.log(`[CHAT] Platform credits exhausted — auto-failover to BYOK (${userKey.provider})`);
-              const byokResponse = await streamWithUserKey(
-                userKey.provider,
-                userKey.apiKey,
-                systemPrompt,
-                trimmedMessages,
-              );
-              return new Response(byokResponse.body, {
-                status: byokResponse.status,
-                headers: { ...corsHeaders, ...Object.fromEntries(byokResponse.headers.entries()) },
-              });
-            }
-          } catch (failoverErr) {
-            console.error("[CHAT] BYOK auto-failover failed:", failoverErr);
-          }
-        }
         return new Response(
           JSON.stringify({
-            error: "Platform AI credits are exhausted. Add your own API key to keep chatting — it takes ~2 minutes and uses your provider's free tier.",
-            code: "PLATFORM_CREDITS_EXHAUSTED",
+            error: 'Platform AI credits are exhausted. Add your own API key to keep chatting — it takes ~2 minutes and uses your provider\''s free tier.',
+            code: 'PLATFORM_CREDITS_EXHAUSTED',
             needsByok: true,
           }),
           {
             status: 402,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           },
         );
       }
       if (response.status === 503) {
-        return new Response(JSON.stringify({ error: "AI service temporarily unavailable. Please try again in a moment." }), {
+        return new Response(JSON.stringify({ error: 'AI service temporarily unavailable. Please try again in a moment.' }), {
           status: 503,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
       const errorText = await response.text();
-      console.error("[CHAT] AI gateway error:", response.status, errorText);
-      throw new Error("AI gateway error");
+      console.error('[CHAT] AI gateway error:', response.status, errorText);
+      throw new Error('AI gateway error');
     }
 
     // SPEED OVERHAUL: stream directly for ALL tiers.

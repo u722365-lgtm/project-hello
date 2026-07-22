@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useShadowToolBridge } from "@/hooks/useShadowToolBridge";
 import type { ChatMode } from "@/components/chat/ModeSelector";
 import { SHADOWTALK_SELF_KNOWLEDGE_BRIEF } from "@/lib/shadowTalkProductKnowledge";
+import { detectOllamaLocalStatus, chatWithOllama } from "@/lib/chatOllamaFallback";
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
 
@@ -27,8 +28,32 @@ export interface RunChatTurnParams {
   chatMode: ChatMode;
   attachment?: { type: string; data: string; mimeType: string };
   onMessagesUpdate: (updater: (prev: ChatToolRouterMessage[]) => ChatToolRouterMessage[]) => void;
-  saveAssistant: (content: string) => Promise<void>;
+  saveAssistant: ((content: string) => Promise<void>);
   signal?: AbortSignal;
+}
+
+function getTauriInvoke(): ((cmd: string, args?: any) => Promise<any>) | null {
+  const maybe =
+    (typeof window !== "undefined" &&
+      ((window as any).__TAURI_INVOKE_HANDLERS__ || (document as any)?.__TAURI_INVOKE_HANDLERS__)) ||
+    null;
+  if (!maybe) return null;
+  const invoke = typeof maybe.invoke === "function" ? maybe.invoke : null;
+  return invoke;
+}
+
+async function localFallbackChat(content: string): Promise<string | null> {
+  const invoke = getTauriInvoke();
+  if (!invoke) return null;
+  try {
+    const status = await detectOllamaLocalStatus(invoke);
+    if (!status?.ready) return null;
+    const result = await chatWithOllama(invoke, { prompt: content, model: status.defaultModel, stream: false });
+    if (!result?.message?.content) return null;
+    return result.message.content;
+  } catch {
+    return null;
+  }
 }
 
 export function useChatToolRouter(handlers: Parameters<typeof useShadowToolBridge>[0]) {
@@ -67,8 +92,19 @@ export function useChatToolRouter(handlers: Parameters<typeof useShadowToolBridg
         const errText = await resp.text().catch(() => "");
         let msg = `Chat request failed (${resp.status})`;
         try {
-          const parsed = JSON.parse(errText) as { error?: string };
+          const parsed = JSON.parse(errText) as { error?: string; code?: string };
           if (parsed.error) msg = parsed.error;
+          if (parsed.code === "PLATFORM_CREDITS_EXHAUSTED" || parsed.code === "DAILY_LIMIT_EXCEEDED") {
+            const fallback = await localFallbackChat(chatMessages.map(m => typeof m.content === 'string' ? m.content : '').join('\n') || msgContent).catch(() => null);
+            if (fallback) {
+              onMessagesUpdate((prev) => [
+                ...prev,
+                { id: crypto.randomUUID(), type: "ai", content: fallback, timestamp: new Date() },
+              ]);
+              await saveAssistant(fallback);
+              return fallback;
+            }
+          }
         } catch {
           if (errText) msg = errText.slice(0, 200);
         }
