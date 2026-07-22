@@ -28,9 +28,24 @@ export const useE2EE = () => {
   const [state, setState] = useState<E2EEState>({
     isUnlocked: false,
     masterKey: null,
-    masterSalt: localStorage.getItem('shadowtalk_e2e_salt'),
-    keyFingerprint: localStorage.getItem('shadowtalk_e2e_fingerprint'),
+    masterSalt: null,
+    keyFingerprint: null,
   });
+
+  const storeOnMount = (callback: () => Promise<boolean>) => {
+    // ran once after mount in browser; kept as stable callback to await store
+    const [ready, setReady] = useState(false);
+    useEffect(() => {
+      let cancelled = false;
+      Promise.resolve(callback()).then((initialized) => {
+        if (!cancelled) setReady(initialized);
+      });
+      return () => {
+        cancelled = true;
+      };
+    }, []);
+    return ready;
+  };
 
   const persistSessionKey = useCallback(async (key: CryptoKey) => {
     try {

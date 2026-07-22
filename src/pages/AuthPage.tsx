@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
+import { isLocalFirst, signInWithRemoteProvider, signInWithLocalPreferredProvider } from "@/lib/remoteAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
@@ -243,8 +243,8 @@ const AuthPage = () => {
     if (isOffline) { toast({ title: "Offline", description: "Google sign-in requires internet connection", variant: "destructive" }); return; }
     setGoogleLoading(true);
     try {
-      const { error } = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
-      if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+      const result = isLocalFirst() ? await signInWithLocalPreferredProvider() : await signInWithRemoteProvider("google", { redirect_uri: window.location.origin });
+      if ((result as any)?.error) toast({ title: "Error", description: (result as any).error?.message ?? (result as any).error, variant: "destructive" });
     } catch (error: any) {
       toast({ title: "Error", description: error.message || "Failed to sign in with Google", variant: "destructive" });
     } finally { setGoogleLoading(false); }
@@ -254,8 +254,8 @@ const AuthPage = () => {
     if (isOffline) { toast({ title: "Offline", description: "Apple sign-in requires internet connection", variant: "destructive" }); return; }
     setAppleLoading(true);
     try {
-      const { error } = await lovable.auth.signInWithOAuth("apple", { redirect_uri: window.location.origin });
-      if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+      const result = isLocalFirst() ? await signInWithLocalPreferredProvider() : await signInWithRemoteProvider("apple", { redirect_uri: window.location.origin });
+      if ((result as any)?.error) toast({ title: "Error", description: (result as any).error?.message ?? (result as any).error, variant: "destructive" });
     } catch (error: any) {
       toast({ title: "Error", description: error.message || "Failed to sign in with Apple", variant: "destructive" });
     } finally { setAppleLoading(false); }

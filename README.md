@@ -91,6 +91,8 @@ npm run desktop:make
 
 See [DESKTOP.md](./DESKTOP.md). Offline models: [OFFLINE.md](./OFFLINE.md).
 
+Desktop does **not** require Lovable Cloud. Run with `VITE_LOCAL_FIRST=1` to build/run in standalone/offline-first mode.
+
 ---
 
 ## For developers

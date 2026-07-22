@@ -8,6 +8,16 @@ import {
 } from "@/lib/customApiKeys";
 import type { UserProviderKeyRow } from "@/hooks/useCustomApiKeys";
 
+/**
+ * chatProviderBridge
+ *
+ * - UI ↔ server provider mapping.
+ * - Successful auth/model routing now delegated to `src/api/` so browser/desktop/tauri share
+ *   one abstraction layer instead of direct Supabase calls.
+ *
+ * TODO[runtime platform]: Hooks below will move to `src/api/` as Tauri backends land.
+ */
+
 /** UI selector id → server-stored provider (user_provider_keys) */
 export function toServerProvider(ui: AIProvider): AiProviderId | null {
   if (ui === "gemini") return "google";
