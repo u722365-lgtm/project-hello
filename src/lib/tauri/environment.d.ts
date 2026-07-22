@@ -8,7 +8,19 @@ import type {
 
 declare global {
   namespace Window {
-    // Injected by Tauri Rust backend via window.__TAURI_INVOKE_HANDLERS__ or direct JS bindings.
+    interface TauriInvokeOptions {
+      args?: Record<string, unknown>;
+    }
+
+    interface TauriWindowBridge {
+      invoke<T = unknown>(cmd: string, args?: TauriInvokeOptions): Promise<T>;
+    }
+
+    interface TauriRuntime {
+      invoke?: Window["TauriWindowBridge"]["invoke"];
+      [key: string]: unknown;
+    }
+
     interface TauriBackends {
       localAuth?: TauriLocalAuth;
       ollamaClient?: TauriOllamaClient;
@@ -17,9 +29,8 @@ declare global {
       mediaPipeline?: TauriMediaPipeline;
     }
 
-    // Top-level marker added during app bootstrap when running in Tauri.
     interface TauriGlobal {
-      __TAURI__?: unknown;
+      __TAURI__?: TauriRuntime;
       shadowtalkBackends?: TauriBackends;
     }
   }

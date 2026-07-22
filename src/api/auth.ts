@@ -1,13 +1,11 @@
 import { detectRuntimePlatform } from "@/lib/tauri/runtimePlatform";
-import type { TauriLocalAuth, TauriOllamaClient } from "@/lib/tauri/types";
+import type { TauriLocalAuth } from "@/lib/tauri/types";
 
 export interface AuthApi {
   biometric(reason?: string): Promise<boolean>;
   signIn(payload: { email: string; password: string }): Promise<{ success: boolean; error?: string }>;
   signOut(): Promise<void>;
 }
-
-import { supabase } from "@/integrations/supabase/client";
 
 function getBackends() {
   return (typeof window !== 'undefined' ? (window as any).shadowtalkBackends : undefined) || {};
@@ -32,11 +30,24 @@ export async function auth(): Promise<AuthApi> {
   return {
     biometric: async () => false,
     signIn: async ({ email, password }) => {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const module = await import('@/lib/supabaseEnv');
+      const client = module.getSupabase?.() ?? null;
+      if (!client) {
+        return { success: false, error: 'Supabase client is unavailable.' };
+      }
+      const { error } = await client.auth.signInWithPassword({ email, password });
       return { success: !error, error: error?.message };
     },
     signOut: async () => {
-      await supabase.auth.signOut();
+      try {
+        const module = await import('@/lib/supabaseEnv');
+        const client = module.getSupabase?.();
+        if (client) {
+          await client.auth.signOut();
+        }
+      } catch {
+        // ignore
+      }
     },
   };
 }

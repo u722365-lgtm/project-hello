@@ -9,9 +9,29 @@ export interface ChatApi {
     context?: number[];
     options?: Record<string, unknown>;
   }): Promise<AsyncIterable<string>>;
+  chatCompletion(params: {
+    model: string;
+    prompt: string;
+    context?: number[];
+    options?: Record<string, unknown>;
+  }): Promise<{ text: string }>;
 }
 
 async function getBackends() {
+  if (typeof window !== 'undefined' && (window as any).shadowtalkBackends) {
+    return (window as any).shadowtalkBackends;
+  }
+  if (platform === 'tauri') {
+    try {
+      const { buildTauriOllamaClient } = await import('@/lib/tauri/ollamaClient');
+      const client = buildTauriOllamaClient();
+      if (client) {
+        (window as any).shadowtalkBackends = { ollamaClient: client };
+      }
+    } catch {
+      // ignore bootstrap wiring errors
+    }
+  }
   return (typeof window !== 'undefined' ? (window as any).shadowtalkBackends : undefined) || {};
 }
 
@@ -31,6 +51,40 @@ export async function chat(): Promise<ChatApi> {
   const chatUrl = getChatFunctionUrl();
 
   return {
+    chatCompletion: async (params) => {
+      if (!chatUrl) {
+        throw new Error('Chat service URL is not configured.');
+      }
+
+      const response = await fetch(`${chatUrl}/completions`, {
+        method: 'POST',
+        headers: {
+          ...getChatFetchHeaders(),
+          Accept: 'text/event-stream',
+        },
+        body: JSON.stringify(params),
+      });
+      if (!response.ok) {
+        throw new Error('Chat completion failed: ' + (response.statusText || response.status));
+      }
+
+      const body = await response.text();
+      let last = '';
+      for (const line of body.split('
+')) {
+        const trimmed = line.trim();
+        if (!trimmed) continue;
+        if (trimmed.includes('"message"')) {
+          try {
+            const parsed = JSON.parse(trimmed);
+            if (parsed && parsed.message && typeof parsed.message.content === 'string') {
+              last = parsed.message.content;
+            }
+          } catch {}
+        }
+      }
+      return { text: last || '' };
+    },
     streamCompletion: async (params) => {
       if (!chatUrl) {
         throw new Error('Chat service URL is not configured.');
