@@ -65,12 +65,10 @@ export function buildTauriOllamaClient(): TauriOllamaClient | null {
   return {
     async health() {
       const result = await call("ollama_status");
-      // @ts-expect-error opaque rust json
-      return result as OllamaStatus | undefined;
+      return result as any;
     },
 
     async pull(name: string) {
-      // @ts-expect-error opaque progress json
       const progress: PullProgress | undefined = await call("ollama_pull", { model: name });
       if (!progress) return { success: false, error: "ollama not reachable" };
       const ok = /completed pull for /.test(progress.status ?? "");
