@@ -120,6 +120,8 @@ const pages: PageEntry[] = [
   { name: "Discover", href: "/discover", icon: Sparkles, desc: "Viral AI comparisons", group: "Marketing" },
   { name: "Google SEO Hub", href: "/google-seo", icon: Globe, desc: "SEO + AEO topic hub", group: "Marketing" },
   { name: "UI Templates", href: "/templates", icon: LayoutGrid, desc: "100 presets + custom theme designer", group: "Marketing" },
+  { name: "Themes", href: "/themes", icon: LayoutGrid, desc: "Theme gallery", group: "Marketing" },
+  { name: "Theme Designer", href: "/theme", icon: PenTool, desc: "Custom theme designer", group: "Marketing" },
   { name: "Referral Program", href: "/referral", icon: Gift, desc: "Earn credits by referring", group: "Marketing" },
   { name: "Referral Activation", href: "/referral/activation-guide", icon: ClipboardList, desc: "Get started with referrals", group: "Marketing" },
   { name: "Referral Share Templates", href: "/referral/social-share-templates", icon: Share2, desc: "Social share copy", group: "Marketing" },
