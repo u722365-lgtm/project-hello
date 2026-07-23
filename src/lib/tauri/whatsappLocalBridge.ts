@@ -7,7 +7,8 @@ export interface TauriWhatsAppLocalBridge {
 // Tauri core is optional; fall back to a no-op invoke when not present.
 async function invoke<T = unknown>(cmd: string, args?: Record<string, unknown>): Promise<T> {
   try {
-    const mod: any = await import(/* @vite-ignore */ "@tauri-apps/api/core").catch(() => null);
+    const modName = "@tauri-apps/api/core";
+    const mod: any = await import(/* @vite-ignore */ modName).catch(() => null);
     if (mod?.invoke) return mod.invoke(cmd, args);
   } catch { /* noop */ }
   throw new Error(`Tauri invoke unavailable for ${cmd}`);
