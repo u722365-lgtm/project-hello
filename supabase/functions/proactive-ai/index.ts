@@ -76,21 +76,15 @@ ${extraContext ? `- Extra context: ${extraContext}` : ""}
 
 Return ONLY the message text, nothing else.`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash-lite",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-        max_tokens: 100,
-        temperature: 0.9,
-      }),
+    const { fetchChatWithFallback } = await import("../_shared/openrouterFallback.ts");
+    const response = await fetchChatWithFallback({
+      model: "google/gemini-2.5-flash-lite",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+      max_tokens: 100,
+      temperature: 0.9,
     });
 
     if (!response.ok) {
