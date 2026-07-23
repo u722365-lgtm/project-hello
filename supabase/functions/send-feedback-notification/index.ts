@@ -10,6 +10,13 @@ const RESEND_API_KEY =
   Deno.env.get("resend_api_key");
 const RESEND_FROM =
   Deno.env.get("RESEND_FROM") || "ShadowTalk AI <onboarding@resend.dev>";
+const FEEDBACK_SENDER_DOMAIN =
+  Deno.env.get("FEEDBACK_SENDER_DOMAIN") ||
+  Deno.env.get("SENDER_DOMAIN") ||
+  "notify.www.shadowtalk-ai.com";
+const FEEDBACK_FROM =
+  Deno.env.get("FEEDBACK_FROM") ||
+  `ShadowTalk AI <feedback@${FEEDBACK_SENDER_DOMAIN}>`;
 
 
 interface FeedbackNotificationRequest {
@@ -39,6 +46,12 @@ const getRatingStars = (rating: number): string => {
 const escapeHtml = (s: string): string =>
   String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+
+const createMessageId = (): string => {
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+};
 
 const handler = async (req: Request): Promise<Response> => {
   const origin = req.headers.get("origin");
@@ -163,6 +176,56 @@ Time: ${new Date().toLocaleString()}
 
     let emailResult: any = null;
     let emailProvider = '';
+
+    const queuedMessages = await Promise.all(
+      adminEmails.map(async (recipient) => {
+        const messageId = `feedback-${feedbackId}-${createMessageId()}`;
+        const payload = {
+          message_id: messageId,
+          to: recipient,
+          from: FEEDBACK_FROM,
+          sender_domain: FEEDBACK_SENDER_DOMAIN,
+          subject: `${getCategoryLabel(category)} - New Feedback (${rating}⭐)`,
+          html: emailHtml,
+          text: plainText,
+          purpose: "transactional",
+          label: "feedback-notification",
+          idempotency_key: `feedback-${feedbackId}-${recipient}`,
+          queued_at: new Date().toISOString(),
+        };
+
+        const { error: queueError } = await serviceClient.rpc("enqueue_email", {
+          queue_name: "transactional_emails",
+          payload,
+        });
+
+        if (queueError) throw queueError;
+
+        await serviceClient.from("email_send_log").insert({
+          message_id: messageId,
+          template_name: "feedback-notification",
+          recipient_email: recipient,
+          status: "pending",
+          metadata: { feedback_id: feedbackId, category: rawBody.category || "general" },
+        });
+
+        return { recipient, messageId };
+      }),
+    );
+
+    if (queuedMessages.length > 0) {
+      emailResult = {
+        success: true,
+        provider: "lovable-email",
+        queued: queuedMessages.length,
+      };
+      emailProvider = "Lovable Email";
+      console.log("[FEEDBACK-NOTIFICATION] Queued feedback email notification", {
+        feedbackId,
+        queued: queuedMessages.length,
+        senderDomain: FEEDBACK_SENDER_DOMAIN,
+      });
+    }
 
     // Try SendGrid first (free tier: 100 emails/day, no domain verification needed for testing)
     if (SENDGRID_API_KEY) {
