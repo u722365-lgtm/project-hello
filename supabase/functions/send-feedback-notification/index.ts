@@ -53,6 +53,8 @@ const createMessageId = (): string => {
   return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
 };
 
+const createUnsubscribeToken = (): string => `feedback-${createMessageId()}${createMessageId()}`;
+
 const handler = async (req: Request): Promise<Response> => {
   const origin = req.headers.get("origin");
   const corsHeaders = getCorsHeaders(origin);
@@ -180,6 +182,16 @@ Time: ${new Date().toLocaleString()}
     const queuedMessages = await Promise.all(
       adminEmails.map(async (recipient) => {
         const messageId = `feedback-${feedbackId}-${createMessageId()}`;
+        const unsubscribeToken = createUnsubscribeToken();
+
+        await serviceClient.from("email_unsubscribe_tokens").upsert(
+          {
+            email: recipient,
+            token: unsubscribeToken,
+          },
+          { onConflict: "email" },
+        );
+
         const payload = {
           message_id: messageId,
           to: recipient,
@@ -191,6 +203,7 @@ Time: ${new Date().toLocaleString()}
           purpose: "transactional",
           label: "feedback-notification",
           idempotency_key: `feedback-${feedbackId}-${recipient}`,
+          unsubscribe_token: unsubscribeToken,
           queued_at: new Date().toISOString(),
         };
 
