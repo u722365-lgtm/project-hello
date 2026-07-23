@@ -142,7 +142,7 @@ export async function generateExecutionPlan(
   deliverableType: DeliverableType,
   accessToken: string,
   signal?: AbortSignal,
-): Promise<GeneratedPlan> {
+): Promise<MissionPlanStep[]> {
   try {
     const content = await streamChatCompletion(
       accessToken,
@@ -152,7 +152,7 @@ export async function generateExecutionPlan(
 
     const parsed = extractJsonArray<RawPlanStep>(content);
     if (parsed && parsed.length > 0) {
-      const steps = parsed.slice(0, 8).map((s, i) => ({
+      return parsed.slice(0, 8).map((s, i) => ({
         id: `step-${i + 1}`,
         action: s.action || `Step ${i + 1}`,
         tool_name: (TOOLS.includes(s.tool_name as MissionToolName)
@@ -165,13 +165,15 @@ export async function generateExecutionPlan(
           query: s.tool_params?.query || `${goal} ${s.action}`.slice(0, 200),
         },
       }));
-      return { steps, usedDefault: false };
     }
   } catch (e) {
     console.warn("[execution] plan generation failed, using default", e);
   }
 
-  return { steps: defaultPlan(goal, deliverableType), usedDefault: true };
+  const fallback = defaultPlan(goal, deliverableType);
+  // Mark first step so the executor can surface a "used default plan" warning
+  if (fallback[0]) (fallback[0] as MissionPlanStep & { _planFallback?: boolean })._planFallback = true;
+  return fallback;
 }
 
 /** @deprecated Use generateExecutionPlan */
