@@ -162,44 +162,56 @@ interface CommandPaletteProps {
 
 const GROUP_ORDER: PageEntry["group"][] = ["Core", "Tools", "Account", "Company", "Marketing", "Legal", "More"];
 
+const CommandPalette: React.FC<CommandPaletteProps> = ({ open, onOpenChange }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const onChatPage = location.pathname === "/chatbot";
+
+  // Global keyboard shortcut: Ctrl+K / Cmd+K (chat page uses its own tools palette)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (onChatPage) return;
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        onOpenChange(!open);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open, onOpenChange, onChatPage]);
+
+  const handleSelect = useCallback((href: string) => {
+    navigate(href);
+    onOpenChange(false);
+  }, [navigate, onOpenChange]);
+
+  const grouped = GROUP_ORDER
+    .map((g) => ({ group: g, items: pages.filter((p) => p.group === g) }))
+    .filter((g) => g.items.length > 0);
+
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
-      <CommandInput placeholder="Search pages... (Ctrl+K)" />
-      <CommandList>
+      <CommandInput placeholder={`Search ${pages.length} pages... (Ctrl+K)`} />
+      <CommandList className="max-h-[70vh]">
         <CommandEmpty>No pages found.</CommandEmpty>
-        <CommandGroup heading="Core">
-          {core.map((page) => (
-            <CommandItem key={page.href} onSelect={() => handleSelect(page.href)} className="gap-3 cursor-pointer">
-              <page.icon className="h-4 w-4 text-primary" />
-              <div className="flex flex-col">
-                <span className="font-medium">{page.name}</span>
-                <span className="text-xs text-muted-foreground">{page.desc}</span>
-              </div>
-            </CommandItem>
-          ))}
-        </CommandGroup>
-        <CommandGroup heading="Tools">
-          {tools.map((page) => (
-            <CommandItem key={page.href} onSelect={() => handleSelect(page.href)} className="gap-3 cursor-pointer">
-              <page.icon className="h-4 w-4 text-secondary" />
-              <div className="flex flex-col">
-                <span className="font-medium">{page.name}</span>
-                <span className="text-xs text-muted-foreground">{page.desc}</span>
-              </div>
-            </CommandItem>
-          ))}
-        </CommandGroup>
-        <CommandGroup heading="More">
-          {rest.map((page) => (
-            <CommandItem key={page.href} onSelect={() => handleSelect(page.href)} className="gap-3 cursor-pointer">
-              <page.icon className="h-4 w-4 text-muted-foreground" />
-              <div className="flex flex-col">
-                <span className="font-medium">{page.name}</span>
-                <span className="text-xs text-muted-foreground">{page.desc}</span>
-              </div>
-            </CommandItem>
-          ))}
-        </CommandGroup>
+        {grouped.map(({ group, items }) => (
+          <CommandGroup key={group} heading={group}>
+            {items.map((page) => (
+              <CommandItem
+                key={page.href}
+                value={`${page.name} ${page.href} ${page.desc}`}
+                onSelect={() => handleSelect(page.href)}
+                className="gap-3 cursor-pointer"
+              >
+                <page.icon className="h-4 w-4 text-primary" />
+                <div className="flex flex-col">
+                  <span className="font-medium">{page.name}</span>
+                  <span className="text-xs text-muted-foreground">{page.desc}</span>
+                </div>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        ))}
       </CommandList>
     </CommandDialog>
   );
