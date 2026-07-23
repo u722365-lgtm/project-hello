@@ -1887,40 +1887,26 @@ When a user asks you to write, create, draft, or generate any document (email, a
         isCreditsExhaustedLike(response.status, await response.text().catch(() => ''));
 
       if (exhausted) {
-        const fallbackKey = Deno.env.get("OPENROUTER_FALLBACK_KEY");
-        if (fallbackKey) {
-          try {
-            const fallbackResp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${fallbackKey}`,
-                "Content-Type": "application/json",
-                "HTTP-Referer": "https://shadowtalk.ai",
-                "X-Title": "ShadowTalk AI",
-              },
-              body: JSON.stringify({
-                model: "google/gemini-2.5-flash",
-                messages: [
-                  { role: "system", content: systemPrompt || "You are ShadowTalk AI." },
-                  ...trimmedMessages,
-                ],
-                stream: false,
-              }),
-            });
-            if (fallbackResp.ok) {
-              console.log("[CHAT] OpenRouter fallback succeeded");
-              const fallbackData = await fallbackResp.json();
-              const fallbackContent = fallbackData.choices?.[0]?.message?.content || "";
-              const ssePayload = `data: ${JSON.stringify({ content: fallbackContent, fallback: "openrouter" })}\n\n`;
-              return new Response(ssePayload, {
-                headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
-              });
-            }
-            console.warn("[CHAT] OpenRouter fallback failed:", fallbackResp.status);
-          } catch (fallbackErr) {
-            console.error("[CHAT] OpenRouter fallback error:", fallbackErr);
-          }
+        const { openRouterFreeFallback } = await import("../_shared/openrouterFallback.ts");
+        const fallbackResp = await openRouterFreeFallback({
+          model,
+          messages: [
+            { role: "system", content: systemPrompt || "You are ShadowTalk AI." },
+            ...trimmedMessages,
+          ],
+          stream: true,
+        });
+        if (fallbackResp?.ok && fallbackResp.body) {
+          console.log("[CHAT] OpenRouter free-model fallback streaming");
+          return new Response(fallbackResp.body, {
+            headers: {
+              ...corsHeaders,
+              "Content-Type": "text/event-stream",
+              "X-Shadowtalk-Fallback": "openrouter-free",
+            },
+          });
         }
+        console.warn("[CHAT] OpenRouter fallback unavailable");
       }
 
       if (response.status === 429) {

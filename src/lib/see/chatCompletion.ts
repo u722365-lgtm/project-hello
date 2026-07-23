@@ -1,7 +1,23 @@
 import { canRunLocalAgentCompletion, streamLocalAgentCompletion } from "@/lib/desktop/localAgentCompletion";
 import { stringifyChatBody } from "@/lib/chatRequest";
+import { chat as ollamaChat, getStatus as getOllamaStatus, isOllamaChatEnabled } from "@/lib/ollama/unifiedClient";
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
+
+async function tryOllamaFallback(userContent: string, signal?: AbortSignal): Promise<string | null> {
+  try {
+    const status = await getOllamaStatus();
+    if (!status.reachable) return null;
+    const res = await ollamaChat(
+      [{ role: "user", content: userContent }],
+      { signal },
+    );
+    if (res.ok && res.content) return res.content;
+  } catch {
+    /* ollama not available — continue */
+  }
+  return null;
+}
 
 export async function streamChatCompletion(
   accessToken: string,
@@ -10,6 +26,12 @@ export async function streamChatCompletion(
 ): Promise<string> {
   if (canRunLocalAgentCompletion()) {
     return streamLocalAgentCompletion(userContent, { signal: options?.signal });
+  }
+
+  // If user explicitly opted into Ollama, try it first.
+  if (isOllamaChatEnabled()) {
+    const local = await tryOllamaFallback(userContent, options?.signal);
+    if (local !== null) return local;
   }
 
   const response = await fetch(CHAT_URL, {
@@ -28,6 +50,11 @@ export async function streamChatCompletion(
   });
 
   if (!response.ok) {
+    // Cloud credits exhausted / rate limited — try local Ollama as last resort.
+    if (response.status === 402 || response.status === 429 || response.status === 503) {
+      const local = await tryOllamaFallback(userContent, options?.signal);
+      if (local !== null) return local;
+    }
     const errText = await response.text().catch(() => "");
     throw new Error(errText || `Chat request failed (${response.status})`);
   }
