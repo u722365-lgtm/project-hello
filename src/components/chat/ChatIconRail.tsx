@@ -89,7 +89,7 @@ export const ChatIconRail = ({
 
   return (
     <TooltipProvider delayDuration={200}>
-      <aside className="flex md:hidden w-[64px] xs:w-[72px] shrink-0 flex-col items-center py-2 xs:py-3 border-r border-sidebar-border/80 bg-sidebar/95 backdrop-blur-2xl relative z-30 safe-top">
+      <aside className="hidden sm:flex md:hidden w-[64px] xs:w-[72px] shrink-0 flex-col items-center py-2 xs:py-3 border-r border-sidebar-border/80 bg-sidebar/95 backdrop-blur-2xl relative z-30 safe-top">
         <motion.div whileTap={{ scale: 0.94 }} transition={spring} className="mb-4">
           <Tooltip>
             <TooltipTrigger asChild>
