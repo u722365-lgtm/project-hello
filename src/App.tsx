@@ -2,6 +2,7 @@ import { useState, useEffect, lazy, Suspense, createContext } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import FeedbackAutoPrompt from "@/components/FeedbackAutoPrompt";
+import MobileViewportFix from "@/components/MobileViewportFix";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
@@ -372,6 +373,7 @@ const App = () => {
               <Sonner />
               <FeedbackAutoPrompt />
                <BrowserRouter>
+                 <MobileViewportFix />
                  <UpdateNotificationProvider />
                  <NetworkTransitionOverlay />
                  <PushIntelligencePanel />

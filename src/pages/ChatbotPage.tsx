@@ -2229,7 +2229,7 @@ const ChatbotPage = () => {
 
   if (enterprise.needsWorkEmailSignIn) {
     return (
-      <div className="shadowtalk-chat-shell neural-bg flex h-[100dvh] flex-col">
+      <div className="shadowtalk-chat-shell neural-bg flex flex-col" style={{ height: "var(--vvh, 100dvh)" }}>
         <SEOHead meta={PAGE_SEO.chatbot} structuredData={[...getFounderHomeStructuredData(), getChatbotFAQSchema(), getSpeakableSchema(["h1", "[data-speakable]"]), getWebSiteWithSearchSchema()]} />
         <ChatAmbientBackground />
         <EnterpriseEmployeeGate
