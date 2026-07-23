@@ -2,7 +2,16 @@
  import { AI_KNOWLEDGE_CANONICAL_PITCH } from "@/lib/aiPublicKnowledge";
  import { FOUNDER_CANONICAL, FOUNDER_SAME_AS } from "@/lib/founderIdentity";
 
- // SEO utilities and structured data helpers
+  // SEO utilities and structured data helpers
+
+  /**
+   * Canonical founder portrait — used as og:image on founder/about pages and as
+   * the `image` property in Person schema so Google Knowledge Panel and AI
+   * assistants (ChatGPT, Perplexity, Gemini) surface this photo when users
+   * search "ShadowTalk AI" or "Zain Ahmed Fahad Patel".
+   */
+  export const FOUNDER_IMAGE_URL =
+    'https://www.shadowtalk-ai.com/__l5e/assets-v1/1adc1bc7-e5a1-46b7-aa6a-30f07df7d437/founder-zain-ahmed.png';
  
 /** Google/Bing search snippet — keep ≤160 characters (conversion-focused) */
 export const SITE_SEARCH_DESCRIPTION =
