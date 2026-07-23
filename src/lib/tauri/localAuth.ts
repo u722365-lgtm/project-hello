@@ -1,8 +1,18 @@
-import type { TauriLocalAuth } from "@/lib/tauri/localAuth";
+// Local Tauri auth surface. Not re-exported from ./types to avoid duplicate definitions.
 
 type Booleanish = boolean | Promise<boolean>;
 type VoidPromise = Promise<void>;
 type CredentialSignInResult = { success: boolean; error?: string };
+
+export interface TauriLocalAuth {
+  authenticateWithBiometric(reason?: string): Promise<boolean>;
+  signInWithCredentials(payload: {
+    email: string;
+    password: string;
+  }): Promise<CredentialSignInResult>;
+  signOut(): VoidPromise;
+  hasStoredCredentials(): Promise<boolean>;
+}
 
 function getInvoke(): ((cmd: string, args?: any) => Promise<any>) | null {
   const maybe =
@@ -33,10 +43,7 @@ export async function buildLocalAuth(): Promise<TauriLocalAuth | null> {
       }
     },
 
-    async signInWithCredentials(payload: {
-      email: string;
-      password: string;
-    }): Promise<CredentialSignInResult> {
+    async signInWithCredentials(payload) {
       try {
         const result = await invoke("local_sign_in", {
           email: payload.email,
@@ -48,7 +55,7 @@ export async function buildLocalAuth(): Promise<TauriLocalAuth | null> {
       }
     },
 
-    async signOut(): Promise<void> {
+    async signOut() {
       try {
         await invoke("local_sign_out");
       } catch {
@@ -56,7 +63,7 @@ export async function buildLocalAuth(): Promise<TauriLocalAuth | null> {
       }
     },
 
-    async hasStoredCredentials(): Promise<boolean> {
+    async hasStoredCredentials() {
       try {
         const result = await invoke("local_has_credentials");
         return asBool(result);

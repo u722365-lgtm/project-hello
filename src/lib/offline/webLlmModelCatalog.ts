@@ -17,6 +17,8 @@ export interface WebLlmModelEntry {
   quickPick?: boolean;
   /** Lower = try first in Sovereign / bunker queues */
   sovereignPriority?: number;
+  /** Optional label rendered in cards ("Recommended", "Beta", …). */
+  badge?: string;
 }
 
 export const TIER_A_MODEL_ID = "SmolLM2-135M-Instruct-q0f16-MLC";

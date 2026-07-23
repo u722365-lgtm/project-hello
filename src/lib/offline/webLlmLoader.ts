@@ -80,7 +80,7 @@ export async function loadWebLlmModel(
         });
 
         report(modelId, 100, "Model ready");
-        return { engine: engine as LoadedWebLlmEngine["engine"], modelId };
+        return { engine: engine as unknown as LoadedWebLlmEngine["engine"], modelId };
       } catch (e) {
         lastError = e;
         console.warn(`[WebLLM] ${modelId} failed, trying fallback…`, e);
