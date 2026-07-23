@@ -132,12 +132,17 @@ Return ONLY a JSON array. Each object:
 No vague steps. Include 2026 in queries when relevant.`;
 }
 
+export interface GeneratedPlan {
+  steps: MissionPlanStep[];
+  usedDefault: boolean;
+}
+
 export async function generateExecutionPlan(
   goal: string,
   deliverableType: DeliverableType,
   accessToken: string,
   signal?: AbortSignal,
-): Promise<MissionPlanStep[]> {
+): Promise<GeneratedPlan> {
   try {
     const content = await streamChatCompletion(
       accessToken,
@@ -147,7 +152,7 @@ export async function generateExecutionPlan(
 
     const parsed = extractJsonArray<RawPlanStep>(content);
     if (parsed && parsed.length > 0) {
-      return parsed.slice(0, 8).map((s, i) => ({
+      const steps = parsed.slice(0, 8).map((s, i) => ({
         id: `step-${i + 1}`,
         action: s.action || `Step ${i + 1}`,
         tool_name: (TOOLS.includes(s.tool_name as MissionToolName)
@@ -160,12 +165,13 @@ export async function generateExecutionPlan(
           query: s.tool_params?.query || `${goal} ${s.action}`.slice(0, 200),
         },
       }));
+      return { steps, usedDefault: false };
     }
   } catch (e) {
     console.warn("[execution] plan generation failed, using default", e);
   }
 
-  return defaultPlan(goal, deliverableType);
+  return { steps: defaultPlan(goal, deliverableType), usedDefault: true };
 }
 
 /** @deprecated Use generateExecutionPlan */
