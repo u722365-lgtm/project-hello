@@ -113,12 +113,14 @@ export const FeedbackForm = ({ open: controlledOpen, onOpenChange, hideTrigger }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
-          <MessageSquareHeart className="h-4 w-4" />
-          <span className="hidden sm:inline">Feedback</span>
-        </Button>
-      </DialogTrigger>
+      {!hideTrigger && (
+        <DialogTrigger asChild>
+          <Button variant="outline" size="sm" className="gap-2">
+            <MessageSquareHeart className="h-4 w-4" />
+            <span className="hidden sm:inline">Feedback</span>
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
