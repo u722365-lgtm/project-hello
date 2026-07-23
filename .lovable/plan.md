@@ -1,90 +1,69 @@
-# Free-tier virality + Strategy Agent demo-readiness
+# Fix ShadowTalk chat end-to-end
 
-Two workstreams, shipped in one pass.
+Four blockers, fixed in one pass.
 
----
+## 1. OpenRouter fallback across every AI path
 
-## Workstream A — Free-tier "users become marketers"
+Today only the main streaming path in `supabase/functions/chat/index.ts` falls back to OpenRouter when `LOVABLE_API_KEY` returns 402/429. Every other path (planner, tool executor, special-mode handlers, image-edit, vision, deep-research, agent workflows) hits `ai.gateway.lovable.dev` and errors out when credits are exhausted.
 
-### 1. Shareable answer links (biggest lever)
+- Create `supabase/functions/_shared/aiGatewayFetch.ts`: a single helper `callAI(body, { stream? })` that:
+  - Calls Lovable gateway with `LOVABLE_API_KEY`
+  - On 402/429 or missing key, retries against `https://openrouter.ai/api/v1/chat/completions` with `OPENROUTER_FALLBACK_KEY` (model id preserved — `openai/gpt-5.5` → `openai/gpt-4o-mini`, `google/*` passes through)
+  - Emits fallback marker so the client can show "using backup provider"
+- Replace all ~15 raw `fetch("https://ai.gateway.lovable.dev/...")` sites in `chat/index.ts`, `image-edit`, `vision-analyze`, `deep-research`-style functions, `strategy` and `mission-execute` with `callAI`.
+- Request `OPENROUTER_FALLBACK_KEY` from user via `add_secret` (user must obtain from openrouter.ai and paste — cannot generate).
 
-Every assistant reply gets a "Share" button that produces a public read-only page.
+## 2. Special tool execution paths
 
-- New table `public.shared_answers`: `slug` (short id), `user_id` (nullable), `prompt` (text), `answer` (text), `model` (text), `views` (int), `created_at`. RLS: anyone can SELECT (public reads), only owner can INSERT, no UPDATE/DELETE by users.
-- New edge function `share-answer` (service_role) that mints a random 8-char slug, inserts the row, returns `{ slug, url }`.
-- New route `/s/:slug` → `SharedAnswerPage`:
-  - Server-friendly SSR-style static shell in `index.html` isn't possible on Vite SPA, so we generate OG image at request time via a tiny `og-answer` edge function that returns a 1200×630 SVG rendered as PNG (using Satori-style hand-built SVG). Cached with long `Cache-Control`.
-  - Set `<title>` and `<meta og:*>` in the React page + inject a `link rel="canonical"`.
-  - Bottom CTA: "Try ShadowTalk free — no login" → `/chatbot` with UTM tag `?utm_source=shared_answer&utm_medium=viral`.
-- New component `<ShareAnswerButton message={m}/>` added into `ChatbotPage` message actions row. On click: POST → `share-answer` → copy link + open share sheet (X, LinkedIn, WhatsApp, Reddit).
+Audit each panel that today only renders UI:
 
-### 2. In-chat "share for credits" nudge
+- **Image generation** — already routed via chat function tool call; ensure it forwards through `callAI` and returns base64 to renderer.
+- **Music generation** — currently ElevenLabs; verify `ELEVENLABS_API_KEY` connector is used and surface real error toasts.
+- **Deep research** — wire `web-search` + `firecrawl-scrape` outputs back into chat as tool results, not just UI.
+- **Agent workflows / mission-execute** — swap direct gateway calls to `callAI`.
+- **Security audit (HSCA URL scan)** — confirm `website-security-scan` returns to chat panel.
+- Any panel with no live path → hide behind a "Coming soon" flag rather than showing broken UI.
 
-- New hook `useViralMoment()`. Triggers a subtle toast on: copy-to-clipboard, thumbs-up, or 3rd message sent per session (once per 24h, localStorage-gated).
-- Toast body: "Loved this answer? Share ShadowTalk → 100 Pro credits when a friend signs up." CTA opens `<ShareAnswerButton>` for the last assistant message.
+## 3. Desktop Ollama fallback (real one)
 
-### 3. Speed pass for free tier
+Edge functions cannot reach a user's `127.0.0.1:11434`. The correct fix is client-side:
 
-- Ensure the free-tier chat endpoint (`chat` edge fn) streams (SSE) — verify `streamText().toUIMessageStreamResponse()` or equivalent is used. If not, migrate the free path to streaming.
-- Add a warm-up: `Index.tsx` fires a tiny `HEAD` ping to `/functions/v1/chat` on landing to boot the isolate.
-- Composer shows an instant optimistic bubble + shimmer for first token (already there — verify).
-- Preload the chat route on landing (dynamic `import()` prefetch when hero enters viewport) — cuts route-transition JS to near-zero.
+- In `src/api/chat.ts`, before hitting `/functions/v1/chat`, probe `http://localhost:11434/api/tags` (short timeout).
+- If reachable and user has "Use local Ollama" enabled OR cloud returned 402/429, stream directly from Ollama's `/api/chat` endpoint on the same browser/desktop process.
+- Keeps the "cloud tools stay cloud, chat can go local" separation from the earlier local-first cutover.
 
----
+## 4. Free-tier robustness
 
-## Workstream B — Strategy Agent: demo-ready for an ad
+- Client shows a clear banner when both Lovable credits and OpenRouter fallback are unavailable.
+- Special-mode requests degrade to "requires Pro / add your own key" instead of a generic 500.
 
-Not rebuilding the agent — hardening it so a screen-recording is impressive and reliable.
+## Technical details
 
-### Audit checklist
+Files touched:
 
-- Verify these edge functions exist and respond: `web-search`, `firecrawl-scrape`, `website-security-scan`, `shadow-agent-tools`, `chat`. Deploy any that are missing.
-- Run one live end-to-end trial via `curl_edge_functions` on `chat` to confirm the synthesis call returns strategy JSON, not an error.
-- Fix any 402/429 handling in `synthesizeStrategyReport` so failures degrade gracefully to fallback (already partial — make it visible in UI with a "using cached playbook" chip instead of silent).
+- New: `supabase/functions/_shared/aiGatewayFetch.ts`
+- Edit: `supabase/functions/chat/index.ts` (replace ~15 fetch sites)
+- Edit: `supabase/functions/image-edit/index.ts`, `vision-analyze/index.ts`, `mission-execute/index.ts`, and any other function calling the gateway directly
+- Edit: `src/api/chat.ts` (Ollama pre-flight + direct stream)
+- Edit: `src/pages/ChatbotPage.tsx` (fallback banner)
 
-### Demo polish (visible in a 30-second clip)
+Model mapping for OpenRouter fallback:
 
-- **Cinematic run mode**: add a `?demo=1` query param that:
-  - Pre-fills a compelling example ("Launch a privacy-first AI copilot for Pakistani SMEs, target market: 200k SMBs, budget $50k").
-  - Slows step reveal to a satisfying 600ms/step (only in demo mode).
-  - Auto-scrolls to each step as it flips to "completed".
-- **Live counters** in the header while running: "Sources analyzed: 12 · Signals: 47 · Time: 00:34" — driven by `steps[]`.
-- **Result hero card**: after `complete`, show a big "Strategy Score: 87 / 100" gradient card computed from `result.swot` completeness + sources count. This is the money shot for an ad.
-- **One-click "Share this strategy"** — same infra as Workstream A but with a strategy-tuned OG image (title = idea name, subtitle = "Generated by ShadowTalk in 42s").
+```text
+openai/gpt-5.5     -> openai/gpt-4o-mini
+openai/gpt-5.4-*   -> openai/gpt-4o-mini
+google/gemini-2.5-pro   -> google/gemini-2.5-pro
+google/gemini-*-flash*  -> google/gemini-flash-1.5
+```
 
-### Reliability floor
+Secret required from you:
 
-- Wrap `run()` with a 3-min hard timeout that surfaces a real error instead of hanging.
-- If any tool step fails, keep going (already does) but mark the final report `partial: true` and show an amber banner: "Partial data — retry for full report."
-- Add a `Retry failed steps only` button when `partial: true`.
+- `OPENROUTER_FALLBACK_KEY` — grab from [https://openrouter.ai/keys](https://openrouter.ai/keys), I'll open the secure form once you approve this plan.
 
----
+Out of scope (call out only):
 
-## Files to add / edit
-
-**New**
-- `supabase/migrations/<ts>_shared_answers.sql`
-- `supabase/functions/share-answer/index.ts`
-- `supabase/functions/og-answer/index.ts`
-- `src/pages/SharedAnswerPage.tsx` + route in `App.tsx`
-- `src/components/chat/ShareAnswerButton.tsx`
-- `src/hooks/useViralMoment.ts`
-- `src/components/strategy/StrategyHeroScore.tsx`
-- `src/components/strategy/StrategyLiveCounters.tsx`
-
-**Edit**
-- `src/pages/ChatbotPage.tsx` — message actions row, viral moment triggers
-- `src/pages/Index.tsx` — chat route prefetch + warm ping
-- `src/components/strategy/StrategyAgent.tsx` — demo mode, hero score, counters, share button, partial banner
-- `src/hooks/useStrategyRunner.ts` — 3-min hard timeout, `partial` flag, retry-failed helper
-- `supabase/functions/chat/index.ts` (only if it's not streaming today)
-
-## Out of scope
-
-- No new campaign email system (told you last time — Lovable is transactional-only; use Resend broadcasts).
-- No bulk outreach to existing users.
-- No rebuild of the underlying execution planner / tool executor.
-
----
-
-Approve and I'll ship it in one pass. If you want a smaller first slice (e.g. Workstream A only, or just the Strategy demo polish), say the word.
+- Music generation quality tuning
+- Building new tool panels (only wire existing ones)
+- Cross-compiling desktop installers,
+- i think you should use free models,
+- &nbsp;
