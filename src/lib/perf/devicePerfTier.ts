@@ -23,6 +23,8 @@ function detect(): PerfProfile {
   const nav: any = typeof navigator !== "undefined" ? navigator : {};
   const deviceMemory: number = typeof nav.deviceMemory === "number" ? nav.deviceMemory : 4;
   const cores: number = typeof nav.hardwareConcurrency === "number" ? nav.hardwareConcurrency : 4;
+  const isMobile =
+    typeof nav.userAgent === "string" && /Mobi|Android|iPhone|iPad|iPod/i.test(nav.userAgent);
 
   const reducedMotion =
     typeof window !== "undefined" &&
@@ -39,11 +41,16 @@ function detect(): PerfProfile {
   else if (deviceMemory <= 4 || cores <= 4) tier = "mid";
   else tier = "high";
 
+  // Mobile devices punch below their spec (thermal throttling, weaker GPUs).
+  // Cap phones/tablets at "mid" so heavy blur/gradients degrade automatically.
+  if (isMobile && tier === "high") tier = "mid";
+
   // Reduced-motion users always at least drop to mid (kills the big shaders).
   if (reducedMotion && tier === "high") tier = "mid";
 
   return { tier, deviceMemory, cores, reducedMotion, saveData, slowNetwork };
 }
+
 
 export function getPerfProfile(): PerfProfile {
   if (!cached) cached = detect();
