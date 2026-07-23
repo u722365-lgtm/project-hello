@@ -13,11 +13,13 @@ const RESEND_FROM =
 
 
 interface FeedbackNotificationRequest {
-  feedbackId: string;
+  feedbackId?: string;
   category: string;
   rating: number;
   message: string;
   userEmail?: string;
+  userId?: string | null;
+  email?: string | null;
 }
 
 const getCategoryLabel = (category: string): string => {
