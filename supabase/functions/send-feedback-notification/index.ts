@@ -60,13 +60,48 @@ const handler = async (req: Request): Promise<Response> => {
   }
   recent.push(now); RL.set(ip, recent);
 
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const serviceClient = createClient(supabaseUrl, supabaseServiceKey);
+
   try {
     const rawBody: FeedbackNotificationRequest = await req.json();
-    const feedbackId = escapeHtml(String(rawBody.feedbackId || ""));
     const category = escapeHtml(String(rawBody.category || "other"));
     const rating = Math.min(5, Math.max(0, Number(rawBody.rating) || 0));
     const message = escapeHtml(String(rawBody.message || ""));
     const userEmail = rawBody.userEmail ? escapeHtml(String(rawBody.userEmail)) : undefined;
+
+    let feedbackId = rawBody.feedbackId ? escapeHtml(String(rawBody.feedbackId)) : "";
+
+    // If no feedbackId is provided, insert the feedback row using service_role
+    // so the form can bypass any client-side RLS edge cases.
+    if (!feedbackId) {
+      const { data: inserted, error: insertError } = await serviceClient
+        .from("feedback")
+        .insert({
+          user_id: rawBody.userId ?? null,
+          email: rawBody.email ?? rawBody.userEmail ?? null,
+          category: rawBody.category || "general",
+          rating,
+          message: rawBody.message?.trim() || "",
+          status: "pending",
+        })
+        .select("id")
+        .single();
+
+      if (insertError || !inserted) {
+        console.error("[FEEDBACK-NOTIFICATION] Insert error:", insertError);
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: insertError?.message || "Failed to store feedback",
+          }),
+          { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } },
+        );
+      }
+
+      feedbackId = inserted.id;
+    }
 
     const adminEmails = [...FEEDBACK_NOTIFICATION_EMAILS];
 
