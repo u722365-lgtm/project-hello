@@ -249,7 +249,7 @@ Time: ${new Date().toLocaleString()}
       );
     }
 
-    return new Response(JSON.stringify({ success: true, emailResult, provider: emailProvider }), {
+    return new Response(JSON.stringify({ success: true, feedbackId, emailResult, provider: emailProvider }), {
       status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
