@@ -59,11 +59,12 @@ export function QuickOfflineModelsCard() {
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="font-medium">{model.name}</span>
-                    {model.badge && (
+                    {(model as { badge?: string }).badge && (
                       <Badge variant="outline" className="text-[10px] border-emerald-500/40">
-                        {model.badge}
+                        {(model as { badge?: string }).badge}
                       </Badge>
                     )}
+
                     {isCached && !isLoading && (
                       <Badge variant="secondary" className="text-[10px]">
                         Cached

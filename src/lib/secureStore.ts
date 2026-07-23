@@ -14,15 +14,27 @@ export function getSecureStore(): Promise<SecureStore> {
   return _instance;
 }
 
+type DesktopSecureBackend = {
+  getItem(key: string): Promise<string | null>;
+  setItem(key: string, value: string): Promise<void>;
+  removeItem(key: string): Promise<void>;
+  getAllKeys(): Promise<string[]>;
+};
+
+function getDesktopSecureStore(): DesktopSecureBackend | undefined {
+  if (typeof window === 'undefined') return undefined;
+  return (window as any).shadowtalkDesktop?.secureStore as DesktopSecureBackend | undefined;
+}
+
 async function createSecureStore(): Promise<SecureStore> {
-  if (typeof window !== 'undefined' && window.shadowtalkDesktop?.secureStore) {
+  if (getDesktopSecureStore()) {
     return createDesktopBackend();
   }
   return createBrowserBackend();
 }
 
 function createDesktopBackend(): Promise<SecureStore> {
-  const api = window.shadowtalkDesktop.secureStore;
+  const api = getDesktopSecureStore()!;
   return Promise.resolve({
     getItem: async (key) => {
       try { return await api.getItem(key); } catch { return null; }
@@ -38,6 +50,7 @@ function createDesktopBackend(): Promise<SecureStore> {
     },
   });
 }
+
 
 async function createBrowserBackend(): Promise<SecureStore> {
   const mod = await import('./secureStore.browser');

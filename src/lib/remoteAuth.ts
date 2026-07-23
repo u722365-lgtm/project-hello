@@ -23,10 +23,13 @@ export function isLocalFirst(): boolean {
 
 export async function signInWithLocalPreferredProvider() {
   if (typeof window === 'undefined') return { redirected: true };
-  const desktop = window.shadowtalkDesktop;
+  const desktop = (window as any).shadowtalkDesktop as
+    | { preferredLogin?: () => Promise<{ redirected: boolean; error?: Error }> }
+    | undefined;
   if (desktop?.preferredLogin) {
     return desktop.preferredLogin();
   }
+
 
   return {
     redirected: true,
