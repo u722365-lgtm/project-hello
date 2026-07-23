@@ -83,6 +83,13 @@ export interface ShadowTalkDesktopAPI {
     onToken: (token: string) => void,
     signal?: AbortSignal,
   ) => Promise<{ content: string; ok: boolean; error?: string }>;
+  preferredLogin?: () => Promise<{ redirected: boolean; error?: Error }>;
+  secureStore?: {
+    getItem(key: string): Promise<string | null>;
+    setItem(key: string, value: string): Promise<void>;
+    removeItem(key: string): Promise<void>;
+    getAllKeys(): Promise<string[]>;
+  };
 }
 
 interface OpenDialogOptions {

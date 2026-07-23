@@ -22,14 +22,21 @@ export interface TauriOllamaModel {
 }
 
 export interface TauriOllamaClient {
-  listModels(): Promise<TauriOllamaModel[]>;
+  listModels?(): Promise<TauriOllamaModel[]>;
   streamCompletion(params: {
     model: string;
     prompt: string;
     context?: number[];
     options?: Record<string, unknown>;
   }): Promise<AsyncIterable<string>>;
-  pullModel(name: string): Promise<{ success: boolean; error?: string }>;
+  pullModel?(name: string): Promise<{ success: boolean; error?: string }>;
+  health?(): Promise<{
+    endpoint?: string;
+    ready?: boolean;
+    models?: string[];
+    defaultModel?: string;
+  } | null | undefined>;
+  pull?(name: string): Promise<{ success: boolean; status?: string; error?: string }>;
 }
 
 export interface TauriSecureStoreItem {
