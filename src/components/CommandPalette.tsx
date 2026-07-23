@@ -106,6 +106,8 @@ const pages: PageEntry[] = [
   { name: "Developers", href: "/developers", icon: Terminal, desc: "Developer tools", group: "Company" },
   { name: "API", href: "/api", icon: Code, desc: "API reference", group: "Company" },
   { name: "ShadowTalk Desktop", href: "/downloads", icon: Monitor, desc: "Windows, macOS, Linux", group: "Company" },
+  { name: "Download", href: "/download", icon: Monitor, desc: "Download ShadowTalk", group: "Company" },
+  { name: "Founder — Zain Ahmed (Founder page)", href: "/zain-ahmed-fahad-patel-founder", icon: UserCircle, desc: "Founder detail page", group: "Company" },
   { name: "Trust Center", href: "/trust", icon: ShieldCheck, desc: "Compliance & security posture", group: "Company" },
   { name: "Transparency", href: "/transparency", icon: Eye, desc: "Transparency report", group: "Company" },
   { name: "Compliance Dashboard", href: "/compliance", icon: ShieldCheck, desc: "Privacy compliance", group: "Company" },
