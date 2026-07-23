@@ -511,6 +511,7 @@ export const PAGE_SEO: Record<string, PageMeta> = {
     ],
     canonical: 'https://www.shadowtalk-ai.com/zain-ahmed-fahad-patel',
     ogType: 'profile',
+    ogImage: FOUNDER_IMAGE_URL,
   },
   computer: {
     title: 'Computer Mode — In-Browser Shell',
