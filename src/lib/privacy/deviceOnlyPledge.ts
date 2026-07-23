@@ -91,14 +91,26 @@ export function setInterimCloudConsent(allowed: boolean): void {
   }
 }
 
-/** Call when Gemma/SmolLM finishes loading — only flip routing if user already configured offline session. */
+/**
+ * Call when the on-device model finishes loading.
+ * ShadowTalk auto-cuts cloud routing for normal chat and flips to local-only
+ * so subsequent messages stay on-device, per the offline-first spec.
+ * Specialized tools that need cloud will re-enable it on demand.
+ */
 export function onLocalModelReady(): void {
   localStorage.removeItem(INTERIM_CLOUD_KEY);
-  if (!isForceOfflineSessionActive()) return;
+  // Force-offline sessions always lock to local-only.
+  if (isForceOfflineSessionActive()) {
+    localStorage.setItem(ROUTING_PREF_KEY, "local-only");
+    return;
+  }
+  // Default auto cut-over: if the user hasn't explicitly opted into cloud,
+  // switch normal chat to local-only now that the model is ready.
   if (isDeviceOnlyPledgeActive() && !hasCloudOptIn()) {
     localStorage.setItem(ROUTING_PREF_KEY, "local-only");
   }
 }
+
 
 /**
  * Logged-in users get cloud AI automatically while the on-device model downloads.

@@ -163,20 +163,22 @@ export function decideRoute(
     return localDecision("Desktop auto — Ollama local LLM", "ollama");
   }
 
-  // Auto mode (online) — browser local models
+  // Auto mode (online) — as soon as any browser model is ready, prefer it for
+  // normal chat regardless of hardware tier. This delivers the user-requested
+  // "auto cut cloud once offline model is ready" behavior on phones and low-end
+  // devices where hardware profile heuristics would otherwise keep them cloud-bound.
   if (browserLocalReady && !isComplex(messages)) {
     if (preferLocalHw) {
       const hw = profile?.summary ?? "fast hardware";
       return localDecision(`Turbo path: ${hw}`, "browser");
     }
-    if (profile?.tier === "balanced") {
-      return localDecision("Balanced hardware — on-device for simple chat", "browser");
-    }
+    return localDecision("On-device model ready — private local chat", "browser");
   }
 
-  if (anyLocalReady && preferLocalHw && !isComplex(messages)) {
-    return localDecision("Hardware-optimized local inference", localBackend);
+  if (anyLocalReady && !isComplex(messages)) {
+    return localDecision("Local model ready — on-device chat", localBackend);
   }
+
 
   if (profile?.path === "cloud" || profile?.tier === "cloud") {
     if (sovereignMode && ollamaReady) {
