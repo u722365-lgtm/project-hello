@@ -367,6 +367,7 @@ const App = () => {
               )}
               <Toaster />
               <Sonner />
+              <FeedbackAutoPrompt />
                <BrowserRouter>
                  <UpdateNotificationProvider />
                  <NetworkTransitionOverlay />
