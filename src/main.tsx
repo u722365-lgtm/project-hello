@@ -8,6 +8,10 @@
  import { warmHardwareProfile, prewarmFastestLocalPath } from "./lib/hardwareIntelligence";
  import { installViteChunkRecovery, clearViteChunkRecoveryFlag } from "./lib/viteChunkRecovery";
 import { applyAnonymousAutonomousDefaults } from "./lib/anonymousAutonomousMode";
+import { applyPerfProfile } from "./lib/perf/devicePerfTier";
+
+// Detect device perf tier ASAP so CSS degrades heavy effects on low-end hardware.
+applyPerfProfile();
  
  // Environment validation
  const validateEnvironment = () => {
