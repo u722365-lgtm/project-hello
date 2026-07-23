@@ -67,6 +67,7 @@ const pages: PageEntry[] = [
   { name: "Computer Mode", href: "/computer", icon: Monitor, desc: "Real npm/node shell in browser", group: "Tools" },
   { name: "Backend Flows", href: "/flows", icon: Zap, desc: "Backend infrastructure generation", group: "Tools" },
   { name: "Local Models · Ollama", href: "/local-models", icon: Server, desc: "Run open-source LLMs locally", group: "Tools" },
+  { name: "Private AI Chat", href: "/private-ai", icon: Shield, desc: "No login, no tracking — private ChatGPT alternative", group: "Core" },
   { name: "Personal LLM", href: "/personal-llm", icon: Brain, desc: "Fine-tune local models", group: "Tools" },
 
   // === Account ===
