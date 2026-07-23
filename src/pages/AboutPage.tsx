@@ -55,6 +55,7 @@ const AboutPage = () => {
       <AboutQuoteMarquee />
       <AboutInspire />
       <AboutFounderStory />
+      <GeoCanonicalSummaries />
       <Separator className="max-w-4xl mx-auto opacity-30" />
       <AboutStats />
       <Separator className="max-w-4xl mx-auto opacity-30" />
