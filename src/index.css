@@ -685,7 +685,10 @@
     padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
     background: linear-gradient(to top, hsl(var(--background) / 0.95), transparent);
     transition: transform 0.2s ease-out;
+    /* Lift above the on-screen keyboard on iOS (MobileViewportFix sets --kbd). */
+    transform: translateY(calc(var(--kbd, 0px) * -1));
   }
+
 
   .shadowtalk-composer {
     transition: border-color 0.35s cubic-bezier(0.16, 1, 0.3, 1),
