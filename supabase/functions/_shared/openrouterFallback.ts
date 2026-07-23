@@ -82,3 +82,58 @@ export async function openRouterFreeFallback(
     return null;
   }
 }
+
+/**
+ * Drop-in wrapper: try Lovable AI Gateway first, transparently fall back to
+ * OpenRouter free model on 402/429/503. Returns a Response.
+ *
+ * Use this in edge functions that call /v1/chat/completions on Lovable AI
+ * Gateway. Pass the same body you would normally send; the wrapper adds the
+ * fallback path automatically.
+ */
+export async function fetchChatWithFallback(
+  body: {
+    model?: string;
+    messages: Array<{ role: string; content: unknown }>;
+    stream?: boolean;
+    temperature?: number;
+    max_tokens?: number;
+    tools?: unknown;
+    tool_choice?: unknown;
+    response_format?: unknown;
+  },
+): Promise<Response> {
+  const lovableKey = Deno.env.get("LOVABLE_API_KEY");
+  if (!lovableKey) {
+    // No Lovable key at all — go straight to fallback if available.
+    const fb = await openRouterFreeFallback(body);
+    if (fb) return fb;
+    return new Response(
+      JSON.stringify({ error: "AI service not configured" }),
+      { status: 500, headers: { "Content-Type": "application/json" } },
+    );
+  }
+
+  const primary = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${lovableKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (primary.ok) return primary;
+  if (!isRetryableStatus(primary.status)) return primary;
+
+  // Retryable — try the free fallback, preserving stream/non-stream shape.
+  const fb = await openRouterFreeFallback(body);
+  if (fb) {
+    // Signal to callers that the fallback path was used.
+    const headers = new Headers(fb.headers);
+    headers.set("X-Shadowtalk-Fallback", "openrouter-free");
+    return new Response(fb.body, { status: fb.status, headers });
+  }
+  return primary;
+}
+
