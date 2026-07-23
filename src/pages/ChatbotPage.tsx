@@ -159,7 +159,7 @@ import { openProjectInIde, saveIdePayload } from "@/lib/idePayloadStorage";
 import { detectAppBuilderIntent, generateAppProject } from "@/lib/appBuilder";
 import { useShadowTalkModel } from "@/hooks/useShadowTalkModel";
 import { SEOHead } from "@/components/SEOHead";
-import { PAGE_SEO, getFounderHomeStructuredData } from "@/lib/seo";
+import { PAGE_SEO, getFounderHomeStructuredData, getChatbotFAQSchema, getSpeakableSchema, getWebSiteWithSearchSchema } from "@/lib/seo";
 import { FounderCrawlStrip } from "@/components/founder/FounderCrawlStrip";
 import { UsageLimitBanner } from "@/components/monetization/UsageLimitBanner";
 import { PlanetaryActionModal } from "@/components/chat/PlanetaryActionModal";
