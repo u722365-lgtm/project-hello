@@ -60,6 +60,18 @@ export const ChatInput = ({
   hasKeyForProvider,
   isEmptyState = false,
 }: ChatInputProps) => {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto-focus the composer on mount so users can start typing immediately.
+  // Skip on touch devices so the mobile keyboard doesn't pop up unprompted.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const isTouch = window.matchMedia?.("(pointer: coarse)").matches;
+    if (isTouch) return;
+    const t = window.setTimeout(() => textareaRef.current?.focus(), 60);
+    return () => window.clearTimeout(t);
+  }, []);
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey && getChatEnterToSend()) {
       e.preventDefault();
@@ -68,6 +80,7 @@ export const ChatInput = ({
     }
     onKeyPress(e);
   };
+
 
   const isShadowPulse = layout === "shadow-pulse";
   const isComposer = layout === "composer" || layout === "gemini" || isShadowPulse;
