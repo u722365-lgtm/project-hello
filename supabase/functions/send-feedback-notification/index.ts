@@ -225,17 +225,12 @@ Time: ${new Date().toLocaleString()}
     }
 
     if (!emailResult) {
-      // Store feedback locally if no email provider is configured
-      console.log("[FEEDBACK-NOTIFICATION] No email provider configured, storing feedback");
-      
-      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-      const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-      const supabase = createClient(supabaseUrl, supabaseServiceKey);
-      
-      // Feedback is already in the database, just mark notification as pending
-      return new Response(JSON.stringify({ 
-        success: true, 
-        message: "Feedback stored. Email notification pending - configure SENDGRID_API_KEY for email delivery." 
+      // No email provider configured, but feedback is already stored via service_role
+      console.log("[FEEDBACK-NOTIFICATION] No email provider configured, feedback stored");
+      return new Response(JSON.stringify({
+        success: true,
+        feedbackId,
+        message: "Feedback stored. Email notification pending - configure SENDGRID_API_KEY for email delivery."
       }), {
         status: 200,
         headers: { "Content-Type": "application/json", ...corsHeaders },
