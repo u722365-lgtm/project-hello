@@ -159,7 +159,7 @@ import { openProjectInIde, saveIdePayload } from "@/lib/idePayloadStorage";
 import { detectAppBuilderIntent, generateAppProject } from "@/lib/appBuilder";
 import { useShadowTalkModel } from "@/hooks/useShadowTalkModel";
 import { SEOHead } from "@/components/SEOHead";
-import { PAGE_SEO, getFounderHomeStructuredData } from "@/lib/seo";
+import { PAGE_SEO, getFounderHomeStructuredData, getChatbotFAQSchema, getSpeakableSchema, getWebSiteWithSearchSchema } from "@/lib/seo";
 import { FounderCrawlStrip } from "@/components/founder/FounderCrawlStrip";
 import { UsageLimitBanner } from "@/components/monetization/UsageLimitBanner";
 import { PlanetaryActionModal } from "@/components/chat/PlanetaryActionModal";
@@ -2230,7 +2230,7 @@ const ChatbotPage = () => {
   if (enterprise.needsWorkEmailSignIn) {
     return (
       <div className="shadowtalk-chat-shell neural-bg flex h-[100dvh] flex-col">
-        <SEOHead meta={PAGE_SEO.chatbot} structuredData={getFounderHomeStructuredData()} />
+        <SEOHead meta={PAGE_SEO.chatbot} structuredData={[...getFounderHomeStructuredData(), getChatbotFAQSchema(), getSpeakableSchema(["h1", "[data-speakable]"]), getWebSiteWithSearchSchema()]} />
         <ChatAmbientBackground />
         <EnterpriseEmployeeGate
           tenant={enterprise.tenant}
@@ -2242,7 +2242,7 @@ const ChatbotPage = () => {
 
   return (
     <div className="shadowtalk-chat-shell neural-bg settings-scroll-smooth flex h-full min-h-0 flex-col overflow-hidden">
-      <SEOHead meta={PAGE_SEO.chatbot} structuredData={getFounderHomeStructuredData()} />
+      <SEOHead meta={PAGE_SEO.chatbot} structuredData={[...getFounderHomeStructuredData(), getChatbotFAQSchema(), getSpeakableSchema(["h1", "[data-speakable]"]), getWebSiteWithSearchSchema()]} />
       <ChatAmbientBackground />
       <motion.div
         className="shadowtalk-chat-main flex w-full min-h-0 flex-1 relative overflow-hidden"

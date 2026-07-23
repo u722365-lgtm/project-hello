@@ -1,5 +1,5 @@
 import { Helmet } from 'react-helmet-async';
-import { PageMeta, generateMetaTags, getOrganizationSchema } from '@/lib/seo';
+import { PageMeta, generateMetaTags, getOrganizationSchema, HREFLANG_LOCALES } from '@/lib/seo';
 
 interface SEOHeadProps {
   meta: PageMeta;
@@ -9,12 +9,21 @@ interface SEOHeadProps {
 export function SEOHead({ meta, structuredData }: SEOHeadProps) {
   const tags = generateMetaTags(meta);
   const baseUrl = 'https://www.shadowtalk-ai.com';
+  const canonical = meta.canonical || baseUrl;
   const structuredDataItems = structuredData
     ? Array.isArray(structuredData)
       ? structuredData
       : [structuredData]
     : [];
- 
+
+  // Derive path for hreflang alternates (append ?hl=xx so localized crawlers can index)
+  let canonicalPath = '';
+  try {
+    canonicalPath = new URL(canonical).pathname;
+  } catch {
+    canonicalPath = '/';
+  }
+
    return (
      <Helmet>
        {/* Primary Meta Tags */}
@@ -22,9 +31,21 @@ export function SEOHead({ meta, structuredData }: SEOHeadProps) {
        <meta name="description" content={tags.description} />
        {tags.keywords && <meta name="keywords" content={tags.keywords} />}
        <meta name="robots" content={tags.robots} />
-       <link rel="canonical" href={meta.canonical || baseUrl} />
+       <link rel="canonical" href={canonical} />
        <link rel="alternate" type="text/plain" href={`${baseUrl}/llms.txt`} title="ShadowTalk AI llms.txt" />
        <link rel="alternate" type="application/json" href={`${baseUrl}/shadowtalk.json`} title="ShadowTalk AI facts JSON" />
+
+       {/* Hreflang alternates for 11 supported languages */}
+       {HREFLANG_LOCALES.map((loc) => (
+         <link
+           key={loc.code}
+           rel="alternate"
+           hrefLang={loc.code}
+           href={`${baseUrl}${canonicalPath}${canonicalPath.includes('?') ? '&' : '?'}hl=${loc.code}`}
+         />
+       ))}
+       <link rel="alternate" hrefLang="x-default" href={canonical} />
+
  
        {/* Open Graph */}
        <meta property="og:type" content={tags['og:type']} />
