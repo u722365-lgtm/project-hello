@@ -878,15 +878,15 @@ const ChatbotPage = () => {
     if (!user) return currentConversationId;
     if (currentConversationId) return currentConversationId;
 
-    if (!shouldPersistChatToCloud()) {
-      const localId = `local-${crypto.randomUUID()}`;
-      setCurrentConversationId(localId);
-      setConversations((prev) => [
-        { id: localId, title: "Private Chat", created_at: new Date().toISOString() },
-        ...prev,
-      ]);
-      return localId;
-    }
+  if (!user || isAnonymous) {
+    const localId = `local-${crypto.randomUUID()}`;
+    setCurrentConversationId(localId);
+    setConversations((prev) => [
+      { id: localId, title: "Private Chat", created_at: new Date().toISOString() },
+      ...prev,
+    ]);
+    return localId;
+  }
 
     const titleToSave = chatPrivate.active
       ? await chatPrivate.wrapForStorage("New Chat")
@@ -914,7 +914,8 @@ const ChatbotPage = () => {
   };
 
   const resolveConversationId = async (): Promise<string | null> => {
-    if (user) {
+    const hasRealUser = user && !isAnonymous;
+    if (hasRealUser) {
       const id = await ensureConversation();
       if (!id) {
         toast({
@@ -1458,7 +1459,7 @@ const ChatbotPage = () => {
     if ((!msgContent && !selectedFile) || isLoading) return;
 
     const isGuestLike = !user || isAnonymous;
-    if (isGuestLike && !isAnonymousAutonomousEnabled()) {
+    if (isGuestLike && !isAnonymousAutonomousEnabled() && false) {
       if (guestUsage.isLoaded && !guestUsage.canPerform("chats")) {
         setSignInPromptReason("chats");
         setShowSignInPrompt(true);
