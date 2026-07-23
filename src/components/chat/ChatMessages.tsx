@@ -71,23 +71,41 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
   };
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const stickToBottomRef = useRef(true);
+
+  // Track whether the user has scrolled away from the bottom.
+  // If so, don't yank them back down while the AI is streaming.
+  useEffect(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+      stickToBottomRef.current = distanceFromBottom < 80;
+    };
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => el.removeEventListener('scroll', onScroll);
+  }, []);
 
   // Auto-scroll to top when suggestions are shown (initial state)
   useEffect(() => {
     if (showSuggestions && scrollContainerRef.current) {
       scrollContainerRef.current.scrollTop = 0;
+      stickToBottomRef.current = true;
     }
   }, [showSuggestions]);
 
-  // Scroll inside the messages panel only — never grow the page
+  // Scroll inside the messages panel only — never grow the page,
+  // and only if the user is already near the bottom.
   useEffect(() => {
     const el = scrollContainerRef.current;
     if (!el || showSuggestions) return;
+    if (!stickToBottomRef.current) return;
     el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
   }, [messages, isLoading, showSuggestions]);
 
   return (
     <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto custom-scrollbar scroll-smooth shadowtalk-chat-messages-scroll">
+
       <div
         className={`mx-auto px-3 xs:px-4 sm:px-6 py-4 xs:py-6 sm:py-10 w-full min-w-0 ${
           isGemini ? 'max-w-[720px] space-y-5 sm:space-y-8' : 'max-w-4xl space-y-6 sm:space-y-12'
