@@ -292,9 +292,12 @@ export const ChatInput = ({
             </div>
 
             <Textarea
+              ref={textareaRef}
               value={message}
               onChange={(e) => onMessageChange(e.target.value)}
               onKeyDown={handleKeyDown}
+              aria-label="Chat message"
+
               placeholder={
                 isListening
                   ? "Listening..."
