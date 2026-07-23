@@ -2230,7 +2230,7 @@ const ChatbotPage = () => {
   if (enterprise.needsWorkEmailSignIn) {
     return (
       <div className="shadowtalk-chat-shell neural-bg flex h-[100dvh] flex-col">
-        <SEOHead meta={PAGE_SEO.chatbot} structuredData={getFounderHomeStructuredData()} />
+        <SEOHead meta={PAGE_SEO.chatbot} structuredData={[...getFounderHomeStructuredData(), getChatbotFAQSchema(), getSpeakableSchema(["h1", "[data-speakable]"]), getWebSiteWithSearchSchema()]} />
         <ChatAmbientBackground />
         <EnterpriseEmployeeGate
           tenant={enterprise.tenant}
