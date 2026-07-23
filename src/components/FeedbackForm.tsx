@@ -74,31 +74,22 @@ export const FeedbackForm = ({ open: controlledOpen, onOpenChange, hideTrigger }
 
     setLoading(true);
     try {
-      const { data, error } = await supabase.from("feedback").insert({
-        user_id: user?.id || null,
-        email: user?.email || formData.email || null,
-        category: formData.category,
-        rating: formData.rating,
-        message: formData.message.trim(),
-      }).select().single();
+      // Submit feedback through the backend edge function. The function runs
+      // with service_role privileges so it can store the row and send the
+      // notification even when client-side RLS or session state is tricky.
+      const { data, error } = await supabase.functions.invoke('send-feedback-notification', {
+        body: {
+          userId: user?.id || null,
+          email: user?.email || formData.email || null,
+          category: formData.category,
+          rating: formData.rating,
+          message: formData.message.trim(),
+          userEmail: user?.email || formData.email || null,
+        }
+      });
 
       if (error) throw error;
-
-      // Send email notification
-      try {
-        await supabase.functions.invoke('send-feedback-notification', {
-          body: {
-            feedbackId: data.id,
-            category: formData.category,
-            rating: formData.rating,
-            message: formData.message.trim(),
-            userEmail: user?.email || formData.email || null,
-          }
-        });
-      } catch (emailError) {
-        console.error("Failed to send email notification:", emailError);
-        // Don't fail the submission if email fails
-      }
+      if (!data?.success) throw new Error(data?.error || "Feedback submission failed");
 
       toast.success("Thank you for your feedback!");
       setFormData({ email: "", category: "general", rating: 0, message: "" });

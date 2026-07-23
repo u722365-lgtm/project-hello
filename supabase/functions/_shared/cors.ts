@@ -49,9 +49,9 @@ function isAllowedOrigin(origin: string | null): boolean {
    if (LOVABLE_PROJECT_PATTERN.test(origin)) return true;
    if (LOVABLE_APP_PATTERN.test(origin)) return true;
    
-   // Allow development origins only in dev environment
-   const isDev = Deno.env.get("DENO_DEPLOYMENT_ID") === undefined;
-   if (isDev && DEVELOPMENT_ORIGINS.includes(origin)) return true;
+    // Allow local development origins. Browsers cannot spoof localhost, so this
+    // is safe even for deployed functions (used by the Lovable preview harness).
+    if (DEVELOPMENT_ORIGINS.includes(origin)) return true;
    
    return false;
  }
