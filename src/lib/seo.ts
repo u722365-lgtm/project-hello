@@ -221,7 +221,14 @@ export const FOUNDER_HOME_FAQ = [
      jobTitle: FOUNDER_CANONICAL.jobTitle,
      description: FOUNDER_CANONICAL.description,
      url: FOUNDER_CANONICAL.canonicalProfileUrl,
-     image: 'https://www.shadowtalk-ai.com/pwa-512x512.png',
+      image: {
+        '@type': 'ImageObject',
+        url: FOUNDER_IMAGE_URL,
+        contentUrl: FOUNDER_IMAGE_URL,
+        caption: 'Zain Ahmed Fahad Patel — Founder of ShadowTalk AI',
+        width: 800,
+        height: 1000,
+      },
      email: FOUNDER_CANONICAL.email,
      worksFor: FOUNDER_CANONICAL.worksFor,
      founder: {
