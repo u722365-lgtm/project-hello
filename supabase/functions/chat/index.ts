@@ -216,16 +216,16 @@ function smartModelRouter(lastUserText: string, hasImageContent: boolean, messag
   let tier: string;
 
   if (score >= 70) {
-    model = 'openai/gpt-5.2';
+    model = 'google/gemini-2.5-pro';
     tier = 'EXTREME';
   } else if (score >= 45) {
-    model = 'openai/gpt-5';
+    model = 'google/gemini-2.5-pro';
     tier = 'COMPLEX';
   } else if (score >= 25) {
-    model = 'google/gemini-3-pro-preview';
+    model = 'google/gemini-2.5-flash';
     tier = 'MODERATE';
   } else if (score >= 10) {
-    model = 'google/gemini-2.5-flash';
+    model = 'google/gemini-2.5-flash-lite';
     tier = 'SIMPLE';
   } else {
     model = 'google/gemini-2.5-flash-lite';
@@ -551,24 +551,46 @@ serve(async (req) => {
     }
 
     const specialModeRequested =
-      !!(decodeImage || generateImage || imageEdit || analyzeTask || getEcoActions || securityAudit ||
-        agentWorkflow || deepResearch || webSearch || isResearch);
+          !!(decodeImage || generateImage || imageEdit || analyzeTask || getEcoActions || securityAudit ||
+            agentWorkflow || deepResearch || webSearch || isResearch);
 
-    if (specialModeRequested && !canUsePlatformGateway(LOVABLE_API_KEY, customAi)) {
-      return platformAiUnavailable(corsHeaders);
-    }
-    if (specialModeRequested && !LOVABLE_API_KEY) {
-      return new Response(
-        JSON.stringify({
-          error:
-            "This tool requires platform AI (LOVABLE_API_KEY). Standard chat works with your own API key in Profile → API Keys.",
-        }),
-        {
-          status: 503,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
-      );
-    }
+        if (specialModeRequested && !canUsePlatformGateway(LOVABLE_API_KEY, customAi)) {
+          const ollamaStatus = await getOllamaStatus();
+          if (shouldFallbackToOllama(ollamaStatus ?? getOllamaFallbackConfig())) {
+            const lastUserTextForFallback =
+              (typeof lastUserMsg?.content === 'string' ? lastUserMsg.content : '') ||
+              String((messages[messages.length - 1]?.content as unknown as string) ?? '');
+            const ollamaResult = await chatWithLocalOllama(
+              ollamaStatus ?? getOllamaFallbackConfig(),
+              lastUserTextForFallback,
+              routerDecision.model,
+            );
+            if (ollamaResult) {
+              return new Response(
+                JSON.stringify({
+                  ...ollamaResult,
+                  fallback: 'ollama',
+                  specialModeUnsupportedByFallback: true,
+                }),
+                { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+              );
+            }
+          }
+          return platformAiUnavailable(corsHeaders);
+        }
+
+        if (specialModeRequested && !LOVABLE_API_KEY) {
+          return new Response(
+            JSON.stringify({
+              error:
+                'This tool requires platform AI (LOVABLE_API_KEY). Standard chat works without it, or you can try local Ollama if available.',
+            }),
+            {
+              status: 503,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            },
+          );
+        }
 
     // Image Decoder - Professional analysis with enhanced output
     if (decodeImage && imageToAnalyze) {
@@ -1818,8 +1840,17 @@ When a user asks you to write, create, draft, or generate any document (email, a
 
     let systemPrompt = personality && systemPrompts[personality as keyof typeof systemPrompts] ? systemPrompts[personality as keyof typeof systemPrompts] : systemPrompts.friendly;
     
-    if (modePrompt && mode !== 'general') {
-      systemPrompt += `\n\n## Current Mode: ${mode?.toUpperCase() || 'GENERAL'}\n${modePrompt}`;
+    if (
+      mode === 'general' ||
+      !mode ||
+      mode === 'chat' ||
+      !modePrompt
+    ) {
+      systemPrompt = `${coreIdentity} Be concise. Answer directly. Use short paragraphs and bullet points.${currentDatePrompt}`;
+    } else {
+      if (modePrompt) {
+        systemPrompt += `\n\n## Current Mode: ${mode?.toUpperCase() || 'GENERAL'}\n${modePrompt}`;
+      }
     }
 
     if (documentGeneration || mode === "document") {
