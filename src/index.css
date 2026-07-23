@@ -1712,3 +1712,70 @@ html.shadow-heal-reduce-motion *::after {
   animation-iteration-count: 1 !important;
   transition-duration: 0.01ms !important;
 }
+
+/* ============================================================
+   Device performance tiers (see src/lib/perf/devicePerfTier.ts)
+   Applied as `perf-low` / `perf-mid` / `perf-high` on <html>.
+   Goal: keep ShadowTalk smooth on low-RAM / low-core devices
+   by degrading expensive GPU effects — never functionality.
+   ============================================================ */
+
+/* Low-end devices: kill heavy compositing + long animations */
+html.perf-low *,
+html.perf-low *::before,
+html.perf-low *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 120ms !important;
+  scroll-behavior: auto !important;
+}
+
+html.perf-low .backdrop-blur-sm,
+html.perf-low .backdrop-blur,
+html.perf-low .backdrop-blur-md,
+html.perf-low .backdrop-blur-lg,
+html.perf-low .backdrop-blur-xl,
+html.perf-low .backdrop-blur-2xl,
+html.perf-low .backdrop-blur-3xl,
+html.perf-low [class*="backdrop-blur"] {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.perf-low .shadow-2xl,
+html.perf-low .shadow-xl,
+html.perf-low .drop-shadow-2xl,
+html.perf-low .drop-shadow-xl {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25) !important;
+  filter: none !important;
+}
+
+html.perf-low .bg-gradient-to-r,
+html.perf-low .bg-gradient-to-br,
+html.perf-low .bg-gradient-to-tr {
+  background-image: none;
+}
+
+/* Turn off ambient/aurora/blob decorations on low-end */
+html.perf-low .aurora,
+html.perf-low .aurora-bg,
+html.perf-low .nebula,
+html.perf-low .blob,
+html.perf-low .animated-gradient,
+html.perf-low [data-decorative="ambient"] {
+  display: none !important;
+}
+
+/* Mid tier: soften blur radius rather than removing entirely */
+html.perf-mid .backdrop-blur-xl,
+html.perf-mid .backdrop-blur-2xl,
+html.perf-mid .backdrop-blur-3xl {
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+
+/* Save-Data / slow net: hide non-essential imagery */
+html.perf-save-data [data-decorative="image"],
+html.perf-slow-net [data-decorative="image"] {
+  display: none !important;
+}
