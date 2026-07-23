@@ -68,6 +68,7 @@ import { PushIntelligencePanel } from "@/components/chat/PushIntelligencePanel";
  const APIPage = lazy(() => import("./pages/APIPage"));
  const EnterpriseSettingsPage = lazy(() => import("./pages/EnterpriseSettingsPage"));
  const LocalModelsPage = lazy(() => import("./pages/LocalModelsPage"));
+ const PrivateAiHubPage = lazy(() => import("./pages/PrivateAiHubPage"));
  const AboutPage = lazy(() => import("./pages/AboutPage"));
  const HelpCenterPage = lazy(() => import("./pages/HelpCenterPage"));
  const FAQPage = lazy(() => import("./pages/FAQPage"));

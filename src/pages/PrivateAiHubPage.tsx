@@ -7,7 +7,7 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Shield, Zap, Globe, Lock, WifiOff, KeyRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Navigation } from "@/components/Navigation";
+import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { SEOHead } from "@/components/SEOHead";
 import GeoCanonicalSummaries from "@/components/seo/GeoCanonicalSummaries";
