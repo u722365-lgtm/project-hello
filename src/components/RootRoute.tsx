@@ -11,14 +11,13 @@ import { useEffect } from "react";
  * Signed-in users and anyone who has chatted before go straight to `/chatbot`.
  */
 export default function RootRoute() {
-  const { user, isAnonymous, loading } = useAuth();
+  const { loading } = useAuth();
 
   useEffect(() => {
     if (!loading) recordLandingView("/");
   }, [loading]);
 
   if (loading) return <PageLoader />;
-  if (user && !isAnonymous) return <Navigate to="/chatbot" replace />;
-  if (shouldSkipLandingForReturnVisitor()) return <Navigate to="/chatbot" replace />;
+  // Everyone lands on the marketing home. Chat is opt-in via CTAs.
   return <Index />;
 }
