@@ -95,7 +95,7 @@ export function useChatToolRouter(handlers: Parameters<typeof useShadowToolBridg
           const parsed = JSON.parse(errText) as { error?: string; code?: string };
           if (parsed.error) msg = parsed.error;
           if (parsed.code === "PLATFORM_CREDITS_EXHAUSTED" || parsed.code === "DAILY_LIMIT_EXCEEDED") {
-            const fallback = await localFallbackChat(chatMessages.map(m => typeof m.content === 'string' ? m.content : '').join('\n') || msgContent).catch(() => null);
+            const fallback = await localFallbackChat(chatMessages.map(m => typeof m.content === 'string' ? m.content : '').join('\n')).catch(() => null);
             if (fallback) {
               onMessagesUpdate((prev) => [
                 ...prev,
