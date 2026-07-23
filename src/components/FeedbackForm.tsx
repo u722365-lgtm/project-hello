@@ -32,9 +32,21 @@ const categories = [
   { value: "other", label: "Other" },
 ];
 
-export const FeedbackForm = () => {
+interface FeedbackFormProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  hideTrigger?: boolean;
+}
+
+export const FeedbackForm = ({ open: controlledOpen, onOpenChange, hideTrigger }: FeedbackFormProps = {}) => {
   const { user } = useAuth();
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen = (v: boolean) => {
+    if (!isControlled) setInternalOpen(v);
+    onOpenChange?.(v);
+  };
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
