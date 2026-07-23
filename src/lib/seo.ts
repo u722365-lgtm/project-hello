@@ -443,6 +443,23 @@ export const PAGE_SEO: Record<string, PageMeta> = {
     ],
     canonical: 'https://www.shadowtalk-ai.com/chatbot',
   },
+  privateAi: {
+    title: 'Private AI Chat — No Login, No Tracking | ShadowTalk AI',
+    description:
+      'Free private AI chat that runs on your device. No signup, no phone number, no chat storage. A local-first ChatGPT alternative from ShadowTalk AI.',
+    socialDescription: SITE_SOCIAL_DESCRIPTION,
+    keywords: [
+      'private AI chat',
+      'no login AI chatbot',
+      'anonymous AI chat',
+      'ChatGPT alternative no signup',
+      'offline AI chat',
+      'local AI chatbot',
+      'privacy AI',
+      'ShadowTalk AI',
+    ],
+    canonical: 'https://www.shadowtalk-ai.com/private-ai',
+  },
   docs: {
     title: 'Documentation',
     description: 'Learn how to use ShadowTalk AI effectively. Guides, tutorials, and API documentation.',

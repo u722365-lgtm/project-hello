@@ -297,6 +297,7 @@ const AnimatedRoutes = () => {
           <Route path="/self-healing" element={<PageTransition><SelfHealingPage /></PageTransition>} />
           <Route path="/local-models" element={<PageTransition><LocalModelsPage /></PageTransition>} />
           <Route path="/settings/local-models" element={<Navigate to="/local-models" replace />} />
+          <Route path="/private-ai" element={<PageTransition><PrivateAiHubPage /></PageTransition>} />
           <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
         </Routes>
       </AnimatePresence>
