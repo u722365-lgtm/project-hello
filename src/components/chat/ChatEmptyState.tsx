@@ -56,6 +56,15 @@ export function ChatEmptyState({
         <span className="gradient-text">{tenant?.welcomeSubtitle ?? BRAND.tagline}</span>
       </motion.p>
 
+      <motion.div
+        variants={staggerItem}
+        className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-medium text-emerald-400"
+        aria-label="Privacy status"
+      >
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+        Anonymous · local-first · no data stored
+      </motion.div>
+
       {apiConnectedLabel && (
         <motion.p
           variants={staggerItem}
@@ -64,6 +73,7 @@ export function ChatEmptyState({
           {apiConnectedLabel}
         </motion.p>
       )}
+
 
       <motion.div
         variants={staggerItem}
