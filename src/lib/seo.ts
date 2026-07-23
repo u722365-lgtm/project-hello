@@ -441,7 +441,7 @@ export const PAGE_SEO: Record<string, PageMeta> = {
       'agentic AI',
       'Karachi AI founder',
     ],
-    canonical: 'https://www.shadowtalk-ai.com/',
+    canonical: 'https://www.shadowtalk-ai.com/chatbot',
   },
   docs: {
     title: 'Documentation',
