@@ -67,7 +67,7 @@ function platformAiUnavailable(corsHeaders: Record<string, string>): Response {
   return new Response(
     JSON.stringify({
       error:
-        "AI is not configured. Add an API key in Profile → API Keys, or enable platform AI (LOVABLE_API_KEY).",
+        "AI is not configured. Add an API key in Profile → API Keys, or use the ShadowTalk desktop app for free local AI.",
     }),
     {
       status: 503,
@@ -91,33 +91,6 @@ function isCreditsExhaustedLike(status: number, body: unknown): boolean {
   return false;
 }
 
-async function fetchAdaptiveContext(userId: string, supabaseUrl: string, serviceRoleKey: string): Promise<string> {
-  const admin = createClient(supabaseUrl, serviceRoleKey);
-  const sections: string[] = [];
-
-  try {
-    // SPEED: run all three context queries in parallel rather than sequentially.
-    const [bizRes, aiMemRes, knowRes] = await Promise.all([
-      admin
-        .from('business_memories')
-        .select('category, title, content, priority')
-        .eq('user_id', userId)
-        .eq('is_active', true)
-        .order('priority', { ascending: false })
-        .limit(20),
-      admin
-        .from('ai_memories')
-        .select('category, content, confidence, times_referenced')
-        .eq('user_id', userId)
-        .order('confidence', { ascending: false })
-        .limit(15),
-      admin
-        .from('knowledge_entries')
-        .select('title, content, entry_type, tags')
-        .eq('user_id', userId)
-        .order('access_count', { ascending: false })
-        .limit(10),
-    ]);
 
     const bizMemories = bizRes.data;
     if (bizMemories?.length) {
@@ -554,43 +527,21 @@ serve(async (req) => {
           !!(decodeImage || generateImage || imageEdit || analyzeTask || getEcoActions || securityAudit ||
             agentWorkflow || deepResearch || webSearch || isResearch);
 
-        if (specialModeRequested && !canUsePlatformGateway(LOVABLE_API_KEY, customAi)) {
-          const ollamaStatus = await getOllamaStatus();
-          if (shouldFallbackToOllama(ollamaStatus ?? getOllamaFallbackConfig())) {
-            const lastUserTextForFallback =
-              (typeof lastUserMsg?.content === 'string' ? lastUserMsg.content : '') ||
-              String((messages[messages.length - 1]?.content as unknown as string) ?? '');
-            const ollamaResult = await chatWithLocalOllama(
-              ollamaStatus ?? getOllamaFallbackConfig(),
-              lastUserTextForFallback,
-              routerDecision.model,
-            );
-            if (ollamaResult) {
-              return new Response(
-                JSON.stringify({
-                  ...ollamaResult,
-                  fallback: 'ollama',
-                  specialModeUnsupportedByFallback: true,
-                }),
-                { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
-              );
-            }
-          }
-          return platformAiUnavailable(corsHeaders);
-        }
-
-        if (specialModeRequested && !LOVABLE_API_KEY) {
-          return new Response(
-            JSON.stringify({
-              error:
-                'This tool requires platform AI (LOVABLE_API_KEY). Standard chat works without it, or you can try local Ollama if available.',
-            }),
-            {
-              status: 503,
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            },
-          );
-        }
+    if (specialModeRequested && !canUsePlatformGateway(LOVABLE_API_KEY, customAi)) {
+      return platformAiUnavailable(corsHeaders);
+    }
+    if (specialModeRequested && !LOVABLE_API_KEY) {
+      return new Response(
+        JSON.stringify({
+          error:
+            "This tool requires platform AI (LOVABLE_API_KEY).",
+        }),
+        {
+          status: 503,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
 
     // Image Decoder - Professional analysis with enhanced output
     if (decodeImage && imageToAnalyze) {
@@ -1936,21 +1887,38 @@ When a user asks you to write, create, draft, or generate any document (email, a
         isCreditsExhaustedLike(response.status, await response.text().catch(() => ''));
 
       if (exhausted) {
-        const ollamaStatus = await getOllamaStatus();
-        if (shouldFallbackToOllama(ollamaStatus ?? getOllamaFallbackConfig())) {
-          const lastUserTextForFallback =
-            (typeof lastUserMsg?.content === 'string' ? lastUserMsg.content : '') ||
-            String((messages[messages.length - 1]?.content as unknown as string) ?? '');
-          const ollamaResult = await chatWithLocalOllama(
-            ollamaStatus ?? getOllamaFallbackConfig(),
-            lastUserTextForFallback,
-            routerDecision.model,
-          );
-          if (ollamaResult) {
-            return new Response(
-              JSON.stringify({ ...ollamaResult, fallback: 'ollama' }),
-              { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
-            );
+        const fallbackKey = Deno.env.get("OPENROUTER_FALLBACK_KEY");
+        if (fallbackKey) {
+          try {
+            const fallbackResp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${fallbackKey}`,
+                "Content-Type": "application/json",
+                "HTTP-Referer": "https://shadowtalk.ai",
+                "X-Title": "ShadowTalk AI",
+              },
+              body: JSON.stringify({
+                model: "google/gemini-2.5-flash",
+                messages: [
+                  { role: "system", content: systemPrompt || "You are ShadowTalk AI." },
+                  ...trimmedMessages,
+                ],
+                stream: false,
+              }),
+            });
+            if (fallbackResp.ok) {
+              console.log("[CHAT] OpenRouter fallback succeeded");
+              const fallbackData = await fallbackResp.json();
+              const fallbackContent = fallbackData.choices?.[0]?.message?.content || "";
+              const ssePayload = `data: ${JSON.stringify({ content: fallbackContent, fallback: "openrouter" })}\n\n`;
+              return new Response(ssePayload, {
+                headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+              });
+            }
+            console.warn("[CHAT] OpenRouter fallback failed:", fallbackResp.status);
+          } catch (fallbackErr) {
+            console.error("[CHAT] OpenRouter fallback error:", fallbackErr);
           }
         }
       }
@@ -1964,7 +1932,7 @@ When a user asks you to write, create, draft, or generate any document (email, a
       if (response.status === 402) {
         return new Response(
           JSON.stringify({
-            error: 'Platform AI credits are exhausted. Add your own API key to keep chatting — it takes ~2 minutes and uses your provider\''s free tier.',
+            error: 'Platform AI credits are exhausted. Add your own API key in Profile → API Keys, or use the ShadowTalk desktop app for free local AI.',
             code: 'PLATFORM_CREDITS_EXHAUSTED',
             needsByok: true,
           }),
