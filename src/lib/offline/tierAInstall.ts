@@ -7,6 +7,11 @@
 import { getSmolLMEngine } from "./smollmEngine";
 import { getGemmaEngine } from "./gemmaEngine";
 import { dispatchLocalModelReady } from "@/lib/privacy/localInferenceReady";
+import { onLocalModelReady } from "@/lib/privacy/deviceOnlyPledge";
+import {
+  detectOfflineSkipReason,
+  persistOfflineSkipReason,
+} from "./deviceSupport";
 
 export const SILENT_TIER_A_KEY = "shadowtalk_offline_silent_install";
 export const BOOTSTRAP_DONE_KEY = "shadowtalk_offline_tier_a_done";
@@ -29,18 +34,30 @@ export function startSilentTierAInstall(): void {
   const engine = getSmolLMEngine();
   if (engine.isReady) {
     dispatchLocalModelReady();
+    onLocalModelReady();
     return;
   }
   if (engine.isLoading) return;
   if (getGemmaEngine().isLoading) return;
 
-  engine
-    .ensureLoaded()
-    .then((ok) => {
-      if (!ok) return;
-      localStorage.setItem(BOOTSTRAP_DONE_KEY, "1");
-      dispatchLocalModelReady();
-      // Routing flip happens only when user taps Configure on Profile quick models.
-    })
-    .catch((e) => console.warn("[Tier A silent]", e));
+  // Fail-fast on devices that cannot run WebLLM (iOS Safari, Save-Data, tiny storage).
+  // Prevents multi-hour hanging downloads on mobile.
+  void detectOfflineSkipReason().then((reason) => {
+    if (reason) {
+      persistOfflineSkipReason(reason);
+      // Keep cloud routing available so chat still works.
+      return;
+    }
+    persistOfflineSkipReason(null);
+    engine
+      .ensureLoaded()
+      .then((ok) => {
+        if (!ok) return;
+        localStorage.setItem(BOOTSTRAP_DONE_KEY, "1");
+        dispatchLocalModelReady();
+        onLocalModelReady();
+      })
+      .catch((e) => console.warn("[Tier A silent]", e));
+  });
 }
+
