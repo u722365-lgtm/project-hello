@@ -495,6 +495,7 @@ export const PAGE_SEO: Record<string, PageMeta> = {
     ],
     canonical: 'https://www.shadowtalk-ai.com/about',
     ogType: 'profile',
+    ogImage: FOUNDER_IMAGE_URL,
   },
   zainAhmed: {
     title: 'Zain Ahmed Fahad Patel — Founder of ShadowTalk AI',
