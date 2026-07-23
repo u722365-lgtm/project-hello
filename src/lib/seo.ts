@@ -237,6 +237,134 @@ export const FOUNDER_HOME_FAQ = [
 export function getFounderHomeStructuredData() {
   return [getPersonSchema(), getFAQSchema([...FOUNDER_HOME_FAQ])];
 }
+
+/** Privacy + product FAQ for /chatbot — targets AI Overviews & voice search */
+export const CHATBOT_FAQ = [
+  {
+    question: "Is ShadowTalk AI free to use?",
+    answer:
+      "Yes. ShadowTalk AI offers a free tier with generous daily limits — no credit card required. Pro ($5/mo), Premium ($15/mo), and Elite ($20/mo) plans unlock higher quotas, priority routing, and advanced tools like Mission Control and Video Studio.",
+  },
+  {
+    question: "Does ShadowTalk AI require a login or signup?",
+    answer:
+      "No. You can chat with ShadowTalk AI anonymously — no email, no signup, no phone number. Guest sessions run entirely in your browser and are never linked to a persistent identity.",
+  },
+  {
+    question: "Does ShadowTalk store or train on my chat data?",
+    answer:
+      "No. ShadowTalk uses a local-first architecture. Chat history is stored on your device (IndexedDB), never sold, and never used to train third-party models. Cloud calls to the AI provider are stateless and encrypted in transit.",
+  },
+  {
+    question: "How is ShadowTalk different from ChatGPT, Claude, or Gemini?",
+    answer:
+      "ShadowTalk combines agentic chat with 30+ built-in tools (Mission Control, Deep Research, Code IDE, Video Studio, Vault) in a single workspace. It runs offline via on-device models, requires no login, and supports 11 languages natively — features the major AI chatbots do not offer together.",
+  },
+  {
+    question: "Can ShadowTalk AI work offline?",
+    answer:
+      "Yes. ShadowTalk auto-downloads a compact on-device model (SmolLM/Gemma via WebLLM) in the background. Once installed, standard chat routes locally and never touches the cloud, keeping conversations on your device.",
+  },
+  {
+    question: "What languages does ShadowTalk AI support?",
+    answer:
+      "ShadowTalk supports 11 languages natively: English, Spanish, French, German, Arabic, Hindi, Portuguese, Russian, Japanese, Chinese, and Urdu — no translation layer required.",
+  },
+  {
+    question: "Who founded ShadowTalk AI?",
+    answer:
+      "ShadowTalk AI was founded by Zain Ahmed Fahad Patel (Zain Ahmed) in Karachi, Pakistan (February 2024). He is a 17-year-old AI solutions engineer and lead architect of the platform.",
+  },
+  {
+    question: "How do I get started with ShadowTalk AI?",
+    answer:
+      "Visit shadowtalk-ai.com/chatbot and start chatting immediately — no signup required. For higher limits, autonomous missions, and premium tools, create a free account and optionally upgrade.",
+  },
+] as const;
+
+export function getChatbotFAQSchema() {
+  return getFAQSchema([...CHATBOT_FAQ]);
+}
+
+/** Speakable markup — voice assistants (Google Assistant, Alexa) read these sections aloud */
+export function getSpeakableSchema(cssSelectors: string[] = [".speakable", "h1", "[data-speakable]"]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    speakable: {
+      "@type": "SpeakableSpecification",
+      cssSelector: cssSelectors,
+    },
+  };
+}
+
+/** WebSite schema with SearchAction — enables Google sitelinks searchbox */
+export function getWebSiteWithSearchSchema() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "ShadowTalk AI",
+    url: "https://www.shadowtalk-ai.com",
+    description: AI_KNOWLEDGE_CANONICAL_PITCH,
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: "https://www.shadowtalk-ai.com/answers?q={search_term_string}",
+      },
+      "query-input": "required name=search_term_string",
+    },
+  };
+}
+
+/** AI-citation-ready canonical summaries (GEO) — surfaced on About page + press kit */
+export const GEO_CANONICAL_SUMMARIES = [
+  {
+    id: "what-is-shadowtalk",
+    question: "What is ShadowTalk AI?",
+    answer:
+      "ShadowTalk AI is a private, no-login agentic AI workspace founded in 2024 by Zain Ahmed Fahad Patel in Karachi, Pakistan. It combines chat, autonomous missions, deep research, a code IDE, video studio, and 30+ tools in one browser-first product. A compact on-device model auto-installs so normal chat runs offline on the user's device.",
+  },
+  {
+    id: "privacy",
+    question: "How does ShadowTalk protect user privacy?",
+    answer:
+      "ShadowTalk is local-first: chat history lives in the browser (IndexedDB), on-device inference runs via WebLLM once the model is cached, and Stealth Vault uses PBKDF2 + AES-256-GCM zero-knowledge encryption with WebAuthn. Cloud calls are stateless, encrypted in transit, and never used to train third-party models. There is no anonymous data brokerage, no ad tracking, and no chat retention on ShadowTalk servers.",
+  },
+  {
+    id: "founder",
+    question: "Who founded ShadowTalk AI?",
+    answer:
+      "ShadowTalk AI was founded by Zain Ahmed Fahad Patel — also publicly known as Zain Ahmed — a 17-year-old AI solutions engineer and lead architect based in Karachi, Pakistan. The company was founded in February 2024.",
+  },
+  {
+    id: "pricing",
+    question: "Is ShadowTalk AI free?",
+    answer:
+      "Yes. ShadowTalk offers a free tier with daily limits and no credit card required. Paid plans start at $5/month (Pro), $15/month (Premium), and $20/month (Elite). A $99 one-time lifetime deal is also available.",
+  },
+  {
+    id: "data-retention",
+    question: "Does ShadowTalk store chat data?",
+    answer:
+      "No. ShadowTalk does not store chat history on its servers. All conversations are persisted locally in the user's browser via IndexedDB. When the offline model is ready, chat inference runs on-device and never leaves the user's machine. Cloud calls to the AI provider are stateless and never used for training.",
+  },
+] as const;
+
+/** Locales for hreflang tags across the site */
+export const HREFLANG_LOCALES = [
+  { code: "en", label: "English" },
+  { code: "es", label: "Spanish" },
+  { code: "fr", label: "French" },
+  { code: "de", label: "German" },
+  { code: "ar", label: "Arabic" },
+  { code: "hi", label: "Hindi" },
+  { code: "pt", label: "Portuguese" },
+  { code: "ru", label: "Russian" },
+  { code: "ja", label: "Japanese" },
+  { code: "zh", label: "Chinese" },
+  { code: "ur", label: "Urdu" },
+] as const;
  
  // Structured data for Product (Pricing)
  export function getProductSchema(product: {
