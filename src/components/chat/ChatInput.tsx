@@ -150,6 +150,7 @@ export const ChatInput = ({
             )}
 
             <Textarea
+              ref={textareaRef}
               value={message}
               onChange={(e) => onMessageChange(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -157,7 +158,9 @@ export const ChatInput = ({
               className="shadowtalk-composer__textarea flex-1 min-h-[40px] max-h-[200px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 py-2.5 pl-2 pr-2 text-base sm:text-[15px] placeholder:text-muted-foreground/50 leading-relaxed overflow-y-auto custom-scrollbar"
               disabled={isLoading}
               rows={1}
+              aria-label="Chat message"
             />
+
 
             <div className="shadowtalk-composer__actions">
               {onProviderChange && (
