@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { Send, Mic, MicOff, Square, Plus, Sparkles, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
