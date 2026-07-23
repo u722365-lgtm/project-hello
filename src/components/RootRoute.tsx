@@ -18,6 +18,8 @@ export default function RootRoute() {
   }, [loading]);
 
   if (loading) return <PageLoader />;
-  // Everyone lands on the marketing home. Chat is opt-in via CTAs.
+  // Anonymous users go straight to chat; real users too.
+  if (user) return <Navigate to="/chatbot" replace />;
+  if (shouldSkipLandingForReturnVisitor()) return <Navigate to="/chatbot" replace />;
   return <Index />;
 }

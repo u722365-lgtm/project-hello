@@ -1459,7 +1459,7 @@ const ChatbotPage = () => {
     if ((!msgContent && !selectedFile) || isLoading) return;
 
     const isGuestLike = !user || isAnonymous;
-    if (isGuestLike && !isAnonymousAutonomousEnabled() && false) {
+    if (isGuestLike && !isAnonymousAutonomousEnabled()) {
       if (guestUsage.isLoaded && !guestUsage.canPerform("chats")) {
         setSignInPromptReason("chats");
         setShowSignInPrompt(true);
