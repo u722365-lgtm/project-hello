@@ -137,6 +137,11 @@ export const useMissions = () => {
 
   // Fetch actions for a specific mission
   const fetchActions = useCallback(async (missionId: string) => {
+    // Local / anonymous missions are not persisted to Supabase
+    if (!missionId || missionId.startsWith('local-mission-')) {
+      setActions([]);
+      return;
+    }
     try {
       const { data, error } = await supabase
         .from('mission_actions')
@@ -301,6 +306,8 @@ export const useMissions = () => {
     }
   ): Promise<MissionAction | null> => {
     try {
+      // Skip DB for local / anonymous missions
+      if (!missionId || missionId.startsWith('local-mission-')) return null;
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return null;
 

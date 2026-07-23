@@ -132,6 +132,11 @@ Return ONLY a JSON array. Each object:
 No vague steps. Include 2026 in queries when relevant.`;
 }
 
+export interface GeneratedPlan {
+  steps: MissionPlanStep[];
+  usedDefault: boolean;
+}
+
 export async function generateExecutionPlan(
   goal: string,
   deliverableType: DeliverableType,
@@ -165,7 +170,10 @@ export async function generateExecutionPlan(
     console.warn("[execution] plan generation failed, using default", e);
   }
 
-  return defaultPlan(goal, deliverableType);
+  const fallback = defaultPlan(goal, deliverableType);
+  // Mark first step so the executor can surface a "used default plan" warning
+  if (fallback[0]) (fallback[0] as MissionPlanStep & { _planFallback?: boolean })._planFallback = true;
+  return fallback;
 }
 
 /** @deprecated Use generateExecutionPlan */

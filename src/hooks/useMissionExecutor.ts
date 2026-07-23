@@ -303,6 +303,14 @@ export const useMissionExecutor = () => {
         stepsRef.current = steps;
         resultsRef.current = [];
 
+        if ((steps[0] as (typeof steps)[number] & { _planFallback?: boolean })?._planFallback) {
+          toast({
+            title: "Using default plan",
+            description:
+              "Planner LLM was unavailable — running with a standard research plan. Results are still real.",
+          });
+        }
+
         await persistSteps(mission.id, steps, { progress: 5 });
 
         return await runStepsFrom(0);
