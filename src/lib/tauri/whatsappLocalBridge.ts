@@ -4,7 +4,14 @@ export interface TauriWhatsAppLocalBridge {
   pair(command?: string, args?: string[]): Promise<{ ok: boolean; pid?: number; error?: string }>;
 }
 
-import { invoke } from "@tauri-apps/api/core";
+// Tauri core is optional; fall back to a no-op invoke when not present.
+async function invoke<T = unknown>(cmd: string, args?: Record<string, unknown>): Promise<T> {
+  try {
+    const mod: any = await import(/* @vite-ignore */ "@tauri-apps/api/core").catch(() => null);
+    if (mod?.invoke) return mod.invoke(cmd, args);
+  } catch { /* noop */ }
+  throw new Error(`Tauri invoke unavailable for ${cmd}`);
+}
 
 function fallbackStatus(): { ready: boolean; phone?: string; lastError?: string } {
   return { ready: false, lastError: "Local fallback: not connected from TS bridge." };

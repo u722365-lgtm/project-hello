@@ -74,7 +74,7 @@ async function tryTauriOllamaClient(): Promise<OllamaLocalStatus | null> {
     const mod = await import('@/lib/tauri/ollamaClient');
     const client = mod.buildTauriOllamaClient?.();
     if (!client) return null;
-    return client.health().then((h: any) =>
+    return client.health?.().then((h: any) =>
       h
         ? ({ endpoint: h.endpoint || 'http://127.0.0.1:11434', ready: !!h.ready, models: Array.isArray(h.models) ? h.models : [], defaultModel: h.defaultModel || 'qwen2.5:7b' } satisfies OllamaLocalStatus)
         : null,
