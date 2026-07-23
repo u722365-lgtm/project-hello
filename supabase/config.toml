@@ -109,3 +109,5 @@ project_id = "axsudmhjpfzffcicfvuj"
     verify_jwt = false
   [functions.check-lemonsqueezy-subscription]
     verify_jwt = false
+  [functions.process-email-queue]
+    verify_jwt = true
