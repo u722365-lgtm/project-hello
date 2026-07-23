@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { Send, Mic, MicOff, Square, Plus, Sparkles, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -59,6 +60,18 @@ export const ChatInput = ({
   hasKeyForProvider,
   isEmptyState = false,
 }: ChatInputProps) => {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto-focus the composer on mount so users can start typing immediately.
+  // Skip on touch devices so the mobile keyboard doesn't pop up unprompted.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const isTouch = window.matchMedia?.("(pointer: coarse)").matches;
+    if (isTouch) return;
+    const t = window.setTimeout(() => textareaRef.current?.focus(), 60);
+    return () => window.clearTimeout(t);
+  }, []);
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey && getChatEnterToSend()) {
       e.preventDefault();
@@ -67,6 +80,7 @@ export const ChatInput = ({
     }
     onKeyPress(e);
   };
+
 
   const isShadowPulse = layout === "shadow-pulse";
   const isComposer = layout === "composer" || layout === "gemini" || isShadowPulse;
@@ -136,6 +150,7 @@ export const ChatInput = ({
             )}
 
             <Textarea
+              ref={textareaRef}
               value={message}
               onChange={(e) => onMessageChange(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -143,7 +158,9 @@ export const ChatInput = ({
               className="shadowtalk-composer__textarea flex-1 min-h-[40px] max-h-[200px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 py-2.5 pl-2 pr-2 text-base sm:text-[15px] placeholder:text-muted-foreground/50 leading-relaxed overflow-y-auto custom-scrollbar"
               disabled={isLoading}
               rows={1}
+              aria-label="Chat message"
             />
+
 
             <div className="shadowtalk-composer__actions">
               {onProviderChange && (
@@ -275,9 +292,12 @@ export const ChatInput = ({
             </div>
 
             <Textarea
+              ref={textareaRef}
               value={message}
               onChange={(e) => onMessageChange(e.target.value)}
               onKeyDown={handleKeyDown}
+              aria-label="Chat message"
+
               placeholder={
                 isListening
                   ? "Listening..."
