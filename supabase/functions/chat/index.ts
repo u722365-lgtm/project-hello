@@ -1489,59 +1489,67 @@ Return ONLY valid JSON in this exact format:
     if (authHeader) {
       try {
         if (supabaseUrl && serviceRoleKey) {
-          // Decode user from JWT
           const token = authHeader.replace('Bearer ', '');
           const anonClient = createClient(supabaseUrl, supabaseAnonKey);
           const { data: { user: authUser } } = await anonClient.auth.getUser(token);
-          
+
           if (authUser?.id) {
             authUserId = authUser.id;
             authUserEmail = authUser.email ?? null;
             const meta = authUser.user_metadata as { full_name?: string } | undefined;
             authUserFullName = meta?.full_name ?? null;
-            console.log("[CONTEXT ENGINE] Fetching adaptive context for user:", authUser.id);
-            serverSideContext = await fetchAdaptiveContext(authUser.id, supabaseUrl, serviceRoleKey);
-            if (serverSideContext) {
+
+            // SPEED: run adaptive context + daily-limit check in PARALLEL.
+            // Previously these ran sequentially, adding ~200-500ms to TTFB
+            // before the LLM was even called.
+            const adminClient = createClient(supabaseUrl, serviceRoleKey);
+            const [ctxResult, usageResult] = await Promise.allSettled([
+              fetchAdaptiveContext(authUser.id, supabaseUrl, serviceRoleKey),
+              checkAndIncrementDailyUsage(adminClient, authUser.id, "messages"),
+            ]);
+
+            if (ctxResult.status === 'fulfilled' && ctxResult.value) {
+              serverSideContext = ctxResult.value;
               console.log("[CONTEXT ENGINE] Injected", serverSideContext.length, "chars of adaptive context");
+            } else if (ctxResult.status === 'rejected') {
+              console.error("[CONTEXT ENGINE] Non-fatal context fetch error:", ctxResult.reason);
+            }
+
+            if (usageResult.status === 'fulfilled') {
+              const usage = usageResult.value;
+              if (!usage.allowed) {
+                console.log(`[DAILY LIMIT] User ${authUser.id} blocked: ${usage.current}/${usage.limit} messages`);
+                return new Response(
+                  JSON.stringify({
+                    success: false,
+                    error: "Daily message limit reached",
+                    code: "DAILY_LIMIT_EXCEEDED",
+                    limit: usage.limit,
+                    current: usage.current,
+                    plan: usage.plan,
+                  }),
+                  {
+                    status: 429,
+                    headers: {
+                      ...corsHeaders,
+                      "Content-Type": "application/json",
+                      "X-Daily-Limit": String(usage.limit),
+                      "X-Daily-Remaining": "0",
+                    },
+                  }
+                );
+              }
+            } else {
+              console.error("[DAILY LIMIT] Non-fatal enforcement error:", usageResult.reason);
             }
           }
         }
       } catch (contextErr) {
-        console.error("[CONTEXT ENGINE] Non-fatal context fetch error:", contextErr);
+        console.error("[CONTEXT ENGINE] Non-fatal pre-LLM setup error:", contextErr);
       }
     }
 
-    // Server-side daily message limit for authenticated free-tier users
-    if (authUserId && supabaseUrl && serviceRoleKey) {
-      try {
-        const adminClient = createClient(supabaseUrl, serviceRoleKey);
-        const usage = await checkAndIncrementDailyUsage(adminClient, authUserId, "messages");
-        if (!usage.allowed) {
-          console.log(`[DAILY LIMIT] User ${authUserId} blocked: ${usage.current}/${usage.limit} messages`);
-          return new Response(
-            JSON.stringify({
-              success: false,
-              error: "Daily message limit reached",
-              code: "DAILY_LIMIT_EXCEEDED",
-              limit: usage.limit,
-              current: usage.current,
-              plan: usage.plan,
-            }),
-            {
-              status: 429,
-              headers: {
-                ...corsHeaders,
-                "Content-Type": "application/json",
-                "X-Daily-Limit": String(usage.limit),
-                "X-Daily-Remaining": "0",
-              },
-            }
-          );
-        }
-      } catch (limitErr) {
-        console.error("[DAILY LIMIT] Non-fatal enforcement error:", limitErr);
-      }
-    }
+
 
     // === SPRINT 1: SMART MODEL ROUTER V2 ===
     const lastUserMsg = [...messages].reverse().find((m: any) => m.role === 'user');
