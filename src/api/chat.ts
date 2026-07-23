@@ -70,8 +70,7 @@ export async function chat(): Promise<ChatApi> {
 
       const body = await response.text();
       let last = '';
-      for (const line of body.split('
-')) {
+      for (const line of body.split('\n')) {
         const trimmed = line.trim();
         if (!trimmed) continue;
         if (trimmed.includes('"message"')) {

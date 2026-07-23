@@ -66,6 +66,7 @@ import { PushIntelligencePanel } from "@/components/chat/PushIntelligencePanel";
  const SettingsPage = lazy(() => import("./pages/SettingsPage"));
  const APIPage = lazy(() => import("./pages/APIPage"));
  const EnterpriseSettingsPage = lazy(() => import("./pages/EnterpriseSettingsPage"));
+ const LocalModelsPage = lazy(() => import("./pages/LocalModelsPage"));
  const AboutPage = lazy(() => import("./pages/AboutPage"));
  const HelpCenterPage = lazy(() => import("./pages/HelpCenterPage"));
  const FAQPage = lazy(() => import("./pages/FAQPage"));
@@ -293,6 +294,8 @@ const AnimatedRoutes = () => {
           <Route path="/download" element={<Navigate to="/downloads" replace />} />
           <Route path="/sessions" element={<PageTransition><SessionsPage /></PageTransition>} />
           <Route path="/self-healing" element={<PageTransition><SelfHealingPage /></PageTransition>} />
+          <Route path="/local-models" element={<PageTransition><LocalModelsPage /></PageTransition>} />
+          <Route path="/settings/local-models" element={<Navigate to="/local-models" replace />} />
           <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
         </Routes>
       </AnimatePresence>
