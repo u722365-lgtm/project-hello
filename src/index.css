@@ -1799,8 +1799,15 @@ html.kbd-open [data-decorative="ambient"] {
    sometimes overshoot the viewport on narrow phones, and stabilize
    sticky/fixed chrome against iOS Safari rubber-band scroll. */
 @media (max-width: 640px) {
+  html,
   body {
     overflow-x: hidden;
+    width: 100%;
+  }
+  #root {
+    width: 100%;
+    min-width: 0;
+    overflow-x: clip;
   }
   .shadowtalk-chat-shell,
   .shadowtalk-chat-input-dock,
