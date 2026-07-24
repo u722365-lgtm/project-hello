@@ -11,7 +11,7 @@ import { useEffect } from "react";
  * Signed-in users and anyone who has chatted before go straight to `/chatbot`.
  */
 export default function RootRoute() {
-  const { loading } = useAuth();
+  const { loading, user } = useAuth();
 
   useEffect(() => {
     if (!loading) recordLandingView("/");

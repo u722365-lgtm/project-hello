@@ -471,7 +471,7 @@ const ChatbotPage = () => {
       }
 
       setAiProvider(next);
-      const serverId = next === "gemini" ? "google" : next === "" ? "" : null;
+      const serverId = next === "gemini" ? "google" : next === "openrouter" ? "openrouter" : null;
       if (serverId && keys.some((k) => k.provider === serverId && k.verified_at)) {
         await setDefault(serverId);
       }
@@ -1276,7 +1276,7 @@ const ChatbotPage = () => {
           detail = rawBody || detail;
         }
         if (status === 402 && needsByok) {
-          setPendingByokProvider("");
+          setPendingByokProvider("openrouter");
           setByokDialogOpen(true);
           toast({
             title: "Add your API key to keep chatting",

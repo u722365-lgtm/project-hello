@@ -39,11 +39,11 @@ export const AI_PROVIDER_OPTIONS: AiProviderOption[] = [
     docsUrl: "https://console.anthropic.com/settings/keys",
   },
   {
-    id: "",
+    id: "openrouter",
     name: "OpenRouter",
     description: "Unified access to many models",
     keyPlaceholder: "sk-or-…",
-    docsUrl: "https://.ai/keys",
+    docsUrl: "https://openrouter.ai/keys",
   },
   {
     id: "perplexity",

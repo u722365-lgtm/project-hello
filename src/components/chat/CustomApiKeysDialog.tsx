@@ -47,7 +47,7 @@ export function CustomApiKeysDialog({
 }: Props) {
   const { toast } = useToast();
   const [provider, setProvider] = useState<CustomAiProviderId>(
-    config.usePlatformDefault ? "" : config.provider,
+    config.usePlatformDefault ? "openrouter" : config.provider,
   );
   const [apiKey, setApiKey] = useState(config.apiKey);
   const [model, setModel] = useState(config.model ?? "");
