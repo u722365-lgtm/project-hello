@@ -25,15 +25,16 @@ const PHASE_LABELS: Record<string, { label: string; icon: React.ReactNode; color
 };
 
 export const CognitiveLoopPanel = ({ isOpen, onClose, onResult, initialQuery }: CognitiveLoopPanelProps) => {
-  const { 
-    isThinking, 
-    currentPhase, 
-    activeAgents, 
-    progress, 
+  const {
+    isThinking,
+    currentPhase,
+    activeAgents,
+    progress,
     debateRound,
-    runCognitiveLoop, 
+    error,
+    runCognitiveLoop,
     cancel,
-    availableAgents 
+    availableAgents
   } = useCognitiveLoop();
 
   const [result, setResult] = useState<CognitiveResult | null>(null);
@@ -42,15 +43,16 @@ export const CognitiveLoopPanel = ({ isOpen, onClose, onResult, initialQuery }: 
 
   const handleRun = async () => {
     if (!query.trim()) return;
-    
+
     setResult(null);
     const cogResult = await runCognitiveLoop(query);
-    
+
     if (cogResult) {
       setResult(cogResult);
       onResult(cogResult.finalAnswer);
     }
   };
+
 
   const toggleAgent = (agentId: string) => {
     setExpandedAgents(prev => 
