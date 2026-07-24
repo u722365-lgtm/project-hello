@@ -27,7 +27,7 @@ export function SettingsHero() {
     lovable: "ShadowTalk Pro",
     shadowtalk: "ShadowTalk Sovereign",
     gemini: "Gemini",
-    openrouter: "OpenRouter",
+    : "OpenRouter",
     kimi: "Kimi",
   };
   const providerLabel =

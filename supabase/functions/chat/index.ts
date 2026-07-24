@@ -1926,7 +1926,7 @@ When a user asks you to write, create, draft, or generate any document (email, a
       if (response.status === 402) {
         return new Response(
           JSON.stringify({
-            error: 'Platform AI credits are exhausted. Add your own API key in Profile → API Keys, or use the ShadowTalk desktop app for free local AI.',
+            error: 'Platform AI credits are exhausted. AI is not configured. Use the ShadowTalk desktop app for free local AI.',
             code: 'PLATFORM_CREDITS_EXHAUSTED',
             needsByok: true,
           }),

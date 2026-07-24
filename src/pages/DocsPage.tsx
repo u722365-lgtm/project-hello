@@ -449,7 +449,7 @@ const DocsPage = () => {
                   <CardContent className="pt-6 grid gap-3 md:grid-cols-2 text-sm text-muted-foreground">
                     <p><strong className="text-foreground">Frontend:</strong> React 18, Vite, TypeScript, Tailwind, Framer Motion, shadcn/ui</p>
                     <p><strong className="text-foreground">Backend:</strong> Supabase (Auth, Postgres, RLS, Edge Functions)</p>
-                    <p><strong className="text-foreground">AI routing:</strong> Edge functions → Gemini / OpenRouter / Kimi / local WebGPU</p>
+                    <p><strong className="text-foreground">AI routing:</strong> Edge functions → Gemini /  / Kimi / local WebGPU</p>
                     <p><strong className="text-foreground">IDE sandbox:</strong> Monaco + WebContainer (Computer Mode)</p>
                     <p><strong className="text-foreground">Offline:</strong> SmolLM / Gemma via WebGPU + WASM transformers</p>
                     <p><strong className="text-foreground">Desktop:</strong> Electron + Capacitor builds at /downloads</p>

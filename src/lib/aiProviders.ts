@@ -4,7 +4,7 @@ export type AiProviderId =
   | "anthropic"
   | "xai"
   | "perplexity"
-  | "openrouter"
+  | ""
   | "mistral"
   | "groq";
 
@@ -39,11 +39,11 @@ export const AI_PROVIDER_OPTIONS: AiProviderOption[] = [
     docsUrl: "https://console.anthropic.com/settings/keys",
   },
   {
-    id: "openrouter",
+    id: "",
     name: "OpenRouter",
     description: "Unified access to many models",
     keyPlaceholder: "sk-or-…",
-    docsUrl: "https://openrouter.ai/keys",
+    docsUrl: "https://.ai/keys",
   },
   {
     id: "perplexity",

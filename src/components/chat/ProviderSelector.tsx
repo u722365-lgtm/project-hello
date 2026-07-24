@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 
-export type AIProvider = "lovable" | "shadowtalk" | "gemini" | "openrouter" | "kimi";
+export type AIProvider = "lovable" | "shadowtalk" | "gemini" | "" | "kimi";
 
 interface ProviderSelectorProps {
   provider: AIProvider;
@@ -39,7 +39,7 @@ const providers = [
     icon: <Key className="h-4 w-4 text-amber-400" />,
   },
   {
-    value: "openrouter" as const,
+    value: "" as const,
     label: "OpenRouter (BYOK)",
     description: "Your OpenRouter key",
     icon: <Key className="h-4 w-4 text-blue-400" />,
@@ -64,7 +64,7 @@ export const ProviderSelector = ({
     lovable: "Pro",
     shadowtalk: "Sovereign",
     gemini: "Gemini",
-    openrouter: "OpenRouter",
+    : "OpenRouter",
     kimi: "Kimi",
   };
   const shortLabel = shortLabels[currentProvider.value];

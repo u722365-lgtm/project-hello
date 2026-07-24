@@ -22,7 +22,7 @@ ShadowTalk is the **agentic AI workspace** for people who are tired of chatbots 
 | Manual tool hopping | **30+ tools** from natural language |
 | Cloud-only | **Vault, BYOK, optional on-device Gemma** |
 | Browser tab | **Desktop app** with native files & notifications |
-| Platform credits only | **Your API keys** — Gemini, OpenRouter, Kimi |
+| Platform credits only | **Your API keys** — Gemini, , Kimi |
 
 | You get | What that means |
 |--------|------------------|

@@ -64,7 +64,7 @@ export const PRODUCT_CHANGELOG: ProductChangelogEntry[] = [
     publishedAt: "2026-05-20",
     tags: ["BYOK", "Agents"],
     changes: [
-      { type: "feature", text: "BYOK for Gemini, OpenRouter, and Kimi — keys in Profile/Settings." },
+      { type: "feature", text: "BYOK for Gemini, , and Kimi — keys in Profile/Settings." },
       { type: "feature", text: "Mission Control (/missioncontrol) for multi-step autonomous workflows." },
       { type: "feature", text: "Command palette (⌘K) for quick navigation and tool launch." },
       { type: "improvement", text: "Tool orchestration with human-in-the-loop confirmations on sensitive actions." },

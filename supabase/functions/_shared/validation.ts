@@ -93,11 +93,11 @@ export const ChatRequestSchema = z.object({
     })).optional(),
   }).optional(),
   aiProvider: z.enum([
-    "google", "openai", "anthropic", "xai", "perplexity", "openrouter", "mistral", "groq",
+    "google", "openai", "anthropic", "xai", "perplexity", "", "mistral", "groq",
   ]).optional(),
   useCustomApiKey: z.boolean().optional(),
   customAi: z.object({
-    provider: z.enum(["lovable", "gemini", "openrouter", "kimi"]),
+    provider: z.enum(["lovable", "gemini", "", "kimi"]),
     apiKey: z.string().min(10).max(512),
     model: z.string().max(200).optional(),
   }).optional(),

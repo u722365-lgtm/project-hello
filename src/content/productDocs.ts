@@ -227,7 +227,7 @@ export const DOC_WORKSPACE_GUIDE: DocWorkspaceTopic[] = [
     title: "Providers & routing",
     items: [
       "Sovereign — default platform routing to the best available model for your plan.",
-      "BYOK — Gemini, OpenRouter, Kimi when you add verified keys in Settings.",
+      "BYOK — Gemini, , Kimi when you add verified keys in Settings.",
       "Offline — install SmolLM (~130MB) or Gemma in Settings → Offline AI; hybrid router picks local vs cloud.",
       "Hardware speed routing is automatic — there is no Turbo toggle in the UI.",
       "Personal ShadowTalk Model injects few-shot examples from your past chats at inference time.",
@@ -336,7 +336,7 @@ export const DOC_FEATURES: DocFeatureItem[] = [
     icon: "key",
     title: "BYOK",
     description:
-      "Use your Gemini, OpenRouter, or Kimi keys — billed by your provider, not ShadowTalk.",
+      "Use your Gemini, , or Kimi keys — billed by your provider, not ShadowTalk.",
     badge: "Settings",
   },
   {
@@ -432,7 +432,7 @@ export const DOC_PRIVACY_SECTIONS: DocWorkspaceTopic[] = [
   {
     title: "BYOK (Bring Your Own Key)",
     items: [
-      "Add Gemini, OpenRouter, or Kimi keys in Settings → API keys.",
+      "Add Gemini, , or Kimi keys in Settings → API keys.",
       "Verify the key, then select that provider in the composer chip.",
       "Prompts go directly to your provider — you pay them, not ShadowTalk.",
       "Keys are stored encrypted; revoke anytime from Settings.",
@@ -548,7 +548,7 @@ export const DOC_DESKTOP: DocWorkspaceTopic[] = [
 
 export const DOC_GLOSSARY: DocGlossaryItem[] = [
   { term: "Sovereign routing", definition: "Default platform AI routing that picks the best available model for your plan without you managing API keys." },
-  { term: "BYOK", definition: "Bring Your Own Key — use your Gemini, OpenRouter, or Kimi API credentials in chat." },
+  { term: "BYOK", definition: "Bring Your Own Key — use your Gemini, , or Kimi API credentials in chat." },
   { term: "S.E.E.", definition: "Shadow Execution Engine — multi-step autonomous mission runner at /execute." },
   { term: "Mission Control", definition: "UI at /missioncontrol for planning, approving, and monitoring agent missions." },
   { term: "Personal ShadowTalk Model", definition: "On-device learning system that captures your style from chats and injects few-shot examples at inference." },
@@ -574,7 +574,7 @@ export const DOC_FAQ: DocFaqItem[] = [
   },
   {
     q: "What AI models does ShadowTalk use?",
-    a: "Sovereign routing uses platform models (e.g. Gemini family via our gateway). With BYOK you can use your own Gemini, OpenRouter, or Kimi keys. Offline mode uses on-device SmolLM or Gemma when installed. Plan tier affects model speed and capability.",
+    a: "Sovereign routing uses platform models (e.g. Gemini family via our gateway). With BYOK you can use your own Gemini, , or Kimi keys. Offline mode uses on-device SmolLM or Gemma when installed. Plan tier affects model speed and capability.",
   },
   {
     q: "How do I add my own API key?",

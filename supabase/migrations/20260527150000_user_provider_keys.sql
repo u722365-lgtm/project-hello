@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS public.user_provider_keys (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   CONSTRAINT user_provider_keys_provider_check CHECK (
-    provider IN ('google', 'openai', 'anthropic', 'xai', 'perplexity', 'openrouter', 'mistral', 'groq')
+    provider IN ('google', 'openai', 'anthropic', 'xai', 'perplexity',  'mistral', 'groq')
   ),
   CONSTRAINT user_provider_keys_user_provider_unique UNIQUE (user_id, provider)
 );

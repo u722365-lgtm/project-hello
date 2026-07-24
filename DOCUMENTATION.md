@@ -27,7 +27,7 @@ This file is the **master index** for all ShadowTalk documentation. Start here i
 | **Auth** | Persistent session (Gemini-style): restore on load; anonymous sign-in unless user explicitly signed out |
 | **Boot UX** | No global boot screen on `/` or `/chatbot`; chat shell renders while auth restores |
 | **Chat composer** | Pill input with provider chip, voice, send — **no Turbo badge** in UI (routing still automatic) |
-| **BYOK** | Gemini, OpenRouter, Kimi via Settings / provider selector |
+| **BYOK** | Gemini, , Kimi via Settings / provider selector |
 | **Offline** | SmolLM + optional Gemma; hybrid router picks local vs cloud — see [OFFLINE.md](./OFFLINE.md) |
 | **Desktop** | Electron + Capacitor — see [DESKTOP.md](./DESKTOP.md) |
 

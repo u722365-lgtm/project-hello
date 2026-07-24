@@ -29,8 +29,8 @@ function openAiCompatibleUrl(provider: ProviderId): string {
   switch (provider) {
     case "openai":
       return "https://api.openai.com/v1/chat/completions";
-    case "openrouter":
-      return "https://openrouter.ai/api/v1/chat/completions";
+    case "":
+      return "https://.ai/api/v1/chat/completions";
     case "perplexity":
       return "https://api.perplexity.ai/chat/completions";
     case "groq":
@@ -51,7 +51,7 @@ function defaultModel(provider: ProviderId): string {
     anthropic: "claude-3-5-haiku-latest",
     xai: "grok-2-latest",
     perplexity: "sonar",
-    openrouter: "openai/gpt-4o-mini",
+    : "openai/gpt-4o-mini",
     mistral: "mistral-small-latest",
     groq: "llama-3.3-70b-versatile",
   };
@@ -222,7 +222,7 @@ export async function streamWithUserKey(
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
-      ...(provider === "openrouter"
+      ...(provider === ""
         ? { "HTTP-Referer": "https://shadowtalk.app", "X-Title": "ShadowTalk" }
         : {}),
     },

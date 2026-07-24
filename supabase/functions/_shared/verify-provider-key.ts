@@ -4,7 +4,7 @@ export type ProviderId =
   | "anthropic"
   | "xai"
   | "perplexity"
-  | "openrouter"
+  | ""
   | "mistral"
   | "groq";
 
@@ -14,7 +14,7 @@ const PROVIDERS: ProviderId[] = [
   "anthropic",
   "xai",
   "perplexity",
-  "openrouter",
+  "",
   "mistral",
   "groq",
 ];
@@ -73,8 +73,8 @@ export async function verifyProviderApiKey(
         if (!res.ok) return { ok: false, message: "Anthropic rejected this API key" };
         return { ok: true, message: "Anthropic key verified" };
       }
-      case "openrouter": {
-        const res = await fetch("https://openrouter.ai/api/v1/models", {
+      case "": {
+        const res = await fetch("https://.ai/api/v1/models", {
           headers: { Authorization: `Bearer ${key}` },
         });
         if (!res.ok) return { ok: false, message: "OpenRouter rejected this API key" };
