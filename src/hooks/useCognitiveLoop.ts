@@ -133,6 +133,9 @@ export const useCognitiveLoop = () => {
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error('AUTH_REQUIRED');
+      }
 
       // Build debate-aware prompt
       let prompt = userQuery;
@@ -149,21 +152,25 @@ Now provide your perspective as the ${agent.name}. If you disagree with any poin
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          Authorization: `Bearer ${session.access_token}`,
         },
         body: stringifyChatBody({
           messages: [
             { role: 'system', content: `${agent.systemPrompt}\n\nContext:\n${context}` },
             { role: 'user', content: prompt },
           ],
-          model: 'google/gemini-3-flash-preview',
+          model: 'google/gemini-2.5-flash',
           stream: false,
         }),
         signal: abortRef.current?.signal,
       });
 
       if (!response.ok) {
-        console.warn(`[Cognitive] Agent ${agent.name} failed:`, response.status);
+        const status = response.status;
+        console.warn(`[Cognitive] Agent ${agent.name} failed:`, status);
+        if (status === 429) throw new Error('RATE_LIMIT');
+        if (status === 402) throw new Error('CREDITS_EXHAUSTED');
+        if (status === 401 || status === 403) throw new Error('AUTH_REQUIRED');
         return null;
       }
 
