@@ -21,14 +21,14 @@ import type { UserProviderKeyRow } from "@/hooks/useCustomApiKeys";
 /** UI selector id → server-stored provider (user_provider_keys) */
 export function toServerProvider(ui: AIProvider): AiProviderId | null {
   if (ui === "gemini") return "google";
-  if (ui === "") return "";
+  if (ui === "openrouter") return "openrouter";
   return null;
 }
 
 /** Server provider → UI selector id */
 export function toUiProvider(server: AiProviderId): AIProvider | null {
   if (server === "google") return "gemini";
-  if (server === "") return "";
+  if (server === "openrouter") return "openrouter";
   return null;
 }
 
@@ -70,7 +70,7 @@ export function resolveActiveUiProvider(
 
   if (!localConfig.usePlatformDefault && hasActiveCustomKey(localConfig)) {
     const p = localConfig.provider as AIProvider;
-    if (p === "gemini" || p === "" || p === "kimi") return p;
+    if (p === "gemini" || p === "openrouter" || p === "kimi") return p;
   }
 
   const defaultKey = keys.find((k) => k.is_default && k.verified_at) || keys.find((k) => k.verified_at);

@@ -4,7 +4,7 @@ export type AiProviderId =
   | "anthropic"
   | "xai"
   | "perplexity"
-  | ""
+  | "openrouter"
   | "mistral"
   | "groq";
 
