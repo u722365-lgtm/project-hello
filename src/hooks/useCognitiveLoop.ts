@@ -519,8 +519,10 @@ Provide the BEST possible answer by combining their expertise.`;
 
   return {
     ...state,
+    error,
     runCognitiveLoop,
     cancel,
     availableAgents: SPECIALIST_AGENTS,
   };
+
 };
