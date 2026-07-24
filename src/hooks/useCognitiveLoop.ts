@@ -266,6 +266,9 @@ Now provide your perspective as the ${agent.name}. If you disagree with any poin
   ): Promise<string> => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        return responses.map(r => `**${r.agentName}**: ${r.response}`).join('\n\n');
+      }
 
       const synthesisPrompt = `You are the Chief Synthesizer. Multiple specialist agents have analyzed this query:
 
@@ -291,7 +294,7 @@ Provide the BEST possible answer by combining their expertise.`;
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          Authorization: `Bearer ${session.access_token}`,
         },
         body: stringifyChatBody({
           messages: [{ role: 'user', content: synthesisPrompt }],
