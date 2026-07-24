@@ -29,7 +29,7 @@ const BYOK_LABELS: Record<Exclude<AIProvider, "lovable">, { title: string; hint:
     title: "Google Gemini API key",
     hint: "Create a key in Google AI Studio. ShadowTalk will use it for chat on your account.",
   },
-  : {
+  openrouter: {
     title: "OpenRouter API key",
     hint: "One OpenRouter key unlocks many models. Billing stays on your OpenRouter account.",
   },
