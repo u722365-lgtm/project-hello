@@ -3,7 +3,7 @@
  * Keys are sent to edge functions per request and are not persisted on ShadowTalk servers.
  */
 
-export type CustomAiProviderId = "lovable" | "gemini" | "" | "kimi";
+export type CustomAiProviderId = "lovable" | "gemini" | "openrouter" | "kimi";
 
 export type CustomAiKeysConfig = {
   /** Active provider for cloud AI calls */
@@ -39,13 +39,13 @@ export const AI_PROVIDER_OPTIONS: {
     docsUrl: "https://aistudio.google.com/apikey",
   },
   {
-    id: "",
+    id: "openrouter",
     label: "OpenRouter",
     description: "Access 100+ models (Gemini, Claude, Llama, Kimi, …) with one key",
     keyPlaceholder: "sk-or-v1-...",
-    keyHint: "https://.ai/keys",
+    keyHint: "https://openrouter.ai/keys",
     defaultModel: "google/gemini-2.0-flash-001",
-    docsUrl: "https://.ai/keys",
+    docsUrl: "https://openrouter.ai/keys",
   },
   {
     id: "kimi",
@@ -68,7 +68,7 @@ export const AI_PROVIDER_OPTIONS: {
 ];
 
 export const DEFAULT_CUSTOM_AI_CONFIG: CustomAiKeysConfig = {
-  provider: "",
+  provider: "openrouter",
   apiKey: "",
   model: "",
   usePlatformDefault: true,
