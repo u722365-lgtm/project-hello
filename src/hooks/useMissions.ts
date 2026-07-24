@@ -401,8 +401,17 @@ export const useMissions = () => {
       ));
     } catch (error) {
       console.error('Error updating action:', error);
+      if (!hasWarnedPersistence) {
+        hasWarnedPersistence = true;
+        toast({
+          title: "Step status not saved",
+          description: "The mission is running, but progress updates aren't reaching your account.",
+          variant: "destructive",
+        });
+      }
     }
-  }, []);
+  }, [toast]);
+
 
   // Subscribe to realtime updates (per-user channel — enforced by realtime.messages RLS)
   useEffect(() => {
