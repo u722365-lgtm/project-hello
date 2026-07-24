@@ -9,6 +9,12 @@ import {
 } from '@/lib/desktop/localMissionStore';
 import { shouldUseLocalMissionStore } from '@/lib/desktop/sovereignAgentMode';
 
+// One-time warning: if a background persistence write fails we surface a single
+// toast per session so the user knows the visible UI state may drift from what's
+// saved server-side, without spamming on every silent retry.
+let hasWarnedPersistence = false;
+
+
 // =============================================================================
 // SOVEREIGN EXECUTION ENGINE - Mission Management Hook
 // =============================================================================
@@ -291,8 +297,17 @@ export const useMissions = () => {
       }
     } catch (error) {
       console.error('Error updating mission:', error);
+      if (!hasWarnedPersistence) {
+        hasWarnedPersistence = true;
+        toast({
+          title: "Mission progress not saved",
+          description: "We couldn't save recent progress to your account. Your mission continues, but reloading may lose state.",
+          variant: "destructive",
+        });
+      }
     }
-  }, [activeMission]);
+  }, [activeMission, toast]);
+
 
   // Add action to mission
   const addAction = useCallback(async (
@@ -338,9 +353,18 @@ export const useMissions = () => {
       return newAction;
     } catch (error) {
       console.error('Error adding action:', error);
+      if (!hasWarnedPersistence) {
+        hasWarnedPersistence = true;
+        toast({
+          title: "Step log not saved",
+          description: "The mission is running, but step logs aren't reaching your account.",
+          variant: "destructive",
+        });
+      }
       return null;
     }
-  }, []);
+  }, [toast]);
+
 
   // Update action status
   const updateAction = useCallback(async (
@@ -377,8 +401,17 @@ export const useMissions = () => {
       ));
     } catch (error) {
       console.error('Error updating action:', error);
+      if (!hasWarnedPersistence) {
+        hasWarnedPersistence = true;
+        toast({
+          title: "Step status not saved",
+          description: "The mission is running, but progress updates aren't reaching your account.",
+          variant: "destructive",
+        });
+      }
     }
-  }, []);
+  }, [toast]);
+
 
   // Subscribe to realtime updates (per-user channel — enforced by realtime.messages RLS)
   useEffect(() => {

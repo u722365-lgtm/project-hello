@@ -56,8 +56,13 @@ export async function streamChatCompletion(
       if (local !== null) return local;
     }
     const errText = await response.text().catch(() => "");
+    if (response.status === 429) throw new Error("Rate limit reached. Please wait a minute before retrying.");
+    if (response.status === 402) throw new Error("AI credits exhausted for this workspace. Add credits to continue.");
+    if (response.status === 401 || response.status === 403) throw new Error("Sign in required to run this mission.");
+    if (response.status >= 500) throw new Error("AI service is temporarily unavailable. Please retry shortly.");
     throw new Error(errText || `Chat request failed (${response.status})`);
   }
+
 
   const reader = response.body?.getReader();
   if (!reader) throw new Error("No response stream");
