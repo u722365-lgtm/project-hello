@@ -9,6 +9,12 @@ import {
 } from '@/lib/desktop/localMissionStore';
 import { shouldUseLocalMissionStore } from '@/lib/desktop/sovereignAgentMode';
 
+// One-time warning: if a background persistence write fails we surface a single
+// toast per session so the user knows the visible UI state may drift from what's
+// saved server-side, without spamming on every silent retry.
+let hasWarnedPersistence = false;
+
+
 // =============================================================================
 // SOVEREIGN EXECUTION ENGINE - Mission Management Hook
 // =============================================================================
