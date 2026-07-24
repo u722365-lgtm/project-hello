@@ -64,7 +64,7 @@ export const ProviderSelector = ({
     lovable: "Pro",
     shadowtalk: "Sovereign",
     gemini: "Gemini",
-    : "OpenRouter",
+    openrouter: "OpenRouter",
     kimi: "Kimi",
   };
   const shortLabel = shortLabels[currentProvider.value];
