@@ -119,6 +119,9 @@ export const useCognitiveLoop = () => {
     progress: 0,
     debateRound: 0,
   });
+  const [error, setError] = useState<string | null>(null);
+
+
 
   const abortRef = useRef<AbortController | null>(null);
 
