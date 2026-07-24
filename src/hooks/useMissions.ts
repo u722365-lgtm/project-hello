@@ -353,9 +353,18 @@ export const useMissions = () => {
       return newAction;
     } catch (error) {
       console.error('Error adding action:', error);
+      if (!hasWarnedPersistence) {
+        hasWarnedPersistence = true;
+        toast({
+          title: "Step log not saved",
+          description: "The mission is running, but step logs aren't reaching your account.",
+          variant: "destructive",
+        });
+      }
       return null;
     }
-  }, []);
+  }, [toast]);
+
 
   // Update action status
   const updateAction = useCallback(async (
