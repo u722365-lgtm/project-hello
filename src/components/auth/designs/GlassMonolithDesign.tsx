@@ -58,7 +58,7 @@ export function GlassMonolithDesign({
         transition={{ duration: 11, repeat: Infinity, ease: "easeInOut", delay: 2 }}
       />
 
-      <div className="relative z-10 w-full min-w-0">
+      <div className="relative z-10 w-full min-w-0" data-mobile-contained="true">
         {showBack && onBack && !compact && (
           <motion.div
             initial={reduced ? false : { opacity: 0, x: -12 }}

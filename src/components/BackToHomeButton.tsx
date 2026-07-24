@@ -15,8 +15,10 @@ export function BackToHomeButton({ className }: { className?: string }) {
   );
   const isHome = path === "/" || path === "/home";
   const isChat = path === "/chatbot";
+  const isAuth = path.startsWith("/auth");
 
   if (isHome) return null;
+  if (isAuth) return null;
   if (isChat && isChatSessionActive()) return null;
 
   return (
