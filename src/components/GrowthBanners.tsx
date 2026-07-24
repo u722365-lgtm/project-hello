@@ -14,7 +14,7 @@ const ShadowScaleGrowthBanner = lazy(() =>
 /** Growth banners add clutter on the chat workspace — keep them on marketing/hub pages only. */
 export function GrowthBanners() {
   const { pathname } = useLocation();
-  if (pathname === "/chatbot") return null;
+  if (pathname === "/chatbot" || pathname.startsWith("/auth")) return null;
 
   return (
     <Suspense fallback={null}>

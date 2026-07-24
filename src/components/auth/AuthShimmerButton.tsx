@@ -32,7 +32,7 @@ export function AuthShimmerButton({
     >
       {!reduced && !disabled && (
         <motion.span
-          className="pointer-events-none absolute inset-0 overflow-hidden rounded-md"
+          className="pointer-events-none absolute inset-0 max-w-full overflow-hidden rounded-md"
           aria-hidden
         >
           <motion.span

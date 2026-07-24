@@ -6,10 +6,13 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { usePushIntelligence } from "@/hooks/usePushIntelligence";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const PushIntelligencePanel = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(false);
   const [showBriefing, setShowBriefing] = useState(false);
 
@@ -47,6 +50,8 @@ export const PushIntelligencePanel = () => {
   };
 
   const hasUrgent = criticalSignals.length > 0 || highSignals.length > 0;
+
+  if (isMobile || location.pathname.startsWith("/auth")) return null;
 
   return (
     <>

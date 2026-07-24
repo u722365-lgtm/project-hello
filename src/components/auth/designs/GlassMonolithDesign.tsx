@@ -24,14 +24,14 @@ export function GlassMonolithDesign({
 
   return (
     <div
-      className={`relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-zinc-950 via-zinc-900 to-slate-950 p-4 sm:p-6 ${
+      className={`relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-zinc-950 via-zinc-900 to-slate-950 px-3 py-5 sm:p-6 ${
         compact ? "min-h-full" : "min-h-screen"
       }`}
     >
       <AuthFloatingParticles disabled={reduced || compact} />
 
       <motion.div
-        className="pointer-events-none absolute left-1/4 top-1/4 h-56 w-56 rounded-full bg-violet-500/25 blur-[90px]"
+        className="pointer-events-none absolute left-1/4 top-1/4 h-40 w-40 rounded-full bg-violet-500/25 blur-[70px] sm:h-56 sm:w-56 sm:blur-[90px]"
         animate={
           shouldAnimateAmbient
             ? { x: [0, 30, 0], y: [0, -20, 0], scale: [1, 1.15, 1], opacity: [0.25, 0.45, 0.25] }
@@ -40,7 +40,7 @@ export function GlassMonolithDesign({
         transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
       />
       <motion.div
-        className="pointer-events-none absolute bottom-1/4 right-1/4 h-48 w-48 rounded-full bg-sky-400/20 blur-[70px]"
+        className="pointer-events-none absolute bottom-1/4 right-1/4 h-36 w-36 rounded-full bg-sky-400/20 blur-[56px] sm:h-48 sm:w-48 sm:blur-[70px]"
         animate={
           shouldAnimateAmbient
             ? { x: [0, -25, 0], y: [0, 15, 0], scale: [1, 1.12, 1], opacity: [0.2, 0.4, 0.2] }
@@ -49,7 +49,7 @@ export function GlassMonolithDesign({
         transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
       />
       <motion.div
-        className="pointer-events-none absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-fuchsia-500/10 blur-[100px]"
+        className="pointer-events-none absolute left-1/2 top-1/2 h-48 w-48 -translate-x-1/2 -translate-y-1/2 rounded-full bg-fuchsia-500/10 blur-[72px] sm:h-72 sm:w-72 sm:blur-[100px]"
         animate={
           shouldAnimateAmbient
             ? { scale: [1, 1.25, 1], opacity: [0.1, 0.22, 0.1] }
@@ -58,7 +58,7 @@ export function GlassMonolithDesign({
         transition={{ duration: 11, repeat: Infinity, ease: "easeInOut", delay: 2 }}
       />
 
-      <div className="relative z-10 w-full">
+      <div className="relative z-10 w-full min-w-0" data-mobile-contained="true">
         {showBack && onBack && !compact && (
           <motion.div
             initial={reduced ? false : { opacity: 0, x: -12 }}
@@ -69,7 +69,7 @@ export function GlassMonolithDesign({
               variant="ghost"
               size="sm"
               onClick={onBack}
-              className="absolute -top-12 left-0 text-muted-foreground hover:text-foreground"
+              className="absolute -top-12 left-0 max-w-[calc(100vw-1.5rem)] text-muted-foreground hover:text-foreground"
             >
               <ArrowLeft className="mr-2 h-4 w-4" /> {backLabel}
             </Button>
@@ -80,9 +80,9 @@ export function GlassMonolithDesign({
           variants={variants.glassCard}
           initial="hidden"
           animate="visible"
-          className={compact ? "w-full" : "mx-auto max-w-md"}
+          className={compact ? "w-full min-w-0" : "mx-auto w-full max-w-md min-w-0"}
         >
-          <div className="relative rounded-3xl p-[1px]">
+          <div className="relative w-full min-w-0 overflow-hidden rounded-3xl p-[1px]">
             {shouldAnimateAmbient && (
               <motion.div
                 aria-hidden
@@ -99,8 +99,8 @@ export function GlassMonolithDesign({
               animate={glassFloat}
               className={
                 compact
-                  ? "relative rounded-2xl border border-white/10 bg-white/5 p-4 shadow-xl backdrop-blur-2xl"
-                  : "relative rounded-3xl border border-white/15 bg-white/[0.06] p-8 shadow-[0_25px_80px_rgba(0,0,0,0.45)] backdrop-blur-2xl"
+                  ? "relative min-w-0 rounded-2xl border border-white/10 bg-white/5 p-4 shadow-xl backdrop-blur-2xl"
+                  : "relative min-w-0 rounded-3xl border border-white/15 bg-white/[0.06] p-5 shadow-[0_25px_80px_rgba(0,0,0,0.45)] backdrop-blur-2xl sm:p-8"
               }
             >
               <motion.div
@@ -122,7 +122,7 @@ export function GlassMonolithDesign({
                 {!compact && (
                   <motion.p
                     variants={variants.headerItem}
-                    className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground"
+                    className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground sm:tracking-[0.2em]"
                   >
                     ShadowTalk
                   </motion.p>

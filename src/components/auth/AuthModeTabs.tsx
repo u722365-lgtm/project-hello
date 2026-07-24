@@ -14,7 +14,7 @@ interface AuthModeTabsProps {
 export function AuthModeTabs({ tabs, active, onChange, reduced }: AuthModeTabsProps) {
   return (
     <motion.div
-      className="relative mb-6 flex gap-1 overflow-hidden rounded-xl border border-border/20 bg-muted/30 p-1"
+      className="relative mb-6 grid min-w-0 grid-cols-3 gap-1 overflow-hidden rounded-xl border border-border/20 bg-muted/30 p-1"
       initial={reduced ? false : { opacity: 0, y: 14, filter: "blur(4px)" }}
       animate={reduced ? undefined : { opacity: 1, y: 0, filter: "blur(0px)" }}
       transition={{ duration: 0.5, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
@@ -38,7 +38,7 @@ export function AuthModeTabs({ tabs, active, onChange, reduced }: AuthModeTabsPr
             type="button"
             onClick={() => onChange(tab.key)}
             className={cn(
-              "relative z-10 flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors",
+              "relative z-10 flex min-w-0 items-center justify-center gap-1 rounded-lg px-1.5 py-2 text-[11px] font-medium transition-colors sm:gap-1.5 sm:px-3 sm:text-xs",
               isActive ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground",
             )}
             initial={reduced ? false : { opacity: 0, y: 8 }}
@@ -58,12 +58,12 @@ export function AuthModeTabs({ tabs, active, onChange, reduced }: AuthModeTabsPr
               <span className="absolute inset-0 rounded-lg bg-primary shadow-sm" />
             )}
             <motion.span
-              className="relative flex items-center gap-1.5"
+              className="relative flex min-w-0 items-center gap-1 sm:gap-1.5"
               animate={reduced ? undefined : isActive ? { scale: [1, 1.05, 1] } : undefined}
               transition={{ duration: 2, repeat: isActive ? Infinity : 0, repeatDelay: 3 }}
             >
               {tab.icon}
-              {tab.label}
+              <span className="truncate">{tab.label}</span>
             </motion.span>
           </motion.button>
         );

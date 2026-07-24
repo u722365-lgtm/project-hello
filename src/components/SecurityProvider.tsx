@@ -74,8 +74,9 @@ export const SecurityProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     if (window.self !== window.top) {
       try {
         const parentOrigin = document.referrer;
-        const trusted = ['lovable.app', 'lovableproject.com', 'shadowtalk-ai.com'];
-        const isTrusted = trusted.some(h => parentOrigin.includes(h));
+        const trusted = ['lovable.app', 'lovableproject.com', 'shadowtalk-ai.com', 'shadowtalk-ai.lovable.app'];
+        const currentHost = window.location.hostname;
+        const isTrusted = !parentOrigin || trusted.some(h => parentOrigin.includes(h) || currentHost.endsWith(h));
         if (!isTrusted) {
           document.body.style.display = 'none';
           console.error('Clickjacking detected — content hidden');

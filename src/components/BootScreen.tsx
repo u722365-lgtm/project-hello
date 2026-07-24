@@ -74,7 +74,7 @@ const BootScreen = ({ onComplete }: BootScreenProps) => {
   return (
     <AnimatePresence>
       <motion.div
-        className="fixed inset-0 z-[9999] flex flex-col items-center justify-center overflow-hidden select-none"
+        className="fixed inset-0 z-[9999] flex flex-col items-center justify-center overflow-hidden select-none px-4"
         style={{ background: "#000" }}
         initial={{ opacity: 1 }}
         exit={{ opacity: 0, scale: 1.08, filter: "blur(12px)" }}
@@ -154,7 +154,7 @@ const BootScreen = ({ onComplete }: BootScreenProps) => {
         ))}
 
         {/* ── Main content ── */}
-        <motion.div className="relative z-10 flex flex-col items-center">
+        <motion.div className="relative z-10 flex w-full max-w-[min(92vw,520px)] flex-col items-center">
 
           {/* Logo */}
           <motion.div
@@ -253,8 +253,8 @@ const BootScreen = ({ onComplete }: BootScreenProps) => {
           {/* Title */}
           <AnimatePresence>
             {phase !== 'void' && (
-              <motion.div className="flex flex-col items-center mb-8">
-                <div className="flex overflow-hidden">
+              <motion.div className="mb-8 flex w-full flex-col items-center">
+                <div className="flex max-w-full items-center justify-center overflow-hidden">
                   {title.split("").map((letter, i) => (
                     <motion.span
                       key={i}
@@ -267,7 +267,7 @@ const BootScreen = ({ onComplete }: BootScreenProps) => {
                         stiffness: 100,
                         damping: 15,
                       }}
-                      className="text-4xl md:text-6xl font-black tracking-[0.15em]"
+                      className="text-[clamp(1.9rem,8vw,3.75rem)] font-black tracking-[0.08em] sm:tracking-[0.15em]"
                       style={{
                         background: "linear-gradient(180deg, hsl(0 0% 95%), hsl(195 30% 60%), hsl(0 0% 35%))",
                         WebkitBackgroundClip: "text",
@@ -283,7 +283,7 @@ const BootScreen = ({ onComplete }: BootScreenProps) => {
                     initial={{ opacity: 0, x: -30, scale: 0.3, filter: "blur(10px)" }}
                     animate={{ opacity: 1, x: 0, scale: 1, filter: "blur(0px)" }}
                     transition={{ delay: 1.2, duration: 0.8, type: "spring", damping: 15 }}
-                    className="text-4xl md:text-6xl font-black ml-4 tracking-[0.15em]"
+                    className="ml-2 text-[clamp(1.9rem,8vw,3.75rem)] font-black tracking-[0.08em] sm:ml-4 sm:tracking-[0.15em]"
                     style={{
                       background: "linear-gradient(180deg, hsl(195 100% 65%), hsl(270 90% 60%), hsl(315 90% 55%))",
                       WebkitBackgroundClip: "text",
@@ -299,9 +299,9 @@ const BootScreen = ({ onComplete }: BootScreenProps) => {
                 {/* Tagline */}
                 <motion.p
                   initial={{ opacity: 0, y: 15, letterSpacing: "0.5em" }}
-                  animate={{ opacity: 0.6, y: 0, letterSpacing: "0.35em" }}
+                  animate={{ opacity: 0.6, y: 0 }}
                   transition={{ delay: 1.8, duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
-                  className="mt-5 text-xs md:text-sm uppercase font-medium"
+                  className="mt-5 max-w-full text-center text-[10px] font-medium uppercase tracking-[0.22em] sm:text-xs sm:tracking-[0.35em] md:text-sm"
                   style={{ color: "hsl(195 60% 50%)" }}
                 >
                   Sovereign Intelligence Engine
@@ -315,7 +315,7 @@ const BootScreen = ({ onComplete }: BootScreenProps) => {
             {(phase === 'loading' || phase === 'ascend') && (
               <motion.div
                 initial={{ opacity: 0, width: 0 }}
-                animate={{ opacity: 1, width: 360 }}
+                animate={{ opacity: 1, width: "min(360px, 92vw)" }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
                 className="relative"
@@ -399,9 +399,9 @@ const BootScreen = ({ onComplete }: BootScreenProps) => {
           animate={{ opacity: 0.25 }}
           transition={{ delay: 1.2 }}
         >
-          <div className="flex items-center gap-3">
+          <div className="flex max-w-[92vw] items-center justify-center gap-3">
             <div className="w-8 h-px" style={{ background: "linear-gradient(90deg, transparent, hsl(195 100% 55% / 0.3))" }} />
-            <p className="text-[10px] tracking-[0.4em] uppercase font-mono" style={{ color: "hsl(195 60% 50% / 0.5)" }}>
+            <p className="text-center font-mono text-[9px] uppercase tracking-[0.22em] sm:text-[10px] sm:tracking-[0.4em]" style={{ color: "hsl(195 60% 50% / 0.5)" }}>
               v2.0 — Zero Knowledge Protocol
             </p>
             <div className="w-8 h-px" style={{ background: "linear-gradient(90deg, hsl(195 100% 55% / 0.3), transparent)" }} />

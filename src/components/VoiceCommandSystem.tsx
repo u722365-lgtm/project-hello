@@ -175,6 +175,7 @@ const VoiceCommandSystem: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  const isAuthRoute = location.pathname.startsWith("/auth");
   
   const [isListening, setIsListening] = useState(false);
   const [isActive, setIsActive] = useState(false);
@@ -663,6 +664,8 @@ const VoiceCommandSystem: React.FC = () => {
       startListening();
     }
   }, [isActive, startListening]);
+
+  if (isAuthRoute) return null;
 
   return (
     <>
