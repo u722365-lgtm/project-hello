@@ -124,6 +124,20 @@ export const CognitiveLoopPanel = ({ isOpen, onClose, onResult, initialQuery }: 
             </div>
           </div>
 
+          {error && !isThinking && (
+            <div className="flex items-start gap-3 p-4 rounded-lg border border-destructive/40 bg-destructive/10 text-sm">
+              <AlertCircle className="h-4 w-4 mt-0.5 text-destructive shrink-0" />
+              <div className="flex-1">
+                <p className="font-medium text-destructive">Cognitive Loop error</p>
+                <p className="text-muted-foreground mt-1">{error}</p>
+              </div>
+              <Button variant="outline" size="sm" onClick={handleRun} disabled={!query.trim()}>
+                Retry
+              </Button>
+            </div>
+          )}
+
+
           {/* Progress */}
           {isThinking && (
             <motion.div
