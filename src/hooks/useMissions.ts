@@ -297,8 +297,17 @@ export const useMissions = () => {
       }
     } catch (error) {
       console.error('Error updating mission:', error);
+      if (!hasWarnedPersistence) {
+        hasWarnedPersistence = true;
+        toast({
+          title: "Mission progress not saved",
+          description: "We couldn't save recent progress to your account. Your mission continues, but reloading may lose state.",
+          variant: "destructive",
+        });
+      }
     }
-  }, [activeMission]);
+  }, [activeMission, toast]);
+
 
   // Add action to mission
   const addAction = useCallback(async (
