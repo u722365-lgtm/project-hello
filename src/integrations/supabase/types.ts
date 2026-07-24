@@ -3969,6 +3969,19 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      get_shared_answer: {
+        Args: { _slug: string }
+        Returns: {
+          answer: string
+          created_at: string
+          model: string
+          prompt: string
+          slug: string
+          source: string
+          title: string
+          views: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -3979,6 +3992,10 @@ export type Database = {
       has_valid_workspace_invitation: {
         Args: { _role: string; _user_id: string; _workspace_id: string }
         Returns: boolean
+      }
+      increment_shared_answer_views: {
+        Args: { _slug: string }
+        Returns: undefined
       }
       is_workspace_admin: {
         Args: { _user_id: string; _workspace_id: string }

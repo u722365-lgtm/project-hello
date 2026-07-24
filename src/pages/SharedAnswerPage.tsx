@@ -30,24 +30,19 @@ const SharedAnswerPage = () => {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const { data, error } = await supabase
-        .from("shared_answers")
-        .select("slug, title, prompt, answer, model, source, views, created_at")
-        .eq("slug", slug)
-        .maybeSingle();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase as any).rpc("get_shared_answer", { _slug: slug });
       if (cancelled) return;
-      if (error || !data) {
+      const row = Array.isArray(data) ? data[0] : null;
+      if (error || !row) {
         setState("missing");
         return;
       }
-      setData(data as SharedAnswer);
+      setData(row as SharedAnswer);
       setState("ready");
       // fire-and-forget view increment
-      void supabase.rpc as unknown;
-      void supabase.from("shared_answers")
-        .update({ views: ((data as SharedAnswer).views ?? 0) + 1 })
-        .eq("slug", slug)
-        .then(() => {});
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      void (supabase as any).rpc("increment_shared_answer_views", { _slug: slug });
     })();
     return () => { cancelled = true; };
   }, [slug]);
