@@ -103,7 +103,7 @@ export function CustomApiKeysDialog({
             Connect your AI API key
           </DialogTitle>
           <DialogDescription className="text-left leading-relaxed">
-            Use your own Gemini, OpenRouter, or Kimi (Moonshot) key. Keys stay in your browser and are
+            Use your own Gemini or Kimi (Moonshot) key. Keys stay in your browser and are
             sent only when you use AI features — ShadowTalk does not store them on our servers.
           </DialogDescription>
         </DialogHeader>
@@ -177,7 +177,7 @@ export function CustomApiKeysDialog({
                   className="font-mono text-sm"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Leave blank for the default. OpenRouter: use ids like{" "}
+                  Leave blank for the default. Kimi: use ids like{" "}
                   <code className="text-primary">moonshotai/kimi-k2</code> or{" "}
                   <code className="text-primary">google/gemini-2.5-pro</code>.
                 </p>

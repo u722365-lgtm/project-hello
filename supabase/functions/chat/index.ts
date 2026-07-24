@@ -1895,26 +1895,7 @@ When a user asks you to write, create, draft, or generate any document (email, a
         isCreditsExhaustedLike(response.status, await response.text().catch(() => ''));
 
       if (exhausted) {
-        const { openRouterFreeFallback } = await import("../_shared/openrouterFallback.ts");
-        const fallbackResp = await openRouterFreeFallback({
-          model,
-          messages: [
-            { role: "system", content: systemPrompt || "You are ShadowTalk AI." },
-            ...trimmedMessages,
-          ],
-          stream: true,
-        });
-        if (fallbackResp?.ok && fallbackResp.body) {
-          console.log("[CHAT] OpenRouter free-model fallback streaming");
-          return new Response(fallbackResp.body, {
-            headers: {
-              ...corsHeaders,
-              "Content-Type": "text/event-stream",
-              "X-Shadowtalk-Fallback": "openrouter-free",
-            },
-          });
-        }
-        console.warn("[CHAT] OpenRouter fallback unavailable");
+        console.warn("[CHAT] Platform credits exhausted; fallback unavailable.");
       }
 
       if (response.status === 429) {

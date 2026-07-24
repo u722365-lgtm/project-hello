@@ -38,7 +38,7 @@ export async function streamChatCompletion(
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
+      Authorization: "Bearer " + accessToken,
     },
     body: stringifyChatBody({
       messages: [{ role: "user", content: userContent }],

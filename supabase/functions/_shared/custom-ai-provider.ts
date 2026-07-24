@@ -2,7 +2,7 @@
  * Routes chat/completions requests to the user's BYOK provider or ShadowTalk default gateway.
  */
 
-export type CustomAiProvider = "lovable" | "gemini" | "openrouter" | "kimi";
+export type CustomAiProvider = "lovable" | "gemini" | "kimi";
 
 export interface CustomAiConfig {
   provider: CustomAiProvider;
@@ -12,7 +12,6 @@ export interface CustomAiConfig {
 
 const LOVABLE_GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const GEMINI_OPENAI = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
-const OPENROUTER = "https://openrouter.ai/api/v1/chat/completions";
 const MOONSHOT = "https://api.moonshot.cn/v1/chat/completions";
 
 export function parseCustomAi(body: Record<string, unknown>): CustomAiConfig | null {
@@ -20,7 +19,7 @@ export function parseCustomAi(body: Record<string, unknown>): CustomAiConfig | n
   if (!raw?.apiKey || typeof raw.apiKey !== "string") return null;
   if (raw.apiKey.length < 10 || raw.apiKey.length > 512) return null;
   const provider = raw.provider;
-  if (provider !== "gemini" && provider !== "openrouter" && provider !== "kimi" && provider !== "lovable") {
+  if (provider !== "gemini" && provider !== "kimi" && provider !== "lovable") {
     return null;
   }
   if (provider === "lovable") return null;
@@ -37,10 +36,8 @@ export function resolveModel(customAi: CustomAiConfig | null, requested?: string
   switch (customAi.provider) {
     case "gemini":
       return "gemini-2.0-flash";
-    case "openrouter":
-      return requested || "google/gemini-2.0-flash-001";
     case "kimi":
-      return "moonshot-v1-8k";
+      return requested || "google/gemini-2.5-flash";
     default:
       return requested || "google/gemini-2.5-flash";
   }
@@ -67,16 +64,6 @@ export function getChatEndpoint(
         headers: {
           Authorization: `Bearer ${customAi.apiKey}`,
           "Content-Type": "application/json",
-        },
-      };
-    case "openrouter":
-      return {
-        url: OPENROUTER,
-        headers: {
-          Authorization: `Bearer ${customAi.apiKey}`,
-          "Content-Type": "application/json",
-          "HTTP-Referer": "https://shadowtalk.ai",
-          "X-Title": "ShadowTalk AI",
         },
       };
     case "kimi":

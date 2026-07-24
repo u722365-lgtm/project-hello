@@ -96,19 +96,25 @@ Be empathetic and accurate.`;
 
     let response: Response;
     try {
-      const { fetchChatWithFallback } = await import("../_shared/openrouterFallback.ts");
-      response = await fetchChatWithFallback({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          {
-            role: "user",
-            content: [
-              { type: "text", text: analysisPrompt },
-              { type: "image_url", image_url: { url: imageData } }
-            ]
-          }
-        ],
-        max_tokens: 1000,
+      response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [
+            {
+              role: "user",
+              content: [
+                { type: "text", text: analysisPrompt },
+                { type: "image_url", image_url: { url: imageData } },
+              ],
+            },
+          ],
+          max_tokens: 1000,
+        }),
       });
     } catch (fetchError) {
       return new Response(

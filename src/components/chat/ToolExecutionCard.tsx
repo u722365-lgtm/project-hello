@@ -8,7 +8,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { ToolType } from '@/hooks/useToolOrchestrator';
 
-interface ToolExecutionCardProps {
+// ToolExecutionCard extended props (stable UI surface)
+export interface ToolExecutionCardProps {
   tool: ToolType;
   status: 'pending' | 'running' | 'complete' | 'error' | 'confirm';
   params?: Record<string, string>;
@@ -16,6 +17,8 @@ interface ToolExecutionCardProps {
   onConfirm?: () => void;
   onCancel?: () => void;
   onViewFull?: () => void;
+  alert?: string;
+  smartMode?: string;
 }
 
 const TOOL_META: Record<string, { label: string; icon: React.ElementType; color: string }> = {
@@ -70,6 +73,8 @@ export const ToolExecutionCard: React.FC<ToolExecutionCardProps> = ({
   onConfirm,
   onCancel,
   onViewFull,
+  alert,
+  smartMode,
 }) => {
   const meta = TOOL_META[tool] || { label: tool, icon: Zap, color: 'text-muted-foreground' };
   const Icon = meta.icon;
@@ -87,8 +92,17 @@ export const ToolExecutionCard: React.FC<ToolExecutionCardProps> = ({
           <Icon className="h-3.5 w-3.5" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs font-medium text-foreground/90">{meta.label}</span>
+            {status === 'confirm' && (
+              <span className="text-[10px] text-amber-400 font-mono">Awaiting confirmation</span>
+            )}
+            {alert && (
+              <span className="text-[10px] text-destructive/80 font-mono">{alert}</span>
+            )}
+            {smartMode && (
+              <span className="text-[10px] text-primary/80 font-mono">Mode: {smartMode}</span>
+            )}
             <StatusIcon status={status} />
           </div>
           {params && Object.keys(params).length > 0 && (

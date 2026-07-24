@@ -40,12 +40,12 @@ export const AI_PROVIDER_OPTIONS: {
   },
   {
     id: "",
-    label: "OpenRouter",
-    description: "Access 100+ models (Gemini, Claude, Llama, Kimi, …) with one key",
-    keyPlaceholder: "sk-or-v1-...",
-    keyHint: "https://.ai/keys",
+    label: "BYOK",
+    description: "Bring-your-own-key routing",
+    keyPlaceholder: "sk-...",
+    keyHint: "https://aistudio.google.com/apikey",
     defaultModel: "google/gemini-2.0-flash-001",
-    docsUrl: "https://.ai/keys",
+    docsUrl: "https://aistudio.google.com/apikey",
   },
   {
     id: "kimi",

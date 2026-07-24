@@ -27,7 +27,7 @@ export function SettingsHero() {
     lovable: "ShadowTalk Pro",
     shadowtalk: "ShadowTalk Sovereign",
     gemini: "Gemini",
-    : "OpenRouter",
+    "": "BYOK/Kimi/Other",
     kimi: "Kimi",
   };
   const providerLabel =

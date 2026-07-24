@@ -333,6 +333,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
             status={message.toolExecution.status}
             params={message.toolExecution.params}
             result={message.toolExecution.result}
+            alert={message.toolExecution.status === 'error' ? 'Tool execution failed' : undefined}
             onConfirm={onConfirmTool ? () => onConfirmTool(message.id) : undefined}
             onCancel={onCancelTool ? () => onCancelTool(message.id) : undefined}
           />

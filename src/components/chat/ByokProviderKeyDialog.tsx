@@ -29,9 +29,9 @@ const BYOK_LABELS: Record<Exclude<AIProvider, "lovable">, { title: string; hint:
     title: "Google Gemini API key",
     hint: "Create a key in Google AI Studio. ShadowTalk will use it for chat on your account.",
   },
-  : {
-    title: "OpenRouter API key",
-    hint: "One OpenRouter key unlocks many models. Billing stays on your OpenRouter account.",
+  "": {
+    title: "Generic BYOK API key",
+    hint: "Use an external provider key. External BYOK routing is disabled in this build.",
   },
   kimi: {
     title: "Kimi / Moonshot API key",

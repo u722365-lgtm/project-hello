@@ -13,6 +13,7 @@ import {
   inferDeliverableType,
 } from "@/lib/execution/inferFromChat";
 import type { DeliverableType } from "@/lib/execution/types";
+import { executeShadowTool } from "@/lib/shadowTools/executeShadowTool";
 
 export interface ToolDispatchUI {
   openDeepResearch: (query?: string) => void;
@@ -246,19 +247,12 @@ export function useAgenticToolDispatch() {
           );
           return { handled: true };
 
-        case "document_generator":
-        case "presentation_builder": {
-          const path =
-            tool === "presentation_builder"
-              ? "/forge?mode=slides"
-              : "/forge?mode=documents";
-          const topic = params.topic || params.query || message.trim();
-          navigate(topic ? `${path}&topic=${encodeURIComponent(topic)}&auto=1` : path);
-          return { handled: true };
-        }
-
         case "code_canvas":
           navigate("/ide");
+          ui.appendAssistantMessage(
+            "Opening **Code Canvas** — continue coding in the IDE.",
+            { tool: "code_canvas", status: "complete", params },
+          );
           return { handled: true };
 
         case "computer_mode":
@@ -268,6 +262,37 @@ export function useAgenticToolDispatch() {
             { tool: "computer_mode", status: "complete", params },
           );
           return { handled: true };
+
+        case "eco_actions":
+          navigate("/chatbot");
+          ui.appendAssistantMessage(
+            "Opening **Eco Actions** — I'll switch you to Planetary Action Guide mode.",
+            { tool: "eco_actions", status: "complete", params },
+          );
+          return { handled: true };
+
+        case "sovereign_models":
+          navigate("/personal-llm");
+          ui.appendAssistantMessage(
+            "Opening **Personal LLM** — manage local/offline models and device-first inference.",
+            { tool: "sovereign_models", status: "complete", params },
+          );
+          return { handled: true };
+
+        case "presentation_builder":
+        case "document_generator": {
+          const path =
+            tool === "presentation_builder"
+              ? "/forge?mode=slides"
+              : "/forge?mode=documents";
+          const topic = params.topic || params.query || message.trim();
+          navigate(topic ? `${path}&topic=${encodeURIComponent(topic)}&auto=1` : path);
+          ui.appendAssistantMessage(
+            `Opening **${tool === "presentation_builder" ? "Presentations" : "Documents"}** — I'll generate and format your output.`,
+            { tool, status: "complete", params },
+          );
+          return { handled: true };
+        }
 
         case "cognitive_loop":
           ui.appendAssistantMessage(
@@ -281,6 +306,16 @@ export function useAgenticToolDispatch() {
             ui.appendAssistantMessage(
               `Detected **${tool.replace(/_/g, " ")}** intent. Open **Tools** (⌘K) or say it more explicitly to run.`,
               { tool, status: "confirm", params },
+            );
+            return { handled: true };
+          }
+          const fallbackTool = tool as import("@/lib/shadowTools/executeShadowTool").ToolType;
+          const fallbackRoute = (executeShadowTool as any).UI_ROUTES?.[fallbackTool];
+          if (fallbackRoute?.path) {
+            navigate(fallbackRoute.path);
+            ui.appendAssistantMessage(
+              `Opening **${fallbackRoute.label || tool.replace(/_/g, " ")}** — continue in that tool.`,
+              { tool, status: "complete", params },
             );
             return { handled: true };
           }

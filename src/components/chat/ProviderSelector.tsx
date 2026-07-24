@@ -40,8 +40,8 @@ const providers = [
   },
   {
     value: "" as const,
-    label: "OpenRouter (BYOK)",
-    description: "Your OpenRouter key",
+    label: "BYOK",
+    description: "Use your external key",
     icon: <Key className="h-4 w-4 text-blue-400" />,
   },
   {
@@ -64,7 +64,7 @@ export const ProviderSelector = ({
     lovable: "Pro",
     shadowtalk: "Sovereign",
     gemini: "Gemini",
-    : "OpenRouter",
+    "": "BYOK",
     kimi: "Kimi",
   };
   const shortLabel = shortLabels[currentProvider.value];

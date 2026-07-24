@@ -40,10 +40,12 @@ export const AI_PROVIDER_OPTIONS: AiProviderOption[] = [
   },
   {
     id: "",
-    name: "OpenRouter",
-    description: "Unified access to many models",
-    keyPlaceholder: "sk-or-…",
-    docsUrl: "https://.ai/keys",
+    name: "BYOK",
+    description: "Bring-your-own-key routing",
+    keyPlaceholder: "sk-…",
+    keyHint: "https://aistudio.google.com/apikey",
+    defaultModel: "google/gemini-2.0-flash-001",
+    docsUrl: "https://aistudio.google.com/apikey",
   },
   {
     id: "perplexity",
