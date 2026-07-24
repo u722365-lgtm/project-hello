@@ -39,7 +39,7 @@ const providers = [
     icon: <Key className="h-4 w-4 text-amber-400" />,
   },
   {
-    value: "" as const,
+    value: "openrouter" as const,
     label: "OpenRouter (BYOK)",
     description: "Your OpenRouter key",
     icon: <Key className="h-4 w-4 text-blue-400" />,
