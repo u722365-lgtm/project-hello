@@ -119,6 +119,9 @@ export const useCognitiveLoop = () => {
     progress: 0,
     debateRound: 0,
   });
+  const [error, setError] = useState<string | null>(null);
+
+
 
   const abortRef = useRef<AbortController | null>(null);
 
@@ -133,6 +136,9 @@ export const useCognitiveLoop = () => {
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error('AUTH_REQUIRED');
+      }
 
       // Build debate-aware prompt
       let prompt = userQuery;
@@ -149,21 +155,25 @@ Now provide your perspective as the ${agent.name}. If you disagree with any poin
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          Authorization: `Bearer ${session.access_token}`,
         },
         body: stringifyChatBody({
           messages: [
             { role: 'system', content: `${agent.systemPrompt}\n\nContext:\n${context}` },
             { role: 'user', content: prompt },
           ],
-          model: 'google/gemini-3-flash-preview',
+          model: 'google/gemini-2.5-flash',
           stream: false,
         }),
         signal: abortRef.current?.signal,
       });
 
       if (!response.ok) {
-        console.warn(`[Cognitive] Agent ${agent.name} failed:`, response.status);
+        const status = response.status;
+        console.warn(`[Cognitive] Agent ${agent.name} failed:`, status);
+        if (status === 429) throw new Error('RATE_LIMIT');
+        if (status === 402) throw new Error('CREDITS_EXHAUSTED');
+        if (status === 401 || status === 403) throw new Error('AUTH_REQUIRED');
         return null;
       }
 
@@ -259,6 +269,9 @@ Now provide your perspective as the ${agent.name}. If you disagree with any poin
   ): Promise<string> => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        return responses.map(r => `**${r.agentName}**: ${r.response}`).join('\n\n');
+      }
 
       const synthesisPrompt = `You are the Chief Synthesizer. Multiple specialist agents have analyzed this query:
 
@@ -284,7 +297,7 @@ Provide the BEST possible answer by combining their expertise.`;
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          Authorization: `Bearer ${session.access_token}`,
         },
         body: stringifyChatBody({
           messages: [{ role: 'user', content: synthesisPrompt }],
@@ -342,6 +355,8 @@ Provide the BEST possible answer by combining their expertise.`;
 
     abortRef.current = new AbortController();
     const startTime = Date.now();
+    setError(null);
+
 
     setState({
       isThinking: true,
@@ -470,6 +485,14 @@ Provide the BEST possible answer by combining their expertise.`;
 
     } catch (e) {
       console.error('[Cognitive] Loop error:', e);
+      const msg = (e as Error)?.message ?? '';
+      let friendly = 'Cognitive Loop failed. Try again in a moment.';
+      if (msg === 'AUTH_REQUIRED') friendly = 'Sign in to use the Cognitive Loop.';
+      else if (msg === 'RATE_LIMIT') friendly = 'Rate limit hit. Please wait a minute and retry.';
+      else if (msg === 'CREDITS_EXHAUSTED') friendly = 'AI credits exhausted for this workspace. Add credits to continue.';
+      else if (msg === 'No agents responded') friendly = 'All specialist agents failed to respond. Check your connection and retry.';
+      else if ((e as Error)?.name === 'AbortError') friendly = 'Cancelled.';
+      setError(friendly);
       setState({
         isThinking: false,
         currentPhase: 'idle',
@@ -480,6 +503,7 @@ Provide the BEST possible answer by combining their expertise.`;
       return null;
     }
   }, [selectAgents, querySpecialist, synthesizeAnswer]);
+
 
   // Cancel ongoing loop
   const cancel = useCallback(() => {
@@ -495,8 +519,10 @@ Provide the BEST possible answer by combining their expertise.`;
 
   return {
     ...state,
+    error,
     runCognitiveLoop,
     cancel,
     availableAgents: SPECIALIST_AGENTS,
   };
+
 };
