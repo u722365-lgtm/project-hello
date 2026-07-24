@@ -485,6 +485,14 @@ Provide the BEST possible answer by combining their expertise.`;
 
     } catch (e) {
       console.error('[Cognitive] Loop error:', e);
+      const msg = (e as Error)?.message ?? '';
+      let friendly = 'Cognitive Loop failed. Try again in a moment.';
+      if (msg === 'AUTH_REQUIRED') friendly = 'Sign in to use the Cognitive Loop.';
+      else if (msg === 'RATE_LIMIT') friendly = 'Rate limit hit. Please wait a minute and retry.';
+      else if (msg === 'CREDITS_EXHAUSTED') friendly = 'AI credits exhausted for this workspace. Add credits to continue.';
+      else if (msg === 'No agents responded') friendly = 'All specialist agents failed to respond. Check your connection and retry.';
+      else if ((e as Error)?.name === 'AbortError') friendly = 'Cancelled.';
+      setError(friendly);
       setState({
         isThinking: false,
         currentPhase: 'idle',
@@ -495,6 +503,7 @@ Provide the BEST possible answer by combining their expertise.`;
       return null;
     }
   }, [selectAgents, querySpecialist, synthesizeAnswer]);
+
 
   // Cancel ongoing loop
   const cancel = useCallback(() => {
