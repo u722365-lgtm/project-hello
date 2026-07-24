@@ -355,6 +355,8 @@ Provide the BEST possible answer by combining their expertise.`;
 
     abortRef.current = new AbortController();
     const startTime = Date.now();
+    setError(null);
+
 
     setState({
       isThinking: true,
