@@ -193,25 +193,25 @@ function smartModelRouter(lastUserText: string, hasImageContent: boolean, messag
   // Memory context bonus (+3 — richer context needs smarter model)
   if (hasMemoryContext) { score += 3; signals.push('has_memory_context'); }
 
-  // 5-Tier Model Selection
+  // 5-Tier Model Selection — ChatGPT-parity floor.
+  // Every normal chat gets at minimum gemini-2.5-flash (real conversational quality),
+  // and anything even mildly complex jumps to gemini-2.5-pro. flash-lite is retired
+  // from user-facing chat because it produces terse, low-quality replies.
   let model: string;
   let tier: string;
 
-  if (score >= 70) {
+  if (score >= 55) {
     model = 'google/gemini-2.5-pro';
     tier = 'EXTREME';
-  } else if (score >= 45) {
+  } else if (score >= 30) {
     model = 'google/gemini-2.5-pro';
     tier = 'COMPLEX';
-  } else if (score >= 25) {
+  } else if (score >= 12) {
     model = 'google/gemini-2.5-flash';
     tier = 'MODERATE';
-  } else if (score >= 10) {
-    model = 'google/gemini-2.5-flash-lite';
-    tier = 'SIMPLE';
   } else {
-    model = 'google/gemini-2.5-flash-lite';
-    tier = 'TRIVIAL';
+    model = 'google/gemini-2.5-flash';
+    tier = 'SIMPLE';
   }
 
   return { model, tier, score, reasoning: signals.join(', ') };
