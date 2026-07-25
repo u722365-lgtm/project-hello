@@ -66,6 +66,7 @@ export const ProviderSelector = ({
     gemini: "Gemini",
     "": "BYOK",
     kimi: "Kimi",
+    openrouter: "OpenRouter",
   };
   const shortLabel = shortLabels[currentProvider.value];
 
