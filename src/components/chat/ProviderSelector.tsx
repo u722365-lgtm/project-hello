@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 
-export type AIProvider = "lovable" | "shadowtalk" | "gemini" | "" | "kimi";
+export type AIProvider = "lovable" | "shadowtalk" | "gemini" | "" | "kimi" | "openrouter";
 
 interface ProviderSelectorProps {
   provider: AIProvider;
