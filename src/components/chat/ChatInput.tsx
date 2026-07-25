@@ -218,7 +218,7 @@ export const ChatInput = ({
             </div>
           </div>
 
-          <p className="shadowtalk-composer__hint">
+          <p className="shadowtalk-composer__hint hidden sm:block">
             Enter to send · Shift+Enter for new line
           </p>
         </div>
