@@ -192,7 +192,7 @@ const TeamPage = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate("/")}
+            onClick={() => navigate(-1)}
             className="mb-8 -ml-3 text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4 mr-2" /> Back
