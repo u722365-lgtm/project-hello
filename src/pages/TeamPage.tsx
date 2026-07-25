@@ -73,18 +73,113 @@ const founder = {
 
 const TeamPage = () => {
   const navigate = useNavigate();
-  const seo = PAGE_SEO.about ?? {
-    title: "The Team — ShadowTalk AI",
-    description: "Meet Zain Ahmed, founder and architect of ShadowTalk AI.",
-    canonical: "https://shadowtalk-ai.com/team",
+  const canonical = "https://www.shadowtalk-ai.com/team";
+  const absUrl = (p: string) => `https://www.shadowtalk-ai.com${p}`;
+
+  const seo = {
+    title: "Team — ShadowTalk AI | CEO Abdul Rauf, Founder Zain Ahmed, CFO Muhammad Umar",
+    description:
+      "Meet the ShadowTalk AI leadership team: CEO Abdul Rauf, Founder & Chief Architect Zain Ahmed, and CFO Muhammad Umar — building sovereign, private AI from Karachi, Pakistan.",
+    canonical,
+  };
+
+  const aboutPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    "@id": `${canonical}#aboutpage`,
+    url: canonical,
+    name: "ShadowTalk AI — Team",
+    description: seo.description,
+    isPartOf: { "@type": "WebSite", name: "ShadowTalk AI", url: "https://www.shadowtalk-ai.com" },
+    about: { "@type": "Organization", name: "ShadowTalk AI", url: "https://www.shadowtalk-ai.com" },
+  };
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.shadowtalk-ai.com/" },
+      { "@type": "ListItem", position: 2, name: "Team", item: canonical },
+    ],
+  };
+
+  const org = { "@type": "Organization", name: "ShadowTalk AI", url: "https://www.shadowtalk-ai.com" };
+
+  const ceoSchema = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "@id": `${canonical}#abdul-rauf`,
+    name: "Abdul Rauf",
+    jobTitle: "Chief Executive Officer",
+    worksFor: org,
+    description: ceo.tagline,
+    image: absUrl(ceo.image),
+    homeLocation: { "@type": "Place", name: "Karachi, Pakistan" },
+    url: canonical,
+  };
+
+  const cfoSchema = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "@id": `${canonical}#muhammad-umar`,
+    name: "Muhammad Umar",
+    jobTitle: "Chief Financial Officer",
+    worksFor: org,
+    description: cfo.tagline,
+    image: absUrl(cfo.image),
+    homeLocation: { "@type": "Place", name: "Karachi, Pakistan" },
+    url: canonical,
+  };
+
+  const teamListSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "ShadowTalk AI Leadership",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, item: { "@id": `${canonical}#abdul-rauf`, name: "Abdul Rauf", jobTitle: "CEO" } },
+      { "@type": "ListItem", position: 2, item: { "@id": "https://www.shadowtalk-ai.com/about#zain-ahmed", name: "Zain Ahmed", jobTitle: "Founder & Chief Architect" } },
+      { "@type": "ListItem", position: 3, item: { "@id": `${canonical}#muhammad-umar`, name: "Muhammad Umar", jobTitle: "CFO" } },
+    ],
+  };
+
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
+      {
+        "@type": "Question",
+        name: "Who is the CEO of ShadowTalk AI?",
+        acceptedAnswer: { "@type": "Answer", text: "Abdul Rauf is the Chief Executive Officer of ShadowTalk AI. He leads company strategy, operations, and partnerships from Karachi, Pakistan." },
+      },
+      {
+        "@type": "Question",
+        name: "Who founded ShadowTalk AI?",
+        acceptedAnswer: { "@type": "Answer", text: "ShadowTalk AI was founded by Zain Ahmed, who serves as Founder and Chief Architect. He designed and engineered the entire platform end-to-end — from the local-first cognitive engine to the sovereign OS design system." },
+      },
+      {
+        "@type": "Question",
+        name: "Who is the CFO of ShadowTalk AI?",
+        acceptedAnswer: { "@type": "Answer", text: "Muhammad Umar is the Chief Financial Officer of ShadowTalk AI, owning financial strategy, capital planning, and operational discipline." },
+      },
+      {
+        "@type": "Question",
+        name: "Where is the ShadowTalk AI team based?",
+        acceptedAnswer: { "@type": "Answer", text: "ShadowTalk AI's leadership team is based in Karachi, Pakistan, building sovereign, private AI for a global user base." },
+      },
+    ],
   };
 
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        meta={{ ...seo, title: "Team — ShadowTalk AI", canonical: "https://shadowtalk-ai.com/team" }}
-        structuredData={[getPersonSchema()]}
+        meta={{
+          ...seo,
+          ogImage: absUrl(ceo.image),
+          ogType: "profile",
+        }}
+        structuredData={[aboutPageSchema, breadcrumbSchema, ceoSchema, getPersonSchema(), cfoSchema, teamListSchema, faqSchema]}
       />
+
       <Navigation />
 
       <main className="relative pt-24 pb-24 overflow-hidden">
