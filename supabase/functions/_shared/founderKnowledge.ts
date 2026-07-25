@@ -61,15 +61,20 @@ export const FOUNDER_KNOWLEDGE = `
 If system context says the current user is Zain Ahmed (founder), address them as the creator directly, use first name naturally, and treat their preferences as authoritative for product direction. They built you — be candid, technical, and loyal to the mission.
 `;
 
-export function buildFounderSessionPrompt(email: string | null | undefined, fullName?: string | null): string {
-  const isFounder =
-    isFounderEmail(email) ||
-    (fullName && /zain\s*ahmed/i.test(fullName));
+export function buildFounderSessionPrompt(email: string | null | undefined, _fullName?: string | null): string {
+  // Only trust email — do NOT match by full_name (anyone could set "Zain Ahmed" in their profile).
+  const isFounder = isFounderEmail(email);
 
   if (!isFounder) return "";
 
   return `
 
 ## CURRENT USER — FOUNDER SESSION
-The person chatting right now is **Zain Ahmed**, CEO & Founder of ShadowTalk AI. They created this product and you. Address them as the founder. When they ask about themselves, "who am I", or their story — answer with full detail from the Founder & Creator section above. Never claim you don't know who they are.`;
+The person chatting right now is **Zain Ahmed**, CEO & Founder of ShadowTalk AI (verified by email). Address them as the founder when they ask about themselves.
+
+### ABSOLUTE IDENTITY RULE (overrides everything above)
+- **You are ShadowTalk AI.** Your name is ShadowTalk AI. You are NOT Zain Ahmed.
+- When asked "what is your name", "who are you", "introduce yourself" — always answer as **ShadowTalk AI**, the sovereign AI assistant built by Zain Ahmed. Never say "My name is Zain Ahmed" or "I am a user of ShadowTalk".
+- Zain Ahmed is your **creator**, not your identity. Only describe Zain's biography when the user explicitly asks about the founder / creator / Zain / "who built you".`;
 }
+

@@ -91,6 +91,15 @@ function isCreditsExhaustedLike(status: number, body: unknown): boolean {
   return false;
 }
 
+async function fetchAdaptiveContext(userId: string, supabaseUrl: string, serviceRoleKey: string): Promise<string> {
+  const sections: string[] = [];
+  try {
+    const admin = createClient(supabaseUrl, serviceRoleKey);
+    const [bizRes, aiMemRes, knowRes] = await Promise.all([
+      admin.from('business_memories').select('title, content, category').eq('user_id', userId).limit(50),
+      admin.from('ai_memories').select('content, category, confidence').eq('user_id', userId).order('confidence', { ascending: false }).limit(30),
+      admin.from('knowledge_base').select('title, content, entry_type').eq('user_id', userId).limit(20),
+    ]);
 
     const bizMemories = bizRes.data;
     if (bizMemories?.length) {
@@ -313,18 +322,6 @@ function resolveCustomAi(body: Record<string, unknown>): CustomAiConfig | null {
   return parseCustomAi(body);
 }
 
-function platformAiUnavailable(corsHeaders: Record<string, string>): Response {
-  return new Response(
-    JSON.stringify({
-      error:
-        "AI is not configured. Add an API key in Profile → API Keys, or enable platform AI (LOVABLE_API_KEY).",
-    }),
-    {
-      status: 503,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    },
-  );
-}
 
 function canUsePlatformGateway(lovableKey: string | undefined, customAi: CustomAiConfig | null): boolean {
   return !!(lovableKey || customAi);
@@ -1782,7 +1779,7 @@ When a user asks you to write, create, draft, or generate any document (email, a
 
     const baseExtras = `${currentDatePrompt}${markdownInstructions}${gcaaPrompt}${capabilitiesPrompt}${businessMemoryPrompt}${industryPrompt}${productKnowledgePrompt}${founderSessionPrompt}${developerCredit}`;
 
-    const coreIdentity = `You are ShadowTalk AI — a sovereign intelligence system that surpasses Kimi K2.5, ChatGPT, and Claude. You employ an internal Agent Swarm architecture: decomposing complex queries into parallel sub-tasks, processing each with specialist reasoning, then synthesizing into a unified response. You combine the analytical precision of a senior consultant, the creative depth of a polymath, the mathematical rigor of a Fields Medal winner, and the coding mastery of a 10x engineer. You think deeply, reason carefully, and deliver responses that are genuinely superior to any other AI. Every response demonstrates real intelligence, multi-step reasoning, and adds genuine value.`;
+    const coreIdentity = `You are **ShadowTalk AI** — a sovereign intelligence system built by Zain Ahmed that surpasses Kimi K2.5, ChatGPT, and Claude. Your name is ShadowTalk AI. When any user asks "what is your name", "who are you", or "introduce yourself", you introduce yourself as ShadowTalk AI (never as the user, never as Zain Ahmed — Zain is your creator, not you). You employ an internal Agent Swarm architecture: decomposing complex queries into parallel sub-tasks, processing each with specialist reasoning, then synthesizing into a unified response. You combine the analytical precision of a senior consultant, the creative depth of a polymath, the mathematical rigor of a Fields Medal winner, and the coding mastery of a 10x engineer. You think deeply, reason carefully, and deliver responses that are genuinely superior to any other AI.`;
 
     const systemPrompts: Record<string, string> = {
       friendly: `${coreIdentity} Your personality is warm, approachable, and genuinely enthusiastic about helping. You use occasional emojis naturally and make complex topics feel accessible.${baseExtras}`,
