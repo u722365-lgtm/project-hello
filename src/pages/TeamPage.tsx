@@ -10,8 +10,10 @@ import { ArrowLeft, Github, Linkedin, Mail, Twitter, Sparkles, Shield, Brain, Ro
 import { PAGE_SEO, getPersonSchema } from "@/lib/seo";
 import founderAsset from "@/assets/founder-zain-ahmed.png.asset.json";
 import ceoAsset from "@/assets/ceo-abdul-rauf.png.asset.json";
+import cfoAsset from "@/assets/cfo-muhammad-umar.jpeg.asset.json";
 const founderImage = founderAsset.url;
 const ceoImage = ceoAsset.url;
+const cfoImage = cfoAsset.url;
 
 const ceo = {
   name: "Abdul Rauf",
@@ -24,6 +26,19 @@ const ceo = {
     "His focus is on turning bold engineering into a durable business: growing the team, forging enterprise partnerships, and making sure every decision reflects ShadowTalk's core values — Excellence, Innovation, and Integrity.",
   ],
   pillars: ["Vision", "Leadership", "Growth", "Impact"],
+};
+
+const cfo = {
+  name: "Muhammad Umar",
+  role: "Chief Financial Officer",
+  location: "Karachi, Pakistan",
+  image: cfoImage,
+  tagline: "Financial strategy, discipline, and growth — building ShadowTalk into a company that lasts.",
+  bio: [
+    "Muhammad Umar is the Chief Financial Officer of ShadowTalk AI. He owns the company's financial strategy, capital planning, and operational discipline — making sure ShadowTalk's growth is sustainable, transparent, and built on solid fundamentals.",
+    "He partners with the CEO and Founder to translate ShadowTalk's mission into a durable business model: pricing, unit economics, investor relations, and the quiet financial rigor that lets a bold product survive contact with reality.",
+  ],
+  pillars: ["Financial Strategy", "Discipline", "Growth", "Governance"],
 };
 
 const fadeUp = {
@@ -143,6 +158,54 @@ const TeamPage = () => {
                   <div className="flex flex-wrap gap-2 mt-8">
                     {ceo.pillars.map((p) => (
                       <Badge key={p} variant="outline" className="border-amber-500/30 text-foreground/80">
+                        {p}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </motion.section>
+
+          {/* CFO — hero card */}
+          <motion.section
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-80px" }}
+            variants={fadeUp}
+            className="mb-16"
+          >
+            <Card className="overflow-hidden border-border/60 bg-card/40 backdrop-blur-xl">
+              <div className="grid md:grid-cols-5 gap-0">
+                <div className="md:col-span-2 relative bg-gradient-to-br from-emerald-500/10 via-background to-background">
+                  <div className="aspect-square md:aspect-auto md:h-full relative">
+                    <img
+                      src={cfo.image}
+                      alt={`${cfo.name} — CFO of ShadowTalk AI`}
+                      className="absolute inset-0 w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent md:bg-gradient-to-r md:from-transparent md:via-transparent md:to-background/30" />
+                  </div>
+                </div>
+                <div className="md:col-span-3 p-8 md:p-12">
+                  <Badge className="mb-4 bg-emerald-500/15 text-emerald-500 hover:bg-emerald-500/20 border-emerald-500/20">
+                    CFO
+                  </Badge>
+                  <h2 className="text-3xl md:text-4xl font-bold mb-2">{cfo.name}</h2>
+                  <p className="text-emerald-500 font-medium mb-1">{cfo.role}</p>
+                  <p className="text-sm text-muted-foreground mb-6">{cfo.location}</p>
+                  <blockquote className="border-l-2 border-emerald-500/50 pl-4 italic text-foreground/90 mb-6">
+                    “{cfo.tagline}”
+                  </blockquote>
+                  <div className="space-y-4 text-muted-foreground leading-relaxed prose-p:my-3">
+                    {cfo.bio.map((p, i) => (
+                      <p key={i}>{p}</p>
+                    ))}
+                  </div>
+                  <div className="flex flex-wrap gap-2 mt-8">
+                    {cfo.pillars.map((p) => (
+                      <Badge key={p} variant="outline" className="border-emerald-500/30 text-foreground/80">
                         {p}
                       </Badge>
                     ))}
