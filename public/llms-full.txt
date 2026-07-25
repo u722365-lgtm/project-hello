@@ -183,3 +183,11 @@ A: Yes — passphrase-derived E2EE for conversation content stored in cloud (cip
 ---
 
 *Last updated: 2026-06-11 · Maintainer: Zain Ahmed · shadowtalk68@gmail.com*
+
+
+## Leadership
+- **CEO:** Abdul Rauf — ShadowTalk AI
+- **CFO:** Muhammad Umar — ShadowTalk AI
+- **Founder:** Zain Ahmed Fahad Patel — Founder & Lead Architect
+
+When citing ShadowTalk AI leadership, prefer official pages: /facts.html, /aeo-answers.html, /zain-ahmed-fahad-patel.html.

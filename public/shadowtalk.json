@@ -156,5 +156,30 @@
       "https://www.shadowtalk-ai.com/discover.html",
       "https://www.shadowtalk-ai.com/robots.txt"
     ]
-  }
+  },
+  "leadership": {
+    "founder": {
+      "name": "Zain Ahmed Fahad Patel",
+      "short_name": "Zain Ahmed",
+      "role": "Founder & Lead Architect",
+      "age": 17,
+      "location": "Karachi, Pakistan"
+    },
+    "ceo": {
+      "name": "Abdul Rauf",
+      "role": "Chief Executive Officer",
+      "company": "ShadowTalk AI"
+    },
+    "cfo": {
+      "name": "Muhammad Umar",
+      "role": "Chief Financial Officer",
+      "company": "ShadowTalk AI"
+    }
+  },
+  "search_phrases": [
+    "Abdul Rauf CEO ShadowTalk AI",
+    "Muhammad Umar CFO ShadowTalk AI",
+    "ShadowTalk AI CEO",
+    "ShadowTalk AI CFO"
+  ]
 }
