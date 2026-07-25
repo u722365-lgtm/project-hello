@@ -6,7 +6,8 @@ export type AiProviderId =
   | "perplexity"
   | ""
   | "mistral"
-  | "groq";
+  | "groq"
+  | "openrouter";
 
 export interface AiProviderOption {
   id: AiProviderId;
@@ -14,6 +15,8 @@ export interface AiProviderOption {
   description: string;
   keyPlaceholder: string;
   docsUrl: string;
+  keyHint?: string;
+  defaultModel?: string;
 }
 
 export const AI_PROVIDER_OPTIONS: AiProviderOption[] = [
