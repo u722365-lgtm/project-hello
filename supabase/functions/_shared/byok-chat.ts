@@ -29,7 +29,7 @@ function openAiCompatibleUrl(provider: ProviderId): string {
   switch (provider) {
     case "openai":
       return "https://api.openai.com/v1/chat/completions";
-    case "":
+    case "openrouter":
       return "https://.ai/api/v1/chat/completions";
     case "perplexity":
       return "https://api.perplexity.ai/chat/completions";

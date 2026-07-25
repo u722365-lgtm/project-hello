@@ -73,7 +73,7 @@ export async function verifyProviderApiKey(
         if (!res.ok) return { ok: false, message: "Anthropic rejected this API key" };
         return { ok: true, message: "Anthropic key verified" };
       }
-      case "": {
+      case "openrouter": {
         const res = await fetch("https://.ai/api/v1/models", {
           headers: { Authorization: `Bearer ${key}` },
         });
