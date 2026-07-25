@@ -1,6 +1,7 @@
 import { streamChatCompletion, extractJsonArray } from "@/lib/see/chatCompletion";
 import type { MissionPlanStep, MissionToolName } from "@/lib/see/types";
 import type { DeliverableType } from "@/lib/execution/types";
+import { plannerOmniRouteFallback, type OmniRoutePlannerResponse } from "@/lib/see/ominiRoutePlannerFallback";
 
 const TOOLS: MissionToolName[] = [
   "web_search",
@@ -137,6 +138,25 @@ export interface GeneratedPlan {
   usedDefault: boolean;
 }
 
+function normalizePlan(
+  source: MissionPlanStep[] | OmniRoutePlannerResponse["plan"],
+  goal: string,
+): MissionPlanStep[] {
+  return source.slice(0, 8).map((s, i) => ({
+    id: `step-${i + 1}`,
+    action: s.action || `Step ${i + 1}`,
+    tool_name: (TOOLS.includes((s.tool_name as MissionToolName | undefined))
+      ? s.tool_name
+      : "web_search") as MissionToolName,
+    status: "pending" as const,
+    requires_approval: Boolean(s.requires_approval),
+    tool_params: {
+      ...s.tool_params,
+      query: s.tool_params?.query || `${goal} ${s.action}`.slice(0, 200),
+    },
+  }));
+}
+
 export async function generateExecutionPlan(
   goal: string,
   deliverableType: DeliverableType,
@@ -152,26 +172,27 @@ export async function generateExecutionPlan(
 
     const parsed = extractJsonArray<RawPlanStep>(content);
     if (parsed && parsed.length > 0) {
-      return parsed.slice(0, 8).map((s, i) => ({
-        id: `step-${i + 1}`,
-        action: s.action || `Step ${i + 1}`,
-        tool_name: (TOOLS.includes(s.tool_name as MissionToolName)
-          ? s.tool_name
-          : "web_search") as MissionToolName,
-        status: "pending" as const,
-        requires_approval: Boolean(s.requires_approval),
-        tool_params: {
-          ...s.tool_params,
-          query: s.tool_params?.query || `${goal} ${s.action}`.slice(0, 200),
-        },
-      }));
+      const steps = normalizePlan(parsed, goal);
+      return steps;
     }
   } catch (e) {
-    console.warn("[execution] plan generation failed, using default", e);
+    console.warn("[execution] primary planner failed, trying bounded fallbacks", e);
+  }
+
+  // Bounded SEE-only OmniRoute fallback.
+  // This path does NOT replace normal chat behavior.
+  try {
+    const omni = await plannerOmniRouteFallback(goal, deliverableType, signal);
+    if (omni?.plan && omni.plan.length > 0) {
+      const steps = normalizePlan(omni.plan, goal);
+      if (steps[0]) (steps[0] as MissionPlanStep & { _planFallback?: boolean })._planFallback = true;
+      return steps;
+    }
+  } catch {
+    /* bounded fallback failed — continue to default plan */
   }
 
   const fallback = defaultPlan(goal, deliverableType);
-  // Mark first step so the executor can surface a "used default plan" warning
   if (fallback[0]) (fallback[0] as MissionPlanStep & { _planFallback?: boolean })._planFallback = true;
   return fallback;
 }
