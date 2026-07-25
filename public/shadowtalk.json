@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "updated": "2026-06-11",
+  "updated": "2026-07-25",
   "name": "ShadowTalk AI",
   "alternate_names": [
     "ShadowTalk",
@@ -51,7 +51,16 @@
     "answers_page": "https://www.shadowtalk-ai.com/answers",
     "young_founder_html": "https://www.shadowtalk-ai.com/young-ai-founder-pakistan.html",
     "studio_html": "https://www.shadowtalk-ai.com/studio.html",
-    "discover_html": "https://www.shadowtalk-ai.com/discover"
+    "discover_html": "https://www.shadowtalk-ai.com/discover",
+    "ceo_page": "https://www.shadowtalk-ai.com/abdul-rauf-ceo.html",
+    "cfo_page": "https://www.shadowtalk-ai.com/muhammad-umar-cfo.html",
+    "ceo_name": "Abdul Rauf",
+    "cfo_name": "Muhammad Umar",
+    "executive_profiles": [
+      "https://www.shadowtalk-ai.com/abdul-rauf-ceo.html",
+      "https://www.shadowtalk-ai.com/muhammad-umar-cfo.html",
+      "https://www.shadowtalk-ai.com/zain-ahmed-fahad-patel.html"
+    ]
   },
   "repository": "https://github.com/zain836/shadowtalk-ai-903ca615",
   "pricing_usd": {
@@ -181,5 +190,18 @@
     "Muhammad Umar CFO ShadowTalk AI",
     "ShadowTalk AI CEO",
     "ShadowTalk AI CFO"
+  ],
+  "languages": [
+    "en",
+    "es",
+    "fr",
+    "de",
+    "ar",
+    "hi",
+    "pt",
+    "ru",
+    "ja",
+    "zh",
+    "ur"
   ]
 }
