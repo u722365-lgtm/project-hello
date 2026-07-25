@@ -9,7 +9,22 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Github, Linkedin, Mail, Twitter, Sparkles, Shield, Brain, Rocket } from "lucide-react";
 import { PAGE_SEO, getPersonSchema } from "@/lib/seo";
 import founderAsset from "@/assets/founder-zain-ahmed.png.asset.json";
+import ceoAsset from "@/assets/ceo-abdul-rauf.png.asset.json";
 const founderImage = founderAsset.url;
+const ceoImage = ceoAsset.url;
+
+const ceo = {
+  name: "Abdul Rauf",
+  role: "Chief Executive Officer",
+  location: "Karachi, Pakistan",
+  image: ceoImage,
+  tagline: "Leading ShadowTalk AI with vision, integrity, and an obsession for building products that respect the people who use them.",
+  bio: [
+    "Abdul Rauf is the Chief Executive Officer of ShadowTalk AI. He leads company strategy, operations, and partnerships — steering ShadowTalk's mission to put sovereign, private intelligence into the hands of every user.",
+    "His focus is on turning bold engineering into a durable business: growing the team, forging enterprise partnerships, and making sure every decision reflects ShadowTalk's core values — Excellence, Innovation, and Integrity.",
+  ],
+  pillars: ["Vision", "Leadership", "Growth", "Impact"],
+};
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -18,7 +33,7 @@ const fadeUp = {
 
 const founder = {
   name: "Zain Ahmed",
-  role: "Founder, CEO & Chief Architect",
+  role: "Founder & Chief Architect",
   location: "Karachi, Pakistan",
   image: founderImage,
   tagline: "Building the world's most private, sovereign AI — one that belongs to the user, not the cloud.",
