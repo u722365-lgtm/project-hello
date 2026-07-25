@@ -9,7 +9,22 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Github, Linkedin, Mail, Twitter, Sparkles, Shield, Brain, Rocket } from "lucide-react";
 import { PAGE_SEO, getPersonSchema } from "@/lib/seo";
 import founderAsset from "@/assets/founder-zain-ahmed.png.asset.json";
+import ceoAsset from "@/assets/ceo-abdul-rauf.png.asset.json";
 const founderImage = founderAsset.url;
+const ceoImage = ceoAsset.url;
+
+const ceo = {
+  name: "Abdul Rauf",
+  role: "Chief Executive Officer",
+  location: "Karachi, Pakistan",
+  image: ceoImage,
+  tagline: "Leading ShadowTalk AI with vision, integrity, and an obsession for building products that respect the people who use them.",
+  bio: [
+    "Abdul Rauf is the Chief Executive Officer of ShadowTalk AI. He leads company strategy, operations, and partnerships — steering ShadowTalk's mission to put sovereign, private intelligence into the hands of every user.",
+    "His focus is on turning bold engineering into a durable business: growing the team, forging enterprise partnerships, and making sure every decision reflects ShadowTalk's core values — Excellence, Innovation, and Integrity.",
+  ],
+  pillars: ["Vision", "Leadership", "Growth", "Impact"],
+};
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -18,7 +33,7 @@ const fadeUp = {
 
 const founder = {
   name: "Zain Ahmed",
-  role: "Founder, CEO & Chief Architect",
+  role: "Founder & Chief Architect",
   location: "Karachi, Pakistan",
   image: founderImage,
   tagline: "Building the world's most private, sovereign AI — one that belongs to the user, not the cloud.",
@@ -89,7 +104,56 @@ const TeamPage = () => {
             </p>
           </motion.header>
 
+          {/* CEO — hero card */}
+          <motion.section
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-80px" }}
+            variants={fadeUp}
+            className="mb-16"
+          >
+            <Card className="overflow-hidden border-border/60 bg-card/40 backdrop-blur-xl">
+              <div className="grid md:grid-cols-5 gap-0">
+                <div className="md:col-span-2 relative bg-gradient-to-br from-amber-500/10 via-background to-background">
+                  <div className="aspect-square md:aspect-auto md:h-full relative">
+                    <img
+                      src={ceo.image}
+                      alt={`${ceo.name} — CEO of ShadowTalk AI`}
+                      className="absolute inset-0 w-full h-full object-cover"
+                      loading="eager"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent md:bg-gradient-to-r md:from-transparent md:via-transparent md:to-background/30" />
+                  </div>
+                </div>
+                <div className="md:col-span-3 p-8 md:p-12">
+                  <Badge className="mb-4 bg-amber-500/15 text-amber-500 hover:bg-amber-500/20 border-amber-500/20">
+                    CEO
+                  </Badge>
+                  <h2 className="text-3xl md:text-4xl font-bold mb-2">{ceo.name}</h2>
+                  <p className="text-amber-500 font-medium mb-1">{ceo.role}</p>
+                  <p className="text-sm text-muted-foreground mb-6">{ceo.location}</p>
+                  <blockquote className="border-l-2 border-amber-500/50 pl-4 italic text-foreground/90 mb-6">
+                    “{ceo.tagline}”
+                  </blockquote>
+                  <div className="space-y-4 text-muted-foreground leading-relaxed prose-p:my-3">
+                    {ceo.bio.map((p, i) => (
+                      <p key={i}>{p}</p>
+                    ))}
+                  </div>
+                  <div className="flex flex-wrap gap-2 mt-8">
+                    {ceo.pillars.map((p) => (
+                      <Badge key={p} variant="outline" className="border-amber-500/30 text-foreground/80">
+                        {p}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </motion.section>
+
           {/* Founder — hero card */}
+
           <motion.section
             initial="hidden"
             whileInView="show"
