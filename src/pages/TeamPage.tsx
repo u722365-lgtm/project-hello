@@ -10,8 +10,10 @@ import { ArrowLeft, Github, Linkedin, Mail, Twitter, Sparkles, Shield, Brain, Ro
 import { PAGE_SEO, getPersonSchema } from "@/lib/seo";
 import founderAsset from "@/assets/founder-zain-ahmed.png.asset.json";
 import ceoAsset from "@/assets/ceo-abdul-rauf.png.asset.json";
+import cfoAsset from "@/assets/cfo-muhammad-umar.jpeg.asset.json";
 const founderImage = founderAsset.url;
 const ceoImage = ceoAsset.url;
+const cfoImage = cfoAsset.url;
 
 const ceo = {
   name: "Abdul Rauf",
@@ -24,6 +26,19 @@ const ceo = {
     "His focus is on turning bold engineering into a durable business: growing the team, forging enterprise partnerships, and making sure every decision reflects ShadowTalk's core values — Excellence, Innovation, and Integrity.",
   ],
   pillars: ["Vision", "Leadership", "Growth", "Impact"],
+};
+
+const cfo = {
+  name: "Muhammad Umar",
+  role: "Chief Financial Officer",
+  location: "Karachi, Pakistan",
+  image: cfoImage,
+  tagline: "Financial strategy, discipline, and growth — building ShadowTalk into a company that lasts.",
+  bio: [
+    "Muhammad Umar is the Chief Financial Officer of ShadowTalk AI. He owns the company's financial strategy, capital planning, and operational discipline — making sure ShadowTalk's growth is sustainable, transparent, and built on solid fundamentals.",
+    "He partners with the CEO and Founder to translate ShadowTalk's mission into a durable business model: pricing, unit economics, investor relations, and the quiet financial rigor that lets a bold product survive contact with reality.",
+  ],
+  pillars: ["Financial Strategy", "Discipline", "Growth", "Governance"],
 };
 
 const fadeUp = {
