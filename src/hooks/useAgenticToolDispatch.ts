@@ -309,7 +309,7 @@ export function useAgenticToolDispatch() {
             );
             return { handled: true };
           }
-          const fallbackTool = tool as import("@/lib/shadowTools/executeShadowTool").ToolType;
+          const fallbackTool = tool as import("@/hooks/useToolOrchestrator").ToolType;
           const fallbackRoute = (executeShadowTool as any).UI_ROUTES?.[fallbackTool];
           if (fallbackRoute?.path) {
             navigate(fallbackRoute.path);
