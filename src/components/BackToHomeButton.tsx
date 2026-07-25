@@ -24,17 +24,13 @@ export function BackToHomeButton({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "fixed z-[80]",
+        "fixed z-[80] left-4 safe-top",
         isChat
-          ? "left-[calc(4.25rem+env(safe-area-inset-left,0px))] top-3 safe-top md:hidden"
-          : "left-4 safe-bottom",
+          ? "left-[calc(4.25rem+env(safe-area-inset-left,0px))] md:hidden"
+          : "",
         className,
       )}
-      style={
-        isChat
-          ? { top: "calc(0.75rem + env(safe-area-inset-top, 0px))" }
-          : { bottom: "calc(1rem + env(safe-area-inset-bottom, 0px))" }
-      }
+      style={{ top: "calc(0.75rem + env(safe-area-inset-top, 0px))" }}
     >
       <Button
         type="button"
