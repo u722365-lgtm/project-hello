@@ -322,18 +322,6 @@ function resolveCustomAi(body: Record<string, unknown>): CustomAiConfig | null {
   return parseCustomAi(body);
 }
 
-function platformAiUnavailable(corsHeaders: Record<string, string>): Response {
-  return new Response(
-    JSON.stringify({
-      error:
-        "AI is not configured. Add an API key in Profile → API Keys, or enable platform AI (LOVABLE_API_KEY).",
-    }),
-    {
-      status: 503,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    },
-  );
-}
 
 function canUsePlatformGateway(lovableKey: string | undefined, customAi: CustomAiConfig | null): boolean {
   return !!(lovableKey || customAi);
