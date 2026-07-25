@@ -91,8 +91,17 @@ function isCreditsExhaustedLike(status: number, body: unknown): boolean {
   return false;
 }
 
+async function fetchAdaptiveContext(userId: string, supabaseUrl: string, serviceRoleKey: string): Promise<string> {
+  const sections: string[] = [];
+  try {
+    const admin = createClient(supabaseUrl, serviceRoleKey);
+    const [bizRes, aiMemRes, knowRes] = await Promise.all([
+      admin.from('business_memories').select('title, content, category').eq('user_id', userId).limit(50),
+      admin.from('ai_memories').select('content, category, confidence').eq('user_id', userId).order('confidence', { ascending: false }).limit(30),
+      admin.from('knowledge_base').select('title, content, entry_type').eq('user_id', userId).limit(20),
+    ]);
 
-    const bizMemories = bizRes.data;
+
     if (bizMemories?.length) {
       const grouped: Record<string, string[]> = {};
       for (const m of bizMemories) {
