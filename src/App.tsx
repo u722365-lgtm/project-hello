@@ -301,6 +301,11 @@ const AnimatedRoutes = () => {
           <Route path="/self-healing" element={<PageTransition><SelfHealingPage /></PageTransition>} />
           <Route path="/local-models" element={<PageTransition><LocalModelsPage /></PageTransition>} />
           <Route path="/settings/local-models" element={<Navigate to="/local-models" replace />} />
+          <Route path="/abdul-rauf-ceo" element={<PageTransition><AbdulRaufPage /></PageTransition>} />
+          <Route path="/muhammad-umar-cfo" element={<PageTransition><MuhammadUmarPage /></PageTransition>} />
+          <Route path="/leaderboard" element={<PageTransition><LeaderboardPage /></PageTransition>} />
+          <Route path="/rollout-plan" element={<PageTransition><RolloutPlanPage /></PageTransition>} />
+          <Route path="/stock-scenarios" element={<PageTransition><StockScenariosPage /></PageTransition>} />
           <Route path="/private-ai" element={<PageTransition><PrivateAiHubPage /></PageTransition>} />
           <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
         </Routes>

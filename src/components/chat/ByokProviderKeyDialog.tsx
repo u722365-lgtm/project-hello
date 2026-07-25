@@ -41,10 +41,7 @@ const BYOK_LABELS: Record<Exclude<AIProvider, "lovable">, { title: string; hint:
     title: "ShadowTalk key",
     hint: "Built-in ShadowTalk routing. No external key needed.",
   },
-  openrouter: {
-    title: "OpenRouter API key",
-    hint: "Use your OpenRouter key to route across multiple models.",
-  },
+
 };
 
 type Props = {

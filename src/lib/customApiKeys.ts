@@ -3,7 +3,7 @@
  * Keys are sent to edge functions per request and are not persisted on ShadowTalk servers.
  */
 
-export type CustomAiProviderId = "lovable" | "gemini" | "" | "kimi" | "openrouter";
+export type CustomAiProviderId = "lovable" | "gemini" | "" | "kimi";
 
 export type CustomAiKeysConfig = {
   /** Active provider for cloud AI calls */
