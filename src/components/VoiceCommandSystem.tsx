@@ -673,7 +673,7 @@ const VoiceCommandSystem: React.FC = () => {
       <motion.button
         onClick={toggleVoice}
         className={cn(
-          "fixed bottom-8 left-8 z-50 flex items-center justify-center w-14 h-14 rounded-full shadow-lg transition-all duration-300",
+          "hidden md:flex fixed bottom-8 left-8 z-50 items-center justify-center w-14 h-14 rounded-full shadow-lg transition-all duration-300",
           isActive
             ? "bg-destructive text-destructive-foreground shadow-destructive/30"
             : "bg-primary text-primary-foreground shadow-primary/30 hover:shadow-xl hover:shadow-primary/40"
