@@ -95,7 +95,7 @@ export const FileUpload = ({ onFileSelect, selectedFile, onClear, disabled, vari
   };
 
   return (
-    <div className="relative">
+    <div className={variant === "composer" ? "relative shadowtalk-composer__attach-wrap" : "relative"}>
       <input
         ref={fileInputRef}
         type="file"
