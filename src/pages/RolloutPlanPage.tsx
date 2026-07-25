@@ -189,7 +189,7 @@ const RolloutPlanPage = () => {
                     <ChevronRight className='h-3.5 w-3.5 mt-0.5 text-primary' />
                     <span>{item}</span>
                   </div>
-                )}
+                ))}
               </CardContent>
             </Card>
           </div>
