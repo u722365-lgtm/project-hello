@@ -76,7 +76,16 @@ export async function plannerOmniRouteFallback(
     }
 
     const data = (await res.json()) as Record<string, unknown>;
-    const content = (data?.choices?.[0] as Record<string, unknown> | undefined)?.message?.content;
+    const choices = Array.isArray(data.choices) ? data.choices : [];
+    const firstChoice = choices[0];
+    const message =
+      firstChoice && typeof firstChoice === "object" && "message" in firstChoice
+        ? (firstChoice as { message?: unknown }).message
+        : undefined;
+    const content =
+      message && typeof message === "object" && "content" in message
+        ? (message as { content?: unknown }).content
+        : undefined;
     if (!content || typeof content !== "string") return null;
 
     const match = content.match(/\[[\s\S]*\]/);

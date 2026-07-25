@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import type { Variants } from 'framer-motion';
 import {
   LayoutDashboard,
   Users,
@@ -58,13 +59,13 @@ const PILOT_ROWS = [
 
 const TODAY = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-const fadeUp = {
+const fadeUp: Variants = {
   hidden: { opacity: 0, y: 24, filter: 'blur(4px)' },
   visible: (delay: number) => ({
     opacity: 1,
     y: 0,
     filter: 'blur(0px)',
-    transition: { delay, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] },
+    transition: { delay, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] as const },
   }),
 };
 

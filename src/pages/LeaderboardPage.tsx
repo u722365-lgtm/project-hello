@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import type { Variants } from 'framer-motion';
 import {
   Trophy,
   Medal,
@@ -35,12 +36,12 @@ const DEMO_ROWS: RankRow[] = [
   { rank: 8, name: 'Skyline AI', score: 71, delta: 1, trend: 'up' },
 ];
 
-const fadeUp = {
+const fadeUp: Variants = {
   hidden: { opacity: 0, y: 18 },
   visible: (delay: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay, duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] },
+    transition: { delay, duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] as const },
   }),
 };
 

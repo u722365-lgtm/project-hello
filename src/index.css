@@ -730,49 +730,6 @@
     }
   }
 
-  @media (max-width: 474px) {
-    .shadowtalk-composer {
-      min-height: 96px;
-      align-items: stretch;
-      flex-wrap: wrap;
-      gap: 0.375rem;
-      border-radius: 1.5rem;
-      padding: 0.625rem;
-      overflow: visible;
-    }
-
-    .shadowtalk-composer__textarea {
-      order: 1;
-      flex: 0 0 100%;
-      width: 100%;
-      min-height: 36px;
-      padding: 0.25rem 0.5rem 0.125rem;
-      line-height: 1.35;
-    }
-
-    .shadowtalk-chat-empty {
-      @apply px-4;
-    }
-
-    .shadowtalk-chat-input-dock {
-      @apply px-3 pt-1;
-      padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
-    }
-
-    .shadowtalk-composer__actions {
-      position: static;
-      order: 3;
-      transform: none;
-      max-width: none;
-      margin-left: auto;
-      gap: 0.375rem;
-    }
-
-    .shadowtalk-composer__attach {
-      order: 2;
-    }
-  }
-
   .shadowtalk-composer__actions {
     @apply absolute right-1.5 top-1/2 z-10 flex items-center gap-1 -translate-y-1/2 shrink-0;
     max-width: calc(100% - 3.5rem);
@@ -867,6 +824,15 @@
 
     .shadowtalk-composer__attach {
       order: 2;
+    }
+
+    .shadowtalk-chat-empty {
+      @apply px-4;
+    }
+
+    .shadowtalk-chat-input-dock {
+      @apply px-3 pt-1;
+      padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
     }
   }
 

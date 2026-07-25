@@ -188,7 +188,7 @@ const StockScenariosPage = () => {
                           formatter={(value: number) => [formatCurrency(value), 'Value']}
                           contentStyle={{ background: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
                         />
-                        <Line type='monotone' dataKey='value' stroke='hsl(var(--primary))' strokeWidth={2} dot stroke='hsl(var(--background))' />
+                        <Line type='monotone' dataKey='value' stroke='hsl(var(--primary))' strokeWidth={2} dot={{ stroke: 'hsl(var(--background))' }} />
                       </LineChart>
                     </ResponsiveContainer>
                   </CardContent>
