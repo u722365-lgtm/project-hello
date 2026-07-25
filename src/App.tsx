@@ -71,6 +71,7 @@ import { PushIntelligencePanel } from "@/components/chat/PushIntelligencePanel";
  const LocalModelsPage = lazy(() => import("./pages/LocalModelsPage"));
  const PrivateAiHubPage = lazy(() => import("./pages/PrivateAiHubPage"));
  const AboutPage = lazy(() => import("./pages/AboutPage"));
+ const TeamPage = lazy(() => import("./pages/TeamPage"));
  const HelpCenterPage = lazy(() => import("./pages/HelpCenterPage"));
  const FAQPage = lazy(() => import("./pages/FAQPage"));
  const ContactPage = lazy(() => import("./pages/ContactPage"));
@@ -199,6 +200,7 @@ const AnimatedRoutes = () => {
           <Route path="/shadow-memory" element={<Navigate to="/insights?tab=activity" replace />} />
           <Route path="/enterprise" element={<PageTransition><EnterpriseSettingsPage /></PageTransition>} />
           <Route path="/about" element={<PageTransition><AboutPage /></PageTransition>} />
+          <Route path="/team" element={<PageTransition><TeamPage /></PageTransition>} />
           <Route path="/help" element={<PageTransition><HelpCenterPage /></PageTransition>} />
           <Route path="/faq" element={<PageTransition><FAQPage /></PageTransition>} />
           <Route path="/contact" element={<PageTransition><ContactPage /></PageTransition>} />
