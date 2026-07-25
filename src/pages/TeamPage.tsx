@@ -8,7 +8,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Github, Linkedin, Mail, Twitter, Sparkles, Shield, Brain, Rocket } from "lucide-react";
 import { PAGE_SEO, getPersonSchema } from "@/lib/seo";
-import founderImage from "@/assets/founder-zain-ahmed.png";
+import founderAsset from "@/assets/founder-zain-ahmed.png.asset.json";
+const founderImage = founderAsset.url;
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
