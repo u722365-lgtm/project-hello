@@ -101,7 +101,7 @@ async function fetchAdaptiveContext(userId: string, supabaseUrl: string, service
       admin.from('knowledge_base').select('title, content, entry_type').eq('user_id', userId).limit(20),
     ]);
 
-
+    const bizMemories = bizRes.data;
     if (bizMemories?.length) {
       const grouped: Record<string, string[]> = {};
       for (const m of bizMemories) {
