@@ -51,7 +51,7 @@ function defaultModel(provider: ProviderId): string {
     anthropic: "claude-3-5-haiku-latest",
     xai: "grok-2-latest",
     perplexity: "sonar",
-    : "openai/gpt-4o-mini",
+    openrouter: "openai/gpt-4o-mini",
     mistral: "mistral-small-latest",
     groq: "llama-3.3-70b-versatile",
   };

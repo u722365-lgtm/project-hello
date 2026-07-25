@@ -4,7 +4,7 @@ export type ProviderId =
   | "anthropic"
   | "xai"
   | "perplexity"
-  | ""
+  | "openrouter"
   | "mistral"
   | "groq";
 
@@ -14,7 +14,7 @@ const PROVIDERS: ProviderId[] = [
   "anthropic",
   "xai",
   "perplexity",
-  "",
+  "openrouter",
   "mistral",
   "groq",
 ];
