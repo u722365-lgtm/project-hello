@@ -19,7 +19,8 @@ export function BackToHomeButton({ className }: { className?: string }) {
 
   if (isHome) return null;
   if (isAuth) return null;
-  if (isChat && isChatSessionActive()) return null;
+  // ChatHeader already renders its own Home button on /chatbot
+  if (isChat) return null;
 
   return (
     <div
