@@ -93,6 +93,16 @@ export function generateMetaTags(meta: PageMeta): Record<string, string> {
        email: 'shadowtalk68@gmail.com',
        availableLanguage: ['English'],
      },
+     ceo: {
+       '@type': 'Person',
+       name: 'Abdul Rauf',
+       url: 'https://www.shadowtalk-ai.com/abdul-rauf-ceo.html'
+     },
+     cfo: {
+       '@type': 'Person',
+       name: 'Muhammad Umar',
+       url: 'https://www.shadowtalk-ai.com/muhammad-umar-cfo.html'
+     }
    };
  }
 
