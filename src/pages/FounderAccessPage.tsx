@@ -44,6 +44,9 @@ const FounderAccessPage = () => {
   const [phone, setPhone] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [promoCode, setPromoCode] = useState("");
+  const [promoApplied, setPromoApplied] = useState(false);
+  const [promoError, setPromoError] = useState<string | null>(null);
 
   useEffect(() => {
     const plan = searchParams.get("plan")?.toLowerCase();
@@ -90,6 +93,15 @@ const FounderAccessPage = () => {
   const canSubmit = txRef.trim().length > 0 && file !== null;
   const stepIndex = step === "plan" ? 1 : step === "payment" ? 2 : step === "proof" ? 3 : 4;
 
+  const discountedPrice = useMemo(() => {
+    if (!promoApplied) return selectedProduct.price;
+    const code = promoCode.trim().toUpperCase();
+    if (code === "FOUNDER50" && typeof selectedProduct.price === "number" && selectedProduct.price > 0) {
+      return Math.max(0, Math.round(selectedProduct.price * 0.5));
+    }
+    return selectedProduct.price;
+  }, [promoApplied, promoCode, selectedProduct.price]);
+
   return (
     <div className="min-h-screen bg-background relative">
       <SEOHead meta={PAGE_SEO.founderAccess} structuredData={undefined} />
@@ -131,7 +143,7 @@ const FounderAccessPage = () => {
                     <p className="text-xs text-muted-foreground mt-1">{selectedProduct.name} · {selectedProduct.period === "one-time" ? "One-time purchase" : selectedProduct.period}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-3xl font-bold leading-none">{selectedProduct.price === 0 ? "Free" : `$${selectedProduct.price}`}</p>
+                    <p className="text-3xl font-bold leading-none">{selectedProduct.price === 0 ? "Free" : `$${discountedPrice}`}</p>
                     {selectedProduct.period && <p className="text-[11px] text-muted-foreground mt-1">{selectedProduct.period === "one-time" ? "One-time purchase" : selectedProduct.period}</p>}
                     {pkrEstimate > 0 && <p className="text-[11px] text-muted-foreground mt-1">≈ Rs {pkrEstimate.toLocaleString()} PK</p>}
                   </div>
@@ -180,6 +192,35 @@ const FounderAccessPage = () => {
               </CardContent>
             </Card>
 
+                  <div className="mt-4 space-y-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Input
+                        placeholder="Promo code"
+                        value={promoCode}
+                        onChange={(e) => { setPromoCode(e.target.value); setPromoError(null); }}
+                        disabled={promoApplied}
+                      />
+                      <Button
+                        variant={promoApplied ? "secondary" : "default"}
+                        onClick={() => {
+                          const code = promoCode.trim().toUpperCase();
+                          if (code === "FOUNDER50") {
+                            setPromoApplied(true);
+                            setPromoError(null);
+                          } else if (promoApplied) {
+                            setPromoApplied(false);
+                          } else {
+                            setPromoError("Invalid code");
+                          }
+                        }}
+                      >
+                        {promoApplied ? "Applied" : "Apply"}
+                      </Button>
+                    </div>
+                    {promoError && <p className="text-xs text-red-500">{promoError}</p>}
+                    {promoApplied && <p className="text-xs text-green-600">FOUNDER50 applied: 50% off this checkout.</p>}
+                  </div>
+
             <CheckoutConfirmation
               planName={selectedProduct.name}
               invoiceNumber={invoiceNumber}
@@ -219,7 +260,7 @@ const FounderAccessPage = () => {
                       <div className="grid gap-3 sm:grid-cols-2">
                         <div className="space-y-1.5">
                           <Label className="text-xs">Amount</Label>
-                          <Input value={file ? amount : ""} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" placeholder={`${activePaymentMethod === "mobile" || activePaymentMethod === "bank" ? `Rs ${pkrEstimate}` : `$${selectedProduct.price}`}`} />
+                          <Input value={file ? amount : ""} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" placeholder={`${activePaymentMethod === "mobile" || activePaymentMethod === "bank" ? `Rs ${pkrEstimate}` : `$${discountedPrice}`}`} />
                         </div>
                         <div className="space-y-1.5">
                           <Label className="text-xs">Transaction ID / reference</Label>
