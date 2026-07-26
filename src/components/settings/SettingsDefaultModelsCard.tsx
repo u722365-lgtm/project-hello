@@ -61,10 +61,9 @@ export function SettingsDefaultModelsCard() {
             <SelectContent>
               {AI_PROVIDER_OPTIONS.map((p) => (
                 <SelectItem key={p.id} value={p.id}>
-                  {(p as unknown as { label?: string; name?: string }).label ?? (p as unknown as { name?: string }).name ?? p.id}
+                  {(p as { label?: string; name?: string }).label ?? (p as { name?: string }).name ?? p.id}
                 </SelectItem>
               ))}
-              <SelectItem value="shadowtalk">ShadowTalk Model (Sovereign)</SelectItem>
             </SelectContent>
           </Select>
         </div>
