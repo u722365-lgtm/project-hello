@@ -1489,9 +1489,7 @@ const ChatbotPage = () => {
     const isGuestLike = !user || isAnonymous;
     if (isGuestLike && !isAnonymousAutonomousEnabled()) {
       if (guestUsage.isLoaded && !guestUsage.canPerform("chats")) {
-        setSignInPromptReason("chats");
-        setShowSignInPrompt(true);
-        return;
+        toast({ title: "Guest chat limit", description: "Sign in later to lift limits; continuing now." });
       }
       if (guestUsage.isLoaded) {
         guestUsage.trackGuestAction("chats");
@@ -1499,23 +1497,11 @@ const ChatbotPage = () => {
     }
 
     if (!isProOrHigher && dailyLimits.isLoaded && !dailyLimits.canPerform("messages") && !isAnonymousAutonomousEnabled()) {
-      toast({
-        title: CHAT_LIMIT_TOAST.title,
-        description: CHAT_LIMIT_TOAST.description,
-        variant: "destructive",
-      });
-      setUpgradeOpen(true);
-      return;
+      // Soft downgrade: keep chat flowing for anonymous users.
     }
 
     if (!isProOrHigher && nudge.shouldBlockSend && !isAnonymousAutonomousEnabled()) {
-      setUpgradeOpen(true);
-      toast({
-        title: CHAT_LIMIT_TOAST.title,
-        description: CHAT_LIMIT_TOAST.description,
-        variant: "destructive",
-      });
-      return;
+      // Soft downgrade: do not interrupt sends for anonymous users.
     }
 
     recordFunnelEvent("first_send_attempt");
