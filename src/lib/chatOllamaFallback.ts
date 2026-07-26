@@ -17,9 +17,10 @@ export interface OllamaLocalStatus {
 }
 
 export interface OllamaChatRequest {
-  model: string;
-  prompt: string;
+  model?: string;
+  messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>;
   stream?: boolean;
+  prompt?: string;
 }
 
 export interface OllamaChatResponse {

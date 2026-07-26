@@ -152,9 +152,10 @@ async fn ollama_chat(req: OllamaChatRequest) -> Result<OllamaChatResponse, Strin
   let model = if req.model.trim().is_empty() { DEFAULT_MODEL.to_owned() } else { req.model.clone() };
   let client = http_client();
   let url = ollama_url("/api/chat");
+  let messages = req.messages.unwrap_or_else(|| vec![ChatMessage { role: "user".into(), content: req.prompt }]);
   let payload = serde_json::json!({
     "model": model,
-    "prompt": req.prompt,
+    "messages": messages,
     "stream": req.stream.unwrap_or(false),
   });
 
@@ -180,6 +181,12 @@ async fn ollama_chat(req: OllamaChatRequest) -> Result<OllamaChatResponse, Strin
             content: content.to_owned(),
           };
         }
+      }
+      if let Some(done) = parsed.get("done").and_then(|v| v.as_bool()) {
+        result.done = done;
+      }
+      if let Some(m) = parsed.get("model").and_then(|v| v.as_str()) {
+        result.model = m.to_owned();
       }
     }
   }

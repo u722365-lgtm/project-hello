@@ -49,26 +49,39 @@ export async function pullOllamaModel(
 }
 
 export async function runOllamaChat(
-  messages: RouterMessage[],
+  input: {
+    messages?: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>;
+    prompt?: string;
+    model?: string;
+  },
   onToken?: (token: string) => void,
   signal?: AbortSignal,
 ): Promise<{ content: string; ok: boolean; error?: string }> {
   if (!isOllamaInferenceReady()) {
-    return { content: "", ok: false, error: "Ollama is not ready" };
+    return { content: '', ok: false, error: 'Ollama is not ready' };
   }
 
   const api = getDesktopAPI();
   if (!api?.ollamaChat) {
-    return { content: "", ok: false, error: "Desktop Ollama API unavailable" };
+    return { content: '', ok: false, error: 'Desktop Ollama API unavailable' };
   }
 
-  return api.ollamaChat(
+  const messages = [...(input.messages ?? [])];
+  if (messages.length === 0 && input.prompt) {
+    messages.push({ role: 'user', content: input.prompt });
+  }
+  if (messages.length === 0) {
+    return { content: '', ok: false, error: 'No prompt or messages provided' };
+  }
+
+  const result = await api.ollamaChat(
     {
       messages: messages.map((m) => ({ role: m.role, content: m.content })),
       baseUrl: getStoredOllamaUrl(),
-      model: getStoredOllamaModel(),
+      model: input.model ?? getStoredOllamaModel(),
     },
     onToken ?? (() => {}),
     signal,
   );
+  return result;
 }
