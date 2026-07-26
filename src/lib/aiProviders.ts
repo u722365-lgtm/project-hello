@@ -12,6 +12,13 @@ export interface AiProviderOption {
 
 export const AI_PROVIDER_OPTIONS: AiProviderOption[] = [
   {
+    id: "lovable",
+    name: "ShadowTalk Pro (platform)",
+    description: "Built-in ShadowTalk cloud AI or local Sovereign fallback",
+    keyPlaceholder: "",
+    docsUrl: "",
+  },
+  {
     id: "google",
     name: "Google Gemini",
     description: "Gemini models via Google AI Studio",
@@ -78,6 +85,6 @@ export interface AiConfig {
 }
 
 export const DEFAULT_AI_CONFIG: AiConfig = {
-  preferredProvider: null,
+  preferredProvider: "google",
   useCustomKey: false,
 };
