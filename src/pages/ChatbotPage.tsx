@@ -299,8 +299,14 @@ const ChatbotPage = () => {
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [personality, setPersonality] = useState<Personality>("friendly");
   const [chatMode, setChatMode] = useState<ChatMode>("general");
-  const [aiProvider, setAiProvider] = useState<AIProvider>("lovable");
+  const [aiProvider, setAiProvider] = useState<AIProvider>('lovable');
   const { preferences: chatPreferences, isLoading: chatPrefsLoading } = useChatSettings();
+  const hasOllamaDesktop = typeof window !== 'undefined' && (window as any).__TAURI__ && isAnyLocalModelReady();
+  useEffect(() => {
+    if (hasOllamaDesktop) {
+      setAiProvider('shadowtalk');
+    }
+  }, [hasOllamaDesktop]);
   const e2ee = useE2EE();
   const chatPrivate = useChatPrivateMode(e2ee);
   const appliedChatDefaults = useRef(false);
@@ -1276,11 +1282,22 @@ const ChatbotPage = () => {
           detail = rawBody || detail;
         }
         if (status === 402 && needsByok) {
-          setByokDialogOpen(true);
+          saveCustomAiConfig({ ...loadCustomAiConfig(), usePlatformDefault: false, provider: 'shadowtalk', apiKey: '' });
+          setAiProvider('shadowtalk');
           toast({
-            title: "Add your API key to keep chatting",
-            description: "Platform credits are exhausted. Paste your own provider key — takes ~2 minutes and uses your free tier.",
+            title: 'Switching to local AI',
+            description: 'Platform credits are exhausted. Continuing on-device with Ollama/local ShadowTalk.',
           });
+          const offline = await runOfflineCompletion({
+            messages: chatMessages.map((m) => ({ role: m.role, content: typeof m.content === 'string' ? m.content : '' })),
+            personality,
+            isOnline: navigator.onLine,
+            onToken: (token) => pushAssistant(token),
+          });
+          if (offline?.content.trim()) {
+            finalizeAssistant();
+            return assistantContent;
+          }
         }
         throw new Error(detail);
       };
