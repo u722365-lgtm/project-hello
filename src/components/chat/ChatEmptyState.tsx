@@ -55,6 +55,9 @@ export function ChatEmptyState({
       <motion.p variants={staggerItem} className="shadowtalk-chat-tagline text-base sm:text-lg font-semibold tracking-tight">
         <span className="gradient-text">{tenant?.welcomeSubtitle ?? BRAND.tagline}</span>
       </motion.p>
+      <motion.p variants={staggerItem} className="text-xs text-muted-foreground mt-1">
+        Try ShadowTalk — sovereign AI, local-first, and no data stored.
+      </motion.p>
 
       <motion.div
         variants={staggerItem}

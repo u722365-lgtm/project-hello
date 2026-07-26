@@ -21,7 +21,7 @@ describe("firstVisit bounce helpers", () => {
     expect(hasChattedBefore()).toBe(false);
     markHasChatted();
     expect(hasChattedBefore()).toBe(true);
-    expect(shouldSkipLandingForReturnVisitor()).toBe(true);
     expect(localStorage.getItem(HAS_CHATTED_KEY)).toBe("1");
+    expect(shouldSkipLandingForReturnVisitor()).toBe(false);
   });
 });
