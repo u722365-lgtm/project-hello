@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Sparkles, Code2, Search, PenLine, Zap } from "lucide-react";
+import { Sparkles, Code2, Search, PenLine, Zap, Target } from "lucide-react";
 import { ShadowTalkOrb } from "@/components/chat/ShadowTalkOrb";
 import { useSettingsMotion } from "@/hooks/useSettingsMotion";
 import { settingsHapticTick } from "@/lib/settingsFeedback";
@@ -10,12 +10,12 @@ import { useAuth } from "@/components/AuthProvider";
 import { UseCaseQuickLinks } from "@/components/growth/UseCaseQuickLinks";
 
 const DEFAULT_QUICK_PROMPTS = [
-  { label: "Try ShadowTalk", prompt: "What can ShadowTalk AI do for me? Give me a quick 30-second overview.", icon: Sparkles },
-  { label: "Brainstorm ideas", prompt: "Help me brainstorm creative ideas for ", icon: Sparkles },
-  { label: "Write code", prompt: "Write clean, production-ready code for ", icon: Code2 },
-  { label: "Deep research", prompt: "Research and summarize ", icon: Search },
-  { label: "Draft content", prompt: "Draft professional content about ", icon: PenLine },
-  { label: "Quick answer", prompt: "Give me a clear, concise answer about ", icon: Zap },
+  { label: "Plan my day", prompt: "Plan my day around meetings, writing, and deep work.", icon: Target },
+  { label: "Draft an email", prompt: "Draft a short professional email about ", icon: PenLine },
+  { label: "Summarize this topic", prompt: "Summarize the key points about ", icon: Search },
+  { label: "Build a landing page", prompt: "Give me a clean landing page structure for ", icon: Code2 },
+  { label: "Research for me", prompt: "Research the latest on ", icon: Search },
+  { label: "Debug this code", prompt: "Debug this code and explain the fix: ", icon: Code2 },
 ] as const;
 
 interface ChatEmptyStateProps {
