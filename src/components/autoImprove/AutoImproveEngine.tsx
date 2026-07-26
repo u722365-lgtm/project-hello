@@ -5,6 +5,7 @@ import { useAutoImproveContext } from "@/contexts/AutoImproveContext";
 import { maybeFetchDailyInsights } from "@/lib/autoImprove/dailyInsightsClient";
 import { hasAnalyticsConsent } from "@/lib/autoImprove/consent";
 import { isLearningEnabled } from "@/lib/autoImprove/learningConsent";
+import { detectBotLikely } from "@/lib/analyticsBotGuard";
 import { AnimatePresence, motion } from "framer-motion";
 import { Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ export const AutoImproveEngine = () => {
   useEffect(() => {
     if (!isLearningEnabled() || location.pathname === lastPath.current) return;
     lastPath.current = location.pathname;
+    if (detectBotLikely().isBot) return;
     void capturePageView(location.pathname);
   }, [location.pathname, capturePageView]);
 
