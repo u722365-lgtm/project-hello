@@ -449,13 +449,30 @@ const FounderAccessPage = () => {
 
                     <Separator className="bg-[hsl(var(--border))]" />
 
-                    {/* Steps */}
                     <div className="space-y-3">
-                      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">How to Complete</h4>
-                      <div className="space-y-3">
-                        <StepItem number={1} title="Generate payment invoice" description="Creates your invoice and reveals transfer details" />
-                        <StepItem number={2} title="Send payment" description="Transfer using the revealed bank, wallet, or crypto details" />
-                        <StepItem number={3} title="Upload receipt" description="Invoice is emailed, sent to WhatsApp, and your plan activates automatically" />
+                      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Order summary</h4>
+                      <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.35)] p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-semibold text-sm">{selectedProduct.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {selectedProduct.period === 'one-time' ? 'One-time purchase' : `Billed ${selectedProduct.period?.replace('/', '')}`}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-2xl font-bold">{typeof selectedProduct.price === 'number' ? `$${selectedProduct.price}` : selectedProduct.price}</p>
+                          </div>
+                        </div>
+                        <div className="mt-3 rounded-lg border border-[hsl(var(--border)/0.6)] bg-[hsl(var(--card)/0.5)] p-3">
+                          <p className="text-[11px] text-muted-foreground font-medium mb-1">Estimated total</p>
+                          <p className="text-xs text-muted-foreground">
+                            {activePaymentMethod === 'mobile' || activePaymentMethod === 'bank'
+                              ? `Rs ${PKR_MONTHLY[selectedTier as PaidPlanId].toLocaleString()} PKR via ${activePaymentMethod === 'mobile' ? 'mobile wallet' : 'bank transfer'}`
+                              : activePaymentMethod === 'crypto'
+                                ? `$${typeof selectedProduct.price === 'number' ? selectedProduct.price : '20'} USD via USDT`
+                                : `$${typeof selectedProduct.price === 'number' ? selectedProduct.price : '20'} USD via wire`}
+                          </p>
+                        </div>
                       </div>
                     </div>
 
