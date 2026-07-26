@@ -85,6 +85,6 @@ export interface AiConfig {
 }
 
 export const DEFAULT_AI_CONFIG: AiConfig = {
-  preferredProvider: "google",
+  preferredProvider: "lovable",
   useCustomKey: false,
 };
