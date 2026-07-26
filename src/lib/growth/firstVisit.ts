@@ -23,9 +23,9 @@ export function hasChattedBefore(): boolean {
   }
 }
 
-/** Returning anonymous visitors skip marketing and go straight to chat. */
+/** Landing page is shown to all anonymous visitors so they remember value. */
 export function shouldSkipLandingForReturnVisitor(): boolean {
-  return hasChattedBefore();
+  return false;
 }
 
 export function isChatSessionActive(): boolean {
