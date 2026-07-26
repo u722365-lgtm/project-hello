@@ -1355,7 +1355,19 @@ const ChatbotPage = () => {
         });
 
         if (!resp.ok) {
-          await raiseChatHttpError(resp.status, await resp.text().catch(() => ""));
+          const cloudFailed = new Error((await resp.text().catch(() => "")) || "Cloud chat failed");
+          const localCandidates = runOfflineCompletion({
+            messages: chatMessages.map((m) => ({ role: m.role, content: typeof m.content === "string" ? m.content : "" })),
+            personality,
+            isOnline: navigator.onLine,
+            onToken: (token) => pushAssistant(token),
+          });
+          const local = await localCandidates;
+          if (local && local.content.trim()) {
+            finalizeAssistant();
+            return assistantContent;
+          }
+          await raiseChatHttpError(resp.status, cloudFailed.message);
         }
 
         const contentType = resp.headers.get("content-type") || "";
