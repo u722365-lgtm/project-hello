@@ -462,7 +462,7 @@ const FounderAccessPage = () => {
                           </div>
                           <div className="text-right shrink-0">
                             <p className="text-2xl font-bold leading-none">{typeof selectedProduct.price === 'number' ? `$${selectedProduct.price}` : selectedProduct.price}</p>
-                            <p className="text-[11px] text-muted-foreground mt-1">/{selectedProduct.period.replace('/', '') if selectedProduct.period.startsWith('/') else selectedProduct.period}</p>
+                            <p className="text-[11px] text-muted-foreground mt-1">/{selectedProduct.period.startsWith('/') ? selectedProduct.period.replace('/', '') : selectedProduct.period}</p>
                           </div>
                         </div>
                         <div className="mt-3 rounded-lg border border-[hsl(var(--border)/0.6)] bg-[hsl(var(--card)/0.5)] p-3">
