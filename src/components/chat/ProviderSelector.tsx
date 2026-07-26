@@ -117,7 +117,7 @@ export const ProviderSelector = ({
               <Badge variant="secondary" className="text-[10px] bg-primary/10 border-primary/20 text-primary hover:bg-primary/15 font-semibold">
                 Active
               </Badge>
-            ) : p.value !== "lovable" && hasKeyForProvider && !hasKeyForProvider(p.value) ? (
+            ) : (p.value === "lovable" || p.value === "shadowtalk") ? null : hasKeyForProvider && !hasKeyForProvider(p.value) ? (
               <Badge variant="outline" className="text-[10px] border-amber-500/30 text-amber-400/90 font-medium">
                 Add key
               </Badge>

@@ -37,6 +37,7 @@ import {
   DropdownMenuPortal,
 } from "@/components/ui/dropdown-menu";
 import { ProviderSelector, AIProvider } from "./ProviderSelector";
+import { ConnectionStatusIndicator } from "./ConnectionStatusIndicator";
 import { motion } from "framer-motion";
 
 type Personality = "friendly" | "sarcastic" | "professional" | "creative" | "meticulous" | "curious" | "diplomatic" | "witty" | "pragmatic" | "inquisitive" | "spicy";
@@ -368,6 +369,7 @@ export const ChatHeader = ({
           onProviderChange={onProviderChange}
           hasKeyForProvider={hasKeyForProvider}
         />
+        <ConnectionStatusIndicator />
         <div className="hidden sm:block h-4 w-px bg-white/10 mx-1" />
         <BunkerModeToggle />
       </div>
