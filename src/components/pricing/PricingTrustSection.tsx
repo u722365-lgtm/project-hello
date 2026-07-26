@@ -21,7 +21,7 @@ const PricingTrustSection = () => {
           <span className="gradient-text">Premium ($15/mo)</span>
         </p>
         <p className="text-sm text-muted-foreground mb-8">
-          Unlimited messages, Mission Control, and the full agent stack — without the $200 ChatGPT Pro tax.
+          Real payments, real activation. No Stripe required — pay via JazzCash, Easypaisa, bank, or USDT and get activated within 24h.
         </p>
         <div className="flex flex-wrap justify-center gap-3">
           {bullets.map((label, i) => (

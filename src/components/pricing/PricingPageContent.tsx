@@ -20,7 +20,9 @@ const PricingPageContent = () => {
               Pay with JazzCash, Easypaisa, bank, or USDT
             </p>
             <p className="text-sm text-muted-foreground">
-              Stripe isn&apos;t required — submit your receipt on Founder Access and get activated within 24h.
+              <span className="font-semibold text-foreground">Local:</span> JazzCash, Easypaisa, bank transfer, or USDT — exact amounts shown in PKR. 
+            <span className="font-semibold text-foreground">International:</span> card or crypto. 
+            Founder-verified checkout — activated within 24h or money back.
             </p>
           </div>
           <Button asChild className="shrink-0 gap-2">

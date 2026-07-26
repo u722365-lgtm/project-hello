@@ -187,12 +187,10 @@ const HeroSection = () => {
                 variant="outline"
                 size="lg"
                 className="text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 border-border/60 bg-card/40 hover:border-primary/40 hover:bg-card/60 rounded-xl w-full sm:w-auto"
-                onClick={() => {
-                  document.getElementById("features")?.scrollIntoView({ behavior: "smooth" });
-                }}
+                onClick={() => navigate("/pricing")}
               >
                 <Zap className="mr-2 sm:mr-3 h-5 w-5" />
-                Explore features
+                View pricing — from Rs 1,499/mo
               </Button>
             </LandingMagneticButton>
           </motion.div>

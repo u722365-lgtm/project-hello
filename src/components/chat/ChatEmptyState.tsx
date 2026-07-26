@@ -116,6 +116,27 @@ export function ChatEmptyState({
 
       <motion.div
         variants={staggerItem}
+        className="mt-6 flex flex-wrap justify-center gap-2"
+      >
+        {[
+          { label: "Pro — Rs 1,499/mo", href: "/founder-access?plan=pro" },
+          { label: "Premium — Rs 3,999/mo", href: "/founder-access?plan=premium" },
+          { label: "Elite — Rs 5,999/mo", href: "/founder-access?plan=elite" },
+        ].map((cta) => (
+          <motion.a
+            key={cta.label}
+            href={cta.href}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3.5 py-2 text-xs font-semibold text-foreground hover:border-primary/50 hover:bg-primary/15 transition-colors"
+          >
+            {cta.label}
+          </motion.a>
+        ))}
+      </motion.div>
+
+      <motion.div
+        variants={staggerItem}
         className="shadowtalk-chat-input-dock shadowtalk-chat-input-shell shadowtalk-chat-input-shell--empty w-full"
         style={composerDockStyle}
       >
