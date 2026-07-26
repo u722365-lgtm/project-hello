@@ -77,7 +77,7 @@ export function resolveActiveUiProvider(
     if (ui) return ui;
   }
 
-  return "lovable";
+  return "shadowtalk";
 }
 
 export function toCustomAiProviderId(provider: AIProvider): CustomAiProviderId {
@@ -93,7 +93,9 @@ export function buildChatProviderPayload(
   if (uiProvider === "shadowtalk") {
     return { shadowtalkSovereignModel: true };
   }
-  if (uiProvider === "lovable") return {};
+  if (uiProvider === "lovable") {
+    return { shadowtalkSovereignModel: true };
+  }
 
   const serverId = toServerProvider(uiProvider);
   if (

@@ -1,8 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import type { UserIdentity } from "@supabase/supabase-js";
-
-export type AuthProvider = "google" | "apple";
 
 export async function getLinkedIdentities(): Promise<UserIdentity[]> {
   const { data: { user } } = await supabase.auth.getUser();
@@ -23,13 +20,7 @@ export async function linkAuthProvider(provider: AuthProvider): Promise<{ error?
     });
 
     if (error) {
-      const fallback = await lovable.auth.signInWithOAuth(provider, {
-        redirect_uri: `${window.location.origin}/profile?tab=linked`,
-      });
-      if (fallback.error) {
-        return { error: fallback.error.message };
-      }
-      return {};
+      return { error: error.message };
     }
 
     if (data?.url) {

@@ -1,28 +1,43 @@
-export type RemoteAuthProvider = 'google' | 'apple';
+import { supabase } from "@/integrations/supabase/client";
+import type { UserIdentity } from "@supabase/supabase-js";
+
+export type AuthProvider = "google" | "apple";
 
 type SignInOptions = {
   redirect_uri?: string;
   extraParams?: Record<string, string>;
 };
 
-async function getLovableSignInResult(provider: RemoteAuthProvider, opts?: SignInOptions) {
-  const { lovable } = await import('@/integrations/lovable');
-  return lovable.auth.signInWithOAuth(provider, {
-    redirect_uri: opts?.redirect_uri,
-    extraParams: opts?.extraParams,
-  });
-}
-
 export async function signInWithRemoteProvider(provider: RemoteAuthProvider, opts?: SignInOptions) {
-  return getLovableSignInResult(provider, opts);
+  try {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: opts?.redirect_uri,
+        ...opts?.extraParams,
+      },
+    });
+
+    if (error) {
+      return { error: new Error(error.message) };
+    }
+
+    if (typeof window !== "undefined" && data?.url) {
+      window.location.href = data.url;
+    }
+
+    return {};
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Failed to connect" };
+  }
 }
 
 export function isLocalFirst(): boolean {
-  return import.meta.env.VITE_LOCAL_FIRST === 'true';
+  return import.meta.env.VITE_LOCAL_FIRST === "true";
 }
 
 export async function signInWithLocalPreferredProvider() {
-  if (typeof window === 'undefined') return { redirected: true };
+  if (typeof window === "undefined") return { redirected: true };
   const desktop = (window as any).shadowtalkDesktop as
     | { preferredLogin?: () => Promise<{ redirected: boolean; error?: Error }> }
     | undefined;
@@ -30,11 +45,10 @@ export async function signInWithLocalPreferredProvider() {
     return desktop.preferredLogin();
   }
 
-
   return {
     redirected: true,
     error: new Error(
-      'Local-first preferred login is not available in this context. Provide a `shadowtalkDesktop.preferredLogin` handler, or disable local-first mode.',
+      "Local-first preferred login is not available in this context. Provide a `shadowtalkDesktop.preferredLogin` handler, or disable local-first mode.",
     ),
   };
 }
