@@ -132,15 +132,40 @@ const FounderAccessPage = () => {
               <span className="text-sm font-medium text-muted-foreground">Secure Checkout</span>
             </motion.div>
             <h1 className="text-4xl md:text-5xl font-bold mb-3 tracking-tight">
-              Founder's <span className="gradient-text">Vault</span>
+              Checkout
             </h1>
             <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-              Pakistan: JazzCash / Easypaisa / bank. International: card or USDT. Founder-verified checkout — activated within 24h.
+              You will not be charged until your payment is verified. Choose a plan, pay with your preferred method, and upload proof — activation is sent by WhatsApp and email.
             </p>
           </motion.div>
 
           <motion.div variants={itemVariants} className="mb-8">
             <PaymentGuaranteeBar />
+          </motion.div>
+
+          <motion.div
+            variants={itemVariants}
+            className="mb-8 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card)/0.6)] p-4 sm:p-5"
+          >
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">How verification works</p>
+            <ol className="grid sm:grid-cols-4 gap-3 text-xs text-muted-foreground">
+              <li className="rounded-lg bg-[hsl(var(--muted)/0.35)] p-3">
+                <span className="block font-semibold text-foreground mb-1">1. Generate invoice</span>
+                Reveal exact transfer details and a unique payment reference.
+              </li>
+              <li className="rounded-lg bg-[hsl(var(--muted)/0.35)] p-3">
+                <span className="block font-semibold text-foreground mb-1">2. Send payment</span>
+                Use the exact amount via JazzCash, Easypaisa, bank, USDT, or Wise.
+              </li>
+              <li className="rounded-lg bg-[hsl(var(--muted)/0.35)] p-3">
+                <span className="block font-semibold text-foreground mb-1">3. Upload receipt</span>
+                Attach receipt screenshot with your reference.
+              </li>
+              <li className="rounded-lg bg-[hsl(var(--muted)/0.35)] p-3">
+                <span className="block font-semibold text-foreground mb-1">4. Activate</span>
+                Verified within 24h. If not, message us for a full refund within 7 days.
+              </li>
+            </ol>
           </motion.div>
 
           {/* Main Layout */}
