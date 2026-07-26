@@ -120,9 +120,9 @@ export function PaymentReceiptForm({
   return (
     <div className="space-y-4 rounded-xl border border-primary/20 bg-card/60 p-4">
       <div>
-        <h4 className="font-semibold text-sm">Detailed submission (optional)</h4>
+        <h4 className="font-semibold text-sm">Confirm payment</h4>
         <p className="text-xs text-muted-foreground mt-1">
-          Add transaction ID, phone, or notes if your bank or wallet requires extra details for verification.
+          If your payment is not verified within 24h, message us on WhatsApp for a full refund within 7 days.
         </p>
       </div>
 
@@ -184,7 +184,7 @@ export function PaymentReceiptForm({
 
       <Button className="w-full" onClick={() => void onSubmit()} disabled={submitting}>
         {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-        Submit receipt screenshot
+        Confirm & submit receipt
       </Button>
     </div>
   );

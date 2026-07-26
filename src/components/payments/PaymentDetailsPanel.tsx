@@ -145,7 +145,7 @@ export function PaymentDetailsPanel({
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         {paymentMethods.map((method) => {
           const Icon = method.icon;
           const isActive = activePaymentMethod === method.id;
@@ -154,17 +154,17 @@ export function PaymentDetailsPanel({
               key={method.id}
               type="button"
               onClick={() => onPaymentMethodChange(method.id)}
-              className={`rounded-xl p-3 text-left border-2 transition-all ${
+              className={`rounded-xl p-3 text-left border transition-all ${
                 isActive
-                  ? "border-primary bg-[hsl(var(--primary)/0.08)]"
-                  : "border-[hsl(var(--border))] hover:border-[hsl(var(--primary)/0.3)]"
+                  ? "border-primary bg-primary/10 shadow-sm ring-1 ring-primary/40"
+                  : "border-[hsl(var(--border))] hover:border-primary/30"
               }`}
             >
               <div className="flex items-center gap-2 mb-1">
                 <Icon className={`w-4 h-4 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
                 <span className="text-sm font-medium">{method.name}</span>
               </div>
-              <p className="text-[10px] text-muted-foreground">{method.desc}</p>
+              <p className="text-[10px] text-muted-foreground leading-snug">{method.desc}</p>
               <Badge variant="outline" className="mt-2 text-[9px]">{method.badge}</Badge>
             </button>
           );
