@@ -190,7 +190,10 @@ Product context: ShadowTalk AI offers Free, Pro ($19/mo), Premium ($49/mo), and 
 
   const moodBorderClass = MOOD_COLORS[detectedMood] || MOOD_COLORS.neutral;
   const typeInfo = currentMessage ? getTypeBadge(currentMessage.type) : null;
-  const showOptInPrompt = loaded && !optedIn && !promptDismissed;
+  // Never float the opt-in card over the chat composer — it covers the send button.
+  const onChatSurface =
+    typeof window !== "undefined" && /^\/(chatbot|chat)/.test(window.location.pathname);
+  const showOptInPrompt = loaded && !optedIn && !promptDismissed && !onChatSurface;
 
   if (!isOpen) {
     return (
