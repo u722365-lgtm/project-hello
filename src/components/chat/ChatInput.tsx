@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Send, Mic, MicOff, Square, Plus, Sparkles, Volume2 } from "lucide-react";
+import { Send, Mic, MicOff, Square, Plus, Sparkles, Volume2, CornerDownLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { FileUpload } from "@/components/chat/FileUpload";
@@ -14,6 +14,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { getChatEnterToSend } from "@/lib/profilePreferences";
+import { usePromptAutocomplete } from "@/hooks/usePromptAutocomplete";
+
 
 interface ChatInputProps {
   message: string;
