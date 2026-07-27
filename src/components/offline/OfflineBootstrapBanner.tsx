@@ -78,16 +78,7 @@ export function OfflineBootstrapBanner() {
           </div>
         )}
 
-        {phase === "downloading" && (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <Wifi className="h-4 w-4 text-primary animate-pulse" />
-              Installing offline AI…
-            </div>
-            <Progress value={Math.round(progress * 100)} className="h-2" />
-            <p className="text-[11px] text-muted-foreground truncate">{statusText}</p>
-          </div>
-        )}
+
 
         {phase === "error" && (
           <div className="flex items-center justify-between gap-3">
