@@ -113,7 +113,6 @@ export const ChatInput = ({
     onKeyPress(e);
   };
 
-  const suggestionHint = null;
 
 
 
@@ -173,7 +172,6 @@ export const ChatInput = ({
             </div>
           )}
 
-          {suggestionHint}
 
           <div className="shadowtalk-composer group">
             {!selectedFile && (
@@ -311,7 +309,6 @@ export const ChatInput = ({
           </div>
         )}
 
-        {suggestionHint}
 
         <div className="relative group">
           {!isComposer && !isShadowPulse && (
