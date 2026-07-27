@@ -24,6 +24,24 @@ export function OfflineBootstrapBanner() {
   if (silentInstall && phase !== "downloading" && phase !== "error") return null;
   if (phase === "idle" || phase === "ready" || phase === "skipped") return null;
 
+  // Unobtrusive chip while the model downloads — never blocks the composer.
+  if (phase === "downloading") {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 4 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 4 }}
+        title={statusText}
+        className="fixed bottom-3 right-3 z-40 pointer-events-none inline-flex items-center gap-2 rounded-full border border-primary/20 bg-background/70 backdrop-blur-md px-3 py-1.5 shadow-sm"
+      >
+        <Wifi className="h-3 w-3 text-primary animate-pulse shrink-0" />
+        <span className="text-[11px] text-muted-foreground">
+          Offline AI {Math.round(progress * 100)}%
+        </span>
+      </motion.div>
+    );
+  }
+
   return (
     <AnimatePresence>
       <motion.div
@@ -60,16 +78,7 @@ export function OfflineBootstrapBanner() {
           </div>
         )}
 
-        {phase === "downloading" && (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <Wifi className="h-4 w-4 text-primary animate-pulse" />
-              Installing offline AI…
-            </div>
-            <Progress value={Math.round(progress * 100)} className="h-2" />
-            <p className="text-[11px] text-muted-foreground truncate">{statusText}</p>
-          </div>
-        )}
+
 
         {phase === "error" && (
           <div className="flex items-center justify-between gap-3">

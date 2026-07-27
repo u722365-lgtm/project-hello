@@ -40,6 +40,7 @@ const FounderAccessPage = () => {
   const [invoiceDraftId, setInvoiceDraftId] = useState<string | null>(null);
   const [step, setStep] = useState<CheckoutStep>("plan");
   const [submitted, setSubmitted] = useState(false);
+  const [amount, setAmount] = useState("");
   const [txRef, setTxRef] = useState("");
   const [phone, setPhone] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -162,7 +163,7 @@ const FounderAccessPage = () => {
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                       {SUBSCRIPTION_TIERS.filter(t => t.id !== "free").map((tier) => {
                         const isSelected = selectedTier === tier.id;
-                        const icon = tier.id === "pro" ? Star : tier.id === "premium" ? Rocket : Crown;
+                        const Icon = tier.id === "pro" ? Star : tier.id === "premium" ? Rocket : Crown;
                         return (
                           <button
                             key={tier.id}
@@ -172,7 +173,7 @@ const FounderAccessPage = () => {
                           >
                             <div className="flex items-center gap-2 mb-2">
                               <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${isSelected ? "bg-primary text-primary-foreground" : "bg-[hsl(var(--muted))]"}`}>
-                                <icon className="h-4 w-4" />
+                                <Icon className="h-4 w-4" />
                               </div>
                               <div>
                                 <p className="font-semibold text-sm">{tier.name}</p>
