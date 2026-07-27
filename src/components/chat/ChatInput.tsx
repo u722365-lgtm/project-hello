@@ -74,14 +74,58 @@ export const ChatInput = ({
     return () => window.clearTimeout(t);
   }, []);
 
+  const { completion, suggestion, dismiss, clear } = usePromptAutocomplete(
+    message,
+    !isLoading && !isListening,
+  );
+
+  const acceptSuggestion = () => {
+    if (!suggestion) return;
+    onMessageChange(suggestion);
+    clear();
+    textareaRef.current?.focus();
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Tab" && completion) {
+      e.preventDefault();
+      acceptSuggestion();
+      return;
+    }
+    if (e.key === "Escape" && completion) {
+      e.preventDefault();
+      dismiss();
+      return;
+    }
     if (e.key === "Enter" && !e.shiftKey && getChatEnterToSend()) {
       e.preventDefault();
+      clear();
       onSend();
       return;
     }
     onKeyPress(e);
   };
+
+  const suggestionHint = completion ? (
+    <div className="px-3 pb-1.5">
+      <button
+        type="button"
+        onClick={acceptSuggestion}
+        className="group/sug flex w-full items-center gap-2 rounded-xl border border-primary/20 bg-primary/5 px-3 py-1.5 text-left transition-colors hover:bg-primary/10"
+      >
+        <Sparkles className="h-3 w-3 shrink-0 text-primary/70" />
+        <span className="min-w-0 flex-1 truncate text-[12px] text-muted-foreground">
+          <span className="text-foreground/80">{message}</span>
+          <span className="text-muted-foreground/60">{completion}</span>
+        </span>
+        <span className="hidden shrink-0 items-center gap-1 rounded-md border border-border/60 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground sm:inline-flex">
+          <CornerDownLeft className="h-2.5 w-2.5" />
+          Tab
+        </span>
+      </button>
+    </div>
+  ) : null;
+
 
 
   const isShadowPulse = layout === "shadow-pulse";
