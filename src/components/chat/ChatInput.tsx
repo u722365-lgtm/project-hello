@@ -16,6 +16,7 @@ import {
 import { getChatEnterToSend } from "@/lib/profilePreferences";
 import { usePromptAutocomplete } from "@/hooks/usePromptAutocomplete";
 import { rememberPrompt } from "@/lib/chat/promptAutocomplete";
+import { GhostTextOverlay } from "@/components/chat/GhostTextOverlay";
 
 
 interface ChatInputProps {
@@ -112,25 +113,6 @@ export const ChatInput = ({
     onKeyPress(e);
   };
 
-  const suggestionHint = completion ? (
-    <div className="px-3 pb-1.5">
-      <button
-        type="button"
-        onClick={acceptSuggestion}
-        className="group/sug flex w-full items-center gap-2 rounded-xl border border-primary/20 bg-primary/5 px-3 py-1.5 text-left transition-colors hover:bg-primary/10"
-      >
-        <Sparkles className="h-3 w-3 shrink-0 text-primary/70" />
-        <span className="min-w-0 flex-1 truncate text-[12px] text-muted-foreground">
-          <span className="text-foreground/80">{message}</span>
-          <span className="text-muted-foreground/60">{completion}</span>
-        </span>
-        <span className="hidden shrink-0 items-center gap-1 rounded-md border border-border/60 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground sm:inline-flex">
-          <CornerDownLeft className="h-2.5 w-2.5" />
-          Tab
-        </span>
-      </button>
-    </div>
-  ) : null;
 
 
 
@@ -190,7 +172,6 @@ export const ChatInput = ({
             </div>
           )}
 
-          {suggestionHint}
 
           <div className="shadowtalk-composer group">
             {!selectedFile && (
@@ -203,17 +184,24 @@ export const ChatInput = ({
               />
             )}
 
-            <Textarea
-              ref={textareaRef}
-              value={message}
-              onChange={(e) => onMessageChange(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={isListening ? "Listening..." : "Ask ShadowTalk"}
-              className="shadowtalk-composer__textarea flex-1 min-h-[40px] max-h-[200px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 py-2.5 pl-2 pr-2 text-base sm:text-[15px] placeholder:text-muted-foreground/50 leading-relaxed overflow-y-auto custom-scrollbar"
-              disabled={isLoading}
-              rows={1}
-              aria-label="Chat message"
-            />
+            <div className="relative flex-1 min-w-0">
+              <GhostTextOverlay
+                value={message}
+                completion={completion}
+                className={"shadowtalk-composer__textarea min-h-[40px] max-h-[200px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 py-2.5 pl-2 pr-2 text-base sm:text-[15px] leading-relaxed"}
+              />
+              <Textarea
+                ref={textareaRef}
+                value={message}
+                onChange={(e) => onMessageChange(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={isListening ? "Listening..." : "Ask ShadowTalk"}
+                className={"shadowtalk-composer__textarea min-h-[40px] max-h-[200px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 py-2.5 pl-2 pr-2 text-base sm:text-[15px] leading-relaxed" + " relative w-full placeholder:text-muted-foreground/50 overflow-y-auto custom-scrollbar"}
+                disabled={isLoading}
+                rows={1}
+                aria-label="Chat message"
+              />
+            </div>
 
 
             <div className="shadowtalk-composer__actions">
@@ -321,7 +309,6 @@ export const ChatInput = ({
           </div>
         )}
 
-        {suggestionHint}
 
         <div className="relative group">
           {!isComposer && !isShadowPulse && (
@@ -347,30 +334,36 @@ export const ChatInput = ({
               />
             </div>
 
-            <Textarea
-              ref={textareaRef}
-              value={message}
-              onChange={(e) => onMessageChange(e.target.value)}
-              onKeyDown={handleKeyDown}
-              aria-label="Chat message"
-
-              placeholder={
-                isListening
-                  ? "Listening..."
-                  : isShadowPulse
-                    ? "Ask anything..."
-                    : isComposer
-                      ? "Ask ShadowTalk"
-                      : "Type, talk, or share..."
-              }
-              className={
-                isComposer
-                  ? "flex-1 min-h-[44px] max-h-[200px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 py-3 px-1 text-base sm:text-[15px] placeholder:text-muted-foreground/50 leading-relaxed overflow-y-auto custom-scrollbar"
-                  : "flex-1 min-h-[46px] max-h-[220px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 py-3.5 px-2 text-base sm:text-[15.5px] placeholder:text-muted-foreground/30 leading-relaxed overflow-y-auto custom-scrollbar"
-              }
-              disabled={isLoading}
-              rows={1}
-            />
+            <div className="relative flex-1 min-w-0">
+              <GhostTextOverlay
+                value={message}
+                completion={completion}
+                className={(isComposer
+                  ? "min-h-[44px] max-h-[200px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 py-3 px-1 text-base sm:text-[15px] leading-relaxed"
+                  : "min-h-[46px] max-h-[220px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 py-3.5 px-2 text-base sm:text-[15.5px] leading-relaxed")}
+              />
+              <Textarea
+                ref={textareaRef}
+                value={message}
+                onChange={(e) => onMessageChange(e.target.value)}
+                onKeyDown={handleKeyDown}
+                aria-label="Chat message"
+                placeholder={
+                  isListening
+                    ? "Listening..."
+                    : isShadowPulse
+                      ? "Ask anything..."
+                      : isComposer
+                        ? "Ask ShadowTalk"
+                        : "Type, talk, or share..."
+                }
+                className={(isComposer
+                  ? "min-h-[44px] max-h-[200px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 py-3 px-1 text-base sm:text-[15px] leading-relaxed"
+                  : "min-h-[46px] max-h-[220px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 py-3.5 px-2 text-base sm:text-[15.5px] leading-relaxed") + " relative w-full placeholder:text-muted-foreground/40 overflow-y-auto custom-scrollbar"}
+                disabled={isLoading}
+                rows={1}
+              />
+            </div>
 
             <div className={`flex items-center gap-0.5 shrink-0 ${isComposer ? "" : "pb-1"}`}>
               {isComposer && onProviderChange && (
