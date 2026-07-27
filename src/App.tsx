@@ -110,6 +110,10 @@ const PartnershipsPage = lazy(() => import("./pages/PartnershipsPage"));
   const WorkspaceHubPage = lazy(() => import("./pages/WorkspaceHubPage"));
   const ResearchHubPage = lazy(() => import("./pages/ResearchHubPage"));
   const InsightsHubPage = lazy(() => import("./pages/InsightsHubPage"));
+  const MemoryPage = lazy(() => import("./pages/MemoryPage"));
+  const ShadowMemoryPage = lazy(() => import("./pages/ShadowMemoryPage"));
+  const BusinessMemoryPage = lazy(() => import("./pages/BusinessMemoryPage"));
+  const MemoryDashboard = lazy(() => import("@/components/memory/MemoryDashboard"));
   const SecurityHubPage = lazy(() => import("./pages/SecurityHubPage"));
    const MissionControlPage = lazy(() => import("./pages/MissionControlPage"));
  const ExecutePage = lazy(() => import("./pages/ExecutePage"));
@@ -203,6 +207,7 @@ const AnimatedRoutes = () => {
           <Route path="/analytics" element={<Navigate to="/insights?tab=usage" replace />} />
           <Route path="/data-insights" element={<Navigate to="/insights?tab=behavior" replace />} />
           <Route path="/shadow-memory" element={<Navigate to="/insights?tab=activity" replace />} />
+          <Route path="/memory" element={<PageTransition><MemoryPage /></PageTransition>} />
           <Route path="/enterprise" element={<PageTransition><EnterpriseSettingsPage /></PageTransition>} />
           <Route path="/about" element={<PageTransition><AboutPage /></PageTransition>} />
           <Route path="/team" element={<PageTransition><TeamPage /></PageTransition>} />
