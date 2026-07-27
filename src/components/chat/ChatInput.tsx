@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Send, Mic, MicOff, Square, Plus, Sparkles, Volume2 } from "lucide-react";
+import { Send, Mic, MicOff, Square, Plus, Sparkles, Volume2, CornerDownLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { FileUpload } from "@/components/chat/FileUpload";
@@ -14,6 +14,9 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { getChatEnterToSend } from "@/lib/profilePreferences";
+import { usePromptAutocomplete } from "@/hooks/usePromptAutocomplete";
+import { rememberPrompt } from "@/lib/chat/promptAutocomplete";
+
 
 interface ChatInputProps {
   message: string;
@@ -72,14 +75,63 @@ export const ChatInput = ({
     return () => window.clearTimeout(t);
   }, []);
 
+  const { completion, suggestion, dismiss, clear } = usePromptAutocomplete(
+    message,
+    !isLoading && !isListening,
+  );
+
+  const handleSend = () => {
+    if (message.trim()) rememberPrompt(message);
+    clear();
+    onSend();
+  };
+
+  const acceptSuggestion = () => {
+    if (!suggestion) return;
+    onMessageChange(suggestion);
+    clear();
+    textareaRef.current?.focus();
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Tab" && completion) {
+      e.preventDefault();
+      acceptSuggestion();
+      return;
+    }
+    if (e.key === "Escape" && completion) {
+      e.preventDefault();
+      dismiss();
+      return;
+    }
     if (e.key === "Enter" && !e.shiftKey && getChatEnterToSend()) {
       e.preventDefault();
-      onSend();
+      handleSend();
       return;
     }
     onKeyPress(e);
   };
+
+  const suggestionHint = completion ? (
+    <div className="px-3 pb-1.5">
+      <button
+        type="button"
+        onClick={acceptSuggestion}
+        className="group/sug flex w-full items-center gap-2 rounded-xl border border-primary/20 bg-primary/5 px-3 py-1.5 text-left transition-colors hover:bg-primary/10"
+      >
+        <Sparkles className="h-3 w-3 shrink-0 text-primary/70" />
+        <span className="min-w-0 flex-1 truncate text-[12px] text-muted-foreground">
+          <span className="text-foreground/80">{message}</span>
+          <span className="text-muted-foreground/60">{completion}</span>
+        </span>
+        <span className="hidden shrink-0 items-center gap-1 rounded-md border border-border/60 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground sm:inline-flex">
+          <CornerDownLeft className="h-2.5 w-2.5" />
+          Tab
+        </span>
+      </button>
+    </div>
+  ) : null;
+
 
 
   const isShadowPulse = layout === "shadow-pulse";
@@ -137,6 +189,8 @@ export const ChatInput = ({
               />
             </div>
           )}
+
+          {suggestionHint}
 
           <div className="shadowtalk-composer group">
             {!selectedFile && (
@@ -206,7 +260,7 @@ export const ChatInput = ({
               </TooltipProvider>
 
               <Button
-                onClick={onSend}
+                onClick={handleSend}
                 size="icon"
                 type="button"
                 className="shadowtalk-composer__send"
@@ -266,6 +320,8 @@ export const ChatInput = ({
             </div>
           </div>
         )}
+
+        {suggestionHint}
 
         <div className="relative group">
           {!isComposer && !isShadowPulse && (
@@ -365,7 +421,7 @@ export const ChatInput = ({
                 (message.trim() || selectedFile) &&
                 !isLoading && (
                   <Button
-                    onClick={onSend}
+                    onClick={handleSend}
                     size="icon"
                     className="h-9 w-9 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-all disabled:opacity-40"
                     disabled={!message.trim() && !selectedFile}
@@ -383,7 +439,7 @@ export const ChatInput = ({
                 </Button>
               ) : (
                 <Button
-                  onClick={onSend}
+                  onClick={handleSend}
                   size="icon"
                   className="h-9 w-9 rounded-full bg-white text-black hover:bg-white/90 shadow-lg transition-all duration-300 disabled:opacity-10 disabled:bg-white/5 disabled:text-white/20 hover:scale-105 active:scale-95"
                   disabled={!message.trim() && !selectedFile}
