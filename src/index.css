@@ -735,11 +735,39 @@
     max-width: calc(100% - 3.5rem);
   }
 
+  /* Long prompts: pill grows into a rounded box, controls pin to the bottom row */
+  .shadowtalk-composer--multiline {
+    align-items: flex-end;
+    border-radius: 1.5rem;
+  }
+
+  .shadowtalk-composer--multiline .shadowtalk-composer__actions {
+    top: auto;
+    bottom: 0.375rem;
+    transform: none;
+  }
+
+  @media (min-width: 475px) {
+    .shadowtalk-composer--multiline .shadowtalk-composer__textarea {
+      padding-right: 0.5rem !important;
+      padding-bottom: 2.5rem;
+    }
+  }
+
+
+
+  .shadowtalk-composer--multiline .shadowtalk-composer__attach,
+  .shadowtalk-composer--multiline .shadowtalk-composer__attach-wrap {
+    align-self: flex-end;
+    margin-bottom: 0.125rem;
+  }
+
+
   .shadowtalk-composer::before {
     content: "";
     position: absolute;
     inset: -1px;
-    border-radius: 9999px;
+    border-radius: inherit;
     padding: 1px;
     background: linear-gradient(135deg, rgb(34 211 238 / 0), rgb(99 102 241 / 0));
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
