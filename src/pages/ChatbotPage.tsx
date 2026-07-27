@@ -1045,6 +1045,11 @@ const ChatbotPage = () => {
         lastUser,
       );
 
+      const userMemoryContext = await buildMemoryContextForUser(user);
+      if (userMemoryContext) {
+        augmented = [{ role: "system", content: userMemoryContext }, ...augmented];
+      }
+
       if (aiProvider === "shadowtalk" && sovereignModel.enabled && lastUser) {
         const learned = await sovereignModel.getLearnedSystemPrompt(lastUser);
         if (learned) {

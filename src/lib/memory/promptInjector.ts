@@ -30,3 +30,31 @@ export function buildMemoryContext(memories: MemoryInput[] = []): string {
   if (!lines.length) return "";
   return `ACTIVE USER MEMORY:\n${lines.join("\n")}`;
 }
+
+let memoryEnabledGlobal = true;
+export function setMemoryEnabledGlobal(value: boolean) {
+  memoryEnabledGlobal = value;
+}
+export function isMemoryEnabledGlobal() {
+  return memoryEnabledGlobal;
+}
+
+export async function buildMemoryContextForUser(
+  user: { id?: string } | null,
+): Promise<string> {
+  if (!isMemoryEnabledGlobal()) return "";
+  if (!user?.id) return "";
+  try {
+    const memories = await getActiveMemories(user);
+    return buildMemoryContext(
+      memories.map((m) => ({
+        category: m.category,
+        key: m.key,
+        value: m.value,
+        confidence: m.confidence,
+      })),
+    );
+  } catch {
+    return "";
+  }
+}
