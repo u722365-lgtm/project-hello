@@ -1294,7 +1294,7 @@ const ChatbotPage = () => {
             description: 'Platform credits are exhausted. Continuing on-device with Ollama/local ShadowTalk.',
           });
           const offline = await runOfflineCompletion({
-            messages: chatMessages.map((m) => ({ role: m.role as "user" | "assistant" | "system", content: typeof m.content === 'string' ? m.content : '' })),
+            messages: chatMessages.map((m) => ({ role: m.role, content: typeof m.content === 'string' ? m.content : '' })),
             personality,
             isOnline: navigator.onLine,
             onToken: (token) => pushAssistant(token),
@@ -1379,7 +1379,7 @@ const ChatbotPage = () => {
         if (!resp.ok) {
           const cloudFailed = new Error((await resp.text().catch(() => "")) || "Cloud chat failed");
           const localCandidates = runOfflineCompletion({
-            messages: chatMessages.map((m) => ({ role: m.role as "user" | "assistant" | "system", content: typeof m.content === "string" ? m.content : "" })),
+            messages: chatMessages.map((m) => ({ role: m.role, content: typeof m.content === "string" ? m.content : "" })),
             personality,
             isOnline: navigator.onLine,
             onToken: (token) => pushAssistant(token),
@@ -2225,6 +2225,7 @@ const ChatbotPage = () => {
     }
   };
 
+  const [promptSuggestion, setPromptSuggestion] = useState("");
   const chatInputProps = {
     message,
     onMessageChange: setMessage,
@@ -2244,6 +2245,9 @@ const ChatbotPage = () => {
     aiProvider,
     onProviderChange: handleProviderChange,
     hasKeyForProvider,
+    promptSuggestion,
+    onPromptAccept: setMessage,
+    onPromptClear: () => setPromptSuggestion(""),
   };
 
   if (enterprise.needsWorkEmailSignIn) {

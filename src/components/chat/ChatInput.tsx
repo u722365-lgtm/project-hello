@@ -1,5 +1,5 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Send, Mic, MicOff, Square, Plus, Sparkles, Volume2, CornerDownLeft } from "lucide-react";
+import { useEffect, useRef, useMemo } from "react";
+import { Send, Mic, MicOff, Square, Plus, Sparkles, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { FileUpload } from "@/components/chat/FileUpload";
@@ -15,9 +15,8 @@ import {
 } from "@/components/ui/tooltip";
 import { getChatEnterToSend } from "@/lib/profilePreferences";
 import { usePromptAutocomplete } from "@/hooks/usePromptAutocomplete";
-import { rememberPrompt } from "@/lib/chat/promptAutocomplete";
-import { GhostTextOverlay } from "@/components/chat/GhostTextOverlay";
-
+import { buildInAppSharePayload, getViralShareLinks } from "@/lib/viralShare";
+import { ViralShareButton } from "@/components/chat/ViralShareButton";
 
 interface ChatInputProps {
   message: string;
@@ -40,6 +39,10 @@ interface ChatInputProps {
   onProviderChange?: (provider: AIProvider) => void;
   hasKeyForProvider?: (provider: AIProvider) => boolean;
   isEmptyState?: boolean;
+  promptSuggestion?: string;
+  onPromptAccept?: (value: string) => void;
+  onPromptClear?: () => void;
+  onSuggestionChange?: (suggestion: string) => void;
 }
 
 export const ChatInput = ({
@@ -63,23 +66,11 @@ export const ChatInput = ({
   onProviderChange,
   hasKeyForProvider,
   isEmptyState = false,
+  promptSuggestion,
+  onPromptAccept,
+  onPromptClear,
 }: ChatInputProps) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [isMultiline, setIsMultiline] = useState(false);
-
-  // Auto-grow the composer with the typed text (capped), so long prompts stay readable
-  // instead of scrolling inside a one-line pill.
-  useLayoutEffect(() => {
-    const el = textareaRef.current;
-    if (!el) return;
-    const max = window.innerWidth < 640 ? 104 : 200;
-    el.style.height = "auto";
-    const next = Math.min(el.scrollHeight, max);
-    el.style.height = `${next}px`;
-    el.style.overflowY = el.scrollHeight > max ? "auto" : "hidden";
-    const line = parseFloat(getComputedStyle(el).lineHeight || "22") || 22;
-    setIsMultiline(el.scrollHeight > line * 1.8);
-  }, [message]);
 
   // Auto-focus the composer on mount so users can start typing immediately.
   // Skip on touch devices so the mobile keyboard doesn't pop up unprompted.
@@ -91,49 +82,48 @@ export const ChatInput = ({
     return () => window.clearTimeout(t);
   }, []);
 
-  const { completion, suggestion, dismiss, clear } = usePromptAutocomplete(
-    message,
-    !isLoading && !isListening,
-  );
-
-  const handleSend = () => {
-    if (message.trim()) rememberPrompt(message);
-    clear();
-    onSend();
-  };
-
-  const acceptSuggestion = () => {
-    if (!suggestion) return;
-    onMessageChange(suggestion);
-    clear();
-    textareaRef.current?.focus();
-  };
-
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Tab" && completion) {
+    if (e.key === "Tab" && promptSuggestion) {
       e.preventDefault();
-      acceptSuggestion();
-      return;
-    }
-    if (e.key === "Escape" && completion) {
-      e.preventDefault();
-      dismiss();
+      if (e.shiftKey || !message) {
+        onPromptClear?.();
+        return;
+      }
+      const next = `${message}${promptSuggestion}`;
+      onMessageChange(next);
+      onPromptAccept?.(next);
+      onPromptClear?.();
       return;
     }
     if (e.key === "Enter" && !e.shiftKey && getChatEnterToSend()) {
       e.preventDefault();
-      handleSend();
+      onSend();
       return;
     }
     onKeyPress(e);
   };
 
-
-
-
   const isShadowPulse = layout === "shadow-pulse";
   const isComposer = layout === "composer" || layout === "gemini" || isShadowPulse;
   const canSend = Boolean(message.trim() || selectedFile);
+
+  const hasComposerGhost = useMemo(
+    () => Boolean(isComposer && !isShadowPulse && promptSuggestion),
+    [isComposer, isShadowPulse, promptSuggestion],
+  );
+
+  // Local hook result: renders its own visual in its own lifecycle; we only use
+  // its generated value by exposing it upward so the parent can own the source of truth.
+  const acceptLocal = usePromptAutocomplete(
+    message,
+    (value: string) => void onPromptAccept?.(value),
+    { composerEnabled: isComposer && !isShadowPulse, localOnly: true, maxSuggestionChars: 140 },
+  );
+
+  useEffect(() => {
+    if (!onSuggestionChange) return;
+    onSuggestionChange(acceptLocal.suggestion);
+  }, [acceptLocal.suggestion, onSuggestionChange]);
 
   const voiceBanner = (
     <AnimatePresence>
@@ -187,8 +177,7 @@ export const ChatInput = ({
             </div>
           )}
 
-
-          <div className={`shadowtalk-composer group${isMultiline ? " shadowtalk-composer--multiline" : ""}`}>
+          <div className="shadowtalk-composer group">
             {!selectedFile && (
               <FileUpload
                 onFileSelect={onFileSelect}
@@ -199,25 +188,31 @@ export const ChatInput = ({
               />
             )}
 
-            <div className="shadowtalk-composer__textarea relative flex-1 min-w-0">
-              <GhostTextOverlay
-                value={message}
-                completion={completion}
-                className={"min-h-[40px] max-h-[200px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 py-2.5 pl-2 pr-2 text-base sm:text-[15px] leading-relaxed"}
-              />
+            <div className="relative">
               <Textarea
                 ref={textareaRef}
                 value={message}
                 onChange={(e) => onMessageChange(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={isListening ? "Listening..." : "Ask ShadowTalk"}
-                className={"min-h-[40px] max-h-[200px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 py-2.5 pl-2 pr-2 text-base sm:text-[15px] leading-relaxed" + " relative w-full placeholder:text-muted-foreground/50 overflow-y-auto custom-scrollbar"}
+                className="shadowtalk-composer__textarea flex-1 min-h-[40px] max-h-[200px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 py-2.5 pl-2 pr-2 text-base sm:text-[15px] placeholder:text-muted-foreground/50 leading-relaxed overflow-y-auto custom-scrollbar"
                 disabled={isLoading}
                 rows={1}
                 aria-label="Chat message"
               />
-            </div>
 
+              {hasComposerGhost ? (
+                <div
+                  className="pointer-events-none absolute inset-0 flex items-center px-2 overflow-hidden select-none"
+                  aria-hidden
+                >
+                  <span className="whitespace-pre text-base sm:text-[15px] leading-relaxed text-muted-foreground/40">
+                    {message}
+                    <span className="text-muted-foreground/30">{promptSuggestion}</span>
+                  </span>
+                </div>
+              ) : null}
+            </div>
 
             <div className="shadowtalk-composer__actions">
               {onProviderChange && (
@@ -263,15 +258,15 @@ export const ChatInput = ({
               </TooltipProvider>
 
               <Button
-                onClick={handleSend}
+                onClick={onSend}
                 size="icon"
-                type="button"
                 className="shadowtalk-composer__send"
                 disabled={!canSend || isLoading}
                 aria-label="Send message"
               >
                 <Send className="h-4 w-4" />
               </Button>
+              <ViralShareButton />
             </div>
           </div>
 
@@ -324,7 +319,6 @@ export const ChatInput = ({
           </div>
         )}
 
-
         <div className="relative group">
           {!isComposer && !isShadowPulse && (
             <div className="absolute -inset-[1px] rounded-[32px] bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10 opacity-0 group-focus-within:opacity-100 blur-md transition-opacity duration-700" />
@@ -349,36 +343,30 @@ export const ChatInput = ({
               />
             </div>
 
-            <div className="relative flex-1 min-w-0">
-              <GhostTextOverlay
-                value={message}
-                completion={completion}
-                className={(isComposer
-                  ? "min-h-[44px] max-h-[200px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 py-3 px-1 text-base sm:text-[15px] leading-relaxed"
-                  : "min-h-[46px] max-h-[220px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 py-3.5 px-2 text-base sm:text-[15.5px] leading-relaxed")}
-              />
-              <Textarea
-                ref={textareaRef}
-                value={message}
-                onChange={(e) => onMessageChange(e.target.value)}
-                onKeyDown={handleKeyDown}
-                aria-label="Chat message"
-                placeholder={
-                  isListening
-                    ? "Listening..."
-                    : isShadowPulse
-                      ? "Ask anything..."
-                      : isComposer
-                        ? "Ask ShadowTalk"
-                        : "Type, talk, or share..."
-                }
-                className={(isComposer
-                  ? "min-h-[44px] max-h-[200px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 py-3 px-1 text-base sm:text-[15px] leading-relaxed"
-                  : "min-h-[46px] max-h-[220px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 py-3.5 px-2 text-base sm:text-[15.5px] leading-relaxed") + " relative w-full placeholder:text-muted-foreground/40 overflow-y-auto custom-scrollbar"}
-                disabled={isLoading}
-                rows={1}
-              />
-            </div>
+            <Textarea
+              ref={textareaRef}
+              value={message}
+              onChange={(e) => onMessageChange(e.target.value)}
+              onKeyDown={handleKeyDown}
+              aria-label="Chat message"
+
+              placeholder={
+                isListening
+                  ? "Listening..."
+                  : isShadowPulse
+                    ? "Ask anything..."
+                    : isComposer
+                      ? "Ask ShadowTalk"
+                      : "Type, talk, or share..."
+              }
+              className={
+                isComposer
+                  ? "flex-1 min-h-[44px] max-h-[200px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 py-3 px-1 text-base sm:text-[15px] placeholder:text-muted-foreground/50 leading-relaxed overflow-y-auto custom-scrollbar"
+                  : "flex-1 min-h-[46px] max-h-[220px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 py-3.5 px-2 text-base sm:text-[15.5px] placeholder:text-muted-foreground/30 leading-relaxed overflow-y-auto custom-scrollbar"
+              }
+              disabled={isLoading}
+              rows={1}
+            />
 
             <div className={`flex items-center gap-0.5 shrink-0 ${isComposer ? "" : "pb-1"}`}>
               {isComposer && onProviderChange && (
@@ -429,7 +417,7 @@ export const ChatInput = ({
                 (message.trim() || selectedFile) &&
                 !isLoading && (
                   <Button
-                    onClick={handleSend}
+                    onClick={onSend}
                     size="icon"
                     className="h-9 w-9 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-all disabled:opacity-40"
                     disabled={!message.trim() && !selectedFile}
@@ -446,14 +434,17 @@ export const ChatInput = ({
                   <Square className="h-3.5 w-3.5 fill-current" />
                 </Button>
               ) : (
-                <Button
-                  onClick={handleSend}
-                  size="icon"
-                  className="h-9 w-9 rounded-full bg-white text-black hover:bg-white/90 shadow-lg transition-all duration-300 disabled:opacity-10 disabled:bg-white/5 disabled:text-white/20 hover:scale-105 active:scale-95"
-                  disabled={!message.trim() && !selectedFile}
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
+                <>
+                  <Button
+                    onClick={onSend}
+                    size="icon"
+                    className="h-9 w-9 rounded-full bg-white text-black hover:bg-white/90 shadow-lg transition-all duration-300 disabled:opacity-10 disabled:bg-white/5 disabled:text-white/20 hover:scale-105 active:scale-95"
+                    disabled={!message.trim() && !selectedFile}
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                  <ViralShareButton />
+                </>
               )}
             </div>
           </div>
