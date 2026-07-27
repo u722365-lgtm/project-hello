@@ -17,7 +17,7 @@ export const GhostTextOverlay = ({ value, completion, className }: GhostTextOver
   return (
     <div
       aria-hidden="true"
-      className={`${className} pointer-events-none absolute inset-0 select-none overflow-hidden whitespace-pre-wrap break-words`}
+      className={`${className} pointer-events-none absolute inset-0 select-none text-left overflow-hidden whitespace-pre-wrap break-words`}
     >
       <span className="invisible">{value}</span>
       <span className="text-muted-foreground/45">{completion}</span>
