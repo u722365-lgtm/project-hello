@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/tooltip";
 import { getChatEnterToSend } from "@/lib/profilePreferences";
 import { usePromptAutocomplete } from "@/hooks/usePromptAutocomplete";
+import { rememberPrompt } from "@/lib/chat/promptAutocomplete";
 
 
 interface ChatInputProps {
@@ -79,6 +80,12 @@ export const ChatInput = ({
     !isLoading && !isListening,
   );
 
+  const handleSend = () => {
+    if (message.trim()) rememberPrompt(message);
+    clear();
+    onSend();
+  };
+
   const acceptSuggestion = () => {
     if (!suggestion) return;
     onMessageChange(suggestion);
@@ -99,8 +106,7 @@ export const ChatInput = ({
     }
     if (e.key === "Enter" && !e.shiftKey && getChatEnterToSend()) {
       e.preventDefault();
-      clear();
-      onSend();
+      handleSend();
       return;
     }
     onKeyPress(e);
@@ -184,6 +190,8 @@ export const ChatInput = ({
             </div>
           )}
 
+          {suggestionHint}
+
           <div className="shadowtalk-composer group">
             {!selectedFile && (
               <FileUpload
@@ -252,7 +260,7 @@ export const ChatInput = ({
               </TooltipProvider>
 
               <Button
-                onClick={onSend}
+                onClick={handleSend}
                 size="icon"
                 type="button"
                 className="shadowtalk-composer__send"
@@ -312,6 +320,8 @@ export const ChatInput = ({
             </div>
           </div>
         )}
+
+        {suggestionHint}
 
         <div className="relative group">
           {!isComposer && !isShadowPulse && (
@@ -411,7 +421,7 @@ export const ChatInput = ({
                 (message.trim() || selectedFile) &&
                 !isLoading && (
                   <Button
-                    onClick={onSend}
+                    onClick={handleSend}
                     size="icon"
                     className="h-9 w-9 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-all disabled:opacity-40"
                     disabled={!message.trim() && !selectedFile}
@@ -429,7 +439,7 @@ export const ChatInput = ({
                 </Button>
               ) : (
                 <Button
-                  onClick={onSend}
+                  onClick={handleSend}
                   size="icon"
                   className="h-9 w-9 rounded-full bg-white text-black hover:bg-white/90 shadow-lg transition-all duration-300 disabled:opacity-10 disabled:bg-white/5 disabled:text-white/20 hover:scale-105 active:scale-95"
                   disabled={!message.trim() && !selectedFile}
