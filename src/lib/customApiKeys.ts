@@ -39,7 +39,7 @@ export const AI_PROVIDER_OPTIONS: {
     docsUrl: "https://aistudio.google.com/apikey",
   },
   {
-    id: "",
+    id: "openrouter",
     label: "BYOK",
     description: "Bring-your-own-key routing",
     keyPlaceholder: "sk-...",
@@ -68,7 +68,7 @@ export const AI_PROVIDER_OPTIONS: {
 ];
 
 export const DEFAULT_CUSTOM_AI_CONFIG: CustomAiKeysConfig = {
-  provider: "",
+  provider: "lovable",
   apiKey: "",
   model: "",
   usePlatformDefault: true,
