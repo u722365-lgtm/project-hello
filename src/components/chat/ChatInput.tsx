@@ -72,7 +72,7 @@ export const ChatInput = ({
   useLayoutEffect(() => {
     const el = textareaRef.current;
     if (!el) return;
-    const max = 200;
+    const max = window.innerWidth < 640 ? 132 : 200;
     el.style.height = "auto";
     const next = Math.min(el.scrollHeight, max);
     el.style.height = `${next}px`;
