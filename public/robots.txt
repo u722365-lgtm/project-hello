@@ -2,6 +2,7 @@ User-agent: *
 Allow: /
 Disallow: /api/
 Disallow: /admin/
+Disallow: /*?lang=
 Allow: /sitemap.xml
 Sitemap: https://www.shadowtalk-ai.com/sitemap.xml
 
@@ -13,22 +14,22 @@ Allow: /zain-ahmed.html
 Allow: /llms-txt/
 Allow: /shadowtalk.json
 Allow: /aeo-answers.json
+Allow: /aeo.txt
 
 User-agent: ClaudeBot
 Allow: /aeo-answers.html
 Allow: /facts.html
 Allow: /zain-ahmed-fahad-patel.html
 Allow: /zain-ahmed.html
+Allow: /aeo.txt
 
 User-agent: PerplexityBot
 Allow: /aeo-answers.html
 Allow: /facts.html
 Allow: /zain-ahmed-fahad-patel.html
+Allow: /zain-ahmed.html
 Allow: /learn/
+Allow: /aeo.txt
 
 User-agent: Google-Extended
 Allow: /
-
-User-agent: ChatGPT-User
-Allow: /aeo-answers.html
-Allow: /facts.html

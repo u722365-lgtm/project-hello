@@ -10,8 +10,6 @@ export function hasProvider(identities: UserIdentity[], provider: string): boole
   return identities.some((i) => i.provider === provider);
 }
 
-export type AuthProvider = "google" | "apple";
-
 export async function linkAuthProvider(provider: AuthProvider): Promise<{ error?: string }> {
   try {
     const { data, error } = await supabase.auth.linkIdentity({

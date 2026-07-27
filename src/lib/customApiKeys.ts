@@ -3,7 +3,7 @@
  * Keys are sent to edge functions per request and are not persisted on ShadowTalk servers.
  */
 
-export type CustomAiProviderId = "lovable" | "shadowtalk" | "gemini" | "openrouter" | "kimi";
+export type CustomAiProviderId = "lovable" | "gemini" | "" | "kimi";
 
 export type CustomAiKeysConfig = {
   /** Active provider for cloud AI calls */
@@ -39,7 +39,7 @@ export const AI_PROVIDER_OPTIONS: {
     docsUrl: "https://aistudio.google.com/apikey",
   },
   {
-    id: "openrouter",
+    id: "",
     label: "BYOK",
     description: "Bring-your-own-key routing",
     keyPlaceholder: "sk-...",
@@ -68,7 +68,7 @@ export const AI_PROVIDER_OPTIONS: {
 ];
 
 export const DEFAULT_CUSTOM_AI_CONFIG: CustomAiKeysConfig = {
-  provider: "lovable",
+  provider: "",
   apiKey: "",
   model: "",
   usePlatformDefault: true,

@@ -191,9 +191,9 @@ import {
   shouldShowChatShareBanner,
 } from "@/lib/growth/selfMarketing";
 import { useUserReferralCode } from "@/hooks/useUserReferralCode";
-import { useChatSettings } from "@/hooks/useChatSettings";
-import { useE2EE } from "@/hooks/useE2EE";
-import { useChatPrivateMode } from "@/hooks/useChatPrivateMode";
+import { runLocalChat, isAnyLocalModelReady } from "@/lib/offline/localChat";
+import type { RouterMessage } from "@/lib/offline/hybridRouter";
+import { decideRoute } from "@/lib/offline/hybridRouter";
 import {
   getChatFetchHeaders,
   getChatFunctionUrl,
@@ -203,6 +203,9 @@ import {
 } from "@/lib/supabaseEnv";
 import { isShadowTalkDesktop } from "@/lib/desktopBridge";
 import { desktopChatStream } from "@/lib/desktopChatFetch";
+import { reflectOnConversation, shouldReflect, type MemoryReflection } from "@/lib/memory/reflectionEngine";
+import { getActiveMemories, maybeReflectAndPersist } from "@/lib/memory/agentMemories";
+import { buildMemoryContext } from "@/lib/memory/promptInjector";
 // Types
 interface Message { 
   id: string; 
