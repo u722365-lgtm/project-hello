@@ -1,4 +1,4 @@
-export type AiProviderId = "google" | "openai" | "anthropic" | "xai" | "perplexity" | "" | "mistral" | "groq";
+export type AiProviderId = "lovable" | "google" | "openai" | "anthropic" | "xai" | "perplexity" | "openrouter" | "mistral" | "groq";
 
 export interface AiProviderOption {
   id: AiProviderId;
@@ -40,7 +40,7 @@ export const AI_PROVIDER_OPTIONS: AiProviderOption[] = [
     docsUrl: "https://console.anthropic.com/settings/keys",
   },
   {
-    id: "",
+    id: "openrouter",
     name: "BYOK",
     description: "Bring-your-own-key routing",
     keyPlaceholder: "sk-…",
