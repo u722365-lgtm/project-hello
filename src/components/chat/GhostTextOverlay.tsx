@@ -35,8 +35,16 @@ export const GhostTextOverlay = ({ value, completion, className }: GhostTextOver
       return;
     }
     ctx.font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+    // Measure against the visible text lane: the wrapper reserves right padding
+    // for the provider chip / mic / send buttons, so the ghost must fit inside it.
+    const host = el.parentElement ?? el;
+    const hostStyle = window.getComputedStyle(host);
     const available =
-      el.clientWidth - parseFloat(style.paddingLeft || "0") - parseFloat(style.paddingRight || "0");
+      host.clientWidth -
+      parseFloat(hostStyle.paddingLeft || "0") -
+      parseFloat(hostStyle.paddingRight || "0") -
+      parseFloat(style.paddingLeft || "0") -
+      parseFloat(style.paddingRight || "0");
     // leave room for the "Tab" chip
     const needed = ctx.measureText(value + completion).width + 44;
     setFits(needed <= available);
