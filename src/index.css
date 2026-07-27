@@ -747,10 +747,13 @@
     transform: none;
   }
 
-  .shadowtalk-composer--multiline .shadowtalk-composer__textarea {
-    padding-right: 0.5rem !important;
-    padding-bottom: 2.5rem;
+  @media (min-width: 475px) {
+    .shadowtalk-composer--multiline .shadowtalk-composer__textarea {
+      padding-right: 0.5rem !important;
+      padding-bottom: 2.5rem;
+    }
   }
+
 
 
   .shadowtalk-composer--multiline .shadowtalk-composer__attach,
