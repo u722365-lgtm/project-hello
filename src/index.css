@@ -735,6 +735,31 @@
     max-width: calc(100% - 3.5rem);
   }
 
+  /* Long prompts: pill grows into a rounded box, controls pin to the bottom row */
+  .shadowtalk-composer--multiline {
+    align-items: flex-end;
+    border-radius: 1.5rem;
+  }
+
+  .shadowtalk-composer--multiline .shadowtalk-composer__actions {
+    top: auto;
+    bottom: 0.375rem;
+    transform: none;
+  }
+
+  .shadowtalk-composer--multiline .shadowtalk-composer__textarea {
+    padding-right: 0.5rem !important;
+    padding-bottom: 2.5rem;
+  }
+
+
+  .shadowtalk-composer--multiline .shadowtalk-composer__attach,
+  .shadowtalk-composer--multiline .shadowtalk-composer__attach-wrap {
+    align-self: flex-end;
+    margin-bottom: 0.125rem;
+  }
+
+
   .shadowtalk-composer::before {
     content: "";
     position: absolute;

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Send, Mic, MicOff, Square, Plus, Sparkles, Volume2, CornerDownLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -65,6 +65,21 @@ export const ChatInput = ({
   isEmptyState = false,
 }: ChatInputProps) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [isMultiline, setIsMultiline] = useState(false);
+
+  // Auto-grow the composer with the typed text (capped), so long prompts stay readable
+  // instead of scrolling inside a one-line pill.
+  useLayoutEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    const max = 200;
+    el.style.height = "auto";
+    const next = Math.min(el.scrollHeight, max);
+    el.style.height = `${next}px`;
+    el.style.overflowY = el.scrollHeight > max ? "auto" : "hidden";
+    const line = parseFloat(getComputedStyle(el).lineHeight || "22") || 22;
+    setIsMultiline(el.scrollHeight > line * 1.8);
+  }, [message]);
 
   // Auto-focus the composer on mount so users can start typing immediately.
   // Skip on touch devices so the mobile keyboard doesn't pop up unprompted.
@@ -173,7 +188,7 @@ export const ChatInput = ({
           )}
 
 
-          <div className="shadowtalk-composer group">
+          <div className={`shadowtalk-composer group${isMultiline ? " shadowtalk-composer--multiline" : ""}`}>
             {!selectedFile && (
               <FileUpload
                 onFileSelect={onFileSelect}
