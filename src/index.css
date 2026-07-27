@@ -767,7 +767,7 @@
     content: "";
     position: absolute;
     inset: -1px;
-    border-radius: 9999px;
+    border-radius: inherit;
     padding: 1px;
     background: linear-gradient(135deg, rgb(34 211 238 / 0), rgb(99 102 241 / 0));
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
