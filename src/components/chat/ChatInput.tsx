@@ -184,11 +184,11 @@ export const ChatInput = ({
               />
             )}
 
-            <div className="relative flex-1 min-w-0">
+            <div className="shadowtalk-composer__textarea relative flex-1 min-w-0">
               <GhostTextOverlay
                 value={message}
                 completion={completion}
-                className={"shadowtalk-composer__textarea min-h-[40px] max-h-[200px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 py-2.5 pl-2 pr-2 text-base sm:text-[15px] leading-relaxed"}
+                className={"min-h-[40px] max-h-[200px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 py-2.5 pl-2 pr-2 text-base sm:text-[15px] leading-relaxed"}
               />
               <Textarea
                 ref={textareaRef}
@@ -196,7 +196,7 @@ export const ChatInput = ({
                 onChange={(e) => onMessageChange(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={isListening ? "Listening..." : "Ask ShadowTalk"}
-                className={"shadowtalk-composer__textarea min-h-[40px] max-h-[200px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 py-2.5 pl-2 pr-2 text-base sm:text-[15px] leading-relaxed" + " relative w-full placeholder:text-muted-foreground/50 overflow-y-auto custom-scrollbar"}
+                className={"min-h-[40px] max-h-[200px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 py-2.5 pl-2 pr-2 text-base sm:text-[15px] leading-relaxed" + " relative w-full placeholder:text-muted-foreground/50 overflow-y-auto custom-scrollbar"}
                 disabled={isLoading}
                 rows={1}
                 aria-label="Chat message"
