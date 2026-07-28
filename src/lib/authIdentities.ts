@@ -1,5 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { UserIdentity } from "@supabase/supabase-js";
+import type { UserIdentity, Provider } from "@supabase/supabase-js";
+
+export type AuthProvider = Extract<Provider, "google" | "apple" | "github" | "slack" | "notion">;
 
 export async function getLinkedIdentities(): Promise<UserIdentity[]> {
   const { data: { user } } = await supabase.auth.getUser();
