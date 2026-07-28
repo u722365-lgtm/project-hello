@@ -1,7 +1,7 @@
 import { canRunLocalAgentCompletion, streamLocalAgentCompletion } from "@/lib/desktop/localAgentCompletion";
 import { stringifyChatBody } from "@/lib/chatRequest";
 import { chat as ollamaChat, getStatus as getOllamaStatus } from "@/lib/ollama/unifiedClient";
-import { isOllamaInferenceReady, shouldPreferOllamaInference } from "@/lib/desktop/sovereignMode";
+import { shouldPreferOllamaInference } from "@/lib/desktop/sovereignMode";
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
 
@@ -29,8 +29,8 @@ export async function streamChatCompletion(
     return streamLocalAgentCompletion(userContent, { signal: options?.signal });
   }
 
-  // Ollama default provider — try before cloud when the local daemon is ready.
-  if (shouldPreferOllamaInference() && isOllamaInferenceReady()) {
+  // Ollama default provider — try before cloud (probes daemon directly).
+  if (shouldPreferOllamaInference()) {
     const local = await tryOllamaFallback(userContent, options?.signal);
     if (local !== null) return local;
   }

@@ -82,7 +82,9 @@ export default function LocalModelsPage() {
   const toggleChat = (v: boolean) => {
     setChatEnabled(v);
     setOllamaChatEnabled(v);
-    toast.success(v ? "Chat will use Ollama when ready" : "Chat reverted to cloud/default");
+    toast.success(
+      v ? "Ollama is the default AI provider" : "Cloud AI is now the default — Ollama disabled",
+    );
   };
 
   const runPull = async (name: string) => {
@@ -129,8 +131,8 @@ export default function LocalModelsPage() {
             <h1 className="text-3xl font-bold tracking-tight">Local Models · Ollama</h1>
           </div>
           <p className="text-muted-foreground">
-            Run open-source LLMs locally on your machine. Your chats stay on your device — nothing
-            leaves.
+            Ollama is ShadowTalk&apos;s default AI provider. Chat runs locally when Ollama is
+            connected; cloud is used only as a fallback.
           </p>
         </motion.div>
 
@@ -250,12 +252,12 @@ export default function LocalModelsPage() {
                 <div className="flex items-start justify-between gap-4 rounded-lg border p-4">
                   <div className="space-y-1">
                     <Label htmlFor="ollama-chat" className="text-base cursor-pointer">
-                      Use Ollama for chat
+                      Ollama as default AI provider
                     </Label>
                     <p className="text-sm text-muted-foreground">
-                      When enabled, ShadowTalk routes chat through your local model instead of the
-                      cloud. Specialized tools (Deep Research, Strategy Agent, image generation)
-                      still use the cloud.
+                      On by default. ShadowTalk routes chat through your local Ollama model when
+                      connected; cloud is the fallback. Specialized tools (Deep Research, Strategy
+                      Agent, image generation) still use the cloud.
                     </p>
                   </div>
                   <Switch id="ollama-chat" checked={chatEnabled} onCheckedChange={toggleChat} />

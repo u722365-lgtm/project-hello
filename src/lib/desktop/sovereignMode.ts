@@ -81,8 +81,8 @@ export function getCachedOllamaError(): string | undefined {
   return cachedOllamaError;
 }
 
+/** User/settings want Ollama when available — does not imply the daemon is ready yet. */
 export function shouldPreferOllamaInference(): boolean {
-  if (!isOllamaInferenceReady()) return false;
   if (!isOllamaDefaultProvider()) return false;
 
   if (isShadowTalkDesktop()) {
@@ -90,6 +90,5 @@ export function shouldPreferOllamaInference(): boolean {
     return mode !== "cloud-only";
   }
 
-  // Web: default provider is Ollama when local daemon is reachable
   return true;
 }

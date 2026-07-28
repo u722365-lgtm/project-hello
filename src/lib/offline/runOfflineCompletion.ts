@@ -8,7 +8,7 @@ import { getQuickOfflineEngine } from "@/lib/offline/quickOfflineModels";
 import { getActiveQuickModelId, isForceOfflineSessionActive } from "@/lib/offline/forceOfflineSession";
 import { canUseCloudAI } from "@/lib/privacy/deviceOnlyPledge";
 import { isAnyLocalModelReady, runLocalChat } from "@/lib/offline/localChat";
-import { shouldPreferOllamaInference, isOllamaInferenceReady } from "@/lib/desktop/sovereignMode";
+import { shouldPreferOllamaInference } from "@/lib/desktop/sovereignMode";
 import { chat as ollamaChat } from "@/lib/ollama/unifiedClient";
 
 export type OfflineCompletionSource = "local-ollama" | "local-gemma" | "local-webllm" | "local-smollm" | "fallback";
@@ -127,7 +127,7 @@ export async function runOfflineCompletion(
   const formatted = withSystemPrompt(messages, personality);
 
   const tryOllama = async (): Promise<OfflineCompletionResult | null> => {
-    if (!shouldPreferOllamaInference() || !isOllamaInferenceReady()) return null;
+    if (!shouldPreferOllamaInference()) return null;
     try {
       const res = await ollamaChat(formatted, { onToken });
       if (res.ok && res.content) return { content: res.content, source: "local-ollama" };

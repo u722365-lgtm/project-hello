@@ -97,7 +97,7 @@ import {
   augmentMessagesWithLocalMemory,
   indexSovereignMemory,
 } from "@/lib/desktop/sovereignMemoryRag";
-import { isSovereignModeEnabled, isOllamaInferenceReady, shouldPreferOllamaInference } from "@/lib/desktop/sovereignMode";
+import { isSovereignModeEnabled, shouldPreferOllamaInference } from "@/lib/desktop/sovereignMode";
 import {
   canUseCloudAI,
   DEVICE_ONLY_BLOCKED_MESSAGE,
@@ -1245,11 +1245,7 @@ const ChatbotPage = () => {
       }
 
       // Ollama default provider — last chance before cloud for non-complex chat
-      if (
-        !hasMultimodalImage &&
-        shouldPreferOllamaInference() &&
-        isOllamaInferenceReady()
-      ) {
+      if (!hasMultimodalImage && shouldPreferOllamaInference()) {
         const aiMessageId = crypto.randomUUID();
         let assistantContent = "";
         const streamToken = (token: string) => {
