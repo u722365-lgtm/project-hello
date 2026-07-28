@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabaseLoose } from "@/integrations/supabase/loose";
 import { useAuth } from "@/components/AuthProvider";
 import type { MemoryRecordLike } from "@/lib/memory/promptInjector";
 import { loadGuestMemories, upsertGuestMemory, deleteGuestMemory } from "@/lib/memory/guestMemoryStore";
@@ -38,7 +38,7 @@ export function MemoryDashboard() {
     if (user) {
       void loadRemoteMemories();
     } else {
-      setItems(loadGuestMemories());
+      setItems(loadGuestMemories() as MemoryRecord[]);
     }
   }, [user, memoryEnabled]);
 
@@ -70,7 +70,7 @@ export function MemoryDashboard() {
       source: record.source ?? "manual",
       updated_at: new Date().toISOString(),
     };
-    const { error } = await supabase.from("user_memories").upsert(
+    const { error } = await supabaseLoose.from("user_memories").upsert(
       record.id ? { id: record.id, ...payload } : payload,
       { onConflict: "id" }
     );
@@ -117,7 +117,7 @@ export function MemoryDashboard() {
     setError(null);
     try {
       if (user && m.id) {
-        const { error } = await supabase.from("user_memories").delete().eq("id", m.id);
+        const { error } = await supabaseLoose.from("user_memories").delete().eq("id", m.id);
         if (error) throw new Error(error.message);
       } else if (m.id) {
         deleteGuestMemory(m.id);

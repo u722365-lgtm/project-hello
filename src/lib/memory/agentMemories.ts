@@ -1,7 +1,10 @@
 import { toast } from "@/hooks/use-toast";
 import { reflectOnConversation, shouldReflect, type MemoryReflection } from "@/lib/memory/reflectionEngine";
 import { loadGuestMemories, upsertGuestMemory } from "@/lib/memory/guestMemoryStore";
-import { supabase } from "@/integrations/supabase/client";
+import { supabaseLoose } from "@/integrations/supabase/loose";
+import type { MemoryRecord } from "@/lib/memory/guestMemoryStore";
+
+type ChatCompletionMessage = { role: string; content: unknown };
 
 function safeLoadGuestMemories(): MemoryRecord[] {
   try {
@@ -32,7 +35,7 @@ export async function getActiveMemories(user: { id?: string } | null = null): Pr
   if (!isMemoryEnabled()) return [];
   if (user?.id) {
     try {
-      const { data, error } = await supabase.from("user_memories").select("*").eq("user_id", user.id);
+      const { data, error } = await supabaseLoose.from("user_memories").select("*").eq("user_id", user.id);
       if (error) throw error;
       return (data ?? []) as MemoryRecord[];
     } catch {
