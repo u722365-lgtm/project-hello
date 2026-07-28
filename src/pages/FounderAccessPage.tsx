@@ -26,6 +26,7 @@ import { PaymentTrustFAQ } from "@/components/payments/PaymentTrustFAQ";
 import { CheckoutConfirmation } from "@/components/payments/CheckoutConfirmation";
 import { InternationalCardButton } from "@/components/payments/InternationalCardButton";
 import { PKR_MONTHLY, type PaidPlanId } from "@/lib/payments/planPricing";
+import { submitManualPayment } from "@/lib/payments/submitManualPayment";
 import SEOHead from "@/components/SEOHead";
 import { PAGE_SEO } from "@/lib/seo";
 
@@ -278,7 +279,33 @@ const FounderAccessPage = () => {
                         <Input placeholder="03XX XXXXXXX" value={phone} onChange={(e) => setPhone(e.target.value)} />
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        <Button onClick={() => setSubmitted(true)} disabled={submitting || !canSubmit}>{submitting ? "Submitting…" : "Confirm & submit receipt"}</Button>
+                        <Button
+                          onClick={async () => {
+                            setSubmitting(true);
+                            try {
+                              const res = await submitManualPayment({
+                                planKey: selectedTier,
+                                paymentMethod: activePaymentMethod === "mobile" ? "jazzcash" : activePaymentMethod === "bank" ? "bank_transfer" : activePaymentMethod === "crypto" ? "usdt" : activePaymentMethod === "wire" ? "wise" : "bank_transfer",
+                                amount: Number(amount || discountedPrice || 0),
+                                currency: activePaymentMethod === "mobile" || activePaymentMethod === "bank" ? "PKR" : "USD",
+                                transactionReference: txRef || undefined,
+                                phone: phone || undefined,
+                                receiptFile: file || undefined,
+                                invoiceDraftId: invoiceDraftId || undefined,
+                              });
+                              if (!res.ok) {
+                                toast({ title: "Submit failed", description: res.error || "Could not submit receipt", variant: "destructive" });
+                              } else {
+                                setSubmitted(true);
+                              }
+                            } finally {
+                              setSubmitting(false);
+                            }
+                          }}
+                          disabled={submitting || !canSubmit}
+                        >
+                          {submitting ? "Submitting…" : "Confirm & submit receipt"}
+                        </Button>
                         <Button variant="outline" asChild><a href="https://wa.me/923211798561" target="_blank" rel="noopener noreferrer"><MessageCircle className="h-4 w-4 text-[#25D366]" /> WhatsApp support</a></Button>
                       </div>
                     </CardContent>

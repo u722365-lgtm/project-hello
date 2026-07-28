@@ -1164,6 +1164,7 @@ const ChatbotPage = () => {
               if (user) {
                 await saveMessage(final, "assistant", conversationId);
               }
+              void maybeReflectAndPersist(user, messages);
               return final;
             }
             if (isSovereignModeEnabled() || !canUseCloudAI()) {
@@ -1215,7 +1216,11 @@ const ChatbotPage = () => {
             if (content && user) {
               await saveMessage(content, "assistant", conversationId);
             }
-            return assistantContent || content;
+            const reply = assistantContent || content;
+            if (reply) {
+              void maybeReflectAndPersist(user, messages);
+            }
+            return reply;
           } catch (e) {
             if (isSovereignModeEnabled() || !canUseCloudAI()) {
               throw e instanceof Error ? e : new Error("Local chat failed on-device");
