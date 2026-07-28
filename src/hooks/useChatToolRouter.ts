@@ -48,7 +48,7 @@ async function localFallbackChat(content: string): Promise<string | null> {
   try {
     const status = await detectOllamaLocalStatus(invoke);
     if (!status?.ready) return null;
-    const result = await chatWithOllama(invoke, { prompt: content, model: status.defaultModel, stream: false });
+    const result = await chatWithOllama(invoke, { messages: [{ role: 'user' as const, content }], model: status.defaultModel, stream: false });
     if (!result?.message?.content) return null;
     return result.message.content;
   } catch {

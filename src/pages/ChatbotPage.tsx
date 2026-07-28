@@ -191,9 +191,6 @@ import {
   shouldShowChatShareBanner,
 } from "@/lib/growth/selfMarketing";
 import { useUserReferralCode } from "@/hooks/useUserReferralCode";
-import { runLocalChat, isAnyLocalModelReady } from "@/lib/offline/localChat";
-import type { RouterMessage } from "@/lib/offline/hybridRouter";
-import { decideRoute } from "@/lib/offline/hybridRouter";
 import {
   getChatFetchHeaders,
   getChatFunctionUrl,
