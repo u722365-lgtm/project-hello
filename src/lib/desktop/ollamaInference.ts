@@ -48,15 +48,20 @@ export async function pullOllamaModel(
   return api.ollamaPull(model, onProgress);
 }
 
+type OllamaChatInput =
+  | Array<{ role: 'system' | 'user' | 'assistant'; content: string }>
+  | {
+      messages?: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>;
+      prompt?: string;
+      model?: string;
+    };
+
 export async function runOllamaChat(
-  input: {
-    messages?: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>;
-    prompt?: string;
-    model?: string;
-  },
+  rawInput: OllamaChatInput,
   onToken?: (token: string) => void,
   signal?: AbortSignal,
 ): Promise<{ content: string; ok: boolean; error?: string }> {
+  const input = Array.isArray(rawInput) ? { messages: rawInput } : rawInput;
   if (!isOllamaInferenceReady()) {
     return { content: '', ok: false, error: 'Ollama is not ready' };
   }
