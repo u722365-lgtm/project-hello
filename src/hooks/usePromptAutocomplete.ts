@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import type { RouterMessage } from "@/lib/offline/hybridRouter";
-import { runLocalChat } from "@/lib/offline/localChat";
+import { runLocalChat, isAnyLocalModelReady } from "@/lib/offline/localChat";
 import { decideRoute } from "@/lib/offline/hybridRouter";
 
 export type PromptAutocompleteOptions = {

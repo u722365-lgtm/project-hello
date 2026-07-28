@@ -1,4 +1,4 @@
-export type AiProviderId = "google" | "openai" | "anthropic" | "xai" | "perplexity" | "" | "mistral" | "groq";
+export type AiProviderId = "google" | "openai" | "anthropic" | "xai" | "perplexity" | "openrouter" | "mistral" | "groq" | "lovable";
 
 export interface AiProviderOption {
   id: AiProviderId;
