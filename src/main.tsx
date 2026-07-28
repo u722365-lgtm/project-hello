@@ -8,6 +8,7 @@
  import { warmHardwareProfile, prewarmFastestLocalPath } from "./lib/hardwareIntelligence";
  import { installViteChunkRecovery, clearViteChunkRecoveryFlag } from "./lib/viteChunkRecovery";
 import { applyAnonymousAutonomousDefaults } from "./lib/anonymousAutonomousMode";
+import { applyOllamaDefaultProvider } from "./lib/ollama/defaultProvider";
 import { applyPerfProfile } from "./lib/perf/devicePerfTier";
 
 // Detect device perf tier ASAP so CSS degrades heavy effects on low-end hardware.
@@ -37,6 +38,7 @@ applyPerfProfile();
 // Validate environment on startup
 validateEnvironment();
 applyAnonymousAutonomousDefaults();
+applyOllamaDefaultProvider();
  
  // Report errors to console in production (can be extended to error tracking)
  if (import.meta.env.PROD) {

@@ -25,17 +25,16 @@ import {
   setStoredOllamaUrl,
   updateOllamaCache,
 } from "@/lib/desktop/sovereignMode";
-
-const WEB_ENABLED_KEY = "shadowtalk_ollama_web_enabled";
+import { isOllamaDefaultProvider, OLLAMA_WEB_ENABLED_KEY } from "@/lib/ollama/defaultProvider";
 
 export type OllamaMessage = { role: "system" | "user" | "assistant"; content: string };
 
 export function isOllamaChatEnabled(): boolean {
-  return localStorage.getItem(WEB_ENABLED_KEY) === "1";
+  return isOllamaDefaultProvider();
 }
 
 export function setOllamaChatEnabled(enabled: boolean): void {
-  localStorage.setItem(WEB_ENABLED_KEY, enabled ? "1" : "0");
+  localStorage.setItem(OLLAMA_WEB_ENABLED_KEY, enabled ? "1" : "0");
 }
 
 export function getOllamaUrl(): string {

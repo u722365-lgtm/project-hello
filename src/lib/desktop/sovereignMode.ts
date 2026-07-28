@@ -4,6 +4,7 @@
  */
 
 import { isShadowTalkDesktop } from "@/lib/desktopBridge";
+import { isOllamaDefaultProvider } from "@/lib/ollama/defaultProvider";
 
 const SOVEREIGN_KEY = "shadowtalk_sovereign_desktop";
 const OLLAMA_MODEL_KEY = "shadowtalk_ollama_model";
@@ -24,8 +25,8 @@ export function isSovereignDesktopAvailable(): boolean {
 export function getSovereignRoutingMode(): SovereignRoutingMode {
   if (!isShadowTalkDesktop()) return "auto";
   const v = localStorage.getItem(SOVEREIGN_KEY);
-  if (v === "sovereign" || v === "cloud-only") return v;
-  return "auto";
+  if (v === "sovereign" || v === "cloud-only" || v === "auto") return v;
+  return "sovereign";
 }
 
 export function setSovereignRoutingMode(mode: SovereignRoutingMode): void {
@@ -81,10 +82,14 @@ export function getCachedOllamaError(): string | undefined {
 }
 
 export function shouldPreferOllamaInference(): boolean {
-  if (!isShadowTalkDesktop()) return false;
-  const mode = getSovereignRoutingMode();
-  if (mode === "cloud-only") return false;
-  if (mode === "sovereign") return isOllamaInferenceReady();
-  // auto: prefer Ollama when ready (desktop with local LLM beats cloud for privacy)
-  return isOllamaInferenceReady();
+  if (!isOllamaInferenceReady()) return false;
+  if (!isOllamaDefaultProvider()) return false;
+
+  if (isShadowTalkDesktop()) {
+    const mode = getSovereignRoutingMode();
+    return mode !== "cloud-only";
+  }
+
+  // Web: default provider is Ollama when local daemon is reachable
+  return true;
 }

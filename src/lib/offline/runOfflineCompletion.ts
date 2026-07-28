@@ -8,8 +8,10 @@ import { getQuickOfflineEngine } from "@/lib/offline/quickOfflineModels";
 import { getActiveQuickModelId, isForceOfflineSessionActive } from "@/lib/offline/forceOfflineSession";
 import { canUseCloudAI } from "@/lib/privacy/deviceOnlyPledge";
 import { isAnyLocalModelReady, runLocalChat } from "@/lib/offline/localChat";
+import { shouldPreferOllamaInference, isOllamaInferenceReady } from "@/lib/desktop/sovereignMode";
+import { chat as ollamaChat } from "@/lib/ollama/unifiedClient";
 
-export type OfflineCompletionSource = "local-gemma" | "local-webllm" | "local-smollm" | "fallback";
+export type OfflineCompletionSource = "local-ollama" | "local-gemma" | "local-webllm" | "local-smollm" | "fallback";
 
 export type OfflineCompletionResult = {
   content: string;
@@ -124,7 +126,21 @@ export async function runOfflineCompletion(
   const decision = decideRoute(messages, isOnline);
   const formatted = withSystemPrompt(messages, personality);
 
+  const tryOllama = async (): Promise<OfflineCompletionResult | null> => {
+    if (!shouldPreferOllamaInference() || !isOllamaInferenceReady()) return null;
+    try {
+      const res = await ollamaChat(formatted, { onToken });
+      if (res.ok && res.content) return { content: res.content, source: "local-ollama" };
+    } catch (e) {
+      console.warn("[OfflineCompletion] Ollama failed:", e);
+    }
+    return null;
+  };
+
   const tryUnifiedLocal = async (): Promise<OfflineCompletionResult | null> => {
+    const ollama = await tryOllama();
+    if (ollama) return ollama;
+
     if (!isAnyLocalModelReady() && isForceOfflineSessionActive()) {
       await ensureQuickModelLoaded();
     }
