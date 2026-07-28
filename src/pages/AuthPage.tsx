@@ -258,8 +258,15 @@ const AuthPage = () => {
     if (isOffline) { toast({ title: "Offline", description: "Google sign-in requires internet connection", variant: "destructive" }); return; }
     setGoogleLoading(true);
     try {
-      const result = isLocalFirst() ? await signInWithLocalPreferredProvider() : await signInWithRemoteProvider("google", { redirect_uri: window.location.origin });
-      if ((result as any)?.error) toast({ title: "Error", description: (result as any).error?.message ?? (result as any).error, variant: "destructive" });
+      const result = await signInWithRemoteProvider("google");
+      if ((result as any)?.error) {
+        const msg = (result as any).error?.message || (result as any).error;
+        if (/redirect_uri_mismatch/i.test(msg)) {
+          toast({ title: "Google auth mismatch", description: "Redirect URI mismatch. Use email or local login, or fix Google OAuth URIs in Supabase dashboard.", variant: "destructive" });
+        } else {
+          toast({ title: "Error", description: msg, variant: "destructive" });
+        }
+      }
     } catch (error: any) {
       toast({ title: "Error", description: error.message || "Failed to sign in with Google", variant: "destructive" });
     } finally { setGoogleLoading(false); }
@@ -269,8 +276,15 @@ const AuthPage = () => {
     if (isOffline) { toast({ title: "Offline", description: "Apple sign-in requires internet connection", variant: "destructive" }); return; }
     setAppleLoading(true);
     try {
-      const result = isLocalFirst() ? await signInWithLocalPreferredProvider() : await signInWithRemoteProvider("apple", { redirect_uri: window.location.origin });
-      if ((result as any)?.error) toast({ title: "Error", description: (result as any).error?.message ?? (result as any).error, variant: "destructive" });
+      const result = await signInWithRemoteProvider("apple");
+      if ((result as any)?.error) {
+        const msg = (result as any).error?.message || (result as any).error;
+        if (/redirect_uri_mismatch/i.test(msg)) {
+          toast({ title: "Apple auth mismatch", description: "Redirect URI mismatch. Use email or local login, or fix Apple OAuth URIs in Supabase dashboard.", variant: "destructive" });
+        } else {
+          toast({ title: "Error", description: msg, variant: "destructive" });
+        }
+      }
     } catch (error: any) {
       toast({ title: "Error", description: error.message || "Failed to sign in with Apple", variant: "destructive" });
     } finally { setAppleLoading(false); }

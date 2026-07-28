@@ -8,7 +8,14 @@ type SignInOptions = {
   extraParams?: Record<string, string>;
 };
 
-export async function signInWithRemoteProvider(provider: AuthProvider, opts?: SignInOptions) {
+export class MissingOAuthSecretError extends Error {
+  constructor(provider: string) {
+    super(`${provider} OAuth is not configured in Supabase. Use email or local login instead.`);
+    this.name = "MissingOAuthSecretError";
+  }
+}
+
+export async function signInWithRemoteProvider(provider: RemoteAuthProvider, opts?: SignInOptions) {
   try {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider,
@@ -20,7 +27,11 @@ export async function signInWithRemoteProvider(provider: AuthProvider, opts?: Si
 
     if (error) {
       console.warn('[Auth][signInWithRemoteProvider] error', { provider, error: error.message });
-      return { error: new Error(error.message) };
+      const msg = error.message || 'Failed to connect';
+      if (/missing OAuth secret/i.test(msg)) {
+        return { error: new MissingOAuthSecretError(provider) };
+      }
+      return { error: new Error(msg) };
     }
 
     if (typeof window !== "undefined" && data?.url) {
