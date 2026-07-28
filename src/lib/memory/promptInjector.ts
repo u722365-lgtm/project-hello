@@ -1,3 +1,5 @@
+import { getActiveMemories } from "@/lib/memory/agentMemories";
+
 export type MemoryRecordLike = {
   category: string;
   key: string;

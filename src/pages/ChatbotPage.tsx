@@ -191,9 +191,10 @@ import {
   shouldShowChatShareBanner,
 } from "@/lib/growth/selfMarketing";
 import { useUserReferralCode } from "@/hooks/useUserReferralCode";
-import { runLocalChat, isAnyLocalModelReady } from "@/lib/offline/localChat";
-import type { RouterMessage } from "@/lib/offline/hybridRouter";
-import { decideRoute } from "@/lib/offline/hybridRouter";
+import { useChatSettings } from "@/hooks/useChatSettings";
+import { useE2EE } from "@/hooks/useE2EE";
+import { useChatPrivateMode } from "@/hooks/useChatPrivateMode";
+import { buildMemoryContextForUser } from "@/lib/memory/promptInjector";
 import {
   getChatFetchHeaders,
   getChatFunctionUrl,
@@ -1295,14 +1296,14 @@ const ChatbotPage = () => {
           detail = rawBody || detail;
         }
         if (status === 402 && needsByok) {
-          saveCustomAiConfig({ ...loadCustomAiConfig(), usePlatformDefault: false, provider: 'shadowtalk', apiKey: '' });
+          saveCustomAiConfig({ ...loadCustomAiConfig(), usePlatformDefault: false, provider: '' as const, apiKey: '' });
           setAiProvider('shadowtalk');
           toast({
             title: 'Switching to local AI',
             description: 'Platform credits are exhausted. Continuing on-device with Ollama/local ShadowTalk.',
           });
           const offline = await runOfflineCompletion({
-            messages: chatMessages.map((m) => ({ role: m.role, content: typeof m.content === 'string' ? m.content : '' })),
+            messages: chatMessages.map((m) => ({ role: (m.role === 'assistant' ? 'assistant' : m.role === 'system' ? 'system' : 'user') as 'assistant' | 'system' | 'user', content: typeof m.content === 'string' ? m.content : '' })),
             personality,
             isOnline: navigator.onLine,
             onToken: (token) => pushAssistant(token),
@@ -1387,7 +1388,7 @@ const ChatbotPage = () => {
         if (!resp.ok) {
           const cloudFailed = new Error((await resp.text().catch(() => "")) || "Cloud chat failed");
           const localCandidates = runOfflineCompletion({
-            messages: chatMessages.map((m) => ({ role: m.role, content: typeof m.content === "string" ? m.content : "" })),
+            messages: chatMessages.map((m) => ({ role: (m.role === "assistant" ? "assistant" : m.role === "system" ? "system" : "user") as "assistant" | "system" | "user", content: typeof m.content === "string" ? m.content : "" })),
             personality,
             isOnline: navigator.onLine,
             onToken: (token) => pushAssistant(token),

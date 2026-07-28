@@ -1,7 +1,10 @@
 import { toast } from "@/hooks/use-toast";
 import { reflectOnConversation, shouldReflect, type MemoryReflection } from "@/lib/memory/reflectionEngine";
 import { loadGuestMemories, upsertGuestMemory } from "@/lib/memory/guestMemoryStore";
-import { supabase } from "@/integrations/supabase/client";
+import { supabaseLoose } from "@/integrations/supabase/loose";
+import type { MemoryRecord } from "@/lib/memory/guestMemoryStore";
+
+type ChatCompletionMessage = { role: string; content: unknown };
 
 function safeLoadGuestMemories(): MemoryRecord[] {
   try {
@@ -32,7 +35,7 @@ export async function getActiveMemories(user: { id?: string } | null = null): Pr
   if (!isMemoryEnabled()) return [];
   if (user?.id) {
     try {
-      const { data, error } = await supabase.from("user_memories").select("*").eq("user_id", user.id);
+      const { data, error } = await supabaseLoose.from("user_memories").select("*").eq("user_id", user.id);
       if (error) throw error;
       return (data ?? []) as MemoryRecord[];
     } catch {
@@ -59,7 +62,7 @@ export async function persistMemories(
         source: "reflection",
         updated_at: new Date().toISOString(),
       };
-      await supabase
+      await supabaseLoose
         .from("user_memories")
         .upsert(payload, { onConflict: "user_id,category,key" });
     }
@@ -87,7 +90,7 @@ export async function maybeReflectAndPersist(
   const effectiveUser = state.user ?? (!state.isAnonymous ? { id: state.user?.id } : null);
   if (!needReflect) return;
   const conversation = messages
-    .map((m) => ({ role: m.role, content: typeof m.content === "string" ? m.content : "" }))
+    .map((m) => ({ role: (m.role === "assistant" ? "assistant" : "user") as "assistant" | "user", content: typeof m.content === "string" ? m.content : "" }))
     .filter((m) => m.content?.trim());
   const reflections = await reflectOnConversation(conversation);
   if (!reflections) return;
