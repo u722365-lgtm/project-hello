@@ -113,7 +113,7 @@ const PartnershipsPage = lazy(() => import("./pages/PartnershipsPage"));
   const MemoryPage = lazy(() => import("./pages/MemoryPage"));
   const ShadowMemoryPage = lazy(() => import("./pages/ShadowMemoryPage"));
   const BusinessMemoryPage = lazy(() => import("./pages/BusinessMemoryPage"));
-  const MemoryDashboard = lazy(() => import("@/components/memory/MemoryDashboard"));
+  const MemoryDashboard = lazy(() => import("@/components/memory/MemoryDashboard").then((m) => ({ default: m.MemoryDashboard })));
   const SecurityHubPage = lazy(() => import("./pages/SecurityHubPage"));
    const MissionControlPage = lazy(() => import("./pages/MissionControlPage"));
  const ExecutePage = lazy(() => import("./pages/ExecutePage"));
