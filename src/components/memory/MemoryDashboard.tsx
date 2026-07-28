@@ -45,7 +45,7 @@ export function MemoryDashboard() {
   async function loadRemoteMemories() {
     setLoading(true);
     setError(null);
-    const { data, error } = await supabase
+    const { data, error } = await supabaseLoose
       .from("user_memories")
       .select("*")
       .order("confidence", { ascending: false });
