@@ -17,6 +17,7 @@ describe("feature wiring verification", () => {
       "PushIntelligencePanel",
       "SelfHealingErrorBoundary",
       "OfflineBootstrapBanner",
+      "OllamaProviderEngine",
       "VoiceCommandSystem",
       "AutonomousAgentEngine",
       "MissionSchedulerEngine",

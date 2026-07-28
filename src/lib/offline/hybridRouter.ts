@@ -158,15 +158,17 @@ export function decideRoute(
     };
   }
 
-  // Auto: desktop Ollama when available (simple prompts)
-  if (isShadowTalkDesktop() && ollamaReady && !isComplex(messages)) {
-    return localDecision("Desktop auto — Ollama local LLM", "ollama");
+  // Auto: Ollama default provider when available (desktop + web with local Ollama)
+  if (ollamaReady && !isComplex(messages) && shouldPreferOllamaInference()) {
+    return localDecision(
+      isShadowTalkDesktop()
+        ? "Ollama default — sovereign desktop"
+        : "Ollama default — local AI provider",
+      "ollama",
+    );
   }
 
-  // Auto mode (online) — as soon as any browser model is ready, prefer it for
-  // normal chat regardless of hardware tier. This delivers the user-requested
-  // "auto cut cloud once offline model is ready" behavior on phones and low-end
-  // devices where hardware profile heuristics would otherwise keep them cloud-bound.
+  // Browser on-device models when Ollama is not ready
   if (browserLocalReady && !isComplex(messages)) {
     if (preferLocalHw) {
       const hw = profile?.summary ?? "fast hardware";
