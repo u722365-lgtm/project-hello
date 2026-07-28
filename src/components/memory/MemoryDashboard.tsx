@@ -94,7 +94,7 @@ export function MemoryDashboard() {
         await persistRemote(record);
         await loadRemoteMemories();
       } else {
-        const saved = upsertGuestMemory(record);
+        const saved = upsertGuestMemory(record as never);
         setItems((prev) => {
           const idx = prev.findIndex((m) => m.id === saved.id);
           const next = [...prev];
