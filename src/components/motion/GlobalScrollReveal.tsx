@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { useReducedMotion } from "framer-motion";
 import { shouldSkipGlobalScrollReveal } from "@/lib/siteMotion";
+import { shouldReduceMotionForPerf } from "@/lib/perf/leanMotion";
 
 const REVEAL_SELECTORS = [
   "main section",
@@ -34,7 +35,7 @@ function isExcluded(el: Element): boolean {
  */
 export function GlobalScrollReveal() {
   const { pathname } = useLocation();
-  const reduced = useReducedMotion();
+  const reduced = shouldReduceMotionForPerf(useReducedMotion() ?? false);
 
   useEffect(() => {
     if (reduced || shouldSkipGlobalScrollReveal(pathname)) return;

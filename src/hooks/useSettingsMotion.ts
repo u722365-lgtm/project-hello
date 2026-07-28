@@ -1,5 +1,6 @@
 import { useReducedMotion } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { shouldReduceMotionForPerf } from "@/lib/perf/leanMotion";
 import type { SettingsMotionProfile } from "@/lib/settingsMotion";
 import {
   SETTINGS_SPRING,
@@ -17,7 +18,7 @@ import {
 } from "@/lib/settingsMotion";
 
 export function useSettingsMotion() {
-  const reduced = useReducedMotion() ?? false;
+  const reduced = shouldReduceMotionForPerf(useReducedMotion() ?? false);
   const isMobile = useIsMobile();
   const profile: SettingsMotionProfile = { reduced, mobile: isMobile };
 

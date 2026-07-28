@@ -24,15 +24,13 @@ export function staggerDelay(profile: LandingMotionProfile, desktop = 0.12): num
 
 export function fadeSlideUp(profile: LandingMotionProfile): Variants {
   const y = profile.reduced ? 0 : profile.mobile ? 18 : 40;
-  const blur = profile.reduced ? "blur(0px)" : profile.mobile ? "blur(4px)" : "blur(8px)";
   return {
-    hidden: { opacity: 0, y, filter: blur },
+    hidden: { opacity: 0, y },
     visible: {
       opacity: 1,
       y: 0,
-      filter: "blur(0px)",
       transition: {
-        duration: motionDuration(profile, 0.7),
+        duration: motionDuration(profile, 0.55),
         ease: LANDING_EASE,
       },
     },

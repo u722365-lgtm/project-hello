@@ -1,38 +1,17 @@
  import React from 'react';
  import { motion, AnimatePresence } from 'framer-motion';
  import { Sparkles, Zap, Brain, Shield, Lock } from 'lucide-react';
+ import { isLeanMotionEnabled } from '@/lib/perf/leanMotion';
  
- // Floating particles effect for premium feel
- export const FloatingParticles: React.FC<{ count?: number }> = ({ count = 15 }) => {
-   return (
-     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-       {Array.from({ length: count }).map((_, i) => (
-         <motion.div
-           key={i}
-           className="absolute w-1 h-1 rounded-full bg-primary/20"
-           initial={{
-             x: Math.random() * 100 + '%',
-             y: '100%',
-             opacity: 0,
-           }}
-           animate={{
-             y: '-10%',
-             opacity: [0, 0.5, 0],
-           }}
-           transition={{
-             duration: 8 + Math.random() * 4,
-             repeat: Infinity,
-             delay: Math.random() * 5,
-             ease: 'linear',
-           }}
-         />
-       ))}
-     </div>
-   );
+ // Floating particles effect for premium feel — off under lean motion
+ export const FloatingParticles: React.FC<{ count?: number }> = () => {
+   if (isLeanMotionEnabled()) return null;
+   return null;
  };
  
  // Message send animation
  export const SendPulse: React.FC<{ trigger: boolean }> = ({ trigger }) => {
+   if (isLeanMotionEnabled()) return null;
    return (
      <AnimatePresence>
        {trigger && (
@@ -48,8 +27,17 @@
    );
  };
  
- // AI Response glow effect
+ // AI Response glow effect — static when lean
  export const AIResponseGlow: React.FC<{ isActive: boolean }> = ({ isActive }) => {
+   if (!isActive) return null;
+   if (isLeanMotionEnabled()) {
+     return (
+       <div
+         className="absolute -inset-1 rounded-2xl bg-primary/10 -z-10"
+         aria-hidden
+       />
+     );
+   }
    return (
      <AnimatePresence>
        {isActive && (
@@ -77,7 +65,7 @@
            className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30"
          >
            <motion.div
-             animate={{ rotate: [0, 10, -10, 0] }}
+             animate={isLeanMotionEnabled() ? undefined : { rotate: [0, 10, -10, 0] }}
              transition={{ duration: 2, repeat: Infinity }}
            >
              <Shield className="h-3.5 w-3.5 text-emerald-500" />
