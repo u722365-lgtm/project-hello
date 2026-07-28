@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
-import { evolutionConfigured, evolutionSendText } from "../_shared/whatsappEvolution.ts";
+import { evolutionConfigured } from "../_shared/whatsappEvolution.ts";
+import { sendWhatsAppWithRetry } from "../_shared/whatsappSend.ts";
 import {
   activateManualPayment,
   buildInvoiceHtml,
@@ -16,7 +17,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const FOUNDER_WHATSAPP = Deno.env.get("MANUAL_PAYMENT_FOUNDER_PHONE") ?? "923211798561";
+const FOUNDER_WHATSAPP = Deno.env.get("MANUAL_PAYMENT_FOUNDER_PHONE") ?? "+923211798561";
 
 async function notifyDiscord(payload: Record<string, unknown>, invoiceNumber: string): Promise<void> {
   const webhook = Deno.env.get("MANUAL_PAYMENT_DISCORD_WEBHOOK_URL") ?? Deno.env.get("DISCORD_WEBHOOK_URL");
@@ -52,21 +53,26 @@ async function notifyTelegram(text: string): Promise<void> {
 }
 
 async function notifyFounderWhatsApp(text: string): Promise<void> {
-  const instance = Deno.env.get("MANUAL_PAYMENT_WHATSAPP_INSTANCE");
-  if (instance && evolutionConfigured()) {
-    await evolutionSendText(instance, FOUNDER_WHATSAPP, text);
-    return;
-  }
-
-  // Fallback: Telegram often mirrors to phone; Discord webhook is separate
+  const phone = FOUNDER_WHATSAPP;
+  const result = await sendWhatsAppWithRetry(phone, text, {
+    category: "payment",
+    referenceId: "founder-payment-alert",
+    userId: "founder",
+    provider: "evolution",
+    instanceName: Deno.env.get("MANUAL_PAYMENT_WHATSAPP_INSTANCE") ?? undefined,
+  });
+  if (!result.ok) console.warn("[WhatsApp] founder notify failed", result.error);
 }
 
 async function notifyUserWhatsApp(phone: string | null | undefined, text: string): Promise<void> {
   if (!phone) return;
-  const instance = Deno.env.get("MANUAL_PAYMENT_WHATSAPP_INSTANCE");
-  if (instance && evolutionConfigured()) {
-    await evolutionSendText(instance, phone, text);
-  }
+  const result = await sendWhatsAppWithRetry(phone, text, {
+    category: "payment",
+    userId: phone,
+    provider: "evolution",
+    instanceName: Deno.env.get("MANUAL_PAYMENT_WHATSAPP_INSTANCE") ?? undefined,
+  });
+  if (!result.ok) console.warn("[WhatsApp] user notify failed", { phone, error: result.error });
 }
 
 Deno.serve(async (req) => {
