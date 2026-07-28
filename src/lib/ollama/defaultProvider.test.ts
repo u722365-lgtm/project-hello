@@ -11,10 +11,15 @@ describe("ollama defaultProvider", () => {
     localStorage.clear();
   });
 
-  it("enables Ollama by default on first run", () => {
+  it("keeps Ollama opt-in on first run for faster normal chat", () => {
     applyOllamaDefaultProvider();
+    expect(isOllamaDefaultProvider()).toBe(false);
+    expect(localStorage.getItem(OLLAMA_WEB_ENABLED_KEY)).toBe("0");
+  });
+
+  it("respects explicit enable", () => {
+    setOllamaDefaultProvider(true);
     expect(isOllamaDefaultProvider()).toBe(true);
-    expect(localStorage.getItem(OLLAMA_WEB_ENABLED_KEY)).toBe("1");
   });
 
   it("respects explicit disable", () => {

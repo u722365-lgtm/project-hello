@@ -8,18 +8,18 @@ const DEFAULTS_APPLIED_KEY = "shadowtalk_ollama_defaults_applied_v1";
 export const OLLAMA_WEB_ENABLED_KEY = "shadowtalk_ollama_web_enabled";
 const SOVEREIGN_KEY = "shadowtalk_sovereign_desktop";
 
-/** Apply first-run defaults: Ollama enabled, desktop sovereign routing. */
+/** First-run defaults: keep normal chat cloud-first; local/Ollama is explicit opt-in. */
 export function applyOllamaDefaultProvider(): void {
   try {
     if (localStorage.getItem(DEFAULTS_APPLIED_KEY) === "1") return;
     localStorage.setItem(DEFAULTS_APPLIED_KEY, "1");
 
     if (localStorage.getItem(OLLAMA_WEB_ENABLED_KEY) === null) {
-      localStorage.setItem(OLLAMA_WEB_ENABLED_KEY, "1");
+      localStorage.setItem(OLLAMA_WEB_ENABLED_KEY, "0");
     }
 
     if (isShadowTalkDesktop() && localStorage.getItem(SOVEREIGN_KEY) === null) {
-      localStorage.setItem(SOVEREIGN_KEY, "sovereign");
+      localStorage.setItem(SOVEREIGN_KEY, "auto");
     }
   } catch {
     /* private mode */
