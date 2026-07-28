@@ -1110,7 +1110,7 @@ const ChatbotPage = () => {
         }
         void indexSovereignMemory(spectre.content, { category: "chat", source: "assistant" });
         if (user) {
-          await saveMessage(spectre.content, "assistant", conversationId);
+          void saveMessage(spectre.content, "assistant", conversationId);
         }
         return spectre.content;
       }
@@ -1164,7 +1164,7 @@ const ChatbotPage = () => {
               }
               void indexSovereignMemory(final, { category: "chat", source: "assistant" });
               if (user) {
-                await saveMessage(final, "assistant", conversationId);
+                void saveMessage(final, "assistant", conversationId);
               }
               void maybeReflectAndPersist(user, messages);
               return final;
@@ -1200,7 +1200,7 @@ const ChatbotPage = () => {
             }
             void indexSovereignMemory(offline.content, { category: "chat", source: "assistant" });
             if (user) {
-              await saveMessage(offline.content, "assistant", conversationId);
+              void saveMessage(offline.content, "assistant", conversationId);
             }
             return assistantContent || offline.content;
           }
@@ -1216,7 +1216,7 @@ const ChatbotPage = () => {
               void indexSovereignMemory(content, { category: "chat", source: "assistant" });
             }
             if (content && user) {
-              await saveMessage(content, "assistant", conversationId);
+              void saveMessage(content, "assistant", conversationId);
             }
             const reply = assistantContent || content;
             if (reply) {
@@ -1274,7 +1274,7 @@ const ChatbotPage = () => {
             }
             void indexSovereignMemory(final, { category: "chat", source: "assistant" });
             if (user) {
-              await saveMessage(final, "assistant", conversationId);
+              void saveMessage(final, "assistant", conversationId);
             }
             void maybeReflectAndPersist(user, messages);
             return final;
@@ -1970,7 +1970,7 @@ const ChatbotPage = () => {
               : m,
           ),
         );
-        if (user) await saveMessage(summary, "assistant", conversationId);
+        if (user) void saveMessage(summary, "assistant", conversationId);
       } catch (err) {
         const errMsg = err instanceof Error ? err.message : "App generation failed.";
         setMessages((prev) =>
