@@ -97,7 +97,7 @@ import {
   augmentMessagesWithLocalMemory,
   indexSovereignMemory,
 } from "@/lib/desktop/sovereignMemoryRag";
-import { isSovereignModeEnabled } from "@/lib/desktop/sovereignMode";
+import { isSovereignModeEnabled, shouldPreferOllamaInference } from "@/lib/desktop/sovereignMode";
 import {
   canUseCloudAI,
   DEVICE_ONLY_BLOCKED_MESSAGE,
@@ -1123,7 +1123,9 @@ const ChatbotPage = () => {
       const route = decideRoute(routerMessages, navigator.onLine);
       const useLocal =
         !hasMultimodalImage &&
-        (route.target === "local" || (aiProvider === "shadowtalk" && isAnyLocalModelReady()));
+        (route.target === "local" ||
+          route.backend === "ollama" ||
+          (aiProvider === "shadowtalk" && isAnyLocalModelReady()));
       if (useLocal) {
         if (!isAnyLocalModelReady() && route.backend !== "ollama") {
           prewarmFastestLocalPath();
@@ -1240,6 +1242,46 @@ const ChatbotPage = () => {
 
       if (!canUseCloudAI()) {
         throw new Error(DEVICE_ONLY_BLOCKED_MESSAGE);
+      }
+
+      // Ollama default provider — last chance before cloud for non-complex chat
+      if (!hasMultimodalImage && shouldPreferOllamaInference()) {
+        const aiMessageId = crypto.randomUUID();
+        let assistantContent = "";
+        const streamToken = (token: string) => {
+          assistantContent += token;
+          setMessages((prev) => {
+            const exists = prev.find((m) => m.id === aiMessageId);
+            if (exists) {
+              return prev.map((m) =>
+                m.id === aiMessageId ? { ...m, content: assistantContent } : m,
+              );
+            }
+            return [
+              ...prev,
+              { id: aiMessageId, type: "ai", content: assistantContent, timestamp: new Date() },
+            ];
+          });
+        };
+        try {
+          const ollama = await runOllamaChat(routerMessages, streamToken, controller.signal);
+          if (ollama.ok && (assistantContent || ollama.content)) {
+            const final = assistantContent || ollama.content;
+            const lastUserText =
+              [...routerMessages].reverse().find((m) => m.role === "user")?.content ?? "";
+            if (lastUserText) {
+              void indexSovereignMemory(lastUserText, { category: "chat", source: "user" });
+            }
+            void indexSovereignMemory(final, { category: "chat", source: "assistant" });
+            if (user) {
+              await saveMessage(final, "assistant", conversationId);
+            }
+            void maybeReflectAndPersist(user, messages);
+            return final;
+          }
+        } catch (e) {
+          console.warn("[Chat] Ollama default provider unavailable, using cloud:", e);
+        }
       }
 
       const chatUrl = getChatFunctionUrl();

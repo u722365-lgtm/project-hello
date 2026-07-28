@@ -1,13 +1,13 @@
 /**
- * Renderer-side Ollama chat via Electron IPC (Odysseus sidecar pattern).
+ * Renderer-side Ollama — desktop IPC for status/pull; chat via unified client (web + desktop).
  */
 
 import { getDesktopAPI } from "@/lib/desktopBridge";
 import type { RouterMessage } from "@/lib/offline/hybridRouter";
+import { chat as unifiedChat, getStatus } from "@/lib/ollama/unifiedClient";
 import {
   getStoredOllamaModel,
   getStoredOllamaUrl,
-  isOllamaInferenceReady,
 } from "@/lib/desktop/sovereignMode";
 
 export type OllamaStatus = {
@@ -49,9 +49,9 @@ export async function pullOllamaModel(
 }
 
 type OllamaChatInput =
-  | Array<{ role: 'system' | 'user' | 'assistant'; content: string }>
+  | RouterMessage[]
   | {
-      messages?: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>;
+      messages?: RouterMessage[];
       prompt?: string;
       model?: string;
     };
@@ -62,31 +62,23 @@ export async function runOllamaChat(
   signal?: AbortSignal,
 ): Promise<{ content: string; ok: boolean; error?: string }> {
   const input = Array.isArray(rawInput) ? { messages: rawInput } : rawInput;
-  if (!isOllamaInferenceReady()) {
-    return { content: '', ok: false, error: 'Ollama is not ready' };
-  }
-
-  const api = getDesktopAPI();
-  if (!api?.ollamaChat) {
-    return { content: '', ok: false, error: 'Desktop Ollama API unavailable' };
-  }
 
   const messages = [...(input.messages ?? [])];
   if (messages.length === 0 && input.prompt) {
-    messages.push({ role: 'user', content: input.prompt });
+    messages.push({ role: "user", content: input.prompt });
   }
   if (messages.length === 0) {
-    return { content: '', ok: false, error: 'No prompt or messages provided' };
+    return { content: "", ok: false, error: "No prompt or messages provided" };
   }
 
-  const result = await api.ollamaChat(
-    {
-      messages: messages.map((m) => ({ role: m.role, content: m.content })),
-      baseUrl: getStoredOllamaUrl(),
-      model: input.model ?? getStoredOllamaModel(),
-    },
-    onToken ?? (() => {}),
-    signal,
-  );
-  return result;
+  const status = await getStatus();
+  if (!status.reachable || status.models.length === 0) {
+    return {
+      content: "",
+      ok: false,
+      error: status.error ?? "Ollama is not ready — install a model at /local-models",
+    };
+  }
+
+  return unifiedChat(messages, { onToken, signal });
 }
