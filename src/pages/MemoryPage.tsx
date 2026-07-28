@@ -1,4 +1,4 @@
-import { MemoryDashboard } from "@/components/memory/MemoryDashboard";
+import MemoryDashboard from "@/components/memory/MemoryDashboard";
 
 const MemoryPage = () => <MemoryDashboard />;
 

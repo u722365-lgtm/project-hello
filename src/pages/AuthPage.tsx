@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { isLocalFirst, signInWithRemoteProvider, signInWithLocalPreferredProvider } from "@/lib/remoteAuth";
-import { restoreOrCreateSession, clearExplicitSignOut, hasExplicitSignOut, markExplicitSignOut } from "@/lib/persistentAuth";
+import { restoreOrCreateSession, clearExplicitSignOut, hasExplicitSignOut, markExplicitSignOut, consumeReturnPath, isAnonymousUser, getRememberedWorkspacePath } from "@/lib/persistentAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
@@ -18,7 +18,6 @@ import { setStoredAuthDesignChoice } from "@/lib/authDesigns";
 import { AuthModeTabs, type AuthTabKey } from "@/components/auth/AuthModeTabs";
 import { AuthAnimatedField } from "@/components/auth/AuthAnimatedField";
 import { AuthShimmerButton } from "@/components/auth/AuthShimmerButton";
-import { clearExplicitSignOut, consumeReturnPath, isAnonymousUser } from "@/lib/persistentAuth";
 import { isEnterpriseDeployment } from "@/hooks/useEnterpriseExperience";
 import { ENTERPRISE_TENANTS, isEnterpriseEmail } from "@/lib/enterpriseTenants";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
@@ -70,6 +69,18 @@ const AuthPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
+
+  useEffect(() => {
+    const oauthError = searchParams.get("error");
+    const oauthErrorMessage = searchParams.get("message");
+    if (oauthError) {
+      toast({
+        title: "OAuth failed",
+        description: oauthErrorMessage || oauthError,
+        variant: "destructive",
+      });
+    }
+  }, [searchParams]);
   const enterpriseFlow =
     isEnterpriseDeployment() || searchParams.get("enterprise") === "1";
   const enterpriseTenant = ENTERPRISE_TENANTS[0];
@@ -129,7 +140,12 @@ const AuthPage = () => {
         console.log('[AuthPage] checkUser session', { hasSession: !!session, isAnonymous: session?.user?.is_anonymous });
         if (session?.user && !isAnonymousUser(session)) {
           navigate(consumeReturnPath());
+          return;
         }
+        const fallback = (session?.user?.is_anonymous && !hasExplicitSignOut())
+          ? getRememberedWorkspacePath()
+          : "/auth";
+        navigate(fallback, { replace: true });
       }
     };
     checkUser();
@@ -140,7 +156,9 @@ const AuthPage = () => {
       void restoreOrCreateSession().then((session) => {
         console.log('[AuthPage] restoreOrCreateSession', { hasSession: !!session, isAnonymous: session?.user?.is_anonymous });
         if (session?.user && !isAnonymousUser(session)) {
-          navigate(consumeReturnPath());
+          navigate(consumeReturnPath(), { replace: true });
+        } else if (session?.user?.is_anonymous && !hasExplicitSignOut()) {
+          navigate(getRememberedWorkspacePath(), { replace: true });
         }
       }).catch((error) => {
         console.warn('[AuthPage] restoreOrCreateSession failed:', error);

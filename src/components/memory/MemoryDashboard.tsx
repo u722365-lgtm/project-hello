@@ -16,7 +16,7 @@ type MemoryRecord = MemoryRecordLike & {
 const CATEGORIES = ["preference", "skill", "context"] as const;
 type Category = (typeof CATEGORIES)[number];
 
-export function MemoryDashboard() {
+export default function MemoryDashboard() {
   const { user } = useAuth();
   const [items, setItems] = useState<MemoryRecord[]>([]);
   const [loading, setLoading] = useState(false);
