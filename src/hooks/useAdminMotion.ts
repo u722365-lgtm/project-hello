@@ -1,5 +1,6 @@
 import { useReducedMotion } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { shouldReduceMotionForPerf } from "@/lib/perf/leanMotion";
 import type { AdminMotionProfile } from "@/lib/adminMotion";
 import {
   ADMIN_SPRING,
@@ -19,7 +20,7 @@ import {
 } from "@/lib/adminMotion";
 
 export function useAdminMotion() {
-  const reduced = useReducedMotion() ?? false;
+  const reduced = shouldReduceMotionForPerf(useReducedMotion() ?? false);
   const isMobile = useIsMobile();
   const profile: AdminMotionProfile = { reduced, mobile: isMobile };
 

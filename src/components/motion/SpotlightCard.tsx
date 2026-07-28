@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import { motion, useMotionTemplate, useMotionValue, useReducedMotion } from "framer-motion";
+import { shouldReduceMotionForPerf } from "@/lib/perf/leanMotion";
 import { cn } from "@/lib/utils";
 
 interface SpotlightCardProps {
@@ -23,7 +24,7 @@ export function SpotlightCard({
   tilt = 8,
   spotlightSize = 520,
 }: SpotlightCardProps) {
-  const reduced = useReducedMotion();
+  const reduced = shouldReduceMotionForPerf(useReducedMotion() ?? false);
   const ref = useRef<HTMLDivElement | null>(null);
   const x = useMotionValue(0);
   const y = useMotionValue(0);

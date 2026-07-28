@@ -1,5 +1,6 @@
 import { useReducedMotion } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { shouldReduceMotionForPerf } from "@/lib/perf/leanMotion";
 import type { AuthMotionProfile } from "@/lib/authMotion";
 import {
   AUTH_SPRING,
@@ -21,7 +22,7 @@ import {
 } from "@/lib/authMotion";
 
 export function useAuthMotion() {
-  const reduced = useReducedMotion() ?? false;
+  const reduced = shouldReduceMotionForPerf(useReducedMotion() ?? false);
   const isMobile = useIsMobile();
   const profile: AuthMotionProfile = { reduced, mobile: isMobile };
 

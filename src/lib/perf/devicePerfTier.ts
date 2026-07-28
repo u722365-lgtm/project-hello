@@ -4,7 +4,11 @@
  * to <html> so CSS can degrade heavy effects (backdrop-filter, shadows,
  * expensive keyframes) on weak devices, keeping ShadowTalk smooth on
  * everything from a $99 Android to a 32GB workstation.
+ *
+ * Lean motion (default) further strips heavy CSS/JS animation cost.
  */
+
+import { applyLeanMotionClass, isLeanMotionEnabled } from "./leanMotion";
 
 export type PerfTier = "low" | "mid" | "high";
 
@@ -15,6 +19,7 @@ export interface PerfProfile {
   reducedMotion: boolean;
   saveData: boolean;
   slowNetwork: boolean;
+  leanMotion: boolean;
 }
 
 let cached: PerfProfile | null = null;
@@ -35,6 +40,7 @@ function detect(): PerfProfile {
   const saveData = !!(conn && conn.saveData);
   const effectiveType: string = (conn && conn.effectiveType) || "";
   const slowNetwork = effectiveType === "slow-2g" || effectiveType === "2g" || effectiveType === "3g";
+  const leanMotion = isLeanMotionEnabled();
 
   let tier: PerfTier;
   if (deviceMemory <= 2 || cores <= 2 || saveData) tier = "low";
@@ -48,7 +54,10 @@ function detect(): PerfProfile {
   // Reduced-motion users always at least drop to mid (kills the big shaders).
   if (reducedMotion && tier === "high") tier = "mid";
 
-  return { tier, deviceMemory, cores, reducedMotion, saveData, slowNetwork };
+  // Lean motion: prefer mid-tier CSS degradation even on strong GPUs.
+  if (leanMotion && tier === "high") tier = "mid";
+
+  return { tier, deviceMemory, cores, reducedMotion, saveData, slowNetwork, leanMotion };
 }
 
 
@@ -66,6 +75,7 @@ export function applyPerfProfile(): PerfProfile {
   if (profile.saveData) root.classList.add("perf-save-data");
   if (profile.slowNetwork) root.classList.add("perf-slow-net");
   root.dataset.perfTier = profile.tier;
+  applyLeanMotionClass();
   return profile;
 }
 

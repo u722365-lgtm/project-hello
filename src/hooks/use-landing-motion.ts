@@ -1,5 +1,6 @@
 import { useReducedMotion } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { shouldReduceMotionForPerf } from "@/lib/perf/leanMotion";
 import type { LandingMotionProfile } from "@/lib/landingMotion";
 import {
   cardReveal,
@@ -24,10 +25,10 @@ import {
 } from "@/lib/landingMotion";
 
 /**
- * Responsive landing motion: respects prefers-reduced-motion and smaller screens.
+ * Responsive landing motion: lean mode + prefers-reduced-motion kill heavy effects.
  */
 export function useLandingMotion() {
-  const reduced = useReducedMotion() ?? false;
+  const reduced = shouldReduceMotionForPerf(useReducedMotion() ?? false);
   const isMobile = useIsMobile();
   const profile: LandingMotionProfile = { reduced, mobile: isMobile };
 

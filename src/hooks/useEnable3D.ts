@@ -1,15 +1,13 @@
 import { useReducedMotion } from "framer-motion";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { isLeanMotionEnabled } from "@/lib/perf/leanMotion";
 
-/** Enable WebGL scenes unless user prefers reduced motion or we're on very small screens. */
+/** WebGL scenes are off under lean motion (default) — too heavy for most sessions. */
 export function useEnable3D(forceOff = false): boolean {
   const reduced = useReducedMotion() ?? false;
-  const isMobile = useIsMobile();
-  if (forceOff || reduced) return false;
-  return true;
+  if (forceOff || reduced || isLeanMotionEnabled()) return false;
+  return false;
 }
 
 export function use3DQuality(): "low" | "high" {
-  const isMobile = useIsMobile();
-  return isMobile ? "low" : "high";
+  return "low";
 }

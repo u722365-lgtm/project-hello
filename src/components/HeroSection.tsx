@@ -15,21 +15,11 @@ import { StealthKillSwitch } from "@/components/StealthKillSwitch";
 import { useStealthKillSwitch } from "@/hooks/useStealthKillSwitch";
 import FreeTierLimitsStrip from "@/components/growth/FreeTierLimitsStrip";
 import ProofOverHypeBar from "@/components/growth/ProofOverHypeBar";
+import { useEnable3D } from "@/hooks/useEnable3D";
 
 const NeuralGlobeBackdrop = lazy(() =>
   import("@/components/three/Scene3DBackdrop").then((m) => ({ default: m.NeuralGlobeBackdrop })),
 );
-
-const floatingOrbAnim = {
-  y: [0, -20, 0],
-  scale: [1, 1.05, 1],
-};
-
-const floatingOrbSlowAnim = {
-  y: [0, 15, 0],
-  x: [0, -10, 0],
-  scale: [1, 1.08, 1],
-};
 
 const HeroSection = () => {
   const navigate = useNavigate();
@@ -37,6 +27,7 @@ const HeroSection = () => {
   const [showDemo, setShowDemo] = useState(false);
   const metrics = usePlatformMetrics();
   const { isStealthMode } = useStealthKillSwitch();
+  const enable3D = useEnable3D();
   const {
     variants,
     hoverLift,
@@ -44,7 +35,7 @@ const HeroSection = () => {
     parallaxRange,
     scrollOpacityRange,
     isMobile,
-    orbTransition,
+    shouldAnimateAmbient,
   } = useLandingMotion();
 
   useEffect(() => {
@@ -61,32 +52,45 @@ const HeroSection = () => {
   const heroOpacity = useTransform(scrollY, [0, 400], scrollOpacityRange);
   const heroY = useTransform(scrollY, [0, 400], parallaxRange);
 
-  const orbSizePrimary = isMobile ? "w-[280px] h-[280px] blur-[80px]" : "w-[500px] h-[500px] blur-[150px]";
-  const orbSizeSecondary = isMobile ? "w-[220px] h-[220px] blur-[70px]" : "w-[400px] h-[400px] blur-[150px]";
-  const orbSizeCenter = isMobile ? "w-[320px] h-[160px] blur-[80px]" : "w-[600px] h-[300px] blur-[150px]";
+  const orbSizePrimary = isMobile ? "w-[200px] h-[200px] blur-[40px]" : "w-[360px] h-[360px] blur-[60px]";
+  const orbSizeSecondary = isMobile ? "w-[160px] h-[160px] blur-[36px]" : "w-[280px] h-[280px] blur-[50px]";
 
   return (
     <section className="shadowtalk-hero neural-bg relative min-h-[100dvh] min-h-screen flex items-center justify-center overflow-hidden">
-      <Suspense fallback={null}>
-        <NeuralGlobeBackdrop className="z-[1]" />
-      </Suspense>
+      {enable3D && (
+        <Suspense fallback={null}>
+          <NeuralGlobeBackdrop className="z-[1]" />
+        </Suspense>
+      )}
       <div className="absolute inset-0 bg-grid-dense opacity-20 z-[2]" aria-hidden />
 
-      <LandingAmbientOrb
-        className={`absolute top-1/4 left-1/4 ${orbSizePrimary} bg-primary/20 rounded-full z-[2]`}
-        animate={floatingOrbAnim}
-        duration={6}
-      />
-      <LandingAmbientOrb
-        className={`absolute bottom-1/4 right-1/4 ${orbSizeSecondary} bg-secondary/15 rounded-full z-[2]`}
-        animate={floatingOrbSlowAnim}
-        duration={8}
-      />
-      <LandingAmbientOrb
-        className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ${orbSizeCenter} bg-accent/10 rounded-full z-[2]`}
-        animate={{ scale: [1, 1.1, 1], opacity: [0.4, 0.7, 0.4] }}
-        duration={5}
-      />
+      {/* Static soft glows only — no infinite animated orbs */}
+      {shouldAnimateAmbient ? null : (
+        <>
+          <div
+            className={`absolute top-1/4 left-1/4 ${orbSizePrimary} bg-primary/15 rounded-full z-[2] pointer-events-none`}
+            aria-hidden
+            data-decorative="ambient"
+          />
+          <div
+            className={`absolute bottom-1/4 right-1/4 ${orbSizeSecondary} bg-secondary/10 rounded-full z-[2] pointer-events-none`}
+            aria-hidden
+            data-decorative="ambient"
+          />
+        </>
+      )}
+      {shouldAnimateAmbient && (
+        <>
+          <LandingAmbientOrb
+            className={`absolute top-1/4 left-1/4 ${orbSizePrimary} bg-primary/20 rounded-full z-[2]`}
+            duration={6}
+          />
+          <LandingAmbientOrb
+            className={`absolute bottom-1/4 right-1/4 ${orbSizeSecondary} bg-secondary/15 rounded-full z-[2]`}
+            duration={8}
+          />
+        </>
+      )}
 
       <motion.div
         style={enableParallax ? { opacity: heroOpacity, y: heroY } : undefined}

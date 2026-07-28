@@ -1857,3 +1857,64 @@ html.kbd-open [data-decorative="ambient"] {
   }
 }
 
+/* ============================================================
+   Lean motion (default) — strip heavy CSS animations for speed.
+   See src/lib/perf/leanMotion.ts
+   ============================================================ */
+html.lean-motion .neural-bg,
+html.lean-motion .neural-thinking-glow,
+html.lean-motion .animated-gradient,
+html.lean-motion .gradient-shift,
+html.lean-motion .shimmer,
+html.lean-motion .float,
+html.lean-motion .text-glow-pulse,
+html.lean-motion .pulse-dot {
+  animation: none !important;
+}
+
+html.lean-motion .neural-bg {
+  background-size: 100% 100%;
+}
+
+html.lean-motion .shadowtalk-chat-shell .shadowtalk-chat-glow,
+html.lean-motion .shadowtalk-chat-glow {
+  animation: none !important;
+  opacity: 0.55;
+}
+
+html.lean-motion .landing-nav-dock::before,
+html.lean-motion .landing-nav-dock::after,
+html.lean-motion [class*="landing-nav-ring"],
+html.lean-motion [class*="landing-nav-orbit"],
+html.lean-motion [class*="landing-nav-beam"] {
+  animation: none !important;
+}
+
+html.lean-motion .landing-nav-dock {
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+
+html.lean-motion .landing-page-grain,
+html.lean-motion .settings-grain {
+  opacity: 0.25;
+}
+
+html.lean-motion [data-decorative="ambient"] {
+  display: none !important;
+}
+
+html.lean-motion .glass,
+html.lean-motion .glass-subtle,
+html.lean-motion .glass-strong {
+  backdrop-filter: blur(6px) !important;
+  -webkit-backdrop-filter: blur(6px) !important;
+}
+
+html.lean-motion *,
+html.lean-motion *::before,
+html.lean-motion *::after {
+  scroll-behavior: auto !important;
+}
+
+
