@@ -69,6 +69,7 @@ export const ChatInput = ({
   promptSuggestion,
   onPromptAccept,
   onPromptClear,
+  onSuggestionChange,
 }: ChatInputProps) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
