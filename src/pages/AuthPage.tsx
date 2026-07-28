@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { isLocalFirst, signInWithRemoteProvider, signInWithLocalPreferredProvider } from "@/lib/remoteAuth";
+import { restoreOrCreateSession, clearExplicitSignOut, hasExplicitSignOut, markExplicitSignOut } from "@/lib/persistentAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
@@ -125,6 +126,7 @@ const AuthPage = () => {
       if (offlineSession) { navigate('/chatbot'); return; }
       if (!isOffline) {
         const { data: { session } } = await supabase.auth.getSession();
+        console.log('[AuthPage] checkUser session', { hasSession: !!session, isAnonymous: session?.user?.is_anonymous });
         if (session?.user && !isAnonymousUser(session)) {
           navigate(consumeReturnPath());
         }
@@ -132,6 +134,19 @@ const AuthPage = () => {
     };
     checkUser();
   }, [navigate, isOffline, getOfflineSession]);
+
+  useEffect(() => {
+    if (!isOffline) {
+      void restoreOrCreateSession().then((session) => {
+        console.log('[AuthPage] restoreOrCreateSession', { hasSession: !!session, isAnonymous: session?.user?.is_anonymous });
+        if (session?.user && !isAnonymousUser(session)) {
+          navigate(consumeReturnPath());
+        }
+      }).catch((error) => {
+        console.warn('[AuthPage] restoreOrCreateSession failed:', error);
+      });
+    }
+  }, [navigate, isOffline]);
 
   const sanitizeInput = (input: string) => input.trim().slice(0, 255);
 

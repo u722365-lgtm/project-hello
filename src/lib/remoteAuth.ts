@@ -19,16 +19,19 @@ export async function signInWithRemoteProvider(provider: RemoteAuthProvider, opt
     });
 
     if (error) {
+      console.warn('[Auth][signInWithRemoteProvider] error', { provider, error: error.message });
       return { error: new Error(error.message) };
     }
 
     if (typeof window !== "undefined" && data?.url) {
+      console.log('[Auth][signInWithRemoteProvider] redirect', { provider, url: data.url });
       window.location.href = data.url;
     }
 
     return {};
   } catch (e) {
-    return { error: e instanceof Error ? e.message : "Failed to connect" };
+    console.warn('[Auth][signInWithRemoteProvider] exception', { provider, error: e instanceof Error ? e.message : 'Failed to connect' });
+    return { error: e instanceof Error ? e : new Error('Failed to connect') };
   }
 }
 
