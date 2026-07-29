@@ -1166,7 +1166,7 @@ const ChatbotPage = () => {
               if (user) {
                 void saveMessage(final, "assistant", conversationId);
               }
-              void maybeReflectAndPersist(user, messages);
+              void maybeReflectAndPersist({ user }, messages);
               return final;
             }
             if (isSovereignModeEnabled() || !canUseCloudAI()) {
@@ -1220,7 +1220,7 @@ const ChatbotPage = () => {
             }
             const reply = assistantContent || content;
             if (reply) {
-              void maybeReflectAndPersist(user, messages);
+              void maybeReflectAndPersist({ user }, messages);
             }
             return reply;
           } catch (e) {
@@ -1276,7 +1276,7 @@ const ChatbotPage = () => {
             if (user) {
               void saveMessage(final, "assistant", conversationId);
             }
-            void maybeReflectAndPersist(user, messages);
+            void maybeReflectAndPersist({ user }, messages);
             return final;
           }
         } catch (e) {
