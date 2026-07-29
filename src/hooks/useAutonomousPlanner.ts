@@ -35,8 +35,26 @@ export function useAutonomousPlanner() {
 
       const needsCognitiveLoop = shouldUseCognitiveLoop(message);
 
+      // SPEED: the LLM planner is a full extra round-trip to /functions/v1/chat
+      // that ran BEFORE every single message — adding ~1s to every reply, even
+      // for "hi". Plain conversational turns can never route to a tool, so skip
+      // the planner entirely unless the regex detector or the cognitive-loop
+      // detector sees tool intent.
+      const regexFirst = detectTool(message);
+      if (!needsCognitiveLoop && !regexFirst.tool && !hasToolIntentSignal(message)) {
+        const fast: AutonomousPlanResult = {
+          detection: regexFirst,
+          plan: null,
+          usedLlm: false,
+          needsCognitiveLoop: false,
+        };
+        cacheRef.current.set(key, fast);
+        return fast;
+      }
+
       let plan: PlannerPlan | null = null;
       let usedLlm = false;
+
 
       try {
         plan = await planToolRoute(
