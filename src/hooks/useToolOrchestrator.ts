@@ -315,7 +315,9 @@ const TOOL_PATTERNS: Array<{
       /\b(?:what(?:'s| is)\s+happening|what(?:'s| is)\s+going on)\s+(?:in|with|about)\b/i,
       /\b(?:research|investigate|explore)\s+.{3,}/i,
       /\b(?:real.?time|live|up.?to.?date|today(?:'s)?)\s+(?:data|info|news|results?|stats?|statistics?)\b/i,
-      /\b(?:who|what|when|where|how)\s+(?:is|are|was|were|did)\s+.{5,}\??\s*$/i,
+      // Factual lookups only — exclude conversational "how are you", "what is up", etc.
+      /\b(?:who|what|when|where|how)\s+(?:is|are|was|were|did)\s+(?!you\b|u\b|we\b|i\b|it\s+going\b|things\b|up\b)(?:.{5,})\??\s*$/i,
+
       /\b(?:update|updates)\s+(?:on|about|regarding)\s+/i,
       /\bfind\s+(?:out|me)\s+(?:about|if|whether)\b/i,
     ],
