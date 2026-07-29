@@ -8,16 +8,6 @@ import {
 } from "@/lib/customApiKeys";
 import type { UserProviderKeyRow } from "@/hooks/useCustomApiKeys";
 
-/**
- * chatProviderBridge
- *
- * - UI ↔ server provider mapping.
- * - Successful auth/model routing now delegated to `src/api/` so browser/desktop/tauri share
- *   one abstraction layer instead of direct Supabase calls.
- *
- * TODO[runtime platform]: Hooks below will move to `src/api/` as Tauri backends land.
- */
-
 /** UI selector id → server-stored provider (user_provider_keys) */
 export function toServerProvider(ui: AIProvider): AiProviderId | null {
   if (ui === "gemini") return "google";
@@ -77,7 +67,7 @@ export function resolveActiveUiProvider(
     if (ui) return ui;
   }
 
-  return "shadowtalk";
+  return "lovable";
 }
 
 export function toCustomAiProviderId(provider: AIProvider): CustomAiProviderId {
@@ -90,10 +80,10 @@ export function buildChatProviderPayload(
   aiConfig: { useCustomKey: boolean; preferredProvider: AiProviderId | null },
   keys: UserProviderKeyRow[],
 ): Record<string, unknown> {
-  if (uiProvider === "shadowtalk") {
-    return { shadowtalkSovereignModel: true };
-  }
   if (uiProvider === "lovable") {
+    return {};
+  }
+  if (uiProvider === "shadowtalk") {
     return { shadowtalkSovereignModel: true };
   }
 
