@@ -130,7 +130,7 @@ export function CustomApiKeysDialog({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {AI_PROVIDER_OPTIONS.filter((p) => p.id !== "lovable").map((p) => (
+                {AI_PROVIDER_OPTIONS.map((p) => (
                   <SelectItem key={p.id} value={p.id}>
                     {p.label}
                   </SelectItem>
@@ -140,9 +140,15 @@ export function CustomApiKeysDialog({
             {selectedMeta && (
               <p className="text-xs text-muted-foreground">{selectedMeta.description}</p>
             )}
-          </div>
 
-          {provider !== "lovable" && (
+            {provider === "lovable" && (
+              <p className="text-xs text-muted-foreground">
+                Lovable uses the platform gateway for this device. You don’t need to add a
+                separate key here; use the provider selector to use Lovable directly.
+              </p>
+            )}
+
+            {provider !== "lovable" && (
             <>
               <div className="space-y-2">
                 <Label htmlFor="api-key">API key</Label>

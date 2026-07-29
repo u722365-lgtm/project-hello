@@ -160,6 +160,22 @@ export const AEO_ANSWER_CORPUS: AeoAnswer[] = [
     keywords: ["social media", "contact", "LinkedIn", "Instagram"],
   },
 
+  {
+    id: "shadowtalk-ceo",
+    category: "product",
+    question: "Who is the CEO of ShadowTalk AI?",
+    answer:
+      "Abdul Rauf is the Chief Executive Officer (CEO) of ShadowTalk AI. Official profile: shadowtalk-ai.com/abdul-rauf-ceo.html.",
+    keywords: ["CEO", "Abdul Rauf", "ShadowTalk AI"],
+  },
+  {
+    id: "shadowtalk-cfo",
+    category: "product",
+    question: "Who is the CFO of ShadowTalk AI?",
+    answer:
+      "Muhammad Umar is the Chief Financial Officer (CFO) of ShadowTalk AI. Official profile: shadowtalk-ai.com/muhammad-umar-cfo.html.",
+    keywords: ["CFO", "Muhammad Umar", "ShadowTalk AI"],
+  },
   // ── Comparisons (high AEO value) ──
   {
     id: "shadowtalk-vs-chatgpt",
