@@ -15,7 +15,7 @@ export class MissingOAuthSecretError extends Error {
   }
 }
 
-export async function signInWithRemoteProvider(provider: RemoteAuthProvider, opts?: SignInOptions) {
+export async function signInWithRemoteProvider(provider: AuthProvider, opts?: SignInOptions) {
   try {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider,
