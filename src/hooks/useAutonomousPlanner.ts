@@ -20,6 +20,18 @@ export interface AutonomousPlanResult {
 }
 
 /**
+ * Cheap local pre-filter: does this message look like it might need a tool?
+ * Only these turns pay for the LLM planner round-trip.
+ */
+const TOOL_INTENT_RE =
+  /\b(search|google|look ?up|latest|news|today'?s|browse|website|url|http|research|cite|source|image|picture|photo|draw|generate|render|logo|document|report|essay|pdf|docx|slide|deck|presentation|spreadsheet|chart|graph|calculate|compute|convert|plan|strategy|roadmap|analy[sz]e|audit|scrape|crawl|build me|create a|make me)\b/i;
+
+function hasToolIntentSignal(message: string): boolean {
+  return TOOL_INTENT_RE.test(message);
+}
+
+
+/**
  * Planner → (executor via dispatch) → critic loop entry point.
  * Returns best tool detection for the message.
  */
