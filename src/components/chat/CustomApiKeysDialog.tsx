@@ -190,7 +190,9 @@ export function CustomApiKeysDialog({
               </div>
             </>
           )}
+          </div>
         </div>
+
 
         <DialogFooter className="flex-col sm:flex-row gap-2">
           <Button type="button" variant="ghost" className="sm:mr-auto" onClick={onDismiss}>
