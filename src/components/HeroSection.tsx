@@ -36,6 +36,7 @@ const HeroSection = () => {
     scrollOpacityRange,
     isMobile,
     shouldAnimateAmbient,
+    orbTransition,
   } = useLandingMotion();
 
   useEffect(() => {
