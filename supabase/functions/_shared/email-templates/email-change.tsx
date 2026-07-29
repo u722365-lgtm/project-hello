@@ -36,7 +36,7 @@ export const EmailChangeEmail = ({
       <Container style={container}>
         <Section style={logoSection}>
           <Img
-            src="https://axsudmhjpfzffcicfvuj.supabase.co/storage/v1/object/public/email-assets/chatbot-logo.png"
+            src="https://www.shadowtalk-ai.com/email/chatbot-logo.png"
             width="48"
             height="48"
             alt="ShadowTalk AI"
