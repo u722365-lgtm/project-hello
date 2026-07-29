@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
 import type { UserIdentity } from "@supabase/supabase-js";
 
 export type AuthProvider = "google" | "apple";
@@ -10,41 +11,35 @@ type SignInOptions = {
 
 export class MissingOAuthSecretError extends Error {
   constructor(provider: string) {
-    super(`${provider} OAuth is not configured in Supabase. Use email or local login instead.`);
+    super(`${provider} OAuth is not configured. Use email or local login instead.`);
     this.name = "MissingOAuthSecretError";
   }
 }
 
 export async function signInWithRemoteProvider(provider: AuthProvider, opts?: SignInOptions) {
   try {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: opts?.redirect_uri,
-        ...opts?.extraParams,
-      },
+    const result = await lovable.auth.signInWithOAuth(provider, {
+      redirect_uri: opts?.redirect_uri ?? (typeof window !== "undefined" ? window.location.origin : undefined),
+      extraParams: opts?.extraParams,
     });
 
-    if (error) {
-      console.warn('[Auth][signInWithRemoteProvider] error', { provider, error: error.message });
-      const msg = error.message || 'Failed to connect';
-      if (/missing OAuth secret/i.test(msg)) {
+    if ((result as any)?.error) {
+      const err = (result as any).error;
+      const msg = err?.message || String(err);
+      console.warn("[Auth][signInWithRemoteProvider] error", { provider, msg });
+      if (/missing OAuth secret|not enabled|Unsupported provider/i.test(msg)) {
         return { error: new MissingOAuthSecretError(provider) };
       }
       return { error: new Error(msg) };
     }
 
-    if (typeof window !== "undefined" && data?.url) {
-      console.log('[Auth][signInWithRemoteProvider] redirect', { provider, url: data.url });
-      window.location.href = data.url;
-    }
-
-    return {};
+    return result as { redirected?: boolean };
   } catch (e) {
-    console.warn('[Auth][signInWithRemoteProvider] exception', { provider, error: e instanceof Error ? e.message : 'Failed to connect' });
-    return { error: e instanceof Error ? e : new Error('Failed to connect') };
+    console.warn("[Auth][signInWithRemoteProvider] exception", { provider, error: e });
+    return { error: e instanceof Error ? e : new Error("Failed to connect") };
   }
 }
+
 
 export function isLocalFirst(): boolean {
   return import.meta.env.VITE_LOCAL_FIRST === "true";
