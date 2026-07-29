@@ -19,9 +19,9 @@ describe("leanMotion", () => {
     expect(isLeanMotionEnabled()).toBe(true);
   });
 
-  it("can be disabled", () => {
+  it("lean motion is always on for performance", () => {
     setLeanMotionEnabled(false);
-    expect(isLeanMotionEnabled()).toBe(false);
+    expect(isLeanMotionEnabled()).toBe(true);
   });
 
   it("forces reduced motion for perf when lean is on", () => {
@@ -30,11 +30,6 @@ describe("leanMotion", () => {
     expect(shouldReduceMotionForPerf(true)).toBe(true);
   });
 
-  it("respects user reduced-motion when lean is off", () => {
-    setLeanMotionEnabled(false);
-    expect(shouldReduceMotionForPerf(false)).toBe(false);
-    expect(shouldReduceMotionForPerf(true)).toBe(true);
-  });
 
   it("applies lean-motion class on html", () => {
     setLeanMotionEnabled(true);

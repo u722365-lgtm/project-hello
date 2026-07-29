@@ -36,13 +36,12 @@ function readFlag(): boolean {
 
 /** Heavy animations are disabled when lean motion is on (default). */
 export function isLeanMotionEnabled(): boolean {
-  if (cached === null) cached = readFlag();
-  return cached;
+  return true;
 }
 
 /** Treat as reduced-motion for framer-motion profiles. */
-export function shouldReduceMotionForPerf(userPrefersReduced: boolean): boolean {
-  return userPrefersReduced || isLeanMotionEnabled();
+export function shouldReduceMotionForPerf(_userPrefersReduced: boolean): boolean {
+  return true;
 }
 
 export function setLeanMotionEnabled(enabled: boolean): void {
