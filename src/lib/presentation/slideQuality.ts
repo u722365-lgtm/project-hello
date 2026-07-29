@@ -361,6 +361,42 @@ export function postProcessSlide(slide: SlideLike, theme: ThemeLike, index: numb
   };
 }
 
+export interface GateResult {
+  score: number;
+  reasons: string[];
+  improved: boolean;
+}
+
+export function gateSlide(slide: SlideLike, theme: ThemeLike, index: number, total: number): GateResult {
+  const reasons: string[] = [];
+  let score = 100;
+
+  const plain = stripHtml(slide.html || "").replace(/\s+/g, " ").trim();
+  const wordCount = plain.split(" ").filter(Boolean).length;
+  const isHero = slide.layout === "title" || index === 0;
+  const isClosing = slide.layout === "closing" || index === total - 1;
+
+  const hasTitle = Boolean(slide.title?.trim());
+  const hasSubtitle = Boolean(isHero || isClosing ? slide.subtitle?.trim() : true);
+  const noOverlongParagraphs = !/(<p[^>]*>[^<]{180,}<\/p>)/i.test(slide.html || "");
+  const hasVisuals = /<svg/i.test(slide.html || "") || /stats|kpi|diagram|chart/i.test(plain);
+  const hasBulletsOrStructure = /<ul|<li|flex-direction:column/i.test(slide.html || "");
+  const speakerNotesHealthy = (!isHero && !isClosing) ? Boolean(slide.speakerNotes?.trim()) : true;
+
+  if (!hasTitle) { score -= 25; reasons.push("missing title"); }
+  if (!hasSubtitle) { score -= 15; reasons.push("missing subtitle"); }
+  if (wordCount > 70 && !hasBulletsOrStructure) { score -= 20; reasons.push("dense text without bullets/structure"); }
+  if (!noOverlongParagraphs) { score -= 15; reasons.push("overlong paragraph block"); }
+  if (index > 0 && !hasVisuals) { score -= 10; reasons.push("no visual element"); }
+  if (!speakerNotesHealthy) { score -= 10; reasons.push("speaker notes missing"); }
+
+  return {
+    score: Math.max(0, score),
+    reasons,
+    improved: reasons.length > 0,
+  };
+}
+
 export function postProcessPresentation<T extends { slides: SlideLike[] }>(
   presentation: T,
   theme: ThemeLike,
@@ -370,5 +406,14 @@ export function postProcessPresentation<T extends { slides: SlideLike[] }>(
   presentation.slides = presentation.slides.map((slide, i) =>
     postProcessSlide(slide, theme, i, total),
   );
+
+  const gate = presentation.slides.map((s, idx) => gateSlide(s, theme, idx, total));
+  const weakSlides = gate.filter((g) => g.score < 75);
+  if (weakSlides.length) {
+    presentation.slides = presentation.slides.map((slide, i) =>
+      postProcessSlide(slide, theme, i, total),
+    );
+  }
+
   return presentation;
 }

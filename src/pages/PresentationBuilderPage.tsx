@@ -22,6 +22,7 @@ import SlideRenderer from "@/components/presentation/SlideRenderer";
 import GenerationProgress, { GenerationPhase } from "@/components/presentation/GenerationProgress";
 import { Slide, PresentationData, ThemeKey, THEMES } from "@/components/presentation/types";
 import { loadPresentationFromSession } from "@/lib/kimiPresentation";
+import { gateSlide } from "@/lib/presentation/slideQuality";
 
 export type { Slide, ThemeKey };
 export { THEMES };
@@ -608,6 +609,24 @@ const PresentationBuilderPage = ({ embedded = false }: PresentationBuilderPagePr
   }, [isFullscreen]);
 
   const currentSlideData = presentation?.slides[currentSlide];
+
+  const deckQuality =
+    presentation && Array.isArray(presentation.slides)
+      ? (() => {
+          const scores = presentation.slides.map((s, i) => gateSlide(s as any, THEMES[style] as any, i, presentation.slides.length));
+          const avg = scores.reduce((sum, g) => sum + g.score, 0) / scores.length;
+          return { avg: Math.round(avg), lowCount: scores.filter((g) => g.score < 75).length };
+        })()
+      : null;
+
+  const qualityLabel =
+    deckQuality && deckQuality.lowCount === 0
+      ? deckQuality.avg >= 90
+        ? "Elite deck"
+        : "Strong deck"
+      : deckQuality && deckQuality.lowCount > 0
+        ? `${deckQuality.lowCount} slide${deckQuality.lowCount > 1 ? 's' : ''} need${deckQuality.lowCount === 1 ? 's' : ''} polish`
+        : null;
 
   // Render URL Plan Review UI
   const renderPlanReview = () => {
