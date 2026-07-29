@@ -20,6 +20,18 @@ export interface AutonomousPlanResult {
 }
 
 /**
+ * Cheap local pre-filter: does this message look like it might need a tool?
+ * Only these turns pay for the LLM planner round-trip.
+ */
+const TOOL_INTENT_RE =
+  /\b(search|google|look ?up|latest|news|today'?s|browse|website|url|http|research|cite|source|image|picture|photo|draw|generate|render|logo|document|report|essay|pdf|docx|slide|deck|presentation|spreadsheet|chart|graph|calculate|compute|convert|plan|strategy|roadmap|analy[sz]e|audit|scrape|crawl|build me|create a|make me)\b/i;
+
+function hasToolIntentSignal(message: string): boolean {
+  return TOOL_INTENT_RE.test(message);
+}
+
+
+/**
  * Planner → (executor via dispatch) → critic loop entry point.
  * Returns best tool detection for the message.
  */
@@ -35,8 +47,26 @@ export function useAutonomousPlanner() {
 
       const needsCognitiveLoop = shouldUseCognitiveLoop(message);
 
+      // SPEED: the LLM planner is a full extra round-trip to /functions/v1/chat
+      // that ran BEFORE every single message — adding ~1s to every reply, even
+      // for "hi". Plain conversational turns can never route to a tool, so skip
+      // the planner entirely unless the regex detector or the cognitive-loop
+      // detector sees tool intent.
+      const regexFirst = detectTool(message);
+      if (!needsCognitiveLoop && !regexFirst.tool && !hasToolIntentSignal(message)) {
+        const fast: AutonomousPlanResult = {
+          detection: regexFirst,
+          plan: null,
+          usedLlm: false,
+          needsCognitiveLoop: false,
+        };
+        cacheRef.current.set(key, fast);
+        return fast;
+      }
+
       let plan: PlannerPlan | null = null;
       let usedLlm = false;
+
 
       try {
         plan = await planToolRoute(
