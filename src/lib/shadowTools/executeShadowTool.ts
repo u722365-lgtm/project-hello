@@ -2,6 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { ToolType } from "@/hooks/useToolOrchestrator";
 import { buildExecutePath, inferDeliverableType } from "@/lib/execution/inferFromChat";
 import type { DeliverableType } from "@/lib/execution/types";
+import { chatAuthHeaders } from "./chatAuthHeaders";
 import type { ExecuteShadowToolContext, ShadowToolResult } from "./types";
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
@@ -18,10 +19,7 @@ async function parseChatJsonResponse(resp: Response): Promise<Record<string, unk
 async function streamChatToText(body: Record<string, unknown>, accessToken?: string): Promise<string> {
   const resp = await fetch(CHAT_URL, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-    },
+    headers: chatAuthHeaders({ accessToken }),
     body: JSON.stringify(body),
   });
   if (!resp.ok) {
@@ -125,10 +123,7 @@ export async function executeShadowTool(
       const prompt = p.prompt || message;
       const resp = await fetch(CHAT_URL, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${ctx.accessToken || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
+        headers: chatAuthHeaders({ accessToken: ctx.accessToken }),
         body: JSON.stringify({
           generateImage: true,
           imagePrompt: prompt,
@@ -198,165 +193,118 @@ export async function executeShadowTool(
           body: { url, options: { formats: ["markdown"], onlyMainContent: true } },
         });
         if (error) throw new Error(error.message);
-        const md =
-          data?.data?.markdown || data?.markdown || data?.content || JSON.stringify(data).slice(0, 6000);
+        const markdown = data?.markdown || data?.content || JSON.stringify(data, null, 2).slice(0, 8000);
         return {
           kind: "inline",
           tool,
-          content: `### Scraped ${url}\n\n${String(md).slice(0, 6000)}`,
+          content: `### Scraped: ${url}\n\n${markdown}`,
         };
       }
       return {
         kind: "ui",
         tool,
-        message: "Opening Shadow Browser — provide a URL in chat to scrape inline.",
+        message: "Provide a URL to scrape.",
+        path: "/browser",
       };
+    }
+
+    case "code_executor": {
+      const code = p.code || message;
+      const { data, error } = await supabase.functions.invoke("code-runner", {
+        body: { code, language: p.language || "javascript" },
+      });
+      if (error) throw new Error(error.message);
+      const output = (data?.stdout || data?.output || JSON.stringify(data, null, 2)).slice(0, 12000);
+      return { kind: "inline", tool, content: `### Code execution\n\n${output}` };
+    }
+
+    case "file_manager": {
+      const action = p.action || "list";
+      const { data, error } = await supabase.functions.invoke("file-manager", {
+        body: { action, path: p.path, content: p.content, name: p.name },
+      });
+      if (error) throw new Error(error.message);
+      return { kind: "inline", tool, content: JSON.stringify(data, null, 2).slice(0, 12000) };
     }
 
     case "presentation_builder": {
       const topic = p.topic || message;
-      const { data, error } = await supabase.functions.invoke("generate-presentation", {
-        body: { topic, slides: 8 },
+      try {
+        const outline = buildExecutePath("presentation_builder", {
+          message,
+          deliverableType: "slides",
+          params: p,
+        });
+        return {
+          kind: "inline",
+          tool,
+          content: `### Presentation outline: ${topic}\n\n\`\`\`json\n${JSON.stringify(outline, null, 2).slice(0, 8000)}\`\`\`\n\nOpen **Presentations** to export as PPTX.`,
+        };
+      } catch {
+        return {
+          kind: "inline",
+          tool,
+          content: `### Presentation outline: ${topic}\n\n\`\`\`json\n${JSON.stringify({ slides: [{ title: topic, bullets: ["Intro", "Body", "Conclusion"] }], export: "Use Presentations page to generate PPTX." }, null, 2)}\`\`\``,
+        };
+      }
+    }
+
+    case "database_query":
+    case "analytics_agent": {
+      const query = p.query || message;
+      const { data, error } = await supabase.functions.invoke("postgres-query", {
+        body: { query, limit: 25 },
       });
       if (error) throw new Error(error.message);
-      const outline = data?.outline || data?.slides || data;
+      const rows = Array.isArray(data) ? data : data?.rows || data?.results || [data];
       return {
         kind: "inline",
         tool,
-        content: `### Presentation outline: ${topic}\n\n\`\`\`json\n${JSON.stringify(outline, null, 2).slice(0, 8000)}\n\`\`\`\n\nOpen **Presentations** to export as PPTX.`,
+        content: `### Query result\n\n\`\`\`json\n${JSON.stringify(rows, null, 2).slice(0, 12000)}\`\`\``,
       };
     }
 
-    case "agentic_runner": {
-      const lower = message.toLowerCase();
-      if (/\b(read|check)\b.*\b(email|inbox)\b/.test(lower)) {
-        const { data, error } = await supabase.functions.invoke("shadow-agent-tools", {
-          body: { tool: "read_emails", params: { limit: 10 } },
-        });
-        if (error) throw new Error(error.message);
-        return {
-          kind: "inline",
-          tool,
-          content: data?.output || JSON.stringify(data?.data || {}, null, 2).slice(0, 6000),
-        };
-      }
-      if (/\b(send|email|draft)\b/.test(lower)) {
-        const draft = await streamChatToText(
-          {
-            messages: [{ role: "user", content: `Draft a professional email (do not send). Request: ${message}` }],
-            personality: ctx.personality,
-            mode: "email",
-          },
-          ctx.accessToken
-        );
-        return { kind: "inline", tool, content: draft };
-      }
-      if (/\b(calendar|meeting|schedule)\b/.test(lower)) {
-        const { data, error } = await supabase.functions.invoke("shadow-agent-tools", {
-          body: { tool: "get_calendar", params: {} },
-        });
-        if (error) throw new Error(error.message);
-        return {
-          kind: "inline",
-          tool,
-          content: data?.output || JSON.stringify(data?.data || {}, null, 2).slice(0, 6000),
-        };
-      }
+    case "api_integrator":
+    case "workflow_automation": {
+      const endpoint = p.endpoint || p.url || "";
+      const method = (p.method as string) || "POST";
+      const body = p.body || { input: message };
+      const { data, error } = await supabase.functions.invoke("api-gateway", {
+        body: { endpoint, method, body },
+      });
+      if (error) throw new Error(error.message);
       return {
-        kind: "ui",
-        tool: "shadow_execution",
-        message: "Launching Shadow Execution for this goal.",
-        path: buildExecutePath(p.goal || message, inferDeliverableType(message)),
+        kind: "inline",
+        tool,
+        content: `### ${method} ${endpoint || "API workflow"}\n\n\`\`\`json\n${JSON.stringify(data, null, 2).slice(0, 12000)}\`\`\``,
       };
     }
 
     case "shadow_execution":
     case "mission_control":
     case "strategy_agent": {
-      const mode = (
-        tool === "strategy_agent"
-          ? "strategy_report"
-          : (p.mode as DeliverableType) || inferDeliverableType(message)
-      ) as DeliverableType;
+      const mode = tool === "strategy_agent"
+        ? "strategy_report"
+        : (p.mode as DeliverableType) || inferDeliverableType(message);
       return {
         kind: "ui",
         tool: "shadow_execution",
-        message: "Opening Shadow Execution (autonomous plan + live tools).",
-        path: buildExecutePath(p.goal || message, mode),
-      };
-    }
-
-    case "document_generator":
-    case "creative_synthesis":
-    case "daily_planner":
-      return {
-        kind: "chat_flags",
-        tool,
-        flags: {
-          messages: [{ role: "user", content: p.topic || p.prompt || message }],
-          personality: ctx.personality,
-          mode: tool === "document_generator" ? "creative" : ctx.mode,
+        path: UI_ROUTES[tool]?.path ?? "/execute",
+        state: {
+          mode,
+          message,
+          params: p,
         },
       };
-
-    case "calculator": {
-      const expr = p.expression || message;
-      try {
-        const sanitized = expr.replace(/[^0-9+\-*/().^% ]/g, "");
-        // eslint-disable-next-line no-eval
-        const result = eval(sanitized);
-        return { kind: "inline", tool, content: `**${expr}** = **${result}**` };
-      } catch {
-        return { kind: "inline", tool, content: "Could not calculate. Check the expression." };
-      }
     }
 
-    case "music_generator":
+    default:
       return {
-        kind: "ui",
-        tool,
-        message: "Opening Music Studio.",
+        kind: "inline",
+        tool: "executor",
+        content: `Shadow tool “${tool}” is not implemented yet.`,
       };
-
-    default: {
-      const route = UI_ROUTES[tool];
-      if (route) {
-        return {
-          kind: "ui",
-          tool,
-          message: `Opening ${route.label}.`,
-          path: route.path,
-        };
-      }
-
-      const panelTools: ToolType[] = [
-        "shadow_live",
-        "code_canvas",
-        "data_organizer",
-        "camera_capture",
-        "script_automation",
-        "agent_workflows",
-        "model_fine_tuning",
-        "white_label",
-        "gemini_analytics",
-        "google_integration",
-        "vision_agent",
-        "command_palette",
-        "multi_model",
-        "memory_panel",
-        "custom_instructions",
-        "conversation_branching",
-        "bunker_mode",
-        "cognitive_loop",
-        "canvas_document",
-        "knowledge_vault",
-      ];
-
-      if (panelTools.includes(tool)) {
-        return { kind: "ui", tool, message: `Opening ${tool.replace(/_/g, " ")}…` };
-      }
-
-      return { kind: "chat_flags", tool, flags: { messages: [{ role: "user", content: message }] } };
-    }
   }
 }
+
+export type { ExecuteShadowToolContext } from "./types";
