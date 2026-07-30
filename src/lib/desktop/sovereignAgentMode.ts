@@ -39,3 +39,14 @@ export function shouldUseLocalMissionStore(): boolean {
   if (isAnonymousAutonomousEnabled()) return true;
   return shouldUseLocalAgent() && (isSovereignModeEnabled() || !navigator.onLine);
 }
+
+/**
+ * Forge pipelines (slides, documents, beast mode) only run locally on the
+ * desktop build with a live Ollama runtime. In the browser they always use
+ * the cloud so users never hit "Cannot reach Ollama at 127.0.0.1:11434".
+ */
+export function shouldUseLocalForge(): boolean {
+  if (!isShadowTalkDesktop()) return false;
+  if (getSovereignRoutingMode() === "cloud-only") return false;
+  return isOllamaInferenceReady() && shouldUseLocalAgent();
+}
