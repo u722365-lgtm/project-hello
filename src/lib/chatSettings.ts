@@ -25,7 +25,7 @@ export interface ChatPreferences {
 }
 
 export const DEFAULT_CHAT_PREFERENCES: ChatPreferences = {
-  defaultProvider: "lovable",
+  defaultProvider: "turbo",
   defaultPersonality: "friendly",
   defaultMode: "general",
 };

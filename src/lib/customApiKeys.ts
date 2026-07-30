@@ -3,6 +3,7 @@
  */
 
 export type CustomAiProviderId =
+  | 'turbo'
   | 'lovable'
   | 'shadowtalk'
   | 'google'

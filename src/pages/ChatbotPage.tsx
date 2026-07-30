@@ -304,14 +304,9 @@ const ChatbotPage = () => {
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [personality, setPersonality] = useState<Personality>("friendly");
   const [chatMode, setChatMode] = useState<ChatMode>("general");
-  const [aiProvider, setAiProvider] = useState<AIProvider>('shadowtalk');
+  const [aiProvider, setAiProvider] = useState<AIProvider>('turbo');
   const { preferences: chatPreferences, isLoading: chatPrefsLoading } = useChatSettings();
   const hasOllamaDesktop = typeof window !== 'undefined' && (window as any).__TAURI__ && isAnyLocalModelReady();
-  useEffect(() => {
-    if (hasOllamaDesktop) {
-      setAiProvider('shadowtalk');
-    }
-  }, [hasOllamaDesktop]);
   const e2ee = useE2EE();
   const chatPrivate = useChatPrivateMode(e2ee);
   const appliedChatDefaults = useRef(false);

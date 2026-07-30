@@ -6,31 +6,39 @@ import {
   loadCustomAiConfig,
   hasActiveCustomKey,
 } from "@/lib/customApiKeys";
+import { isTurboAvailable } from "@/lib/turbo";
 import type { UserProviderKeyRow } from "@/hooks/useCustomApiKeys";
 
-export function toServerProvider(_ui: AIProvider): AiProviderId | null {
-  return "lovable";
+/**
+ * Turbo is handled client-side via direct Groq/OpenRouter fetch.
+ * When the UI selects 'turbo', the edge function is never called.
+ * This function maps UI providers to what the edge function expects.
+ */
+export function toServerProvider(ui: AIProvider): AiProviderId | null {
+  if (ui === 'turbo') return null; // Turbo bypasses the edge function
+  return 'lovable';
 }
 
-export function toUiProvider(_server: AiProviderId): AIProvider | null {
-  return "lovable";
+export function toUiProvider(server: AiProviderId): AIProvider | null {
+  return 'lovable';
 }
 
-export function isByokProvider(_provider: AIProvider): boolean {
-  return false;
+export function isByokProvider(provider: AIProvider): boolean {
+  return provider === 'turbo';
 }
 
 export function hasStoredKeyForProvider(
-  _provider: AIProvider,
+  provider: AIProvider,
   _keys: UserProviderKeyRow[],
   _localConfig: CustomAiKeysConfig = {
-    provider: "lovable",
-    apiKey: "",
+    provider: 'turbo',
+    apiKey: '',
     usePlatformDefault: true,
     setupDismissed: false,
-    model: "",
+    model: '',
   },
 ): boolean {
+  if (provider === 'turbo') return isTurboAvailable();
   return true;
 }
 
@@ -38,18 +46,18 @@ export function resolveActiveUiProvider(
   _keys: UserProviderKeyRow[],
   _aiConfig: { useCustomKey: boolean; preferredProvider: AiProviderId | null },
   _localConfig: CustomAiKeysConfig = {
-    provider: "lovable",
-    apiKey: "",
+    provider: 'turbo',
+    apiKey: '',
     usePlatformDefault: true,
     setupDismissed: false,
-    model: "",
+    model: '',
   },
 ): AIProvider {
-  return "shadowtalk";
+  return 'turbo';
 }
 
 export function toCustomAiProviderId(provider: AIProvider): CustomAiProviderId {
-  return (provider ?? "lovable") as CustomAiProviderId;
+  return (provider ?? 'turbo') as CustomAiProviderId;
 }
 
 export function buildChatProviderPayload(

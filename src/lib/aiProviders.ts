@@ -3,6 +3,7 @@
  */
 
 export type AiProviderId =
+  | 'turbo'
   | 'lovable'
   | 'shadowtalk'
   | 'google'
@@ -29,6 +30,15 @@ export interface AiProviderOption {
 }
 
 export const AI_PROVIDER_OPTIONS: AiProviderOption[] = [
+  {
+    id: 'turbo',
+    name: 'ShadowTalk Turbo',
+    description: 'Ultra-fast Groq Llama 3.3 70B — direct streaming, ~300ms TTFT',
+    keyPlaceholder: 'gsk_...',
+    docsUrl: 'https://console.groq.com/keys',
+    keyHint: 'Free at console.groq.com — paste your Groq API key',
+    defaultModel: 'llama-3.3-70b-versatile',
+  },
   {
     id: 'lovable',
     name: 'ShadowTalk Pro (platform)',
@@ -78,6 +88,6 @@ export interface AiConfig {
 }
 
 export const DEFAULT_AI_CONFIG: AiConfig = {
-  preferredProvider: 'lovable',
+  preferredProvider: 'turbo',
   useCustomKey: false,
 };

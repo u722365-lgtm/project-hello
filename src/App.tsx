@@ -195,7 +195,7 @@ const AnimatedRoutes = () => {
           <Route path="/auth/preview/:designId" element={<PageTransition><AuthDesignPreviewPage /></PageTransition>} />
           <Route path="/pricing" element={<PageTransition><PricingPage /></PageTransition>} />
           {/* Chat workspace: no PageTransition — avoids opacity-0 flash and flex height collapse */}
-          <Route path="/chatbot" element={<ChatbotPage />} />
+          <Route path="/chatbot" element={<Suspense fallback={<PageLoader />}><ChatbotPage /></Suspense>} />
           <Route path="/s/:slug" element={<Suspense fallback={<PageLoader />}><SharedAnswerPage /></Suspense>} />
           <Route path="/mission/:id" element={<PageTransition><SharedMissionPage /></PageTransition>} />
           <Route path="/flows" element={<PageTransition><BackendFlowsPage /></PageTransition>} />
