@@ -10,7 +10,9 @@ export type AiProviderId =
   | 'anthropic'
   | 'openrouter'
   | 'groq'
-  | 'ollama';
+  | 'gemini'
+  | 'ollama'
+  | '';
 
 /** Legacy alias used across chat components. */
 export type AIProvider = AiProviderId;

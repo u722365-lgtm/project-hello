@@ -213,16 +213,18 @@ export async function runUnifiedDocumentPipeline(
   onPhase?.("drafting");
   const draftContext = buildDraftContext(plan, request.additionalContext, researchBrief);
 
-  const content = await streamKimiDocument({
+  const draft = (ctx: string) => streamKimiDocument({
     topic: plan.topic,
     docType: plan.docType,
     tone: plan.tone,
     length: plan.length,
-    additionalContext: draftContext,
+    additionalContext: ctx,
     signal,
     accessToken,
     onChunk,
   });
+
+  let content = await draft(draftContext);
 
   const words = content.split(/\s+/).filter(Boolean).length;
   const minWords = plan.length === "brief" ? 100 : plan.length === "short" ? 350 : 900;

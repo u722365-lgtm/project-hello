@@ -10,7 +10,9 @@ export type CustomAiProviderId =
   | 'anthropic'
   | 'openrouter'
   | 'groq'
-  | 'ollama';
+  | 'gemini'
+  | 'ollama'
+  | '';
 
 export type CustomAiKeysConfig = {
   provider: CustomAiProviderId;

@@ -159,7 +159,7 @@ const PromptsPage = () => {
 
         <div className="max-w-4xl mx-auto mb-8 flex flex-wrap gap-2">
           {CATEGORIES.map((c) => {
-            const Icon = c.icon;
+            const Icon = (c as { icon?: React.ComponentType<{ className?: string }> }).icon;
             return (
               <Button
                 key={c.key}
@@ -168,7 +168,7 @@ const PromptsPage = () => {
                 className="rounded-full"
                 onClick={() => setActive(c.key)}
               >
-                {c.icon && <Icon className="mr-2 h-4 w-4" />}
+                {Icon ? <Icon className="mr-2 h-4 w-4" /> : null}
                 {c.label}
               </Button>
             );
