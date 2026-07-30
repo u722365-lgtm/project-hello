@@ -133,6 +133,7 @@ import {
   resolveActiveUiProvider,
 } from "@/lib/chatProviderBridge";
 import { loadCustomAiConfig, saveCustomAiConfig } from "@/lib/customApiKeys";
+import { turboComplete, resolveTurboKey } from "@/lib/turbo";
 import {
   getGuestArchivedIds,
   isConversationArchived,
@@ -1405,6 +1406,30 @@ const ChatbotPage = () => {
         }
         if (pendingContent !== null) flushAssistant();
       };
+
+      // ---- SHADOWTALK-TURBO FAST PATH ----
+      // Try direct Groq streaming first (bypasses edge function, ~5x faster TTFB).
+      // Falls through to standard path if no Groq key or if Turbo fails.
+      const turboKey = resolveTurboKey();
+      if (turboKey && !imageAttachment && !generateImage && !webSearch && !deepResearch && effectiveWebSearch === false) {
+        try {
+          const turboResult = await turboComplete(
+            `You are ShadowTalk AI. Be ${personality || 'friendly'} and helpful. Use markdown formatting. Current date: ${new Date().toISOString().split('T')[0]}.`,
+            msgContent,
+            {
+              signal: controller.signal,
+              onDelta: (accumulated) => pushAssistant(accumulated),
+            },
+          );
+          if (turboResult.source !== 'fallback' && turboResult.content.trim()) {
+            finalizeAssistant();
+            return assistantContent;
+          }
+          // Turbo returned empty/fallback — fall through to standard path
+        } catch (turboErr) {
+          console.warn('[Chat] Turbo fast-path failed, using standard:', turboErr);
+        }
+      }
 
       if (isShadowTalkDesktop()) {
         let lineBuffer = "";
