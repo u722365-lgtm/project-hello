@@ -13,9 +13,11 @@ const PersistedAuthRedirect = () => {
   const location = useLocation();
 
   useEffect(() => {
-    if (loading || !user) return;
+    if (loading) return;
 
-    // Let anonymous users open /auth to link Google or email; skip auto-bounce
+    const sessionStillLoading = !loading && !user;
+    if (sessionStillLoading) return;
+
     if (location.pathname === "/auth" && !isAnonymous) {
       navigate(consumeReturnPath(), { replace: true });
     }

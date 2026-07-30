@@ -113,6 +113,13 @@ export async function restoreOrCreateSession(): Promise<Session | null> {
   }
 
   if (hasExplicitSignOut()) {
+    // If we somehow still have an active real session from storage,
+    // do not let the explicit sign-out flag force logout.
+    const retry = await getStoredSession();
+    if (retry) {
+      clearExplicitSignOut();
+      return retry;
+    }
     return null;
   }
 

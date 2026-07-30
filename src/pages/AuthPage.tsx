@@ -131,41 +131,6 @@ const AuthPage = () => {
     }
   }, [enterpriseFlow]);
 
-  useEffect(() => {
-    const checkUser = async () => {
-      const offlineSession = getOfflineSession();
-      if (offlineSession) { navigate('/chatbot'); return; }
-      if (!isOffline) {
-        const { data: { session } } = await supabase.auth.getSession();
-        console.log('[AuthPage] checkUser session', { hasSession: !!session, isAnonymous: session?.user?.is_anonymous });
-        if (session?.user && !isAnonymousUser(session)) {
-          navigate(consumeReturnPath());
-          return;
-        }
-        const fallback = (session?.user?.is_anonymous && !hasExplicitSignOut())
-          ? getRememberedWorkspacePath()
-          : "/auth";
-        navigate(fallback, { replace: true });
-      }
-    };
-    checkUser();
-  }, [navigate, isOffline, getOfflineSession]);
-
-  useEffect(() => {
-    if (!isOffline) {
-      void restoreOrCreateSession().then((session) => {
-        console.log('[AuthPage] restoreOrCreateSession', { hasSession: !!session, isAnonymous: session?.user?.is_anonymous });
-        if (session?.user && !isAnonymousUser(session)) {
-          navigate(consumeReturnPath(), { replace: true });
-        } else if (session?.user?.is_anonymous && !hasExplicitSignOut()) {
-          navigate(getRememberedWorkspacePath(), { replace: true });
-        }
-      }).catch((error) => {
-        console.warn('[AuthPage] restoreOrCreateSession failed:', error);
-      });
-    }
-  }, [navigate, isOffline]);
-
   const sanitizeInput = (input: string) => input.trim().slice(0, 255);
 
   const playWelcomeVoice = useCallback(async (userName: string) => {
