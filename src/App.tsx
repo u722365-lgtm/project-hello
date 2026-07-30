@@ -133,7 +133,7 @@ const ComplianceDashboardPage = lazy(() => import("./pages/ComplianceDashboardPa
 const AutoImproveEngine = lazy(() => import("@/components/autoImprove/AutoImproveEngine"));
 const PersonalLLMPage = lazy(() => import("./pages/PersonalLLMPage"));
 const PromptsPage = lazy(() => import("./pages/PromptsPage"));
-const PrivacyCheckerPage = lazy(() => import("./pages/PrivacyCheckerPage"));
+const PrivacyCheckerPage = lazy(() => import("./pages/PromptPrivacyCheckerPage"));
 const TemplatesPage = lazy(() => import("./pages/TemplatesPage"));
 const DownloadsPage = lazy(() => import("./pages/DownloadsPage"));
 const WhatsAppContactsPage = lazy(() => import("./pages/WhatsAppContactsPage"));
