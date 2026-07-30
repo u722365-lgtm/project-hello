@@ -209,44 +209,25 @@ export async function runUnifiedDocumentPipeline(
   onPhase?.("planning");
   const plan = buildDocumentPlan(request);
 
-  let researchBrief: string | undefined;
-  if (plan.enableResearch) {
-    onPhase?.("researching");
-    try {
-      const researchQuery = `${plan.topic} — ${plan.docType} for ${plan.audience}`;
-      researchBrief = shouldUseLocalForge()
-        ? await fetchLocalDocumentResearch(researchQuery, { signal, onChunk: onResearchChunk })
-        : await fetchDocumentResearch(researchQuery, accessToken, { signal, onChunk: onResearchChunk });
-    } catch (error) {
-      console.warn("[DocumentPipeline] Research skipped:", error);
-      researchBrief = undefined;
-    }
-  }
+  onPhase?.("researching");
+  const researchQuery = `${plan.topic} — ${plan.docType} for ${plan.audience}`;
+  const researchBrief = plan.enableResearch
+    ? await fetchDocumentResearch(researchQuery, accessToken, { signal, onChunk: onResearchChunk })
+    : undefined;
 
   onPhase?.("drafting");
   const draftContext = buildDraftContext(plan, request.additionalContext, researchBrief);
 
-  const draft = async (context: string): Promise<string> => {
-    const base = {
-      topic: plan.topic,
-      docType: plan.docType,
-      tone: plan.tone,
-      length: plan.length,
-      additionalContext: context,
-      signal,
-      onChunk,
-    };
-    if (shouldUseLocalForge()) {
-      try {
-        return await streamLocalKimiDocument(base);
-      } catch (error) {
-        console.warn("[DocumentPipeline] Local model unavailable, using cloud:", error);
-      }
-    }
-    return streamKimiDocument({ ...base, accessToken });
-  };
-
-  let content = await draft(draftContext);
+  const content = await streamKimiDocument({
+    topic: plan.topic,
+    docType: plan.docType,
+    tone: plan.tone,
+    length: plan.length,
+    additionalContext: draftContext,
+    signal,
+    accessToken,
+    onChunk,
+  });
 
   const words = content.split(/\s+/).filter(Boolean).length;
   const minWords = plan.length === "brief" ? 100 : plan.length === "short" ? 350 : 900;

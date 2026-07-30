@@ -52,19 +52,6 @@ export async function generateKimiPresentation(
 ): Promise<PresentationData> {
   const { topic, slideCount = 10, style = "corporate", mode = "adaptive", additionalContext, sourceDocument } = options;
 
-  if (shouldUseLocalForge()) {
-    try {
-      return await generateLocalPresentation({
-        topic,
-        slideCount,
-        style,
-        additionalContext: [additionalContext, sourceDocument?.slice(0, 8000)].filter(Boolean).join("\n\n"),
-      });
-    } catch (error) {
-      console.warn("[KimiPresentation] Local model unavailable, using cloud:", error);
-    }
-  }
-
   const { data, error } = await supabase.functions.invoke("generate-presentation", {
     body: buildChatRequestBody({
       topic,
