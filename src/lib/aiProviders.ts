@@ -11,6 +11,7 @@ export type AiProviderId =
   | 'openrouter'
   | 'groq'
   | 'gemini'
+  | 'kimi'
   | 'ollama'
   | '';
 

@@ -24,7 +24,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
 import { useCustomApiKeys } from "@/hooks/useCustomApiKeys";
 
-const BYOK_LABELS: Record<Exclude<AIProvider, "lovable">, { title: string; hint: string }> = {
+const BYOK_LABELS: Partial<Record<AIProvider, { title: string; hint: string }>> = {
   gemini: {
     title: "Google Gemini API key",
     hint: "Create a key in Google AI Studio. ShadowTalk will use it for chat on your account.",
