@@ -123,3 +123,21 @@ export async function optionalAuth(
     return { userId: null };
   }
 }
+
+/**
+ * Guest-tolerant auth for public creator tools (slides, documents, beast mode).
+ * Signed-in users get their real id; anonymous visitors get a stable guest id
+ * derived from the `x-guest-id` header so usage can still be attributed.
+ */
+export interface IdentityResult {
+  userId: string;
+  isGuest: boolean;
+  email?: string;
+}
+
+export async function requireAuthOrGuest(req: Request): Promise<IdentityResult> {
+  const { userId, email } = await optionalAuth(req);
+  if (userId) return { userId, isGuest: false, email };
+  const raw = req.headers.get("x-guest-id")?.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 64);
+  return { userId: `guest_${raw || "anonymous"}`, isGuest: true };
+}
