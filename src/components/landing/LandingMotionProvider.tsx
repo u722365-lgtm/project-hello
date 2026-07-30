@@ -1,6 +1,6 @@
 import { createContext, useContext, useMemo } from "react";
 import type { ReactNode } from "react";
-import type { Transition, Variants } from "framer-motion";
+import type { TargetAndTransition, Transition, Variants } from "framer-motion";
 import {
   cardReveal,
   fadeSlideUp,
@@ -23,8 +23,8 @@ type LandingMotionContextValue = {
   isMobile: boolean;
   isLandingPage: boolean;
   viewport: { once: boolean; margin?: string; amount?: number };
-  hoverLift: Record<string, unknown>;
-  orbTransition: Transition;
+  hoverLift: TargetAndTransition;
+  orbTransition: (duration?: number) => Transition;
   variants: Record<string, Variants>;
 };
 
@@ -35,8 +35,8 @@ function buildValue(profile: LandingMotionProfile, isLandingPage: boolean): Land
     isMobile: profile.mobile,
     isLandingPage,
     viewport: landingViewport(profile),
-    hoverLift: hoverLiftFor(profile) as Record<string, unknown>,
-    orbTransition: floatingOrbTransition(profile),
+    hoverLift: hoverLiftFor(profile) as TargetAndTransition,
+    orbTransition: (duration = 6) => floatingOrbTransition(profile, duration),
     variants: {
       hidden: fadeSlideUp(profile),
       visible: fadeSlideUp(profile),

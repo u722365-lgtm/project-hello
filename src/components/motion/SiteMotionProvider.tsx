@@ -5,7 +5,7 @@ type SiteMotionContextValue = {
   intensity: "minimal";
   isLandingPage: boolean;
   reduced: boolean;
-  profile: { reduced: boolean };
+  profile: { reduced: boolean; mobile: boolean };
   viewport: { once: boolean; amount: number };
   hoverLift: boolean;
   variants: Record<string, unknown>;
@@ -20,7 +20,7 @@ export function SiteMotionProvider({ children }: { children: ReactNode }) {
       intensity: "minimal" as const,
       isLandingPage: false,
       reduced: true,
-      profile: { reduced: true },
+      profile: { reduced: true, mobile: false },
       viewport: { once: true, amount: 0 },
       hoverLift: false,
       variants: { hidden: {}, visible: {}, staggerItem: {}, staggerList: {} },
@@ -39,7 +39,7 @@ export function useSiteMotion() {
     intensity: "minimal" as const,
     isLandingPage: false,
     reduced: true,
-    profile: { reduced: true },
+    profile: { reduced: true, mobile: false },
     viewport: { once: true, amount: 0 },
     hoverLift: false,
     variants: { hidden: {}, visible: {}, staggerItem: {}, staggerList: {} },
