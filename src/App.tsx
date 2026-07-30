@@ -132,6 +132,8 @@ const AgentArchitecturePage = lazy(() => import("./pages/AgentArchitecturePage")
 const ComplianceDashboardPage = lazy(() => import("./pages/ComplianceDashboardPage"));
 const AutoImproveEngine = lazy(() => import("@/components/autoImprove/AutoImproveEngine"));
 const PersonalLLMPage = lazy(() => import("./pages/PersonalLLMPage"));
+const PromptsPage = lazy(() => import("./pages/PromptsPage"));
+const PrivacyCheckerPage = lazy(() => import("./pages/PrivacyCheckerPage"));
 const TemplatesPage = lazy(() => import("./pages/TemplatesPage"));
 const DownloadsPage = lazy(() => import("./pages/DownloadsPage"));
 const WhatsAppContactsPage = lazy(() => import("./pages/WhatsAppContactsPage"));
@@ -274,6 +276,8 @@ const AnimatedRoutes = () => {
           <Route path="/ide" element={<DevNotice />} />
           <Route path="/marketplace" element={<DevNotice />} />
           <Route path="/developers" element={<PageTransition><DevelopersPage /></PageTransition>} />
+          <Route path="/prompts" element={<PageTransition><PromptsPage /></PageTransition>} />
+          <Route path="/prompts/privacy-checker" element={<PageTransition><PrivacyCheckerPage /></PageTransition>} />
           <Route path="/security" element={<DevNotice />} />
           <Route path="/vault" element={<Navigate to="/security?tab=vault" replace />} />
           <Route path="/privacy-score" element={<Navigate to="/security?tab=score" replace />} />
