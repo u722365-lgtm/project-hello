@@ -2,7 +2,15 @@
  * Lovable-only AI configuration stored locally on device.
  */
 
-export type CustomAiProviderId = 'lovable';
+export type CustomAiProviderId =
+  | 'lovable'
+  | 'shadowtalk'
+  | 'google'
+  | 'openai'
+  | 'anthropic'
+  | 'openrouter'
+  | 'groq'
+  | 'ollama';
 
 export type CustomAiKeysConfig = {
   provider: CustomAiProviderId;

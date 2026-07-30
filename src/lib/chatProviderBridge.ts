@@ -45,11 +45,11 @@ export function resolveActiveUiProvider(
     model: "",
   },
 ): AIProvider {
-  return "lovable";
+  return "shadowtalk";
 }
 
 export function toCustomAiProviderId(provider: AIProvider): CustomAiProviderId {
-  return "lovable";
+  return (provider ?? "lovable") as CustomAiProviderId;
 }
 
 export function buildChatProviderPayload(
