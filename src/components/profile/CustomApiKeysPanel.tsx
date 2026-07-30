@@ -29,7 +29,6 @@ export const CustomApiKeysPanel = () => {
     setDefault,
   } = useCustomApiKeys();
 
-  const [provider] = useState<AiProviderId>("lovable");
   const [apiKey, setApiKey] = useState("");
   const [label, setLabel] = useState("");
 
