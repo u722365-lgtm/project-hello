@@ -1,3 +1,4 @@
+import { getChatEnterToSend } from "@/lib/profilePreferences";
 import { useEffect, useRef, useMemo } from "react";
 import { Send, Mic, MicOff, Square, Plus, Sparkles, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -5,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { FileUpload } from "@/components/chat/FileUpload";
 import { ModeSelector, ChatMode } from "@/components/chat/ModeSelector";
 import { SearchHistory } from "@/components/chat/SearchHistory";
+import type { AIProvider } from "@/lib/aiProviders";
 import { motion, AnimatePresence } from "framer-motion";
 
 import {

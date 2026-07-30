@@ -37,6 +37,7 @@ import {
   DropdownMenuPortal,
 } from "@/components/ui/dropdown-menu";
 import { ConnectionStatusIndicator } from "./ConnectionStatusIndicator";
+import type { AIProvider } from "@/lib/aiProviders";
 import { motion } from "framer-motion";
 
 type Personality = "friendly" | "sarcastic" | "professional" | "creative" | "meticulous" | "curious" | "diplomatic" | "witty" | "pragmatic" | "inquisitive" | "spicy";

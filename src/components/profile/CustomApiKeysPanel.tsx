@@ -12,10 +12,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import type { AiProviderId } from "@/lib/aiProviders";
+import { AI_PROVIDER_OPTIONS, type AiProviderId } from "@/lib/aiProviders";
 import { useCustomApiKeys } from "@/hooks/useCustomApiKeys";
 
 export const CustomApiKeysPanel = () => {
+  const [provider, setProvider] = useState<AiProviderId>("openrouter");
   const {
     keys,
     aiConfig,
