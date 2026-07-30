@@ -2,6 +2,7 @@ import { streamChatCompletion, extractJsonArray } from "@/lib/see/chatCompletion
 import type { MissionPlanStep, MissionToolName } from "@/lib/see/types";
 import type { DeliverableType } from "@/lib/execution/types";
 import { plannerOmniRouteFallback, type OmniRoutePlannerResponse } from "@/lib/see/ominiRoutePlannerFallback";
+import { turboComplete, turboPlannerPrompt } from "@/lib/turbo";
 
 const TOOLS: MissionToolName[] = [
   "web_search",
@@ -163,6 +164,26 @@ export async function generateExecutionPlan(
   accessToken: string,
   signal?: AbortSignal,
 ): Promise<MissionPlanStep[]> {
+  // ---- TURBO FAST PATH ----
+  // Direct Groq call, skips edge function (~2-4s faster)
+  try {
+    const turboResult = await turboComplete(
+      turboPlannerPrompt(goal, deliverableType),
+      goal,
+      { signal, temperature: 0.3 },
+    );
+    if (turboResult.source !== 'fallback' && turboResult.content) {
+      const parsed = extractJsonArray<RawPlanStep>(turboResult.content);
+      if (parsed && parsed.length > 0) {
+        console.log('[execution] plan generated via Turbo', turboResult.source, `${turboResult.totalMs?.toFixed(0)}ms`);
+        return normalizePlan(parsed, goal);
+      }
+    }
+  } catch (turboErr) {
+    console.warn('[execution] Turbo planner failed, falling back to standard path', turboErr);
+  }
+
+  // ---- STANDARD PATH ----
   try {
     const content = await streamChatCompletion(
       accessToken,

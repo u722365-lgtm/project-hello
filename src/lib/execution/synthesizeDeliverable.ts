@@ -7,6 +7,7 @@ import {
 import type { BusinessIdea, StrategyResult } from "@/lib/strategy/types";
 import type { MissionPlanStep } from "@/lib/see/types";
 import type { DeliverableType, ExecutionDeliverable } from "@/lib/execution/types";
+import { turboComplete, turboSynthesisPrompt } from "@/lib/turbo";
 
 export async function synthesizeDeliverable(opts: {
   deliverableType: DeliverableType;
@@ -62,6 +63,32 @@ export async function synthesizeDeliverable(opts: {
         ? "content pack (ready-to-publish outlines and copy)"
         : "comprehensive actionable report";
 
+  // ---- TURBO FAST PATH ----
+  // Direct Groq call for synthesis (~3-5s faster than edge function)
+  const stepOutputsText = stepOutputs
+    .map((r, idx) => `### Step ${idx + 1}\n${r}`)
+    .join("\n\n");
+
+  try {
+    const turboResult = await turboComplete(
+      turboSynthesisPrompt(opts.goal, briefType),
+      `Goal: ${opts.goal}\n\nStep outputs:\n${stepOutputsText}`,
+      { signal: opts.signal, maxTokens: 6000, temperature: 0.4 },
+    );
+    if (turboResult.source !== 'fallback' && turboResult.content) {
+      console.log('[execution] synthesis via Turbo', turboResult.source, `${turboResult.totalMs?.toFixed(0)}ms`);
+      return {
+        deliverableType: opts.deliverableType,
+        markdown: turboResult.content,
+        stepOutputs,
+        usedFallback: false,
+      };
+    }
+  } catch (turboErr) {
+    console.warn('[execution] Turbo synthesis failed, falling back to standard path', turboErr);
+  }
+
+  // ---- STANDARD PATH ----
   const markdown = await streamChatCompletion(
     opts.accessToken,
     `Compile the final Shadow Execution deliverable (${briefType}).
@@ -69,7 +96,7 @@ export async function synthesizeDeliverable(opts: {
 Goal: ${opts.goal}
 
 Step outputs:
-${stepOutputs.map((r, idx) => `### Step ${idx + 1}\n${r}`).join("\n\n")}
+${stepOutputsText}
 
 Provide a polished, structured deliverable with citations (URLs) where available. No placeholders.`,
     { model: "google/gemini-2.5-pro", signal: opts.signal },

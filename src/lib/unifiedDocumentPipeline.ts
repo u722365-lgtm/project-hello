@@ -15,6 +15,11 @@ import {
 import { stringifyChatBody } from "@/lib/chatRequest";
 import { upsertDocumentProjectFromRun } from "@/lib/documentForgeProjects";
 import { polishProfessionalMarkdown } from "@/lib/professionalDocument";
+import {
+  turboComplete,
+  turboDocumentPrompt,
+  turboDocumentUserContent,
+} from "@/lib/turbo";
 
 export type DocumentPipelinePhase =
   | "idle"
@@ -213,6 +218,29 @@ export async function runUnifiedDocumentPipeline(
   onPhase?.("drafting");
   const draftContext = buildDraftContext(plan, request.additionalContext, researchBrief);
 
+  // ---- TURBO FAST PATH ----
+  // Direct Groq call for drafting (~2-4s faster than edge function)
+  let content: string | undefined;
+  try {
+    const turboResult = await turboComplete(
+      turboDocumentPrompt(plan.docType, plan.tone, plan.length, plan.audience),
+      turboDocumentUserContent(plan.topic, plan.sections, request.additionalContext, researchBrief),
+      {
+        signal,
+        onDelta: onChunk,
+        maxTokens: plan.length === 'epic' ? 8192 : plan.length === 'comprehensive' ? 6000 : 4096,
+        temperature: plan.tone === 'creative' ? 0.7 : 0.5,
+      },
+    );
+    if (turboResult.source !== 'fallback' && turboResult.content) {
+      content = turboResult.content;
+      console.log('[forge] draft via Turbo', turboResult.source, `${turboResult.totalMs?.toFixed(0)}ms`);
+    }
+  } catch (turboErr) {
+    console.warn('[forge] Turbo draft failed, falling back to standard path', turboErr);
+  }
+
+  // ---- STANDARD PATH ----
   const draft = (ctx: string) => streamKimiDocument({
     topic: plan.topic,
     docType: plan.docType,
@@ -224,19 +252,34 @@ export async function runUnifiedDocumentPipeline(
     onChunk,
   });
 
-  let content = await draft(draftContext);
+  if (!content) {
+    content = await draft(draftContext);
+  }
 
+  let finalContent = content;
   const words = content.split(/\s+/).filter(Boolean).length;
   const minWords = plan.length === "brief" ? 100 : plan.length === "short" ? 350 : 900;
   if (words < minWords && !signal?.aborted) {
     const redraftContext = `${draftContext}\n\nReturn a complete deliverable only with no prefacing text.`;
-    const second = await draft(redraftContext);
-    if (second.split(/\s+/).filter(Boolean).length > words) {
-      content = second;
+    try {
+      const second = await streamKimiDocument({
+        topic: plan.topic,
+        docType: plan.docType,
+        tone: plan.tone,
+        length: plan.length,
+        additionalContext: redraftContext,
+        signal,
+        accessToken,
+      });
+      if (second.split(/\s+/).filter(Boolean).length > words) {
+        finalContent = second;
+      }
+    } catch {
+      // Redraft failed — keep original content
     }
   }
 
-  const polished = polishProfessionalMarkdown(content, { tone: plan.tone });
+  const polished = polishProfessionalMarkdown(finalContent, { tone: plan.tone });
   onChunk(polished);
 
   await upsertDocumentProjectFromRun({
