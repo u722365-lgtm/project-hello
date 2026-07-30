@@ -1,36 +1,48 @@
 import { createContext, useContext, useMemo } from "react";
-import { useLocation } from "react-router-dom";
-import { useLandingMotion } from "@/hooks/use-landing-motion";
-import { getSiteMotionIntensity, type SiteMotionIntensity } from "@/lib/siteMotion";
+import type { ReactNode } from "react";
 
-type SiteMotionContextValue = ReturnType<typeof useLandingMotion> & {
-  intensity: SiteMotionIntensity;
+type SiteMotionContextValue = {
+  intensity: "minimal";
   isLandingPage: boolean;
+  reduced: boolean;
+  profile: { reduced: boolean };
+  viewport: { once: boolean; amount: number };
+  hoverLift: boolean;
+  variants: Record<string, unknown>;
+  isMobile: boolean;
 };
 
 const SiteMotionContext = createContext<SiteMotionContextValue | null>(null);
 
-export function SiteMotionProvider({ children }: { children: React.ReactNode }) {
-  const { pathname } = useLocation();
-  const motion = useLandingMotion();
-  const intensity = getSiteMotionIntensity(pathname);
-  const isLandingPage = pathname === "/home" || pathname === "/";
-
-  const value = useMemo(
-    () => ({ ...motion, intensity, isLandingPage }),
-    [motion, intensity, isLandingPage],
+export function SiteMotionProvider({ children }: { children: ReactNode }) {
+  const memoized = useMemo(
+    () => ({
+      intensity: "minimal" as const,
+      isLandingPage: false,
+      reduced: true,
+      profile: { reduced: true },
+      viewport: { once: true, amount: 0 },
+      hoverLift: false,
+      variants: { hidden: {}, visible: {}, staggerItem: {}, staggerList: {} },
+      isMobile: false,
+    }),
+    [],
   );
 
-  return <SiteMotionContext.Provider value={value}>{children}</SiteMotionContext.Provider>;
+  return <SiteMotionContext.Provider value={memoized}>{children}</SiteMotionContext.Provider>;
 }
 
 export function useSiteMotion() {
   const ctx = useContext(SiteMotionContext);
-  const fallback = useLandingMotion();
   if (ctx) return ctx;
   return {
-    ...fallback,
-    intensity: "standard" as SiteMotionIntensity,
+    intensity: "minimal" as const,
     isLandingPage: false,
+    reduced: true,
+    profile: { reduced: true },
+    viewport: { once: true, amount: 0 },
+    hoverLift: false,
+    variants: { hidden: {}, visible: {}, staggerItem: {}, staggerList: {} },
+    isMobile: false,
   };
 }
