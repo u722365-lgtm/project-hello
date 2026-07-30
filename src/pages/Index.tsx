@@ -11,9 +11,6 @@ import {
   getWebSiteSchema,
 } from "@/lib/seo";
 import LandingPageShell from "@/components/landing/LandingPageShell";
-import LandingSectionReveal from "@/components/landing/LandingSectionReveal";
-import LandingSectionFallback from "@/components/landing/LandingSectionFallback";
-import { LandingMotionProvider } from "@/components/landing/LandingMotionProvider";
 import { PlatformMetricsProvider } from "@/contexts/PlatformMetricsContext";
 import { COMPARISON_PAGES } from "@/lib/comparisonPages";
 
@@ -65,82 +62,54 @@ const Index = () => {
       <SEOHead meta={PAGE_SEO.home} structuredData={structuredData} />
       <PlatformMetricsProvider>
         <LandingPageShell>
-          <LandingMotionProvider>
-            <div className="min-h-screen bg-background text-foreground landing-page-content">
-              <LandingNavigation />
-              <HeroSection />
-              <Suspense fallback={<LandingSectionFallback />}>
-                <LandingSectionReveal preset="fadeUp">
-                  <WhatIsShadowTalk />
-                </LandingSectionReveal>
-              </Suspense>
-              <Suspense fallback={<LandingSectionFallback />}>
-                <LandingSectionReveal preset="fadeUp">
-                  <UseCaseWedgesSection />
-                </LandingSectionReveal>
-              </Suspense>
-              <Suspense fallback={<LandingSectionFallback />}>
-                <LandingSectionReveal preset="fadeUp">
-                  <BrandManifestoSection />
-                </LandingSectionReveal>
-              </Suspense>
-              <Suspense fallback={<LandingSectionFallback />}>
-                <LandingSectionReveal preset="slideLeft">
-                  <CompetitiveComparison />
-                </LandingSectionReveal>
-              </Suspense>
-              <Suspense fallback={<LandingSectionFallback />}>
-                <LandingSectionReveal preset="section">
-                  <FeaturesSection />
-                </LandingSectionReveal>
-              </Suspense>
-              <Suspense fallback={<LandingSectionFallback />}>
-                <LandingSectionReveal preset="scale">
-                  <PricingSection />
-                </LandingSectionReveal>
-              </Suspense>
-              <Suspense fallback={<LandingSectionFallback />}>
-                <LandingSectionReveal preset="slideRight">
-                  <TestimonialsSection />
-                </LandingSectionReveal>
-              </Suspense>
-              <Suspense fallback={<LandingSectionFallback />}>
-                <LandingSectionReveal preset="pop">
-                  <CommunitySection />
-                </LandingSectionReveal>
-              </Suspense>
-              <Suspense fallback={<LandingSectionFallback />}>
-                <LandingSectionReveal preset="fadeUp">
-                  <CommunityBuildingBlock />
-                </LandingSectionReveal>
-              </Suspense>
-              <Suspense fallback={<LandingSectionFallback />}>
-                <LandingSectionReveal preset="fadeUp">
-                  <FounderSpotlightSection />
-                </LandingSectionReveal>
-              </Suspense>
-              <Suspense fallback={<LandingSectionFallback />}>
-                <LandingSectionReveal preset="fadeUp">
-                  <FAQSection />
-                </LandingSectionReveal>
-              </Suspense>
-              <Suspense fallback={<LandingSectionFallback />}>
-                <LandingSectionReveal preset="fadeUp">
-                  <GrowthAmplifier />
-                </LandingSectionReveal>
-              </Suspense>
-              <Suspense fallback={<LandingSectionFallback />}>
-                <LandingSectionReveal preset="slideDown">
-                  <Footer />
-                </LandingSectionReveal>
-              </Suspense>
-              <Suspense fallback={null}>
-                <StickyTryCTA />
-                <ExitIntentPrompt />
-                <FreeTierViralPrompt />
-              </Suspense>
-            </div>
-          </LandingMotionProvider>
+          <div className="min-h-screen bg-background text-foreground landing-page-content">
+            <LandingNavigation />
+            <HeroSection />
+            <Suspense fallback={<LandingSectionFallback />}>
+              <WhatIsShadowTalk />
+            </Suspense>
+            <Suspense fallback={<LandingSectionFallback />}>
+              <UseCaseWedgesSection />
+            </Suspense>
+            <Suspense fallback={<LandingSectionFallback />}>
+              <BrandManifestoSection />
+            </Suspense>
+            <Suspense fallback={<LandingSectionFallback />}>
+              <CompetitiveComparison />
+            </Suspense>
+            <Suspense fallback={<LandingSectionFallback />}>
+              <FeaturesSection />
+            </Suspense>
+            <Suspense fallback={<LandingSectionFallback />}>
+              <PricingSection />
+            </Suspense>
+            <Suspense fallback={<LandingSectionFallback />}>
+              <TestimonialsSection />
+            </Suspense>
+            <Suspense fallback={<LandingSectionFallback />}>
+              <CommunitySection />
+            </Suspense>
+            <Suspense fallback={<LandingSectionFallback />}>
+              <CommunityBuildingBlock />
+            </Suspense>
+            <Suspense fallback={<LandingSectionFallback />}>
+              <FounderSpotlightSection />
+            </Suspense>
+            <Suspense fallback={<LandingSectionFallback />}>
+              <FAQSection />
+            </Suspense>
+            <Suspense fallback={<LandingSectionFallback />}>
+              <GrowthAmplifier />
+            </Suspense>
+            <Suspense fallback={null}>
+              <StickyTryCTA />
+              <ExitIntentPrompt />
+              <FreeTierViralPrompt />
+            </Suspense>
+            <Suspense fallback={null}>
+              <Footer />
+            </Suspense>
+          </div>
         </LandingPageShell>
       </PlatformMetricsProvider>
     </>
