@@ -5,7 +5,7 @@
  * Manus: plan → research → draft → polish → deliver with reusable project context.
  */
 
-import { shouldUseLocalAgent } from "@/lib/desktop/sovereignAgentMode";
+import { shouldUseLocalForge } from "@/lib/desktop/sovereignAgentMode";
 import {
   fetchLocalDocumentResearch,
   streamLocalKimiDocument,
@@ -214,7 +214,7 @@ export async function runUnifiedDocumentPipeline(
     onPhase?.("researching");
     try {
       const researchQuery = `${plan.topic} — ${plan.docType} for ${plan.audience}`;
-      researchBrief = shouldUseLocalAgent()
+      researchBrief = shouldUseLocalForge()
         ? await fetchLocalDocumentResearch(researchQuery, { signal, onChunk: onResearchChunk })
         : await fetchDocumentResearch(researchQuery, accessToken, { signal, onChunk: onResearchChunk });
     } catch (error) {
@@ -226,51 +226,33 @@ export async function runUnifiedDocumentPipeline(
   onPhase?.("drafting");
   const draftContext = buildDraftContext(plan, request.additionalContext, researchBrief);
 
-  let content = await (shouldUseLocalAgent()
-    ? streamLocalKimiDocument({
-        topic: plan.topic,
-        docType: plan.docType,
-        tone: plan.tone,
-        length: plan.length,
-        additionalContext: draftContext,
-        signal,
-        onChunk,
-      })
-    : streamKimiDocument({
-        topic: plan.topic,
-        docType: plan.docType,
-        tone: plan.tone,
-        length: plan.length,
-        additionalContext: draftContext,
-        accessToken,
-        signal,
-        onChunk,
-      }));
+  const draft = async (context: string): Promise<string> => {
+    const base = {
+      topic: plan.topic,
+      docType: plan.docType,
+      tone: plan.tone,
+      length: plan.length,
+      additionalContext: context,
+      signal,
+      onChunk,
+    };
+    if (shouldUseLocalForge()) {
+      try {
+        return await streamLocalKimiDocument(base);
+      } catch (error) {
+        console.warn("[DocumentPipeline] Local model unavailable, using cloud:", error);
+      }
+    }
+    return streamKimiDocument({ ...base, accessToken });
+  };
+
+  let content = await draft(draftContext);
 
   const words = content.split(/\s+/).filter(Boolean).length;
   const minWords = plan.length === "brief" ? 100 : plan.length === "short" ? 350 : 900;
   if (words < minWords && !signal?.aborted) {
     const redraftContext = `${draftContext}\n\nReturn a complete deliverable only with no prefacing text.`;
-    const second = await (shouldUseLocalAgent()
-      ? streamLocalKimiDocument({
-          topic: plan.topic,
-          docType: plan.docType,
-          tone: plan.tone,
-          length: plan.length,
-          additionalContext: redraftContext,
-          signal,
-          onChunk,
-        })
-      : streamKimiDocument({
-          topic: plan.topic,
-          docType: plan.docType,
-          tone: plan.tone,
-          length: plan.length,
-          additionalContext: redraftContext,
-          accessToken,
-          signal,
-          onChunk,
-        }));
+    const second = await draft(redraftContext);
     if (second.split(/\s+/).filter(Boolean).length > words) {
       content = second;
     }
