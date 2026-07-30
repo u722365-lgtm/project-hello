@@ -6,7 +6,6 @@ import { CommandPaletteContext } from "@/App";
 import { BRAND, BRAND_HOOKS, LANDING_COPY } from "@/lib/brand";
 import { usePlatformMetrics } from "@/hooks/usePlatformMetrics";
 import { formatTractionDaily, formatTractionUsers } from "@/lib/formatMetrics";
-import { RotatingHookText } from "@/components/landing/RotatingHookText";
 import { StealthKillSwitch } from "@/components/StealthKillSwitch";
 import { useStealthKillSwitch } from "@/hooks/useStealthKillSwitch";
 import FreeTierLimitsStrip from "@/components/growth/FreeTierLimitsStrip";
@@ -64,7 +63,7 @@ const HeroSection = () => {
           </p>
 
           <div className="mb-8 sm:mb-10 min-h-[2rem] flex justify-center px-2">
-            <RotatingHookText hooks={BRAND_HOOKS} className="text-sm sm:text-base font-medium" />
+            <p className="text-sm sm:text-base font-medium text-foreground/90">{BRAND_HOOKS[0] ?? 'ShadowTalk AI'}</p>
           </div>
 
           <div className="mb-3 w-full max-w-2xl mx-auto px-2">
