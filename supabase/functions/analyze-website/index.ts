@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsOptions } from "../_shared/cors.ts";
-import { requireAuth } from "../_shared/auth.ts";
+import { requireAuthOrGuest } from "../_shared/auth.ts";
 import { checkRateLimit } from "../_shared/rate-limit.ts";
 
 
@@ -12,9 +12,8 @@ serve(async (req) => {
   }
   const corsHeaders = getCorsHeaders(origin);
 
-  // Require authentication
-  const auth = await requireAuth(req, corsHeaders);
-  if (!auth.authenticated) return auth.response;
+  // Guest-tolerant: anonymous visitors can analyze sites with free-tier limits.
+  const identity = await requireAuthOrGuest(req);
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -22,9 +21,14 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Check rate limit
-    const { data: sub } = await supabase.from("subscribers").select("subscription_tier").eq("user_id", auth.userId).single();
-    const tier = sub?.subscription_tier || "free";
-    const rateLimit = await checkRateLimit(auth.userId!, tier, supabase);
+    let tier = "free";
+    if (!identity.isGuest) {
+      const { data: sub } = await supabase.from("subscribers").select("subscription_tier").eq("user_id", identity.userId).single();
+      tier = sub?.subscription_tier || "free";
+    }
+    const rateLimit = identity.isGuest
+      ? { allowed: true, remaining: 0, resetAt: new Date(), limit: 0 }
+      : await checkRateLimit(identity.userId, tier, supabase);
     if (!rateLimit.allowed) {
       return new Response(JSON.stringify({ error: "Rate limit exceeded", resetAt: rateLimit.resetAt }), {
         status: 429,
