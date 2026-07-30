@@ -1,25 +1,14 @@
-import { motion } from "framer-motion";
-import { useLandingMotionContext } from "@/components/landing/LandingMotionProvider";
+import { ReactNode, HTMLAttributes } from 'react';
 
-type LandingStaggerProps = {
-  children: React.ReactNode;
-  className?: string;
-  as?: "div" | "ul" | "section";
-  inView?: boolean;
-};
+interface LandingStaggerProps extends HTMLAttributes<HTMLDivElement> {
+  children: ReactNode;
+  as?: 'div' | 'ul' | 'section';
+}
 
-/** Staggers direct motion children (use LandingAnimate with index prop). */
-const LandingStagger = ({ children, className, as = "div", inView = true }: LandingStaggerProps) => {
-  const { variants, viewport } = useLandingMotionContext();
-  const Component = motion[as] as typeof motion.div;
-
+const LandingStagger = ({ children, className, as = 'div', ...rest }: LandingStaggerProps) => {
+  const Component = as;
   return (
-    <Component
-      variants={variants.staggerContainer}
-      initial="hidden"
-      {...(inView ? { whileInView: "visible" as const, viewport } : { animate: "visible" })}
-      className={className}
-    >
+    <Component className={className} {...rest}>
       {children}
     </Component>
   );

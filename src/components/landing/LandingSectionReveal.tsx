@@ -1,22 +1,15 @@
-import SiteReveal from "@/components/motion/SiteReveal";
-import type { LandingAnimatePreset } from "@/lib/landingMotion";
+import type { ReactNode, HTMLAttributes } from 'react';
 
-type LandingSectionRevealProps = {
-  children: React.ReactNode;
+interface LandingSectionRevealProps {
+  children: ReactNode;
+  preset?: string;
   className?: string;
-  id?: string;
-  preset?: LandingAnimatePreset;
-};
+  as?: 'div' | 'section';
+}
 
-const LandingSectionReveal = ({
-  children,
-  className = "",
-  id,
-  preset = "section",
-}: LandingSectionRevealProps) => (
-  <SiteReveal id={id} className={className} preset={preset} as="div">
-    {children}
-  </SiteReveal>
-);
+const LandingSectionReveal = ({ children, className, as = 'div' }: LandingSectionRevealProps) => {
+  const Component = as;
+  return <Component className={className}>{children}</Component>;
+};
 
 export default LandingSectionReveal;

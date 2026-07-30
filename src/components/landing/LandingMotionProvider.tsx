@@ -1,22 +1,23 @@
-import { createContext, useContext } from "react";
-import { useLandingMotion } from "@/hooks/use-landing-motion";
-type LandingMotionContextValue = ReturnType<typeof useLandingMotion> & { isLandingPage: boolean };
+import { ReactNode } from 'react';
 
-const LandingMotionContext = createContext<LandingMotionContextValue | null>(null);
-
-export function LandingMotionProvider({ children }: { children: React.ReactNode }) {
-  const motion = useLandingMotion();
-  return (
-    <LandingMotionContext.Provider value={{ ...motion, isLandingPage: true }}>
-      {children}
-    </LandingMotionContext.Provider>
-  );
+interface LandingMotionProviderProps {
+  children: ReactNode;
 }
 
-/** Use on the home page (inside LandingMotionProvider) or falls back to fresh hook. */
+export function LandingMotionProvider({ children }: LandingMotionProviderProps) {
+  return <>{children}</>;
+}
+
 export function useLandingMotionContext() {
-  const ctx = useContext(LandingMotionContext);
-  const fallback = useLandingMotion();
-  if (ctx) return ctx;
-  return { ...fallback, isLandingPage: false };
+  return {
+    profile: { reduced: true },
+    viewport: { once: true, amount: 0 },
+    hoverLift: false,
+    variants: {
+      hidden: {},
+      visible: {},
+      staggerItem: {},
+      staggerList: {},
+    },
+  };
 }
