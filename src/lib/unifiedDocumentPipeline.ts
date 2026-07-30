@@ -270,6 +270,7 @@ export async function runUnifiedDocumentPipeline(
         additionalContext: redraftContext,
         signal,
         accessToken,
+        onChunk: () => {},
       });
       if (second.split(/\s+/).filter(Boolean).length > words) {
         finalContent = second;
