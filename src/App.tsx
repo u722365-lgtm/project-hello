@@ -32,7 +32,7 @@ import PersistedAuthRedirect from "@/components/PersistedAuthRedirect";
 import WorkspacePathRemember from "@/components/WorkspacePathRemember";
 import { GrowthBanners } from "@/components/GrowthBanners";
 import { OAuthReturnHandler } from "@/components/OAuthReturnHandler";
-import { DevNotice } from "@/components/DevNotice";
+
 
 export const CommandPaletteContext = createContext<{ open: () => void }>({ open: () => {} });
  // Critical path pages - loaded immediately
@@ -198,7 +198,7 @@ const AnimatedRoutes = () => {
           <Route path="/s/:slug" element={<Suspense fallback={<PageLoader />}><SharedAnswerPage /></Suspense>} />
           <Route path="/flows" element={<PageTransition><BackendFlowsPage /></PageTransition>} />
           <Route path="/whatsapp" element={<PageTransition><WhatsAppContactsPage /></PageTransition>} />
-          <Route path="/admin" element={<DevNotice />} />
+          <Route path="/admin" element={<PageTransition><AdminPage /></PageTransition>} />
           <Route path="/docs" element={<PageTransition><DocsPage /></PageTransition>} />
           <Route path="/changelog" element={<PageTransition><ChangelogPage /></PageTransition>} />
           <Route path="/rooms" element={<PageTransition><ChatRoomsPage /></PageTransition>} />
@@ -269,52 +269,52 @@ const AnimatedRoutes = () => {
           <Route path="/billing" element={<PageTransition><MonetizationPage /></PageTransition>} />
           <Route path="/founder-access" element={<PageTransition><FounderAccessPage /></PageTransition>} />
           <Route path="/lifetime-deal" element={<Navigate to="/pricing" replace />} />
-          <Route path="/execute" element={<DevNotice />} />
-          <Route path="/strategy" element={<DevNotice />} />
+          <Route path="/execute" element={<PageTransition><ExecutePage /></PageTransition>} />
+          <Route path="/strategy" element={<PageTransition><StrategyAgentPage /></PageTransition>} />
           <Route path="/workspace" element={<PageTransition><WorkspaceHubPage /></PageTransition>} />
           <Route path="/business-memory" element={<Navigate to="/workspace?tab=explore" replace />} />
-          <Route path="/ide" element={<DevNotice />} />
-          <Route path="/marketplace" element={<DevNotice />} />
+          <Route path="/ide" element={<PageTransition><IdePage /></PageTransition>} />
+          <Route path="/marketplace" element={<PageTransition><MarketplacePage /></PageTransition>} />
           <Route path="/developers" element={<PageTransition><DevelopersPage /></PageTransition>} />
           <Route path="/prompts" element={<PageTransition><PromptsPage /></PageTransition>} />
           <Route path="/prompts/privacy-checker" element={<PageTransition><PrivacyCheckerPage /></PageTransition>} />
-          <Route path="/security" element={<DevNotice />} />
+          <Route path="/security" element={<PageTransition><SecurityHubPage /></PageTransition>} />
           <Route path="/vault" element={<Navigate to="/security?tab=vault" replace />} />
           <Route path="/privacy-score" element={<Navigate to="/security?tab=score" replace />} />
           <Route path="/security-audit" element={<Navigate to="/security?tab=audit" replace />} />
           <Route path="/trust" element={<Navigate to="/security?tab=trust" replace />} />
           <Route path="/cyber" element={<Navigate to="/security?tab=cyber" replace />} />
           <Route path="/forge" element={<PageTransition><ContentForgePage /></PageTransition>} />
-          <Route path="/video-studio" element={<DevNotice />} />
+          <Route path="/video-studio" element={<PageTransition><VideoStudioPage /></PageTransition>} />
           <Route path="/presentations" element={<Navigate to="/forge?mode=slides" replace />} />
-          <Route path="/missioncontrol" element={<DevNotice />} />
+          <Route path="/missioncontrol" element={<PageTransition><MissionControlPage /></PageTransition>} />
           <Route path="/referral" element={<PageTransition><ReferralPage /></PageTransition>} />
-          <Route path="/research" element={<DevNotice />} />
+          <Route path="/research" element={<PageTransition><ResearchHubPage /></PageTransition>} />
           <Route path="/knowledge" element={<Navigate to="/research?tab=knowledge" replace />} />
           <Route path="/deep-research" element={<Navigate to="/research?tab=investigate" replace />} />
           <Route path="/knowledge-graph" element={<Navigate to="/research?tab=knowledge" replace />} />
-          <Route path="/strategy-lab" element={<DevNotice />} />
-          <Route path="/sovereign-data" element={<DevNotice />} />
-          <Route path="/wallet" element={<DevNotice />} />
-          <Route path="/ghost-ads" element={<DevNotice />} />
-          <Route path="/offline-license" element={<DevNotice />} />
+          <Route path="/strategy-lab" element={<PageTransition><StrategyLabPage /></PageTransition>} />
+          <Route path="/sovereign-data" element={<PageTransition><SovereignDataPage /></PageTransition>} />
+          <Route path="/wallet" element={<PageTransition><SovereignWalletPage /></PageTransition>} />
+          <Route path="/ghost-ads" element={<PageTransition><GhostAdsPage /></PageTransition>} />
+          <Route path="/offline-license" element={<PageTransition><LocalModelsPage /></PageTransition>} />
           <Route path="/enterprise-license" element={<Navigate to="/offline-license" replace />} />
           <Route path="/transparency" element={<PageTransition><TransparencyPage /></PageTransition>} />
           <Route path="/studio" element={<Navigate to="/forge?mode=studio" replace />} />
-          <Route path="/command-center" element={<DevNotice />} />
-          <Route path="/competitive" element={<DevNotice />} />
+          <Route path="/command-center" element={<PageTransition><CommandCenterPage /></PageTransition>} />
+          <Route path="/competitive" element={<PageTransition><CompetitivePage /></PageTransition>} />
           <Route path="/compare/:slug" element={<PageTransition><ComparisonDetailPage /></PageTransition>} />
-          <Route path="/agents" element={<DevNotice />} />
-          <Route path="/compliance" element={<DevNotice />} />
-          <Route path="/personal-llm" element={<DevNotice />} />
-          <Route path="/templates" element={<DevNotice />} />
+          <Route path="/agents" element={<PageTransition><MarketplacePage /></PageTransition>} />
+          <Route path="/compliance" element={<PageTransition><ComplianceDashboardPage /></PageTransition>} />
+          <Route path="/personal-llm" element={<PageTransition><PersonalLLMPage /></PageTransition>} />
+          <Route path="/templates" element={<PageTransition><TemplatesPage /></PageTransition>} />
           <Route path="/theme" element={<Navigate to="/templates?tab=custom" replace />} />
           <Route path="/themes" element={<Navigate to="/templates" replace />} />
           <Route path="/downloads" element={<PageTransition><DownloadsPage /></PageTransition>} />
           <Route path="/download" element={<Navigate to="/downloads" replace />} />
-          <Route path="/sessions" element={<DevNotice />} />
-          <Route path="/self-healing" element={<DevNotice />} />
-          <Route path="/local-models" element={<DevNotice />} />
+          <Route path="/sessions" element={<PageTransition><SessionsPage /></PageTransition>} />
+          <Route path="/self-healing" element={<PageTransition><SelfHealingPage /></PageTransition>} />
+          <Route path="/local-models" element={<PageTransition><LocalModelsPage /></PageTransition>} />
           <Route path="/settings/local-models" element={<Navigate to="/local-models" replace />} />
           <Route path="/abdul-rauf-ceo" element={<PageTransition><AbdulRaufPage /></PageTransition>} />
           <Route path="/muhammad-umar-cfo" element={<PageTransition><MuhammadUmarPage /></PageTransition>} />
