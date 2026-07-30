@@ -32,6 +32,8 @@ export interface ComparisonPage {
   shadowtalkWins: string[];
   competitorWins: string[];
   keywords: string[];
+  rows?: { category: string; shadowtalk: string; competitor: string }[];
+  faq?: { question: string; answer: string }[];
 }
 
 export const COMPARISON_PAGES: ComparisonPage[] = [
