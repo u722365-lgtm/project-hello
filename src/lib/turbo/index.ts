@@ -1,13 +1,3 @@
-// Pipeline (chat-oriented, streaming)
-export {
-  turboChat,
-  prewarmGroqConnection,
-  cancelPrewarm,
-  clearTurboCache,
-  getTurboCacheStats,
-} from './turboPipeline';
-export type { TurboMessage, TurboOptions, TurboResult } from './turboPipeline';
-
 // Engine (forge/execute oriented, Promise<string>)
 export { turboComplete, isTurboAvailable } from './turboEngine';
 export type { TurboEngineOptions, TurboEngineResult } from './turboEngine';

@@ -1,91 +1,66 @@
 /**
  * useTurboChat — React hook for ShadowTalk-Turbo.
  *
- * Bypasses the Supabase edge function entirely and streams directly
- * from Groq (or OpenRouter free fallback) to the browser.
- *
- * Key differences from useGlobalChat:
- *   - No Supabase edge function hop (saves ~800ms)
- *   - No DB queries for memory/context (saves ~350ms)
- *   - No model router overhead
- *   - Built-in response caching (instant for repeat queries)
- *   - Connection pre-warming (first token ~200ms after warm)
- *   - Falls back to useGlobalChat if no Groq key is available
+ * Uses turboEngine under the hood (self-contained, no turboPipeline dependency).
+ * Falls back to useGlobalChat if no Groq key is available.
  */
 
 import { useRef, useCallback, useState, useEffect } from "react";
 import {
-  turboChat,
-  prewarmGroqConnection,
-  cancelPrewarm,
+  turboComplete,
+  isTurboAvailable as checkTurboAvailable,
   resolveTurboKey,
-  type TurboMessage,
-  type TurboOptions,
-  type TurboResult,
+  type TurboEngineResult,
 } from "@/lib/turbo";
 import { useGlobalChat, type GlobalChatMessage } from "@/hooks/useGlobalChat";
 
 export interface UseTurboChatReturn {
-  /** Send messages through Turbo pipeline (or fallback to standard) */
   send: (messages: GlobalChatMessage[], opts?: TurboChatHookOptions) => Promise<TurboChatResult>;
-  /** Abort in-flight request */
   abort: () => void;
-  /** Is a request in-flight? */
   isLoading: boolean;
-  /** Is turbo mode available? (has Groq key) */
   isTurboAvailable: boolean;
-  /** Last result metadata (source, timing) */
-  lastResult: TurboResult | null;
+  lastResult: TurboEngineResult | null;
 }
 
 export interface TurboChatHookOptions {
-  /** Extra system prompt prepended before messages */
   systemPrompt?: string;
-  /** Personality preset */
   personality?: "turbo" | "friendly" | "professional" | "creative";
-  /** Called with accumulated content on each SSE chunk */
   onDelta?: (accumulated: string) => void;
-  /** Force standard mode (skip turbo even if available) */
   forceStandard?: boolean;
 }
 
 export interface TurboChatResult {
   content: string;
-  source: "turbo-groq" | "turbo-cache" | "turbo-openrouter" | "standard-cloud" | "standard-offline" | "error";
+  source: "turbo-groq" | "turbo-openrouter" | "standard-cloud" | "standard-offline" | "error";
   ttftMs?: number;
   totalMs?: number;
 }
 
+const PERSONALITY_PREFIXES: Record<string, string> = {
+  turbo: "You are ShadowTalk Turbo. Be direct, accurate, concise. Use **bold** for key terms, \\(code\\) for tech terms, bullets for lists.",
+  friendly: "You are ShadowTalk. Be warm, helpful, concise.",
+  professional: "You are ShadowTalk. Be precise, structured, data-driven.",
+  creative: "You are ShadowTalk. Be imaginative, vivid, lateral.",
+};
+
 export function useTurboChat(): UseTurboChatReturn {
   const [isLoading, setIsLoading] = useState(false);
-  const [isTurboAvailable, setIsTurboAvailable] = useState(false);
-  const [lastResult, setLastResult] = useState<TurboResult | null>(null);
+  const [turboAvail, setTurboAvail] = useState(false);
+  const [lastResult, setLastResult] = useState<TurboEngineResult | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const globalChat = useGlobalChat();
 
-  // Check turbo availability on mount and when storage changes
   useEffect(() => {
-    const check = () => {
-      const key = resolveTurboKey();
-      setIsTurboAvailable(!!key);
-      if (key) prewarmGroqConnection(key);
-    };
-
+    const check = () => setTurboAvail(checkTurboAvailable());
     check();
-
-    // Re-check when localStorage changes (another tab might update keys)
- const handleStorage = (e: StorageEvent) => {
+    const handleStorage = (e: StorageEvent) => {
       if (e.key?.includes("shadowtalk") || e.key?.includes("ai")) check();
     };
     window.addEventListener("storage", handleStorage);
-
-    // Periodic re-check (for same-tab updates)
     const interval = setInterval(check, 30_000);
-
     return () => {
       window.removeEventListener("storage", handleStorage);
       clearInterval(interval);
-      cancelPrewarm();
     };
   }, []);
 
@@ -94,16 +69,15 @@ export function useTurboChat(): UseTurboChatReturn {
       messages: GlobalChatMessage[],
       opts: TurboChatHookOptions = {},
     ): Promise<TurboChatResult> => {
-      // Cancel in-flight
       abortRef.current?.abort();
       const controller = new AbortController();
       abortRef.current = controller;
-
       setIsLoading(true);
 
       try {
-        // If forced standard or no turbo key, use global chat fallback
         const turboKey = resolveTurboKey();
+
+        // No key or forced standard → use global chat
         if (opts.forceStandard || !turboKey) {
           const result = await globalChat.send(messages, {
             systemPrompt: opts.systemPrompt,
@@ -111,48 +85,46 @@ export function useTurboChat(): UseTurboChatReturn {
             onDelta: opts.onDelta,
             signal: controller.signal,
           });
-
-          const turboResult: TurboChatResult =
-            result.source === "cloud"
-              ? { content: result.content, source: "standard-cloud" }
-              : result.source === "offline"
-                ? { content: result.content, source: "standard-offline" }
-                : { content: result.content, source: "error" };
-
+          const source = result.source === "cloud" ? "standard-cloud" : result.source === "offline" ? "standard-offline" : "error";
           setIsLoading(false);
-          return turboResult;
+          return { content: result.content, source: source as TurboChatResult["source"] };
         }
 
         // ---- TURBO PATH ----
-        const turboMessages: TurboMessage[] = messages.map(m => ({
-          role: m.role,
-          content: m.content,
-        }));
+        const lastUser = [...messages].reverse().find(m => m.role === "user");
+        const systemPrompt =
+          opts.systemPrompt ||
+          PERSONALITY_PREFIXES[opts.personality || "turbo"] ||
+          PERSONALITY_PREFIXES.turbo;
 
-        const turboResult = await turboChat(turboMessages, {
-          systemPrompt: opts.systemPrompt,
-          personality: opts.personality || "turbo",
-          onDelta: opts.onDelta,
-          signal: controller.signal,
-          apiKey: turboKey,
-        });
+        const result = await turboComplete(
+          systemPrompt,
+          lastUser?.content || "",
+          {
+            signal: controller.signal,
+            onDelta: opts.onDelta,
+          },
+        );
 
-        setLastResult(turboResult);
+        setLastResult(result);
 
-        // Map turbo source to hook source
-        const sourceMap: Record<TurboResult["source"], TurboChatResult["source"]> = {
-          groq: "turbo-groq",
-          "openrouter-free": "turbo-openrouter",
-          cache: "turbo-cache",
-          error: "error",
-        };
+        if (result.source === "fallback") {
+          // Turbo key resolved but both providers failed → fall back to standard
+          const std = await globalChat.send(messages, {
+            systemPrompt: opts.systemPrompt,
+            onDelta: opts.onDelta,
+            signal: controller.signal,
+          });
+          setIsLoading(false);
+          return { content: std.content, source: "standard-cloud" };
+        }
 
         setIsLoading(false);
         return {
-          content: turboResult.content,
-          source: sourceMap[turboResult.source] || "error",
-          ttftMs: turboResult.ttftMs,
-          totalMs: turboResult.totalMs,
+          content: result.content,
+          source: result.source,
+          ttftMs: result.ttftMs,
+          totalMs: result.totalMs,
         };
       } catch (err) {
         if (controller.signal.aborted) {
@@ -173,5 +145,5 @@ export function useTurboChat(): UseTurboChatReturn {
     setIsLoading(false);
   }, []);
 
-  return { send, abort, isLoading, isTurboAvailable, lastResult };
+  return { send, abort, isLoading, isTurboAvailable: turboAvail, lastResult };
 }
