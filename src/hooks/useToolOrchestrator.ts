@@ -1,6 +1,13 @@
 import { useCallback } from 'react';
 
 export type ToolType = 
+  | 'code_executor'
+  | 'file_manager'
+  | 'database_query'
+  | 'analytics_agent'
+  | 'api_integrator'
+  | 'workflow_automation'
+  | 'executor'
   | 'image_generator'
   | 'image_decoder'
   | 'deep_research'

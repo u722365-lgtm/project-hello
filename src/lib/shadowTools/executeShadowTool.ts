@@ -230,11 +230,7 @@ export async function executeShadowTool(
     case "presentation_builder": {
       const topic = p.topic || message;
       try {
-        const outline = buildExecutePath("presentation_builder", {
-          message,
-          deliverableType: "slides",
-          params: p,
-        });
+        const outline = buildExecutePath(message, "slides");
         return {
           kind: "inline",
           tool,

@@ -12,8 +12,9 @@ export interface ShadowToolInlineResult {
 export interface ShadowToolUIResult {
   kind: "ui";
   tool: ToolType;
-  message: string;
+  message?: string;
   path?: string;
+  state?: Record<string, unknown>;
 }
 
 export interface ShadowToolChatFlagsResult {
