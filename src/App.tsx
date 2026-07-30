@@ -50,7 +50,6 @@ import { NotificationPermissionRequester } from "@/components/notifications/Noti
 import { UpdateNotificationProvider } from "@/components/notifications/UpdateNotificationProvider";
 import { AutonomousAgentEngine } from "@/components/autonomy/AutonomousAgentEngine";
 import { MissionSchedulerEngine } from "@/components/autonomy/MissionSchedulerEngine";
-import { OllamaProviderEngine } from "@/hooks/useOllamaProvider";
 import { ScriptSchedulerEngine } from "@/components/autonomy/ScriptSchedulerEngine";
 import { GoalPursuitEngine } from "@/components/autonomy/GoalPursuitEngine";
 import { SelfHealingErrorBoundary } from "@/components/selfHealing/SelfHealingErrorBoundary";
@@ -393,7 +392,6 @@ const App = () => {
                <BrowserRouter>
                  <MobileViewportFix />
                  <UpdateNotificationProvider />
-                 <OllamaProviderEngine />
                  <NetworkTransitionOverlay />
                  <PushIntelligencePanel />
                  <SelfHealingErrorBoundary>

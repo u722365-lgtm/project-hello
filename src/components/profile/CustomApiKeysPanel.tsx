@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { AI_PROVIDER_OPTIONS, type AiProviderId } from "@/lib/aiProviders";
+import type { AiProviderId } from "@/lib/aiProviders";
 import { useCustomApiKeys } from "@/hooks/useCustomApiKeys";
 
 export const CustomApiKeysPanel = () => {
@@ -28,11 +28,11 @@ export const CustomApiKeysPanel = () => {
     setDefault,
   } = useCustomApiKeys();
 
-  const [provider, setProvider] = useState<AiProviderId>("google");
+  const [provider] = useState<AiProviderId>("lovable");
   const [apiKey, setApiKey] = useState("");
   const [label, setLabel] = useState("");
 
-  const selectedMeta = AI_PROVIDER_OPTIONS.find((p) => p.id === provider)!;
+  const selectedMeta = { name: "ShadowTalk Pro (platform)", description: "Built-in Lovable cloud AI", keyPlaceholder: "", docsUrl: "" } as const;
   const busy = isVerifying || isSaving;
 
   const handleConnect = async () => {
@@ -102,15 +102,6 @@ export const CustomApiKeysPanel = () => {
               onChange={(e) => setApiKey(e.target.value)}
               disabled={busy}
             />
-            <a
-              href={selectedMeta.docsUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
-            >
-              Get a key from {selectedMeta.name}
-              <ExternalLink className="h-3 w-3" />
-            </a>
           </div>
 
           <div className="space-y-2">

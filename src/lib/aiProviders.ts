@@ -1,4 +1,8 @@
-export type AiProviderId = "google" | "openai" | "anthropic" | "xai" | "perplexity" | "openrouter" | "mistral" | "groq" | "lovable" | "byok";
+/**
+ * Simple Lovable-only AI provider configuration.
+ */
+
+export type AiProviderId = 'lovable';
 
 export interface AiProviderOption {
   id: AiProviderId;
@@ -12,69 +16,12 @@ export interface AiProviderOption {
 
 export const AI_PROVIDER_OPTIONS: AiProviderOption[] = [
   {
-    id: "lovable",
-    name: "ShadowTalk Pro (platform)",
-    description: "Built-in ShadowTalk cloud AI or local Sovereign fallback",
-    keyPlaceholder: "",
-    docsUrl: "",
-  },
-  {
-    id: "google",
-    name: "Google Gemini",
-    description: "Gemini models via Google AI Studio",
-    keyPlaceholder: "AIza…",
-    docsUrl: "https://aistudio.google.com/apikey",
-  },
-  {
-    id: "openai",
-    name: "OpenAI",
-    description: "GPT-4o and ChatGPT API",
-    keyPlaceholder: "sk-…",
-    docsUrl: "https://platform.openai.com/api-keys",
-  },
-  {
-    id: "anthropic",
-    name: "Anthropic",
-    description: "Claude models",
-    keyPlaceholder: "sk-ant-…",
-    docsUrl: "https://console.anthropic.com/settings/keys",
-  },
-  {
-    id: "byok",
-    name: "BYOK",
-    description: "Bring-your-own-key routing",
-    keyPlaceholder: "sk-…",
-    keyHint: "https://aistudio.google.com/apikey",
-    defaultModel: "google/gemini-2.0-flash-001",
-    docsUrl: "https://aistudio.google.com/apikey",
-  },
-  {
-    id: "perplexity",
-    name: "Perplexity",
-    description: "Search-augmented answers",
-    keyPlaceholder: "pplx-…",
-    docsUrl: "https://www.perplexity.ai/settings/api",
-  },
-  {
-    id: "xai",
-    name: "xAI (Grok)",
-    description: "Grok models",
-    keyPlaceholder: "xai-…",
-    docsUrl: "https://console.x.ai/",
-  },
-  {
-    id: "mistral",
-    name: "Mistral AI",
-    description: "Mistral and Codestral",
-    keyPlaceholder: "…",
-    docsUrl: "https://console.mistral.ai/api-keys/",
-  },
-  {
-    id: "groq",
-    name: "Groq",
-    description: "Fast inference for open models",
-    keyPlaceholder: "gsk_…",
-    docsUrl: "https://console.groq.com/keys",
+    id: 'lovable',
+    name: 'ShadowTalk Pro (platform)',
+    description: 'Built-in ShadowTalk cloud AI',
+    keyPlaceholder: '',
+    docsUrl: '',
+    defaultModel: 'google/gemini-2.5-flash',
   },
 ];
 
@@ -85,6 +32,6 @@ export interface AiConfig {
 }
 
 export const DEFAULT_AI_CONFIG: AiConfig = {
-  preferredProvider: "lovable",
+  preferredProvider: 'lovable',
   useCustomKey: false,
 };

@@ -5,15 +5,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { FileUpload } from "@/components/chat/FileUpload";
 import { ModeSelector, ChatMode } from "@/components/chat/ModeSelector";
 import { SearchHistory } from "@/components/chat/SearchHistory";
-import { ProviderSelector, AIProvider } from "@/components/chat/ProviderSelector";
 import { motion, AnimatePresence } from "framer-motion";
+
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { getChatEnterToSend } from "@/lib/profilePreferences";
+
 import { usePromptAutocomplete } from "@/hooks/usePromptAutocomplete";
 import { buildInAppSharePayload, getViralShareLinks } from "@/lib/viralShare";
 import { ViralShareButton } from "@/components/chat/ViralShareButton";
@@ -216,15 +216,6 @@ export const ChatInput = ({
             </div>
 
             <div className="shadowtalk-composer__actions">
-              {onProviderChange && (
-                <ProviderSelector
-                  provider={aiProvider}
-                  onProviderChange={onProviderChange}
-                  hasKeyForProvider={hasKeyForProvider}
-                  disabled={isLoading}
-                  variant="chip"
-                />
-              )}
 
               <TooltipProvider>
                 <Tooltip>
@@ -370,15 +361,6 @@ export const ChatInput = ({
             />
 
             <div className={`flex items-center gap-0.5 shrink-0 ${isComposer ? "" : "pb-1"}`}>
-              {isComposer && onProviderChange && (
-                <ProviderSelector
-                  provider={aiProvider}
-                  onProviderChange={onProviderChange}
-                  hasKeyForProvider={hasKeyForProvider}
-                  disabled={isLoading}
-                  variant="inline"
-                />
-              )}
 
               <TooltipProvider>
                 <Tooltip>

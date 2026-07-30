@@ -8,94 +8,54 @@ import {
 } from "@/lib/customApiKeys";
 import type { UserProviderKeyRow } from "@/hooks/useCustomApiKeys";
 
-/** UI selector id → server-stored provider (user_provider_keys) */
-export function toServerProvider(ui: AIProvider): AiProviderId | null {
-  if (ui === "gemini") return "google";
-  return null;
+export function toServerProvider(_ui: AIProvider): AiProviderId | null {
+  return "lovable";
 }
 
-/** Server provider → UI selector id */
-export function toUiProvider(server: AiProviderId): AIProvider | null {
-  if (server === "google") return "gemini";
-  return null;
+export function toUiProvider(_server: AiProviderId): AIProvider | null {
+  return "lovable";
 }
 
-export function isByokProvider(provider: AIProvider): boolean {
-  return provider !== "lovable" && provider !== "shadowtalk";
+export function isByokProvider(_provider: AIProvider): boolean {
+  return false;
 }
 
 export function hasStoredKeyForProvider(
-  provider: AIProvider,
-  keys: UserProviderKeyRow[],
-  localConfig: CustomAiKeysConfig = loadCustomAiConfig(),
+  _provider: AIProvider,
+  _keys: UserProviderKeyRow[],
+  _localConfig: CustomAiKeysConfig = {
+    provider: "lovable",
+    apiKey: "",
+    usePlatformDefault: true,
+    setupDismissed: false,
+    model: "",
+  },
 ): boolean {
-  if (provider === "lovable" || provider === "shadowtalk") return true;
-
-  const serverId = toServerProvider(provider);
-  if (
-    serverId &&
-    keys.some((k) => k.provider === serverId && k.verified_at && k.is_active)
-  ) {
-    return true;
-  }
-
-  return (
-    !localConfig.usePlatformDefault &&
-    localConfig.provider === provider &&
-    hasActiveCustomKey(localConfig)
-  );
+  return true;
 }
 
 export function resolveActiveUiProvider(
-  keys: UserProviderKeyRow[],
-  aiConfig: { useCustomKey: boolean; preferredProvider: AiProviderId | null },
-  localConfig: CustomAiKeysConfig = loadCustomAiConfig(),
+  _keys: UserProviderKeyRow[],
+  _aiConfig: { useCustomKey: boolean; preferredProvider: AiProviderId | null },
+  _localConfig: CustomAiKeysConfig = {
+    provider: "lovable",
+    apiKey: "",
+    usePlatformDefault: true,
+    setupDismissed: false,
+    model: "",
+  },
 ): AIProvider {
-  if (aiConfig.useCustomKey && aiConfig.preferredProvider) {
-    const ui = toUiProvider(aiConfig.preferredProvider);
-    if (ui && hasStoredKeyForProvider(ui, keys, localConfig)) return ui;
-  }
-
-  if (!localConfig.usePlatformDefault && hasActiveCustomKey(localConfig)) {
-    const p = localConfig.provider as AIProvider;
-    if (p === "gemini" || p === "kimi") return p;
-  }
-
-  const defaultKey = keys.find((k) => k.is_default && k.verified_at) || keys.find((k) => k.verified_at);
-  if (defaultKey) {
-    const ui = toUiProvider(defaultKey.provider as AiProviderId);
-    if (ui) return ui;
-  }
-
   return "lovable";
 }
 
 export function toCustomAiProviderId(provider: AIProvider): CustomAiProviderId {
-  return provider as CustomAiProviderId;
+  return "lovable";
 }
 
-/** Chat API body flags for the active UI provider */
 export function buildChatProviderPayload(
-  uiProvider: AIProvider,
-  aiConfig: { useCustomKey: boolean; preferredProvider: AiProviderId | null },
-  keys: UserProviderKeyRow[],
+  _uiProvider: AIProvider,
+  _aiConfig: { useCustomKey: boolean; preferredProvider: AiProviderId | null },
+  _keys: UserProviderKeyRow[],
 ): Record<string, unknown> {
-  if (uiProvider === "lovable") {
-    return {};
-  }
-  if (uiProvider === "shadowtalk") {
-    return { shadowtalkSovereignModel: true };
-  }
-
-  const serverId = toServerProvider(uiProvider);
-  if (
-    serverId &&
-    aiConfig.useCustomKey &&
-    aiConfig.preferredProvider === serverId &&
-    keys.some((k) => k.provider === serverId && k.verified_at && k.is_active)
-  ) {
-    return { useCustomApiKey: true, aiProvider: serverId };
-  }
-
   return {};
 }

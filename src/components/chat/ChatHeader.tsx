@@ -36,7 +36,6 @@ import {
   DropdownMenuSubContent,
   DropdownMenuPortal,
 } from "@/components/ui/dropdown-menu";
-import { ProviderSelector, AIProvider } from "./ProviderSelector";
 import { ConnectionStatusIndicator } from "./ConnectionStatusIndicator";
 import { motion } from "framer-motion";
 
@@ -364,11 +363,6 @@ export const ChatHeader = ({
         
         <div className="hidden sm:block h-4 w-px bg-white/10 mx-1" />
         
-        <ProviderSelector
-          provider={aiProvider}
-          onProviderChange={onProviderChange}
-          hasKeyForProvider={hasKeyForProvider}
-        />
         <ConnectionStatusIndicator />
         <div className="hidden sm:block h-4 w-px bg-white/10 mx-1" />
         <BunkerModeToggle />

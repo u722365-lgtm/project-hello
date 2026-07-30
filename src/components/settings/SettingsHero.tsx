@@ -23,17 +23,7 @@ export function SettingsHero() {
     "ShadowTalk user";
   const avatarUrl = (user?.user_metadata?.avatar_url as string | undefined) ?? "";
 
-  const providerLabels: Record<string, string> = {
-    lovable: "ShadowTalk Pro",
-    shadowtalk: "ShadowTalk Sovereign",
-    gemini: "Gemini",
-    "": "BYOK/Kimi/Other",
-    kimi: "Kimi",
-  };
-  const providerLabel =
-    providerLabels[preferences.defaultProvider] ??
-    AI_PROVIDER_OPTIONS.find((p) => p.id === preferences.defaultProvider)?.name ??
-    preferences.defaultProvider;
+  const providerLabel = "ShadowTalk Pro";
 
   const badges: { icon: typeof Bot; label: string; className: string }[] = [
     { icon: Bot, label: providerLabel, className: "" },

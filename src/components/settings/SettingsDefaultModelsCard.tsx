@@ -8,7 +8,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Bot, Loader2, Sparkles } from "lucide-react";
-import { AI_PROVIDER_OPTIONS } from "@/lib/aiProviders";
 import type { AIProvider } from "@/components/chat/ProviderSelector";
 import { useChatSettings } from "@/hooks/useChatSettings";
 import { PERSONALITY_OPTIONS } from "@/lib/chatSettings";
@@ -48,26 +47,6 @@ export function SettingsDefaultModelsCard() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
-        <div className="space-y-2">
-          <Label>Default AI provider</Label>
-          <Select
-            value={preferences.defaultProvider}
-            onValueChange={(v) => void onChange("defaultProvider", v as AIProvider)}
-            disabled={isSaving}
-          >
-            <SelectTrigger className="bg-muted/30">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {AI_PROVIDER_OPTIONS.map((p) => (
-                <SelectItem key={p.id} value={p.id}>
-                  {(p as { label?: string; name?: string }).label ?? (p as { name?: string }).name ?? p.id}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
         <div className="space-y-2">
           <Label className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-primary" />
