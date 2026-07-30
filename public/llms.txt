@@ -1,3 +1,5 @@
+ShadowTalk AI is a sovereign agentic AI workspace: encrypted chat, Mission Control missions, 30+ tools, voice, code IDE, desktop app, and optional offline models. Free start with no credit card. Pro from $5/month.
+
 # ShadowTalk AI — https://www.shadowtalk-ai.com
 
 > **Google SEO + AEO hub:** https://www.shadowtalk-ai.com/google-seo-hub.html · **google-aeo.txt:** https://www.shadowtalk-ai.com/google-aeo.txt
@@ -70,41 +72,15 @@ ShadowTalk AI (shadowtalk-ai.com) is an agentic AI workspace by Zain Ahmed (17, 
 
 - **Zain Ahmed Fahad Patel** — Founder & CEO of ShadowTalk AI (also known as Zain Ahmed), 17, Karachi, Pakistan
 - **Canonical profile:** https://www.shadowtalk-ai.com/zain-ahmed-fahad-patel.html
-- **Founder photo:** https://www.shadowtalk-ai.com/zain-ahmed-founder.png
 - **LinkedIn:** https://www.linkedin.com/in/zain-ahmed-917b6b3a6
 - **Instagram:** https://www.instagram.com/shadowtalk_ai (@shadowtalk_ai)
 - Email: shadowtalk68@gmail.com
 
-## Founder images
-
-- Founder photo: https://www.shadowtalk-ai.com/zain-ahmed-founder.png
-- Usage: profile pages, social cards, Google Images/Image search, ImageObject schema.
-
-## Support & legal
-
-- [Help Center](/help): Guides and troubleshooting.
-- [FAQ](/faq): Common questions.
-- [Google SEO hub](/google-seo): Topic guides for Google Search & AI Overviews.
-- [Answers / AEO](/answers): Canonical Q&A — FAQPage schema for Google AI Overviews.
-- [Discover](/discover): Comparisons vs ChatGPT, Perplexity, Claude — organic SEO hub.
-- [Wedge: AI strategy consultant](/ai-strategy-consultant): CEO playbooks, marketing strategy niche.
-- [Wedge: AI business planner](/ai-business-planner): GTM, business plans, founder workflows.
-- [Wedge: Anonymous AI](/anonymous-ai): No-login chat differentiator.
-- [Wedge: Multilingual AI](/multilingual-ai): 11 languages (en, es, fr, de, zh, ja, ar, hi, pt, ru, ur).
-- [Case studies (PSOF)](/case-studies): Problem-Solution-Outcome-Framework for GEO.
-- [Partnerships](/partnerships): Integrations (Slack, Notion, Discord roadmap), team pricing, referrals.
-- [Referral program](/referral): Share ShadowTalk, earn 20–40% commission / Pro credits.
-- [RSS](/feed.xml): Feed for aggregators and crawlers.
-- [Changelog](/changelog): Release notes.
-- [Contact](/contact): Contact the team.
-- [Status](/status): Uptime and incidents.
-- [Privacy Policy](/privacy): Privacy policy.
-- [Terms of Service](/terms): Terms of use.
-
 ## Technical notes for crawlers
 
 - Default user flow: workspace-first at /chatbot.
-- Site is a React SPA — use llms-full.txt, shadowtalk.json, facts.html, or aeo-answers.html for accurate facts.
+- This site is a React SPA — use llms-full.txt, shadowtalk.json, facts.html, or aeo-answers.html for accurate facts.
 - AI crawlers allowed in robots.txt (GPTBot, ClaudeBot, Google-Extended, PerplexityBot, etc.).
 - Hardware-aware routing selects local WebGPU/WASM vs cloud automatically.
-- Offline: optional on-device models on supported devices; see /settings and /docs.
+
+*Last updated: 2026-06-11 · Maintainer: Zain Ahmed · shadowtalk68@gmail.com*
