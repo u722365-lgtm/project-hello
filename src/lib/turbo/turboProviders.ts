@@ -40,7 +40,7 @@ export function resolveTurboKey(): string | null {
     const config: CustomAiKeysConfig = loadCustomAiConfig();
     if (hasActiveCustomKey(config)) {
       // Accept groq or turbo provider
-      if (config.provider === 'groq' || config.provider === 'turbo') {
+      if ((config.provider as string) === 'groq' || (config.provider as string) === 'turbo') {
         return config.apiKey;
       }
       // Also accept any key that looks like a Groq key
