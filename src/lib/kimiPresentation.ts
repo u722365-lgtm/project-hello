@@ -1,5 +1,3 @@
-import { generateLocalPresentation } from "@/lib/desktop/localPresentationGeneration";
-import { shouldUseLocalForge } from "@/lib/desktop/sovereignAgentMode";
 import { buildChatRequestBody } from "@/lib/chatRequest";
 import { supabase } from "@/integrations/supabase/client";
 import type { PresentationData } from "@/components/presentation/types";

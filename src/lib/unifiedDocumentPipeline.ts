@@ -5,11 +5,6 @@
  * Manus: plan → research → draft → polish → deliver with reusable project context.
  */
 
-import { shouldUseLocalForge } from "@/lib/desktop/sovereignAgentMode";
-import {
-  fetchLocalDocumentResearch,
-  streamLocalKimiDocument,
-} from "@/lib/desktop/localDocumentGeneration";
 import {
   CHAT_FUNCTION_URL,
   streamKimiDocument,
