@@ -159,7 +159,7 @@ const VsPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {page.rows.map((row) => (
+                  {(page.rows ?? []).map((row) => (
                     <tr key={row.category} className="border-t border-border/50">
                       <td className="px-4 py-3 font-medium">{row.category}</td>
                       <td className="px-4 py-3">{row.shadowtalk}</td>
