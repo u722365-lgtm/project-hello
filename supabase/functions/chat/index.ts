@@ -27,6 +27,7 @@ import {
   ollamaChat,
   type OllamaChatResponse,
 } from "../_shared/ollama-fallback.ts";
+import { openRouterFallback } from "../_shared/openrouterFallback.ts";
 
 const OLLAMA_STATUS_CACHE_TTL_MS = 10_000;
 let cachedOllamaStatus: { cfg: ReturnType<typeof getOllamaFallbackConfig>; status: Awaited<ReturnType<typeof resolveOllamaFallbackStatus>> } | null = null;
