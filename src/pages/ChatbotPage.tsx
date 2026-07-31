@@ -1406,11 +1406,20 @@ const ChatbotPage = () => {
       // Try direct Groq streaming first (bypasses edge function, ~5x faster TTFB).
       // Falls through to standard path if no Groq key or if Turbo fails.
       const turboKey = resolveTurboKey();
-      if (turboKey && !imageAttachment && !generateImage && !webSearch && !deepResearch && effectiveWebSearch === false) {
+      const turboUserText =
+        [...routerMessages].reverse().find((m) => m.role === "user")?.content ?? "";
+      if (
+        turboKey &&
+        !hasMultimodalImage &&
+        !chatFlags?.webSearch &&
+        !chatFlags?.deepResearch &&
+        typeof turboUserText === "string" &&
+        turboUserText.trim().length > 0
+      ) {
         try {
           const turboResult = await turboComplete(
             `You are ShadowTalk AI. Be ${personality || 'friendly'} and helpful. Use markdown formatting. Current date: ${new Date().toISOString().split('T')[0]}.`,
-            msgContent,
+            turboUserText,
             {
               signal: controller.signal,
               onDelta: (accumulated) => pushAssistant(accumulated),
