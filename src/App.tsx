@@ -57,6 +57,7 @@ import { ScriptSchedulerEngine } from "@/components/autonomy/ScriptSchedulerEngi
 import { GoalPursuitEngine } from "@/components/autonomy/GoalPursuitEngine";
 import { SelfHealingErrorBoundary } from "@/components/selfHealing/SelfHealingErrorBoundary";
 import { NetworkTransitionOverlay } from "@/components/chat/NetworkTransitionOverlay";
+import { PushIntelligencePanel } from "@/components/chat/PushIntelligencePanel";
 import GlobalMaintenanceNotice from "@/components/GlobalMaintenanceNotice";
  
  // Lazy loaded pages - code splitting for better performance
