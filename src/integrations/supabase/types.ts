@@ -916,6 +916,7 @@ export type Database = {
           code_generations: number
           created_at: string
           deep_research: number
+          document_generations: number
           file_uploads: number
           id: string
           image_generations: number
@@ -923,12 +924,14 @@ export type Database = {
           updated_at: string
           usage_date: string
           user_id: string
+          voice_sessions: number
           web_searches: number
         }
         Insert: {
           code_generations?: number
           created_at?: string
           deep_research?: number
+          document_generations?: number
           file_uploads?: number
           id?: string
           image_generations?: number
@@ -936,12 +939,14 @@ export type Database = {
           updated_at?: string
           usage_date?: string
           user_id: string
+          voice_sessions?: number
           web_searches?: number
         }
         Update: {
           code_generations?: number
           created_at?: string
           deep_research?: number
+          document_generations?: number
           file_uploads?: number
           id?: string
           image_generations?: number
@@ -949,6 +954,7 @@ export type Database = {
           updated_at?: string
           usage_date?: string
           user_id?: string
+          voice_sessions?: number
           web_searches?: number
         }
         Relationships: []
