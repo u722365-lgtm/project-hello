@@ -2,6 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { LogIn, Sparkles, Zap, Shield, Crown } from "lucide-react";
+import { FREE_TIER_DAILY } from "@/lib/productClaims";
 
 interface SignInPromptProps {
   open: boolean;

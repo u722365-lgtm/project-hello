@@ -24,7 +24,7 @@ export const FEATURES: Record<string, FeatureConfig> = {
   imageGeneration: { name: "Image Generation", requiredPlan: "free", freeLimit: FREE_TIER_DAILY.imageGenerations },
   textToSpeech: { name: "Text-to-Speech", requiredPlan: "free" },
   codeCanvas: { name: "Code Canvas", requiredPlan: "free" },
-  documentGeneration: { name: "Document Generation", requiredPlan: "free" },
+  documentGeneration: { name: "Document Generation", requiredPlan: "free", freeLimit: FREE_TIER_DAILY.documentGenerations },
   urmFull: { name: "Universal Regulation Mapping", requiredPlan: "free" },
 
   // Premium features - also FREE but with limits
