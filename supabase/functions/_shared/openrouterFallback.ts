@@ -111,3 +111,48 @@ export async function openRouterFallback(
 ): Promise<Response | null> {
   return (await tryGemini(messages, opts)) ?? (await tryOpenRouter(messages, opts));
 }
+
+/** Image models tried in order via the Gemini REST API. */
+const GEMINI_IMAGE_MODELS = ["gemini-2.5-flash-image", "gemini-2.0-flash-preview-image-generation"];
+
+/**
+ * Direct Gemini image-generation fallback.
+ * Returns a base64 data URL, or null when unavailable.
+ */
+export async function geminiImageFallback(prompt: string): Promise<string | null> {
+  const key = Deno.env.get("Gemini_1api");
+  if (!key) return null;
+
+  for (const model of GEMINI_IMAGE_MODELS) {
+    try {
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ role: "user", parts: [{ text: prompt }] }],
+            generationConfig: { responseModalities: ["IMAGE", "TEXT"] },
+          }),
+        },
+      );
+      if (!res.ok) {
+        console.warn("[Fallback] Gemini image model failed", model, res.status);
+        continue;
+      }
+      const json = await res.json();
+      const parts = json?.candidates?.[0]?.content?.parts ?? [];
+      for (const part of parts) {
+        const inline = part?.inlineData ?? part?.inline_data;
+        if (inline?.data) {
+          const mime = inline.mimeType ?? inline.mime_type ?? "image/png";
+          console.log("[Fallback] Image served via Gemini", model);
+          return `data:${mime};base64,${inline.data}`;
+        }
+      }
+    } catch (err) {
+      console.warn("[Fallback] Gemini image request error", model, err);
+    }
+  }
+  return null;
+}
