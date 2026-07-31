@@ -1,14 +1,23 @@
 /**
- * OpenRouter fallback for when the platform AI gateway is unavailable
+ * Fallback chat completion for when the platform AI gateway is unavailable
  * (402 credits exhausted / 429 rate limited / 503).
  *
- * Uses OPENROUTER_FALLBACK_KEY. Returns an OpenAI-compatible response
- * (streaming SSE or JSON) so callers can pass it straight through.
+ * Order:
+ *   1. Google Gemini (OpenAI-compatible endpoint) using `Gemini_1api`
+ *   2. OpenRouter using `OPENROUTER_FALLBACK_KEY`
+ *
+ * Returns an OpenAI-compatible Response (streaming SSE or JSON) so callers
+ * can pass it straight through to the browser.
  */
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
+const GEMINI_OPENAI_URL =
+  "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
 
-/** Free / low-cost OpenRouter models tried in order. */
+/** Gemini models tried in order (OpenAI-compatible endpoint). */
+const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-flash-latest", "gemini-2.5-flash-lite"];
+
+/** OpenRouter models tried in order (free slugs first, then cheap paid). */
 const FALLBACK_MODELS = [
   "google/gemini-2.0-flash-exp:free",
   "meta-llama/llama-3.3-70b-instruct:free",
@@ -16,7 +25,7 @@ const FALLBACK_MODELS = [
 ];
 
 export function hasOpenRouterFallback(): boolean {
-  return !!Deno.env.get("OPENROUTER_FALLBACK_KEY");
+  return !!Deno.env.get("OPENROUTER_FALLBACK_KEY") || !!Deno.env.get("Gemini_1api");
 }
 
 export interface FallbackMessage {
@@ -24,9 +33,44 @@ export interface FallbackMessage {
   content: unknown;
 }
 
-export async function openRouterFallback(
+async function tryGemini(
   messages: FallbackMessage[],
-  opts: { stream?: boolean; signal?: AbortSignal } = {},
+  opts: { stream?: boolean; signal?: AbortSignal },
+): Promise<Response | null> {
+  const key = Deno.env.get("Gemini_1api");
+  if (!key) return null;
+
+  for (const model of GEMINI_MODELS) {
+    try {
+      const res = await fetch(GEMINI_OPENAI_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${key}`,
+        },
+        body: JSON.stringify({
+          model,
+          messages,
+          stream: opts.stream ?? true,
+        }),
+        signal: opts.signal,
+      });
+
+      if (res.ok) {
+        console.log("[Fallback] Serving via Gemini", model);
+        return res;
+      }
+      console.warn("[Fallback] Gemini model failed", model, res.status);
+    } catch (err) {
+      console.warn("[Fallback] Gemini request error", model, err);
+    }
+  }
+  return null;
+}
+
+async function tryOpenRouter(
+  messages: FallbackMessage[],
+  opts: { stream?: boolean; signal?: AbortSignal },
 ): Promise<Response | null> {
   const key = Deno.env.get("OPENROUTER_FALLBACK_KEY");
   if (!key) return null;
@@ -50,14 +94,20 @@ export async function openRouterFallback(
       });
 
       if (res.ok) {
-        console.log("[OpenRouter Fallback] Serving via", model);
+        console.log("[Fallback] Serving via OpenRouter", model);
         return res;
       }
-      console.warn("[OpenRouter Fallback] model failed", model, res.status);
+      console.warn("[Fallback] OpenRouter model failed", model, res.status);
     } catch (err) {
-      console.warn("[OpenRouter Fallback] request error", model, err);
+      console.warn("[Fallback] OpenRouter request error", model, err);
     }
   }
-
   return null;
+}
+
+export async function openRouterFallback(
+  messages: FallbackMessage[],
+  opts: { stream?: boolean; signal?: AbortSignal } = {},
+): Promise<Response | null> {
+  return (await tryGemini(messages, opts)) ?? (await tryOpenRouter(messages, opts));
 }
