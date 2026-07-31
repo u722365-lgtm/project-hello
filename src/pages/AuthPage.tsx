@@ -6,7 +6,7 @@ import { restoreOrCreateSession, clearExplicitSignOut, hasExplicitSignOut, markE
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import { Eye, EyeOff, WifiOff, Wifi, Loader2, Shield, Zap, Lock, CheckCircle2, XCircle, AlertTriangle, Fingerprint, Smartphone, Mail, KeyRound } from "lucide-react";
+import { Eye, EyeOff, WifiOff, Wifi, Loader2, Shield, Zap, Lock, CheckCircle2, XCircle, AlertTriangle, Fingerprint } from "lucide-react";
 import { useOfflineAuth } from "@/hooks/useOfflineAuth";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -15,12 +15,11 @@ import { cn } from "@/lib/utils";
 import { useAuthMotion } from "@/hooks/useAuthMotion";
 import { GlassMonolithDesign } from "@/components/auth/designs/GlassMonolithDesign";
 import { setStoredAuthDesignChoice } from "@/lib/authDesigns";
-import { AuthModeTabs, type AuthTabKey } from "@/components/auth/AuthModeTabs";
 import { AuthAnimatedField } from "@/components/auth/AuthAnimatedField";
 import { AuthShimmerButton } from "@/components/auth/AuthShimmerButton";
 import { isEnterpriseDeployment } from "@/hooks/useEnterpriseExperience";
 import { ENTERPRISE_TENANTS, isEnterpriseEmail } from "@/lib/enterpriseTenants";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+// Phone OTP and Magic Link removed — email + Google + Apple only
 
 // Rate limiter
 const useRateLimiter = (maxAttempts = 5, windowMs = 60000) => {
@@ -85,7 +84,6 @@ const AuthPage = () => {
     isEnterpriseDeployment() || searchParams.get("enterprise") === "1";
   const enterpriseTenant = ENTERPRISE_TENANTS[0];
   const [isLogin, setIsLogin] = useState(true);
-  const [authMode, setAuthMode] = useState<'email' | 'phone' | 'magiclink'>('email');
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -93,10 +91,6 @@ const AuthPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [rateLimitMsg, setRateLimitMsg] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [otpCode, setOtpCode] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
-  const [magicLinkSent, setMagicLinkSent] = useState(false);
 
   const { isOffline, hasOfflineCredentials, saveCredentialsForOffline, verifyOfflineCredentials, getOfflineSession } = useOfflineAuth();
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -111,25 +105,9 @@ const AuthPage = () => {
 
   const strength = getPasswordStrength(password);
 
-  const authTabs = [
-    { key: "email" as const, icon: <KeyRound className="h-3.5 w-3.5" />, label: "Email" },
-    { key: "phone" as const, icon: <Smartphone className="h-3.5 w-3.5" />, label: "Phone OTP" },
-    { key: "magiclink" as const, icon: <Mail className="h-3.5 w-3.5" />, label: "Magic Link" },
-  ];
 
-  const handleAuthTabChange = (key: AuthTabKey) => {
-    setAuthMode(key);
-    setRateLimitMsg("");
-    setOtpSent(false);
-    setMagicLinkSent(false);
-  };
 
-  useEffect(() => {
-    if (enterpriseFlow) {
-      setIsLogin(true);
-      setAuthMode("magiclink");
-    }
-  }, [enterpriseFlow]);
+
 
   const sanitizeInput = (input: string) => input.trim().slice(0, 255);
 
@@ -273,92 +251,7 @@ const AuthPage = () => {
     } finally { setAppleLoading(false); }
   };
 
-  const handleSendPhoneOTP = async () => {
-    if (!phoneNumber || !/^\+\d{10,15}$/.test(phoneNumber)) {
-      toast({ title: "Error", description: "Enter a valid phone number with country code (e.g. +1234567890)", variant: "destructive" });
-      return;
-    }
-    const limit = checkLimit();
-    if (!limit.allowed) {
-      setRateLimitMsg(`Too many attempts. Try again in ${limit.waitSec}s`);
-      return;
-    }
-    setLoading(true);
-    try {
-      const res = await supabase.functions.invoke('phone-otp', {
-        body: { action: 'send', phone: phoneNumber },
-      });
-      if (res.error || res.data?.error) throw new Error(res.data?.error || 'Failed to send OTP');
-      setOtpSent(true);
-      toast({ title: "OTP Sent", description: "Check your phone for the verification code" });
-    } catch (error: any) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    } finally { setLoading(false); }
-  };
 
-  const handleVerifyPhoneOTP = async () => {
-    if (!otpCode || otpCode.length !== 6) {
-      toast({ title: "Error", description: "Enter the 6-digit code", variant: "destructive" });
-      return;
-    }
-    setLoading(true);
-    try {
-      const res = await supabase.functions.invoke('phone-otp', {
-        body: { action: 'verify', phone: phoneNumber, code: otpCode },
-      });
-      if (res.error || res.data?.error) throw new Error(res.data?.error || 'Verification failed');
-      if (res.data?.verified) {
-        toast({ title: "Verified!", description: res.data.user_exists 
-          ? "Phone verified! Sign in with your email to continue." 
-          : "Phone verified! Create an account with your email." 
-        });
-        setAuthMode('email');
-        setOtpSent(false);
-        setOtpCode("");
-      }
-    } catch (error: any) {
-      toast({ title: "Verification Failed", description: error.message, variant: "destructive" });
-    } finally { setLoading(false); }
-  };
-
-  const handleMagicLink = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const cleanEmail = sanitizeInput(email);
-    if (!cleanEmail) {
-      toast({ title: "Error", description: "Enter your email address", variant: "destructive" });
-      return;
-    }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(cleanEmail)) {
-      toast({ title: "Error", description: "Enter a valid email address", variant: "destructive" });
-      return;
-    }
-    if (enterpriseFlow && !isEnterpriseEmail(cleanEmail)) {
-      toast({
-        title: "Use your work email",
-        description: "Sign in with your official company email (e.g. you@shanfoods.com).",
-        variant: "destructive",
-      });
-      return;
-    }
-    const limit = checkLimit();
-    if (!limit.allowed) {
-      setRateLimitMsg(`Too many attempts. Try again in ${limit.waitSec}s`);
-      return;
-    }
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.signInWithOtp({ 
-        email: cleanEmail,
-        options: { emailRedirectTo: `${window.location.origin}/chatbot` }
-      });
-      if (error) throw error;
-      setMagicLinkSent(true);
-      toast({ title: "Magic Link Sent", description: "Check your email for the sign-in link" });
-    } catch (error: any) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    } finally { setLoading(false); }
-  };
 
   return (
     <GlassMonolithDesign showBack onBack={() => navigate("/")} backLabel="Back to Home">
@@ -461,17 +354,8 @@ const AuthPage = () => {
               )}
             </AnimatePresence>
 
-            <AuthModeTabs
-              tabs={authTabs}
-              active={authMode}
-              onChange={handleAuthTabChange}
-              reduced={reduced}
-            />
-
             {/* Email/Password Form */}
-            <AnimatePresence mode="wait">
-              {authMode === 'email' && (
-                <motion.form
+              <motion.form
                   key="email-form"
                   variants={authVariants.formSwap}
                   initial="initial"
@@ -667,179 +551,6 @@ const AuthPage = () => {
                   </div>
                   </motion.div>
                 </motion.form>
-              )}
-
-              {/* Phone OTP Form */}
-              {authMode === 'phone' && (
-                <motion.div
-                  key="phone-form"
-                  variants={authVariants.formSwap}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                  className="space-y-4"
-                >
-                  {!otpSent ? (
-                    <>
-                      <AuthAnimatedField label="Phone Number" reduced={reduced}>
-                        <Input
-                          type="tel"
-                          placeholder="+1234567890"
-                          value={phoneNumber}
-                          onChange={(e) => setPhoneNumber(e.target.value)}
-                          className="bg-muted/20 border-border/50 h-11 focus:border-primary/50 transition-shadow focus:shadow-[0_0_0_3px_hsl(var(--primary)/0.15)]"
-                          maxLength={16}
-                        />
-                        <p className="text-[10px] text-muted-foreground mt-1.5">Include country code (e.g. +1 for US, +91 for India)</p>
-                      </AuthAnimatedField>
-                      <AuthShimmerButton
-                        type="button"
-                        reduced={reduced}
-                        onClick={handleSendPhoneOTP}
-                        disabled={loading || isOffline}
-                      >
-                        {loading ? (
-                          <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Sending OTP...</>
-                        ) : (
-                          <><Smartphone className="h-4 w-4 mr-2" /> Send OTP Code</>
-                        )}
-                      </AuthShimmerButton>
-                    </>
-                  ) : (
-                    <>
-                      <div className="text-center space-y-3">
-                        <motion.div
-                          initial={{ scale: 0, rotate: -12 }}
-                          animate={{ scale: 1, rotate: 0 }}
-                          transition={authMotion.springSnappy}
-                          className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto"
-                        >
-                          <Smartphone className="h-7 w-7 text-primary" />
-                        </motion.div>
-                        <div>
-                          <p className="text-sm font-medium text-foreground">Enter verification code</p>
-                          <p className="text-xs text-muted-foreground mt-1">Sent to {phoneNumber}</p>
-                        </div>
-                      </div>
-                      <div className="flex justify-center">
-                        <InputOTP maxLength={6} value={otpCode} onChange={(value) => setOtpCode(value)}>
-                          <InputOTPGroup>
-                            <InputOTPSlot index={0} />
-                            <InputOTPSlot index={1} />
-                            <InputOTPSlot index={2} />
-                            <InputOTPSlot index={3} />
-                            <InputOTPSlot index={4} />
-                            <InputOTPSlot index={5} />
-                          </InputOTPGroup>
-                        </InputOTP>
-                      </div>
-                      <AuthShimmerButton
-                        type="button"
-                        reduced={reduced}
-                        onClick={handleVerifyPhoneOTP}
-                        disabled={loading || otpCode.length !== 6}
-                      >
-                        {loading ? (
-                          <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Verifying...</>
-                        ) : (
-                          <><Shield className="h-4 w-4 mr-2" /> Verify Code</>
-                        )}
-                      </AuthShimmerButton>
-                      <div className="flex items-center justify-center gap-2">
-                        <Button
-                          type="button"
-                          variant="link"
-                          size="sm"
-                          className="text-xs text-muted-foreground"
-                          onClick={() => { setOtpSent(false); setOtpCode(""); }}
-                        >
-                          Change number
-                        </Button>
-                        <span className="text-muted-foreground/30">•</span>
-                        <Button
-                          type="button"
-                          variant="link"
-                          size="sm"
-                          className="text-xs text-primary"
-                          onClick={handleSendPhoneOTP}
-                          disabled={loading}
-                        >
-                          Resend code
-                        </Button>
-                      </div>
-                    </>
-                  )}
-                </motion.div>
-              )}
-
-              {/* Magic Link Form */}
-              {authMode === 'magiclink' && (
-                <motion.form
-                  key="magiclink-form"
-                  variants={authVariants.formSwap}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                  onSubmit={handleMagicLink}
-                  className="space-y-4"
-                >
-                  {!magicLinkSent ? (
-                    <>
-                      <AuthAnimatedField label="Email Address" reduced={reduced}>
-                        <Input
-                          type="email"
-                          placeholder={enterpriseFlow ? "you@shanfoods.com" : "you@example.com"}
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          className="bg-muted/20 border-border/50 h-11 focus:border-primary/50 transition-shadow focus:shadow-[0_0_0_3px_hsl(var(--primary)/0.15)]"
-                          maxLength={255}
-                          autoComplete="email"
-                        />
-                        <p className="text-[10px] text-muted-foreground mt-1.5">
-                          {enterpriseFlow
-                            ? "Use your official work email — we'll send a secure sign-in link"
-                            : "We'll send a secure sign-in link to your inbox"}
-                        </p>
-                      </AuthAnimatedField>
-                      <AuthShimmerButton type="submit" reduced={reduced} disabled={loading || isOffline}>
-                        {loading ? (
-                          <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Sending...</>
-                        ) : (
-                          <><Mail className="h-4 w-4 mr-2" /> Send Magic Link</>
-                        )}
-                      </AuthShimmerButton>
-                    </>
-                  ) : (
-                    <div className="text-center space-y-4 py-4">
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ type: "spring", damping: 12 }}
-                        className="w-16 h-16 rounded-2xl bg-success/10 border border-success/20 flex items-center justify-center mx-auto"
-                      >
-                        <Mail className="h-8 w-8 text-success" />
-                      </motion.div>
-                      <div>
-                        <p className="text-base font-semibold text-foreground">Check your email</p>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          We sent a sign-in link to <span className="text-foreground font-medium">{email}</span>
-                        </p>
-                      </div>
-                      <p className="text-xs text-muted-foreground">Didn't receive it? Check spam or</p>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => { setMagicLinkSent(false); }}
-                        className="text-xs"
-                      >
-                        Try again
-                      </Button>
-                    </div>
-                  )}
-                </motion.form>
-              )}
-            </AnimatePresence>
 
             {/* Toggle */}
             <motion.div
