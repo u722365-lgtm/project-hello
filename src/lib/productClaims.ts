@@ -4,11 +4,12 @@
  */
 
 export const FREE_TIER_DAILY = {
-  messages: 50,
-  fileUploads: 3,
-  codeGenerations: 5,
-  imageGenerations: 4,
-  webSearches: 5,
+  messages: 5000,
+  fileUploads: 20,
+  codeGenerations: 20,
+  imageGenerations: 20,
+  documentGenerations: 20,
+  webSearches: 20,
   deepResearch: 5,
   voiceSessions: 3,
 } as const;
