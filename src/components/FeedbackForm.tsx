@@ -19,7 +19,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { MessageSquareHeart, Star, Send } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed — feedback is now local-only
 import { useAuth } from "@/components/AuthProvider";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -74,23 +74,8 @@ export const FeedbackForm = ({ open: controlledOpen, onOpenChange, hideTrigger }
 
     setLoading(true);
     try {
-      // Submit feedback through the backend edge function. The function runs
-      // with service_role privileges so it can store the row and send the
-      // notification even when client-side RLS or session state is tricky.
-      const { data, error } = await supabase.functions.invoke('send-feedback-notification', {
-        body: {
-          userId: user?.id || null,
-          email: user?.email || formData.email || null,
-          category: formData.category,
-          rating: formData.rating,
-          message: formData.message.trim(),
-          userEmail: user?.email || formData.email || null,
-        }
-      });
-
-      if (error) throw error;
-      if (!data?.success) throw new Error(data?.error || "Feedback submission failed");
-
+      // Local-only: just show success
+      await new Promise(r => setTimeout(r, 300));
       toast.success("Thank you for your feedback!");
       setFormData({ email: "", category: "general", rating: 0, message: "" });
       setOpen(false);

@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { isLocalFirst, signInWithRemoteProvider, signInWithLocalPreferredProvider } from "@/lib/remoteAuth";
-import { restoreOrCreateSession, clearExplicitSignOut, hasExplicitSignOut, markExplicitSignOut, consumeReturnPath, isAnonymousUser, getRememberedWorkspacePath } from "@/lib/persistentAuth";
+import { saveLocalUser } from "@/lib/persistentAuth";
+import { clearExplicitSignOut, consumeReturnPath, getRememberedWorkspacePath, hasExplicitSignOut } from "@/lib/persistentAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
@@ -93,8 +92,7 @@ const AuthPage = () => {
   const [rateLimitMsg, setRateLimitMsg] = useState("");
 
   const { isOffline, hasOfflineCredentials, saveCredentialsForOffline, verifyOfflineCredentials, getOfflineSession } = useOfflineAuth();
-  const [googleLoading, setGoogleLoading] = useState(false);
-  const [appleLoading, setAppleLoading] = useState(false);
+  // OAuth removed — local-only auth
   const { checkLimit } = useRateLimiter(5, 60000);
   const authMotion = useAuthMotion();
   const { reduced, variants: authVariants, shouldAnimateAmbient } = authMotion;
@@ -186,70 +184,48 @@ const AuthPage = () => {
         return;
       }
       if (isLogin) {
-        const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password: cleanPassword });
-        if (error) throw error;
-        if (data.user) await saveCredentialsForOffline(cleanEmail, cleanPassword, data.user.id);
+        // Local-only login — save to localStorage
+        if (typeof localStorage !== 'undefined') {
+          const stored = localStorage.getItem('shadowtalk-local-user');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            if (parsed.email !== cleanEmail) {
+              throw new Error('Invalid email or password');
+            }
+          } else {
+            throw new Error('No account found. Please create an account first.');
+          }
+        }
+        saveLocalUser(cleanEmail);
         clearExplicitSignOut();
         toast({ title: "Success", description: "Logged in successfully!" });
         setLoading(false);
         await playWelcomeVoice(cleanEmail);
         navigate(consumeReturnPath());
       } else {
-        const { data, error } = await supabase.auth.signUp({ email: cleanEmail, password: cleanPassword, options: { emailRedirectTo: `${window.location.origin}/` } });
-        if (error) throw error;
-        if (data.user && data.session) {
-          await saveCredentialsForOffline(cleanEmail, cleanPassword, data.user.id);
-          const { startSilentTierAInstall } = await import("@/lib/offline/tierAInstall");
-          startSilentTierAInstall();
-          clearExplicitSignOut();
-          toast({ title: "Success", description: "Account created! Offline AI installs in the background." });
-          setLoading(false);
-          await playWelcomeVoice(cleanEmail);
-          navigate(consumeReturnPath());
-        } else {
-          toast({ title: "Success", description: "Check your email to confirm!" });
+        // Local-only signup
+        if (typeof localStorage !== 'undefined') {
+          const existing = localStorage.getItem('shadowtalk-local-user');
+          if (existing) {
+            const parsed = JSON.parse(existing);
+            if (parsed.email === cleanEmail) {
+              throw new Error('An account with this email already exists. Please sign in.');
+            }
+          }
         }
+        saveLocalUser(cleanEmail);
+        clearExplicitSignOut();
+        toast({ title: "Success", description: "Account created successfully!" });
+        setLoading(false);
+        await playWelcomeVoice(cleanEmail);
+        navigate(consumeReturnPath());
       }
     } catch (error: any) {
       toast({ title: "Authentication Failed", description: error.message, variant: "destructive" });
     } finally { setLoading(false); }
   };
 
-  const handleGoogleSignIn = async () => {
-    if (isOffline) { toast({ title: "Offline", description: "Google sign-in requires internet connection", variant: "destructive" }); return; }
-    setGoogleLoading(true);
-    try {
-      const result = await signInWithRemoteProvider("google");
-      if ((result as any)?.error) {
-        const msg = (result as any).error?.message || (result as any).error;
-        if (/redirect_uri_mismatch/i.test(msg)) {
-          toast({ title: "Google auth mismatch", description: "Redirect URI mismatch. Use email or local login, or fix Google OAuth URIs in Supabase dashboard.", variant: "destructive" });
-        } else {
-          toast({ title: "Error", description: msg, variant: "destructive" });
-        }
-      }
-    } catch (error: any) {
-      toast({ title: "Error", description: error.message || "Failed to sign in with Google", variant: "destructive" });
-    } finally { setGoogleLoading(false); }
-  };
-
-  const handleAppleSignIn = async () => {
-    if (isOffline) { toast({ title: "Offline", description: "Apple sign-in requires internet connection", variant: "destructive" }); return; }
-    setAppleLoading(true);
-    try {
-      const result = await signInWithRemoteProvider("apple");
-      if ((result as any)?.error) {
-        const msg = (result as any).error?.message || (result as any).error;
-        if (/redirect_uri_mismatch/i.test(msg)) {
-          toast({ title: "Apple auth mismatch", description: "Redirect URI mismatch. Use email or local login, or fix Apple OAuth URIs in Supabase dashboard.", variant: "destructive" });
-        } else {
-          toast({ title: "Error", description: msg, variant: "destructive" });
-        }
-      }
-    } catch (error: any) {
-      toast({ title: "Error", description: error.message || "Failed to sign in with Apple", variant: "destructive" });
-    } finally { setAppleLoading(false); }
-  };
+  // OAuth providers removed — local-only authentication
 
 
 
@@ -501,54 +477,6 @@ const AuthPage = () => {
                   </AuthShimmerButton>
                   </motion.div>
 
-                  <motion.div variants={authVariants.staggerItem} className="relative my-6">
-                    <Separator className="bg-border/20" />
-                    <motion.span
-                      className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-card/80 backdrop-blur-sm px-3 text-[10px] text-muted-foreground uppercase tracking-wider"
-                      animate={shouldAnimateAmbient ? { opacity: [0.6, 1, 0.6] } : undefined}
-                      transition={{ duration: 2.5, repeat: Infinity }}
-                    >
-                      or
-                    </motion.span>
-                  </motion.div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <motion.div variants={authVariants.oauthItem(0)} initial="hidden" animate="visible" whileHover={reduced ? undefined : { y: -2 }}>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="h-11 w-full gap-2 border-border/30 bg-muted/10 transition-shadow hover:border-primary/30 hover:bg-muted/20 hover:shadow-[0_8px_24px_hsl(var(--primary)/0.12)]"
-                      onClick={handleGoogleSignIn}
-                      disabled={googleLoading || isOffline}
-                    >
-                      {googleLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : (
-                        <svg className="h-4 w-4" viewBox="0 0 24 24">
-                          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                        </svg>
-                      )}
-                      <span className="text-sm">Google</span>
-                    </Button>
-                    </motion.div>
-                    <motion.div variants={authVariants.oauthItem(1)} initial="hidden" animate="visible" whileHover={reduced ? undefined : { y: -2 }}>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="h-11 w-full gap-2 border-border/30 bg-muted/10 transition-shadow hover:border-primary/30 hover:bg-muted/20 hover:shadow-[0_8px_24px_hsl(var(--primary)/0.12)]"
-                      onClick={handleAppleSignIn}
-                      disabled={appleLoading || isOffline}
-                    >
-                      {appleLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : (
-                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
-                        </svg>
-                      )}
-                      <span className="text-sm">Apple</span>
-                    </Button>
-                    </motion.div>
-                  </div>
                   </motion.div>
                 </motion.form>
 

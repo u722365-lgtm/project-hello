@@ -1,0 +1,45 @@
+/**
+ * Local type stubs — replaces @supabase/supabase-js type imports.
+ * All Supabase has been removed from ShadowTalk.
+ */
+
+export interface User {
+  id: string;
+  email: string | null;
+  is_anonymous: boolean;
+  app_metadata: Record<string, unknown>;
+  user_metadata: Record<string, unknown>;
+  aud: string;
+  created_at: string;
+}
+
+export interface Session {
+  access_token: string;
+  refresh_token: string;
+  token_type: string;
+  expires_in: number;
+  expires_at: number;
+  user: User;
+}
+
+export interface UserIdentity {
+  id: string;
+  provider: string;
+  identity_data: Record<string, unknown>;
+}
+
+export interface Provider {
+  id: string;
+}
+
+export interface RealtimeChannel {
+  on: (...args: any[]) => RealtimeChannel;
+  subscribe: (cb?: Function) => { unsubscribe: () => void };
+  unsubscribe: () => void;
+  send: (type: string, payload?: any) => { ok: boolean };
+  state: string;
+}
+
+export interface RealtimeChannelOptions {
+  config?: { broadcast?: { self?: boolean }; presence?: { key?: string } };
+}

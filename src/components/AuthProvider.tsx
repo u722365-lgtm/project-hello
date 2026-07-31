@@ -1,19 +1,11 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+import type { User, Session } from '@/lib/supabase-types';
 import {
   clearExplicitSignOut,
   isAnonymousUser,
   markExplicitSignOut,
-  refreshSessionIfNeeded,
   restoreOrCreateSession,
 } from '@/lib/persistentAuth';
-import { resolvePlanFromCheckSubscription } from '@/lib/resolveUserPlan';
-import { applyReferralOnSignup } from '@/lib/referral/applyReferralOnSignup';
-import {
-  bootstrapSeamlessOfflineForLoggedInUser,
-  resetSeamlessOfflineBootstrap,
-} from '@/lib/offline/seamlessOfflineBootstrap';
 
 type UserPlan = 'free' | 'pro' | 'premium' | 'lifetime' | 'elite' | 'enterprise';
 
@@ -69,52 +61,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const checkSubscription = useCallback(async () => {
-    const { data: { session: current } } = await supabase.auth.getSession();
-    if (!current?.user) {
-      setSubscribed(false);
-      setUserPlan('free');
-      setSubscriptionEnd(null);
-      return;
-    }
-
-    if (isAnonymousUser(current)) {
-      const resolved = resolvePlanFromCheckSubscription(current.user.email, null);
-      setSubscribed(resolved.subscribed);
-      setUserPlan(resolved.plan);
-      setSubscriptionEnd(resolved.subscriptionEnd);
-      return;
-    }
-
-    try {
-      const { data, error } = await supabase.functions.invoke('check-subscription');
-
-      if (error) {
-        console.warn('Subscription check error:', error.message);
-        const resolved = resolvePlanFromCheckSubscription(current.user.email, null);
-        setSubscribed(resolved.subscribed);
-        setUserPlan(resolved.plan);
-        setSubscriptionEnd(resolved.subscriptionEnd);
-        return;
-      }
-
-      const resolved = resolvePlanFromCheckSubscription(current.user.email, data);
-      setSubscribed(resolved.subscribed);
-      setUserPlan(resolved.plan);
-      setSubscriptionEnd(resolved.subscriptionEnd);
-    } catch (error) {
-      console.warn('Error checking subscription:', error);
-      const resolved = resolvePlanFromCheckSubscription(current.user.email, null);
-      setSubscribed(resolved.subscribed);
-      setUserPlan(resolved.plan);
-      setSubscriptionEnd(resolved.subscriptionEnd);
-    }
-  }, []);
-
-  const checkAndAssignAdminRole = useCallback(async () => {
-    // Important: some deploy environments (Lovable/Supabase) may not have this edge function
-    // deployed/configured yet. Calling it can cause noisy runtime overlays even if caught.
-    // Admin role assignment should be handled via Supabase migrations/policies or manual admin tooling.
-    return;
+    // All users are free tier — no backend to check
+    setSubscribed(false);
+    setUserPlan('free');
+    setSubscriptionEnd(null);
   }, []);
 
   useEffect(() => {
@@ -127,7 +77,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (!mounted) return;
         applySession(restored);
         if (restored?.user) {
-          void Promise.all([checkSubscription(), checkAndAssignAdminRole()]);
+          void checkSubscription();
         } else {
           setUserPlan('free');
           setSubscribed(false);
@@ -151,84 +101,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     void bootstrap();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, nextSession) => {
-        if (!mounted) return;
-
-        if (event === 'SIGNED_OUT') {
-          resetSeamlessOfflineBootstrap();
-          applySession(null);
-          setUserPlan('free');
-          setSubscribed(false);
-          setSubscriptionEnd(null);
-          setLoading(false);
-          return;
-        }
-
-        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
-          applySession(nextSession);
-          if (nextSession?.user) {
-            clearExplicitSignOut();
-            bootstrapSeamlessOfflineForLoggedInUser();
-            if (event === 'SIGNED_IN') {
-              void applyReferralOnSignup();
-              // Mark that an OAuth sign-in just happened so PersistedAuthRedirect
-              // can redirect to /chatbot even from /home or /
-              if (!isAnonymousUser(nextSession)) {
-                if (typeof sessionStorage !== 'undefined') {
-                  sessionStorage.setItem('shadowtalk_oauth_pending', '1');
-                }
-              }
-            }
-            setTimeout(() => {
-              void checkSubscription();
-              void checkAndAssignAdminRole();
-            }, 50);
-          }
-        } else {
-          applySession(nextSession);
-        }
-
-        if (initDone.current) {
-          setLoading(false);
-        }
-      },
-    );
-
-    const onVisible = () => {
-      if (document.visibilityState === 'visible') {
-        void refreshSessionIfNeeded();
-      }
-    };
-    document.addEventListener('visibilitychange', onVisible);
-    window.addEventListener('focus', onVisible);
-
-    const refreshInterval = setInterval(() => {
-      void refreshSessionIfNeeded();
-    }, 5 * 60 * 1000);
-
     return () => {
       mounted = false;
-      subscription.unsubscribe();
-      document.removeEventListener('visibilitychange', onVisible);
-      window.removeEventListener('focus', onVisible);
-      clearInterval(refreshInterval);
     };
-  }, [applySession, checkSubscription, checkAndAssignAdminRole]);
-
-  useEffect(() => {
-    if (!session) return;
-
-    const interval = setInterval(() => {
-      void checkSubscription();
-    }, 60000);
-
-    return () => clearInterval(interval);
-  }, [session, checkSubscription]);
+  }, [applySession, checkSubscription]);
 
   const signOut = async () => {
     markExplicitSignOut();
-    await supabase.auth.signOut();
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem('shadowtalk-local-user');
+    }
     applySession(null);
     setUserPlan('free');
     setSubscribed(false);

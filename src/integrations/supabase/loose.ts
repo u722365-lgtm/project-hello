@@ -1,8 +1,4 @@
 /**
- * Loose Supabase client — bypasses generated types.
- * Use ONLY for tables/RPCs that aren't yet reflected in the generated schema.
+ * Loose Supabase client — now just re-exports the stub.
  */
-import { supabase } from "./client";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const supabaseLoose = supabase as unknown as any;
+export { supabase as supabaseLoose } from "./client";

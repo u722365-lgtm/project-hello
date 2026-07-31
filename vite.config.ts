@@ -1,22 +1,10 @@
-import { defineConfig, loadEnv } from "vite";
+import { defineConfig } from 'vite';
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { VitePWA } from "vite-plugin-pwa";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), '');
-
-  const isLocalFirst = env.VITE_LOCAL_FIRST === 'true';
-
-  // Use environment variables with fallbacks for both dev and prod
-  const supabaseUrl = isLocalFirst
-    ? 'http://127.0.0.1:54321'
-    : env.VITE_SUPABASE_URL || 'https://axsudmhjpfzffcicfvuj.supabase.co';
-  const supabaseAnon = isLocalFirst
-    ? 'local-first-anon'
-    : env.VITE_SUPABASE_PUBLISHABLE_KEY || 'eyJhbG...LEZ4';
-
   const isProduction = mode === 'production';
 
   return {
@@ -36,9 +24,9 @@ export default defineConfig(({ mode }) => {
       },
     },
     define: {
-      'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(supabaseUrl),
-      'import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY': JSON.stringify(supabaseAnon),
-      'import.meta.env.VITE_LOCAL_FIRST': JSON.stringify(isLocalFirst),
+      'import.meta.env.VITE_SUPABASE_URL': JSON.stringify('https://removed.supabase.co'),
+      'import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY': JSON.stringify('removed'),
+      'import.meta.env.VITE_LOCAL_FIRST': JSON.stringify(false),
     },
      build: {
        // Production optimizations
@@ -176,35 +164,7 @@ export default defineConfig(({ mode }) => {
                   }
                 }
               },
-              {
-                urlPattern: /^https:\/\/.*\.supabase\.co\/rest\/v1\/.*/i,
-                handler: "NetworkFirst",
-                options: {
-                  cacheName: "supabase-api-cache",
-                  expiration: {
-                    maxEntries: 100,
-                    maxAgeSeconds: 60 * 60 * 24
-                  },
-                  cacheableResponse: {
-                    statuses: [0, 200]
-                  },
-                  networkTimeoutSeconds: 5,
-                }
-              },
-              {
-                urlPattern: /^https:\/\/.*\.supabase\.co\/storage\/.*/i,
-                handler: "CacheFirst",
-                options: {
-                  cacheName: "supabase-storage-cache",
-                  expiration: {
-                    maxEntries: 50,
-                    maxAgeSeconds: 60 * 60 * 24 * 7
-                  },
-                  cacheableResponse: {
-                    statuses: [0, 200]
-                  }
-                }
-              }
+              // Supabase caching removed
             ]
         },
         devOptions: {
@@ -224,6 +184,7 @@ export default defineConfig(({ mode }) => {
       ],
       alias: {
         "@": path.resolve(__dirname, "./src"),
+        "@supabase/supabase-js": path.resolve(__dirname, "src/lib/supabase-types.ts"),
         react: path.resolve(__dirname, "node_modules/react"),
         "react-dom": path.resolve(__dirname, "node_modules/react-dom"),
         "react/jsx-runtime": path.resolve(__dirname, "node_modules/react/jsx-runtime.js"),

@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/components/AuthProvider";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -47,74 +46,11 @@ const WorkspaceSwitcher = () => {
 
   const fetchWorkspaces = useCallback(async () => {
     if (!user) return;
-    try {
-      // Get workspaces where user is a member
-      const { data: memberships, error: memErr } = await supabase
-        .from("workspace_members")
-        .select("workspace_id, role")
-        .eq("user_id", user.id);
-
-      if (memErr) throw memErr;
-
-      if (!memberships || memberships.length === 0) {
-        // Auto-create a personal workspace
-        const slug = `personal-${user.id.slice(0, 8)}`;
-        const { data: ws, error: wsErr } = await supabase
-          .from("workspaces")
-          .insert({ name: "Personal Workspace", slug, owner_id: user.id })
-          .select()
-          .single();
-
-        if (wsErr) throw wsErr;
-
-        await supabase
-          .from("workspace_members")
-          .insert({ workspace_id: ws.id, user_id: user.id, role: "owner" });
-
-        setWorkspaces([{ id: ws.id, name: ws.name, role: "owner", memberCount: 1 }]);
-        setCurrentWorkspace({ id: ws.id, name: ws.name, role: "owner", memberCount: 1 });
-        setLoading(false);
-        return;
-      }
-
-      const wsIds = memberships.map((m) => m.workspace_id);
-      const roleMap: Record<string, string> = {};
-      memberships.forEach((m) => { roleMap[m.workspace_id] = m.role; });
-
-      const { data: wsData, error: wsErr } = await supabase
-        .from("workspaces")
-        .select("id, name")
-        .in("id", wsIds);
-
-      if (wsErr) throw wsErr;
-
-      // Get member counts
-      const { data: counts } = await supabase
-        .from("workspace_members")
-        .select("workspace_id")
-        .in("workspace_id", wsIds);
-
-      const countMap: Record<string, number> = {};
-      counts?.forEach((c) => {
-        countMap[c.workspace_id] = (countMap[c.workspace_id] || 0) + 1;
-      });
-
-      const list: Workspace[] = (wsData || []).map((ws) => ({
-        id: ws.id,
-        name: ws.name,
-        role: roleMap[ws.id] || "member",
-        memberCount: countMap[ws.id] || 1,
-      }));
-
-      setWorkspaces(list);
-      if (!currentWorkspace || !list.find((w) => w.id === currentWorkspace.id)) {
-        setCurrentWorkspace(list[0] || null);
-      }
-    } catch (err) {
-      console.error("Failed to fetch workspaces:", err);
-    } finally {
-      setLoading(false);
-    }
+    // Workspaces are now local-only — just show a default personal workspace
+    const personal: Workspace = { id: 'personal', name: 'Personal', role: 'owner', memberCount: 1 };
+    setWorkspaces([personal]);
+    setCurrentWorkspace(personal);
+    setLoading(false);
   }, [user]);
 
   useEffect(() => {
@@ -131,32 +67,13 @@ const WorkspaceSwitcher = () => {
 
   const handleCreate = async () => {
     if (!user || !newName.trim()) return;
-    setCreating(true);
-    try {
-      const slug = newName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 40) + "-" + Date.now();
-      const { data: ws, error } = await supabase
-        .from("workspaces")
-        .insert({ name: newName.trim(), slug, owner_id: user.id })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      await supabase
-        .from("workspace_members")
-        .insert({ workspace_id: ws.id, user_id: user.id, role: "owner" });
-
-      const newWs: Workspace = { id: ws.id, name: ws.name, role: "owner", memberCount: 1 };
-      setWorkspaces((prev) => [...prev, newWs]);
-      setCurrentWorkspace(newWs);
-      setCreateOpen(false);
-      setNewName("");
-      toast({ title: "Workspace created", description: `${ws.name} is ready` });
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message || "Failed to create workspace", variant: "destructive" });
-    } finally {
-      setCreating(false);
-    }
+    // Local-only: just add to the list
+    const newWs: Workspace = { id: `ws-${Date.now()}`, name: newName.trim(), role: 'owner', memberCount: 1 };
+    setWorkspaces((prev) => [...prev, newWs]);
+    setCurrentWorkspace(newWs);
+    setCreateOpen(false);
+    setNewName("");
+    toast({ title: "Workspace created", description: `${newWs.name} is ready` });
   };
 
   const getRoleBadge = (role: string) => {

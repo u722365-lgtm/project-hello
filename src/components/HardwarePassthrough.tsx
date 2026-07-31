@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { Cpu, Zap, Monitor, Settings2, ChevronDown, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -26,40 +25,9 @@ export const HardwarePassthrough = () => {
     getAccelerationPreference(),
   );
 
-  // Load from backend on mount
-  useEffect(() => {
-    const load = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data } = await supabase
-          .from('user_settings')
-          .select('setting_value')
-          .eq('user_id', user.id)
-          .eq('setting_key', 'acceleration_mode')
-          .maybeSingle();
-        if (data?.setting_value) {
-          setAccelerationMode(data.setting_value as AccelerationMode);
-        }
-      }
-    };
-    load();
-  }, []);
-
   const handleModeChange = (mode: AccelerationMode) => {
     setAccelerationMode(mode);
     setAccelerationPreference(mode);
-
-    // Sync to backend
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) {
-        supabase.from('user_settings').upsert({
-          user_id: user.id,
-          setting_key: 'acceleration_mode',
-          setting_value: mode,
-          updated_at: new Date().toISOString(),
-        }, { onConflict: 'user_id,setting_key' }).then(() => {});
-      }
-    });
   };
 
   const modes: Array<{

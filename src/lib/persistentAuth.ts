@@ -1,21 +1,17 @@
-import type { Session } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
+import type { Session } from "@/lib/supabase-types";
 
-/** Set when user explicitly signs out — blocks silent anonymous re-login until they sign in again. */
+/** Set when user explicitly signs out — blocks silent re-login until they sign in again. */
 export const SIGNED_OUT_FLAG = "shadowtalk_signed_out";
 export const RETURN_TO_KEY = "shadowtalk_return_to";
 export const LAST_WORKSPACE_KEY = "shadowtalk_last_workspace";
 
 const DEFAULT_WORKSPACE = "/chatbot";
-const AUTH_BOOTSTRAP_TIMEOUT_MS = 20_000;
-const AUTH_BOOTSTRAP_RETRIES = 3;
-/** Refresh access token when less than this many seconds remain. */
-const REFRESH_THRESHOLD_SEC = 600;
-const REFRESH_MAX_ATTEMPTS = 3;
+const LOCAL_AUTH_KEY = "shadowtalk-local-user";
 
 export function markExplicitSignOut() {
   if (typeof localStorage !== "undefined") {
     localStorage.setItem(SIGNED_OUT_FLAG, "1");
+    localStorage.removeItem(LOCAL_AUTH_KEY);
   }
 }
 
@@ -60,157 +56,60 @@ export function isAnonymousUser(session: Session | null): boolean {
   return session.user.is_anonymous === true;
 }
 
-function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T | null> {
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  const timeout = new Promise<null>((resolve) => {
-    timer = setTimeout(() => {
-      console.warn(`[Auth] ${label} timed out after ${ms}ms`);
-      resolve(null);
-    }, ms);
-  });
-
-  return Promise.race([promise, timeout]).finally(() => {
-    if (timer !== undefined) clearTimeout(timer);
-  });
-}
-
-async function getStoredSession(): Promise<Session | null> {
-  for (let attempt = 1; attempt <= AUTH_BOOTSTRAP_RETRIES; attempt++) {
-    const sessionResult = await withTimeout(
-      supabase.auth.getSession(),
-      AUTH_BOOTSTRAP_TIMEOUT_MS,
-      `getSession (attempt ${attempt})`,
-    );
-    if (!sessionResult) {
-      if (attempt < AUTH_BOOTSTRAP_RETRIES) {
-        await new Promise((r) => setTimeout(r, 500 * attempt));
-        continue;
-      }
-      return null;
-    }
-
-    const { data: { session }, error } = sessionResult;
-    if (error) {
-      console.warn("[Auth] getSession failed:", error.message);
-    }
-    if (session) return session;
-    if (attempt < AUTH_BOOTSTRAP_RETRIES) {
-      await new Promise((r) => setTimeout(r, 500 * attempt));
-    }
-  }
-  return null;
-}
-
-/**
- * Restore Supabase session from storage, or create a persistent anonymous session
- * (Gemini-style: open app → already signed in).
- *
- * IMPORTANT: If an OAuth callback is in progress (URL contains #access_token=),
- * we must NOT create an anonymous session — the OAuth tokens need time to be
- * parsed by Supabase's detectSessionInUrl. Returning null here lets the
- * onAuthStateChange handler pick up the real session once the fragment is processed.
- */
-function isOAuthCallbackInProgress(): boolean {
-  if (typeof window === 'undefined') return false;
-  const hash = window.location.hash;
-  return hash.includes('access_token=') || hash.includes('error=') || hash.includes('error_code=');
+/** Build a local Session object from stored user data. */
+function buildLocalSession(email: string, id?: string): Session {
+  const userId = id || `local-${email.split('@')[0]}-${Date.now().toString(36)}`;
+  return {
+    access_token: 'local-token',
+    refresh_token: 'local-refresh',
+    token_type: 'bearer',
+    expires_in: 999999999,
+    expires_at: Math.floor(Date.now() / 1000) + 999999999,
+    user: {
+      id: userId,
+      email,
+      is_anonymous: false,
+      app_metadata: {},
+      user_metadata: { email },
+      aud: 'local',
+      created_at: new Date().toISOString(),
+    },
+  };
 }
 
 export async function restoreOrCreateSession(): Promise<Session | null> {
-  // If an OAuth callback is happening, wait for Supabase to parse the fragment
-  // instead of racing ahead with an anonymous sign-in that would overwrite it.
-  if (isOAuthCallbackInProgress()) {
-    console.log('[Auth] OAuth callback detected in URL, waiting for fragment processing...');
-    // Give Supabase time to detect and process the URL fragment
-    for (let attempt = 1; attempt <= AUTH_BOOTSTRAP_RETRIES; attempt++) {
-      const sessionResult = await withTimeout(
-        supabase.auth.getSession(),
-        AUTH_BOOTSTRAP_TIMEOUT_MS,
-        `getSession-oauth-wait (attempt ${attempt})`,
-      );
-      if (sessionResult?.data?.session) {
-        clearExplicitSignOut();
-        return sessionResult.data.session;
-      }
-      if (attempt < AUTH_BOOTSTRAP_RETRIES) {
-        await new Promise((r) => setTimeout(r, 800 * attempt));
-      }
-    }
-    // If we still couldn't get the OAuth session, return null —
-    // don't fall through to anonymous sign-in.
-    console.warn('[Auth] OAuth callback in URL but session not recovered');
-    return null;
-  }
+  if (typeof localStorage === "undefined") return null;
 
-  const existing = await getStoredSession();
-  if (existing) {
-    clearExplicitSignOut();
-    return existing;
-  }
-
+  // If user explicitly signed out, don't auto-login
   if (hasExplicitSignOut()) {
-    // If we somehow still have an active real session from storage,
-    // do not let the explicit sign-out flag force logout.
-    const retry = await getStoredSession();
-    if (retry) {
-      clearExplicitSignOut();
-      return retry;
-    }
     return null;
   }
 
-  if (import.meta.env.VITE_ENTERPRISE_MODE === "true") {
-    return null;
-  }
-
-  for (let attempt = 1; attempt <= AUTH_BOOTSTRAP_RETRIES; attempt++) {
-    const anonResult = await withTimeout(
-      supabase.auth.signInAnonymously(),
-      AUTH_BOOTSTRAP_TIMEOUT_MS,
-      `signInAnonymously (attempt ${attempt})`,
-    );
-    if (!anonResult) {
-      if (attempt < AUTH_BOOTSTRAP_RETRIES) {
-        await new Promise((r) => setTimeout(r, 500 * attempt));
-        continue;
+  // Try to restore from localStorage
+  const stored = localStorage.getItem(LOCAL_AUTH_KEY);
+  if (stored) {
+    try {
+      const parsed = JSON.parse(stored);
+      if (parsed.email) {
+        clearExplicitSignOut();
+        return buildLocalSession(parsed.email, parsed.id);
       }
-      return null;
-    }
-
-    const { data, error } = anonResult;
-    if (error) {
-      console.warn("[Auth] Anonymous session unavailable:", error.message);
-      return null;
-    }
-
-    clearExplicitSignOut();
-    return data.session ?? null;
+    } catch {}
   }
 
   return null;
 }
 
-/** Proactively refresh JWT so users stay signed in across days/weeks of use. */
+/** Save user to localStorage after successful local login. */
+export function saveLocalUser(email: string, id?: string) {
+  if (typeof localStorage === "undefined") return;
+  localStorage.setItem(LOCAL_AUTH_KEY, JSON.stringify({ email, id: id || `local-${email.split('@')[0]}` }));
+  clearExplicitSignOut();
+}
+
+/** No-op — no remote session to refresh. */
 export async function refreshSessionIfNeeded(): Promise<boolean> {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) return false;
-
-  const expiresAt = session.expires_at ?? 0;
-  const expiresInSec = expiresAt - Math.floor(Date.now() / 1000);
-  if (expiresInSec >= REFRESH_THRESHOLD_SEC) return true;
-
-  for (let attempt = 1; attempt <= REFRESH_MAX_ATTEMPTS; attempt++) {
-    const { data, error } = await supabase.auth.refreshSession();
-    if (!error && data.session) {
-      clearExplicitSignOut();
-      return true;
-    }
-    console.warn(`[Auth] refreshSession attempt ${attempt} failed:`, error?.message);
-    if (attempt < REFRESH_MAX_ATTEMPTS) {
-      await new Promise((r) => setTimeout(r, 1000 * attempt));
-    }
-  }
-  return false;
+  return true;
 }
 
 /** Keys that must survive "clear local data" so users stay signed in. */
@@ -218,7 +117,5 @@ export const PRESERVE_ON_LOCAL_CLEAR = [
   SIGNED_OUT_FLAG,
   RETURN_TO_KEY,
   LAST_WORKSPACE_KEY,
-  "shadowtalk_session_token",
-  "shadowtalk_offline_auth",
-  "shadowtalk-auth",           // Supabase session — must never be cleared
+  LOCAL_AUTH_KEY,
 ] as const;
