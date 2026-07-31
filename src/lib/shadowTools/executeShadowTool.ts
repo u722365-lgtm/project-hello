@@ -120,24 +120,14 @@ export async function executeShadowTool(
     }
 
     case "image_generator": {
-      const prompt = p.prompt || message;
-      const resp = await fetch(CHAT_URL, {
-        method: "POST",
-        headers: chatAuthHeaders({ accessToken: ctx.accessToken }),
-        body: JSON.stringify({
-          generateImage: true,
-          imagePrompt: prompt,
-          messages: [],
-          personality: "creative",
-        }),
-      });
-      if (!resp.ok) throw new Error("Image generation failed");
-      const data = await parseChatJsonResponse(resp);
-      const imageUrl = data.imageUrl as string | undefined;
+      const imgPrompt = p.prompt || message;
+      const encoded = encodeURIComponent(`${imgPrompt}, high quality, detailed, 4k`);
+      const seed = Math.floor(Math.random() * 999999);
+      const imageUrl = `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=1024&seed=${seed}&nologo=true&model=flux`;
       return {
         kind: "inline",
         tool,
-        content: imageUrl ? `Generated image for: *${prompt}*` : String(data.content || "Image request completed."),
+        content: `Generated image for: *${imgPrompt}*`,
         imageUrl,
       };
     }
