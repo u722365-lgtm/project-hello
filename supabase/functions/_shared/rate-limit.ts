@@ -1,7 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const RATE_LIMITS = {
-  free: { requests: 50, window: 86400 }, // 50/day
+  free: { requests: 5000, window: 86400 }, // 5000/day
   pro: { requests: 10000, window: 86400 }, // 10k/day
   premium: { requests: 50000, window: 86400 }, // 50k/day
   elite: { requests: 100000, window: 86400 }, // 100k/day
