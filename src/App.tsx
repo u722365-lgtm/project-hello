@@ -32,6 +32,7 @@ import PersistedAuthRedirect from "@/components/PersistedAuthRedirect";
 import WorkspacePathRemember from "@/components/WorkspacePathRemember";
 import { GrowthBanners } from "@/components/GrowthBanners";
 import { OAuthReturnHandler } from "@/components/OAuthReturnHandler";
+import { OAuthRedirectHandler } from "@/components/OAuthRedirectHandler";
 
 
 export const CommandPaletteContext = createContext<{ open: () => void }>({ open: () => {} });
@@ -406,6 +407,7 @@ const App = () => {
                    <SitePageShell>
                      <GlobalScrollReveal />
                      <PersistedAuthRedirect />
+                     <OAuthRedirectHandler />
                      <OAuthReturnHandler />
                      <WorkspacePathRemember />
                       <NotificationPermissionRequester />

@@ -33,7 +33,7 @@ export async function signInWithRemoteProvider(provider: AuthProvider, opts?: Si
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: opts?.redirect_uri ?? (typeof window !== "undefined" ? window.location.origin : undefined),
+        redirectTo: opts?.redirect_uri ?? (typeof window !== 'undefined' ? window.location.origin : undefined),
         ...opts?.extraParams,
       },
     });

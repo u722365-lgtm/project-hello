@@ -172,6 +172,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             bootstrapSeamlessOfflineForLoggedInUser();
             if (event === 'SIGNED_IN') {
               void applyReferralOnSignup();
+              // Mark that an OAuth sign-in just happened so PersistedAuthRedirect
+              // can redirect to /chatbot even from /home or /
+              if (!isAnonymousUser(nextSession)) {
+                if (typeof sessionStorage !== 'undefined') {
+                  sessionStorage.setItem('shadowtalk_oauth_pending', '1');
+                }
+              }
             }
             setTimeout(() => {
               void checkSubscription();

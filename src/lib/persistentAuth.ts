@@ -104,8 +104,44 @@ async function getStoredSession(): Promise<Session | null> {
 /**
  * Restore Supabase session from storage, or create a persistent anonymous session
  * (Gemini-style: open app → already signed in).
+ *
+ * IMPORTANT: If an OAuth callback is in progress (URL contains #access_token=),
+ * we must NOT create an anonymous session — the OAuth tokens need time to be
+ * parsed by Supabase's detectSessionInUrl. Returning null here lets the
+ * onAuthStateChange handler pick up the real session once the fragment is processed.
  */
+function isOAuthCallbackInProgress(): boolean {
+  if (typeof window === 'undefined') return false;
+  const hash = window.location.hash;
+  return hash.includes('access_token=') || hash.includes('error=') || hash.includes('error_code=');
+}
+
 export async function restoreOrCreateSession(): Promise<Session | null> {
+  // If an OAuth callback is happening, wait for Supabase to parse the fragment
+  // instead of racing ahead with an anonymous sign-in that would overwrite it.
+  if (isOAuthCallbackInProgress()) {
+    console.log('[Auth] OAuth callback detected in URL, waiting for fragment processing...');
+    // Give Supabase time to detect and process the URL fragment
+    for (let attempt = 1; attempt <= AUTH_BOOTSTRAP_RETRIES; attempt++) {
+      const sessionResult = await withTimeout(
+        supabase.auth.getSession(),
+        AUTH_BOOTSTRAP_TIMEOUT_MS,
+        `getSession-oauth-wait (attempt ${attempt})`,
+      );
+      if (sessionResult?.data?.session) {
+        clearExplicitSignOut();
+        return sessionResult.data.session;
+      }
+      if (attempt < AUTH_BOOTSTRAP_RETRIES) {
+        await new Promise((r) => setTimeout(r, 800 * attempt));
+      }
+    }
+    // If we still couldn't get the OAuth session, return null —
+    // don't fall through to anonymous sign-in.
+    console.warn('[Auth] OAuth callback in URL but session not recovered');
+    return null;
+  }
+
   const existing = await getStoredSession();
   if (existing) {
     clearExplicitSignOut();
@@ -184,4 +220,5 @@ export const PRESERVE_ON_LOCAL_CLEAR = [
   LAST_WORKSPACE_KEY,
   "shadowtalk_session_token",
   "shadowtalk_offline_auth",
+  "shadowtalk-auth",           // Supabase session — must never be cleared
 ] as const;
