@@ -20,7 +20,7 @@ export function SignInPrompt({ open, onOpenChange, reason, usedCount, limitCount
       description: `You've enjoyed ${usedCount || 10} free AI conversations. Sign in to continue chatting!`,
       icon: Zap,
       benefits: [
-        "50 messages per day (Free tier)",
+        `${FREE_TIER_DAILY.messages.toLocaleString()} messages per day (Free tier)`,
         "Unlimited with Pro subscription",
         "Save conversation history",
         "Access advanced features",
