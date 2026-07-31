@@ -1,0 +1,2 @@
+ALTER TABLE public.daily_usage ADD COLUMN IF NOT EXISTS document_generations integer NOT NULL DEFAULT 0;
+ALTER TABLE public.daily_usage ADD COLUMN IF NOT EXISTS voice_sessions integer NOT NULL DEFAULT 0;

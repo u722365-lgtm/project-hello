@@ -27,6 +27,7 @@ import {
   ollamaChat,
   type OllamaChatResponse,
 } from "../_shared/ollama-fallback.ts";
+import { openRouterFallback, geminiImageFallback } from "../_shared/openrouterFallback.ts";
 
 const OLLAMA_STATUS_CACHE_TTL_MS = 10_000;
 let cachedOllamaStatus: { cfg: ReturnType<typeof getOllamaFallbackConfig>; status: Awaited<ReturnType<typeof resolveOllamaFallbackStatus>> } | null = null;
@@ -1308,7 +1309,18 @@ Return ONLY valid JSON in this exact format:
       if (!response.ok) {
         const errorText = await response.text();
         console.error("[CHAT] Image generation error:", response.status, errorText);
-        
+
+        const fallbackImage = await geminiImageFallback(enhancedPrompt);
+        if (fallbackImage) {
+          return new Response(JSON.stringify({
+            type: "image",
+            imageUrl: fallbackImage,
+            content: "",
+          }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
         if (response.status === 429) {
           return new Response(JSON.stringify({ 
             error: "Daily image generation limit reached (100/day). Try again tomorrow." 
@@ -1848,6 +1860,11 @@ When a user asks you to write, create, draft, or generate any document (email, a
       }
     }
 
+    const fallbackMessages = [
+      { role: 'system', content: systemPrompt },
+      ...trimmedMessages,
+    ];
+
     if (!canUsePlatformGateway(LOVABLE_API_KEY, customAi)) {
       const ollamaStatus = await getOllamaStatus();
       if (shouldFallbackToOllama(ollamaStatus ?? getOllamaFallbackConfig())) {
@@ -1866,6 +1883,12 @@ When a user asks you to write, create, draft, or generate any document (email, a
           );
         }
       }
+      const orNoKey = await openRouterFallback(fallbackMessages, { stream: true });
+      if (orNoKey?.body) {
+        return new Response(orNoKey.body, {
+          headers: { ...corsHeaders, 'Content-Type': 'text/event-stream' },
+        });
+      }
       return platformAiUnavailable(corsHeaders);
     }
 
@@ -1875,24 +1898,28 @@ When a user asks you to write, create, draft, or generate any document (email, a
       platformKey,
       {
         model,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          ...trimmedMessages,
-        ],
+        messages: fallbackMessages,
         stream: true,
       },
       fetchWithRetryCompat,
     );
 
     if (!response.ok) {
+      const bodyText = await response.text().catch(() => '');
       const exhausted =
         response.status === 402 ||
         response.status === 429 ||
         response.status === 503 ||
-        isCreditsExhaustedLike(response.status, await response.text().catch(() => ''));
+        isCreditsExhaustedLike(response.status, bodyText);
 
       if (exhausted) {
-        console.warn("[CHAT] Platform credits exhausted; fallback unavailable.");
+        console.warn('[CHAT] Platform gateway unavailable (' + response.status + ') — trying OpenRouter fallback.');
+        const orRes = await openRouterFallback(fallbackMessages, { stream: true });
+        if (orRes?.body) {
+          return new Response(orRes.body, {
+            headers: { ...corsHeaders, 'Content-Type': 'text/event-stream' },
+          });
+        }
       }
 
       if (response.status === 429) {
@@ -1920,10 +1947,10 @@ When a user asks you to write, create, draft, or generate any document (email, a
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
-      const errorText = await response.text();
-      console.error('[CHAT] AI gateway error:', response.status, errorText);
+      console.error('[CHAT] AI gateway error:', response.status, bodyText);
       throw new Error('AI gateway error');
     }
+
 
     // SPEED OVERHAUL: stream directly for ALL tiers.
     // The previous quality-scoring path buffered the entire response before sending

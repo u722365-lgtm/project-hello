@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { openRouterFallback } from "../_shared/openrouterFallback.ts";
 import { requireAuthOrGuest } from "../_shared/auth.ts";
 import {
   SLIDE_ANTI_OVERLAP_RULES,
@@ -177,7 +178,12 @@ OUTPUT FORMAT:
 }`;
 
     console.log("Generating Manus-quality presentation...");
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const slideMessages = [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: `Create a MANUS-QUALITY coded presentation about: ${topic}${additionalContext ? `\n\nContext: ${additionalContext}` : ''}${sourceDocument ? `\n\nSOURCE DOCUMENT (derive slide narrative, data, and structure from this — do not ignore):\n${sourceDocument.slice(0, 14000)}` : ''}${audienceGuidance}\n\nIMPORTANT: Return ONLY valid JSON, no markdown.` },
+    ];
+
+    let response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
@@ -185,13 +191,16 @@ OUTPUT FORMAT:
       },
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: `Create a MANUS-QUALITY coded presentation about: ${topic}${additionalContext ? `\n\nContext: ${additionalContext}` : ''}${sourceDocument ? `\n\nSOURCE DOCUMENT (derive slide narrative, data, and structure from this — do not ignore):\n${sourceDocument.slice(0, 14000)}` : ''}${audienceGuidance}\n\nIMPORTANT: Return ONLY valid JSON, no markdown.` },
-        ],
+        messages: slideMessages,
         temperature: 0.75,
       }),
     });
+
+    if (!response.ok && (response.status === 402 || response.status === 429 || response.status === 503)) {
+      console.warn("[generate-presentation] platform gateway", response.status, "— using fallback provider");
+      const fb = await openRouterFallback(slideMessages, { stream: false });
+      if (fb?.ok) response = fb;
+    }
 
     if (!response.ok) {
       if (response.status === 429) {

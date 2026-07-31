@@ -2,6 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { LogIn, Sparkles, Zap, Shield, Crown } from "lucide-react";
+import { FREE_TIER_DAILY } from "@/lib/productClaims";
 
 interface SignInPromptProps {
   open: boolean;
@@ -20,7 +21,7 @@ export function SignInPrompt({ open, onOpenChange, reason, usedCount, limitCount
       description: `You've enjoyed ${usedCount || 10} free AI conversations. Sign in to continue chatting!`,
       icon: Zap,
       benefits: [
-        "50 messages per day (Free tier)",
+        `${FREE_TIER_DAILY.messages.toLocaleString()} messages per day (Free tier)`,
         "Unlimited with Pro subscription",
         "Save conversation history",
         "Access advanced features",

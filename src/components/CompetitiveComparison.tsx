@@ -98,7 +98,7 @@ const CompetitiveComparison = () => {
 
   const freeFeatures = [
     { icon: Sparkles, label: "Agentic Task Runner", competitor: "ChatGPT: paid agents" },
-    { icon: MessageCircle, label: "50 messages/day", competitor: "ChatGPT: 20/day" },
+    { icon: MessageCircle, label: `${FREE_TIER_DAILY.messages.toLocaleString()} messages/day`, competitor: "ChatGPT: 20/day" },
     { icon: Search, label: "5 deep research/day", competitor: "Perplexity: 3/day" },
     { icon: Image, label: "4 images/day", competitor: "Claude: 0 free" },
   ];
