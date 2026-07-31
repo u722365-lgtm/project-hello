@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Zap, Presentation, FileText, Sparkles, Palette } from "lucide-react";
@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import PresentationBuilderPage from "@/pages/PresentationBuilderPage";
 import { DocumentForgePanel } from "@/components/content-forge/DocumentForgePanel";
 import { BeastForgePanel } from "@/components/content-forge/BeastForgePanel";
+import ComingSoonPopup from "@/components/ComingSoonPopup";
 import {
   CONTENT_FORGE_MODES,
   parseForgeMode,
@@ -22,6 +23,7 @@ const ContentForgePage = () => {
   const mode = parseForgeMode(searchParams.get("mode"));
   const topic = searchParams.get("topic") || searchParams.get("q") || "";
   const auto = searchParams.get("auto") === "1";
+  const [showPopup, setShowPopup] = useState(true);
 
   const setMode = useCallback(
     (next: ContentForgeMode) => {
@@ -130,6 +132,13 @@ const ContentForgePage = () => {
           {mode === "studio" && <CreativeStudioPage embedded />}
         </div>
       </div>
+      {showPopup && (
+        <ComingSoonPopup
+          feature="Shadow Content Forge"
+          description="AI-powered content creation is being rebuilt. Slides, documents, and Beast Mode will be available soon. Stay tuned!"
+          onClose={() => setShowPopup(false)}
+        />
+      )}
     </div>
   );
 };
