@@ -113,7 +113,11 @@ export async function openRouterFallback(
 }
 
 /** Image models tried in order via the Gemini REST API. */
-const GEMINI_IMAGE_MODELS = ["gemini-2.5-flash-image", "gemini-2.0-flash-preview-image-generation"];
+const GEMINI_IMAGE_MODELS = [
+  "gemini-2.5-flash-image",
+  "gemini-2.5-flash-image-preview",
+  "gemini-2.0-flash-preview-image-generation",
+];
 
 /**
  * Direct Gemini image-generation fallback.
