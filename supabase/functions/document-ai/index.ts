@@ -54,7 +54,7 @@ serve(async (req) => {
       ],
     };
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    let response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
@@ -62,6 +62,12 @@ serve(async (req) => {
       },
       body: JSON.stringify(payload),
     });
+
+    if (!response.ok && (response.status === 402 || response.status === 429 || response.status === 503)) {
+      console.warn("[document-ai] platform gateway", response.status, "— using fallback provider");
+      const fb = await openRouterFallback(payload.messages, { stream: false });
+      if (fb?.ok) response = fb;
+    }
 
     if (!response.ok) {
       if (response.status === 429) {
