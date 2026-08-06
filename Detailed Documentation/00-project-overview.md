@@ -11,7 +11,7 @@ ShadowTalk is an **agentic AI workspace** — not a thin chat wrapper. It combin
 - **Monetization** — Free tier limits, Premium/Elite, BYOK (Gemini / OpenRouter / Kimi).
 - **Privacy & ops** — Vault, cyber command, compliance surfaces, admin panel.
 
-**Stack:** React, TypeScript, Vite, Supabase (auth, DB, edge functions), PWA, optional Electron desktop.
+**Stack:** React, TypeScript, Vite, ShadowTalk backend (auth, DB, edge functions), PWA, optional Electron desktop.
 
 **Default entry:** `/` redirects to **`/chatbot`**. Marketing at **`/home`**.
 

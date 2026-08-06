@@ -10,8 +10,8 @@
 │   ├── hooks/              # React hooks
 │   ├── lib/                # Business logic (offline, marketplace, auth, …)
 │   ├── contexts/           # React contexts
-│   └── integrations/       # Supabase client
-├── supabase/
+│   └── integrations/       # ShadowTalk backend client
+├── backend/
 │   ├── functions/          # Edge functions
 │   └── migrations/         # SQL
 ├── Detailed Documentation/ # Engineering docs
@@ -67,7 +67,7 @@ flowchart LR
 
 | Store | Technology | Examples |
 |-------|------------|----------|
-| Auth & DB | Supabase | `conversations`, `messages`, `user_installed_agents` |
+| Auth & DB | ShadowTalk backend | `conversations`, `messages`, `user_installed_agents` |
 | Session | `sessionStorage` | IDE payload, boot flag `shadowtalk-booted` |
 | Local | `localStorage` | Hardware profile, auth storage key, sign-out flag |
 

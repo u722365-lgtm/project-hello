@@ -32,7 +32,7 @@ Chat and App Builder honor BYOK via `buildChatProviderPayload(aiProvider, aiConf
 | **LandingNavigation** | `src/components/landing/LandingNavigation.tsx` — Pricing, Install, Notifications, Feedback, Login |
 | Landing animations | `src/lib/landingMotion.ts`, interactive cards, section reveals |
 | **Pricing page** | `/pricing` — `PricingPage.tsx`, `src/components/pricing/*` |
-| Live metrics (not mock) | `platformMetricsShared.ts`, Supabase-backed counts |
+| Live metrics (not mock) | `platformMetricsShared.ts`, ShadowTalk backend-backed counts |
 | Stealth mode | Countdown, network guard, kill switch storage |
 | Coupon banner | Removed from home (layout/runtime fix) |
 

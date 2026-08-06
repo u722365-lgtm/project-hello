@@ -41,7 +41,7 @@ Two loaders existed historically; behavior is now split:
 ### Goals
 
 - Open the site → **already in a session** (no forced `/auth` for chat).
-- Session **persists** across tabs and revisits (Supabase `persistSession`).
+- Session **persists** across tabs and revisits (ShadowTalk backend `persistSession`).
 - **Explicit sign-out** is remembered — no silent anonymous re-login until user signs in again.
 
 ### Flow
@@ -51,7 +51,7 @@ sequenceDiagram
   participant App
   participant Auth as AuthProvider
   participant PA as persistentAuth
-  participant SB as Supabase
+  participant SB as ShadowTalk backend
 
   App->>Auth: mount
   Auth->>PA: restoreOrCreateSession()
@@ -74,11 +74,11 @@ sequenceDiagram
 | `src/components/AuthProvider.tsx` | Context: `user`, `session`, `loading`, `isAnonymous` |
 | `src/components/PersistedAuthRedirect.tsx` | Signed-in (non-anonymous) users skip `/auth` |
 | `src/components/WorkspacePathRemember.tsx` | Remembers last workspace path |
-| `src/integrations/supabase/client.ts` | `storageKey: shadowtalk-auth` |
+| `src/integrations/backend/client.ts` | `storageKey: shadowtalk-auth` |
 
-### Supabase dashboard requirement
+### ShadowTalk backend dashboard requirement
 
-Enable **Anonymous sign-ins** on the Supabase project so first-time visitors get a session without email.
+Enable **Anonymous sign-ins** on the ShadowTalk backend project so first-time visitors get a session without email.
 
 ### Sign out
 

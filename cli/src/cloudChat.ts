@@ -2,7 +2,7 @@ import { loadConfig } from "./config.js";
 import { assertCloudAllowed } from "./pledge.js";
 import type { ChatMessage } from "./ollama.js";
 
-function getSupabaseEnv(): { url: string; anonKey: string; accessToken?: string } {
+function getApiEnv(): { url: string; anonKey: string; accessToken?: string } {
   const cfg = loadConfig();
   const url =
     process.env.SHADOWTALK_SUPABASE_URL ||
@@ -33,7 +33,7 @@ export async function streamCloudChat(
 ): Promise<{ ok: boolean; content: string; error?: string }> {
   assertCloudAllowed("cloud chat");
 
-  const { url, anonKey, accessToken } = getSupabaseEnv();
+  const { url, anonKey, accessToken } = getApiEnv();
   const token = accessToken || anonKey;
   let content = "";
 

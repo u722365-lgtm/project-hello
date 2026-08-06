@@ -42,7 +42,7 @@ In `runChatCompletion`:
 1. Augment messages (e.g. marketplace agent system prompt).
 2. Call `decideRoute()`.
 3. If `local` and models ready → stream via `runLocalChat` / `runOfflineCompletion`.
-4. On failure or weak hardware → fall through to Supabase `functions/v1/chat`.
+4. On failure or weak hardware → fall through to ShadowTalk backend `functions/v1/chat`.
 
 Also calls `prewarmFastestLocalPath()` and `warmHardwareProfile()` during session start.
 

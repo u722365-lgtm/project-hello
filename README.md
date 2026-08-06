@@ -56,7 +56,7 @@ See [Detailed Documentation/11-complete-route-reference.md](./Detailed%20Documen
 - **BYOK** — route chat through your providers when configured.
 - **Offline paths** — SmolLM / Gemma + hardware-aware local vs cloud routing.
 
-**Stack:** React · Vite · TypeScript · Supabase · Tailwind · shadcn/ui · PWA · Electron (desktop).
+**Stack:** React · Vite · TypeScript · ShadowTalk backend · Tailwind · shadcn/ui · PWA · Electron (desktop).
 
 ---
 
@@ -76,11 +76,11 @@ Open [http://localhost:5173](http://localhost:5173) — you land on **`/chatbot`
 `.env` / `.env.local`:
 
 ```env
-VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_URL=https://your-project.backend.co
 VITE_SUPABASE_PUBLISHABLE_KEY=your-anon-key
 ```
 
-Enable **Anonymous sign-ins** in Supabase Auth for Gemini-style auto session on first visit.
+Enable **Anonymous sign-ins** in ShadowTalk backend Auth for Gemini-style auto session on first visit.
 
 ### Desktop
 
@@ -91,7 +91,7 @@ npm run desktop:make
 
 See [DESKTOP.md](./DESKTOP.md). Offline models: [OFFLINE.md](./OFFLINE.md).
 
-Desktop does **not** require Lovable Cloud. Run with `VITE_LOCAL_FIRST=1` to build/run in standalone/offline-first mode.
+Desktop does **not** require ShadowTalk local runtime. Run with `VITE_LOCAL_FIRST=1` to build/run in standalone/offline-first mode.
 
 ---
 
@@ -107,11 +107,11 @@ npm test
 | Routes | `src/App.tsx` |
 | Chat | `src/pages/ChatbotPage.tsx` |
 | Auth | `src/lib/persistentAuth.ts`, `src/components/AuthProvider.tsx` |
-| Edge functions | `supabase/functions/` |
+| Edge functions | `backend/functions/` |
 | Engineering docs | `Detailed Documentation/` |
 | Doc hub | [DOCUMENTATION.md](./DOCUMENTATION.md) |
 
-**Deploy:** run migrations, deploy `chat` and related functions; set secrets in Supabase — never commit keys.
+**Deploy:** run migrations, deploy `chat` and related functions; set secrets in ShadowTalk backend — never commit keys.
 
 ---
 

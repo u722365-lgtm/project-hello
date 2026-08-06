@@ -228,13 +228,13 @@ function isDesktopAppOrigin(origin: string, customScheme: string): boolean {
 }
 
 /** Track shadowtalk:// Origin for ShadowTalk backend responses (production edge may return the web ACAO). */
-function setupDesktopSupabaseCors(customScheme: string): Map<number, string> {
+function setupDesktopApiCors(customScheme: string): Map<number, string> {
   const pendingOrigins = new Map<number, string>();
-  const supabaseFilter = { urls: ['https://*.backend.co/*', 'https://*.backend.in/*'] };
+  const apiFilter = { urls: ['https://*.shadowtalk-ai.com/*', 'https://*.shadowtalk-ai.com/*'] };
 
   const fallbackOrigin = `${customScheme}://localhost`;
 
-  session.defaultSession.webRequest.onBeforeSendHeaders(supabaseFilter, (details, callback) => {
+  session.defaultSession.webRequest.onBeforeSendHeaders(apiFilter, (details, callback) => {
     const origin = details.requestHeaders.Origin ?? details.requestHeaders.origin;
     if (origin && isDesktopAppOrigin(origin, customScheme)) {
       pendingOrigins.set(details.id, origin);
@@ -254,7 +254,7 @@ function setupDesktopSupabaseCors(customScheme: string): Map<number, string> {
 
 // Set a CSP up for our application based on the custom scheme
 export function setupContentSecurityPolicy(customScheme: string): void {
-  const pendingOrigins = setupDesktopSupabaseCors(customScheme);
+  const pendingOrigins = setupDesktopApiCors(customScheme);
 
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
     const responseHeaders = { ...details.responseHeaders };
