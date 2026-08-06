@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { useVoiceSessionLimits } from "@/hooks/useVoiceSessionLimits";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { useConversation } from "@elevenlabs/react";
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -397,7 +397,7 @@ export const ShadowTalkLive = ({ isOpen, onClose, onInsertToChat, autoConnect = 
     setConnectionError(null);
     try {
       await navigator.mediaDevices.getUserMedia({ audio: true });
-      const { data, error } = await supabase.functions.invoke("elevenlabs-conversation-token");
+      const { data, error } = await backend.functions.invoke("elevenlabs-conversation-token");
       if (error) throw new Error(error.message || "Failed to get conversation token");
       if (!data?.token) throw new Error(data?.error || "No token received.");
       await conversation.startSession({ conversationToken: data.token, connectionType: "webrtc" });

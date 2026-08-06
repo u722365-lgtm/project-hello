@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import { useAuth } from '@/components/AuthProvider';
 import { connectIntegration } from '@/lib/integrationOAuth';
 
@@ -61,7 +61,7 @@ export const GoogleIntegrationPanel: React.FC<GoogleIntegrationPanelProps> = ({
     if (!user) return;
     
     try {
-      const { data } = await supabase
+      const { data } = await backend
         .from('oauth_tokens')
         .select('provider')
         .eq('user_id', user.id);
@@ -100,9 +100,9 @@ export const GoogleIntegrationPanel: React.FC<GoogleIntegrationPanelProps> = ({
   };
 
   const handleDisconnect = async (serviceId: string) => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await backend.auth.getUser();
     if (user) {
-      await supabase.from('oauth_tokens').delete().eq('user_id', user.id).eq('provider', 'google');
+      await backend.from('oauth_tokens').delete().eq('user_id', user.id).eq('provider', 'google');
     }
     
     setServices(prev => prev.map(s => ({ ...s, connected: false, lastSync: undefined })));
@@ -115,10 +115,10 @@ export const GoogleIntegrationPanel: React.FC<GoogleIntegrationPanelProps> = ({
     setIsLoadingFiles(true);
     
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await backend.auth.getSession();
       if (!session) return;
 
-      const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/google-api`, {
+      const resp = await fetch(`${import.meta.env.VITE_API_BASE_URL}/functions/v1/google-api`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -149,10 +149,10 @@ export const GoogleIntegrationPanel: React.FC<GoogleIntegrationPanelProps> = ({
 
   const handleImportFile = async (file: { id: string; name: string }) => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await backend.auth.getSession();
       if (!session) return;
 
-      const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/google-api`, {
+      const resp = await fetch(`${import.meta.env.VITE_API_BASE_URL}/functions/v1/google-api`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -176,8 +176,8 @@ export const GoogleIntegrationPanel: React.FC<GoogleIntegrationPanelProps> = ({
     setIsSyncing(true);
     try {
       const [emailRes, calendarRes] = await Promise.all([
-        supabase.functions.invoke('email-sync'),
-        supabase.functions.invoke('calendar-sync'),
+        backend.functions.invoke('email-sync'),
+        backend.functions.invoke('calendar-sync'),
       ]);
       if (emailRes.error) throw emailRes.error;
       if (calendarRes.error) throw calendarRes.error;

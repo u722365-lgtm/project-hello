@@ -241,13 +241,13 @@
      
      try {
        const response = await fetch(
-         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/vision-analyze`,
+         `${import.meta.env.VITE_API_BASE_URL}/functions/v1/vision-analyze`,
          {
            method: 'POST',
            headers: {
              'Content-Type': 'application/json',
-             'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-             'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`
+             'apikey': import.meta.env.VITE_API_KEY,
+             'Authorization': `Bearer ${import.meta.env.VITE_API_KEY}`
            },
            body: JSON.stringify({ 
              imageData,

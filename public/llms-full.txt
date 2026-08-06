@@ -167,7 +167,7 @@ A: Yes — passphrase-derived E2EE for conversation content stored in cloud (cip
 ## Technology (high level)
 
 - Frontend: React, TypeScript, Tailwind, PWA
-- Backend: Supabase (Auth, Postgres, Edge Functions)
+- Backend: ShadowTalk backend (Auth, Postgres, Edge Functions)
 - AI: Gateway to Gemini/GPT-class models (tier-dependent); local Gemma/WebGPU where supported
 - Payments: Stripe + manual JazzCash/Easypaisa for Pakistan
 

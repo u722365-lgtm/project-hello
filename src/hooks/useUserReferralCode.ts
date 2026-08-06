@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 
 export function useUserReferralCode(): string | null {
   const { user } = useAuth();
@@ -15,7 +15,7 @@ export function useUserReferralCode(): string | null {
     let cancelled = false;
 
     (async () => {
-      const { data } = await supabase
+      const { data } = await backend
         .from("user_referral_codes")
         .select("referral_code")
         .eq("user_id", user.id)
@@ -29,7 +29,7 @@ export function useUserReferralCode(): string | null {
       }
 
       const newCode = `ST${user.id.slice(0, 8).toUpperCase()}`;
-      const { data: inserted } = await supabase
+      const { data: inserted } = await backend
         .from("user_referral_codes")
         .insert({ user_id: user.id, referral_code: newCode })
         .select("referral_code")

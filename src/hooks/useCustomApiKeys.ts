@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { useAuth } from "@/components/AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 import type { AiConfig, AiProviderId } from "@/lib/aiProviders";
@@ -23,11 +23,11 @@ async function invokeKeys<T>(action: string, body?: Record<string, unknown>): Pr
   if (!BYOK_EDGE_ENABLED) {
     throw new Error("BYOK key management is not enabled in this deployment");
   }
-  const { data: session } = await supabase.auth.getSession();
+  const { data: session } = await backend.auth.getSession();
   const token = session.session?.access_token;
   if (!token) throw new Error("Sign in required");
 
-  const base = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/user-provider-keys`;
+  const base = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/user-provider-keys`;
   const url = action === "list" ? `${base}?action=list` : `${base}?action=${action}`;
 
   const res = await fetch(url, {
@@ -35,7 +35,7 @@ async function invokeKeys<T>(action: string, body?: Record<string, unknown>): Pr
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
-      apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+      apikey: import.meta.env.VITE_API_KEY,
     },
     body: action === "list" ? undefined : JSON.stringify(body ?? {}),
   });
@@ -59,7 +59,7 @@ export function useCustomApiKeys() {
       setAiConfig(DEFAULT_AI_CONFIG);
       return;
     }
-    const { data } = await supabase
+    const { data } = await backend
       .from("user_settings")
       .select("setting_value")
       .eq("user_id", user.id)
@@ -226,7 +226,7 @@ export function useCustomApiKeys() {
     if (!user) return true;
     try {
       const now = new Date().toISOString();
-      await supabase.from("user_settings").upsert(
+      await backend.from("user_settings").upsert(
         {
           user_id: user.id,
           setting_key: "ai_config",

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Upload, Wand2, Download, RotateCcw, Image as ImageIcon,
@@ -73,7 +73,7 @@ export const AIImageEditor: React.FC = () => {
     setIsProcessing(true);
     try {
       const sourceImage = editedImage || originalImage;
-      const { data, error } = await supabase.functions.invoke("image-edit", {
+      const { data, error } = await backend.functions.invoke("image-edit", {
         body: {
           instruction: prompt.trim(),
           imageBase64: mode === "edit" ? sourceImage : undefined,

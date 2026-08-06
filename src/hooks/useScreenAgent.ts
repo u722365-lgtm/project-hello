@@ -126,12 +126,12 @@ export function useScreenAgent() {
     setState(s => ({ ...s, isAnalyzing: true, streamedResponse: '', error: null }));
 
     try {
-      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/screen-analyze`;
+      const url = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/screen-analyze`;
       const resp = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          'Authorization': `Bearer ${import.meta.env.VITE_API_KEY}`,
         },
         body: JSON.stringify({ screenshot, action, userPrompt }),
       });

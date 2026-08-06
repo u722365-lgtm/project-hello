@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { useToast } from "@/hooks/use-toast";
 import {
   startWhatsAppQrSession,
@@ -56,10 +56,10 @@ export const WhatsAppConnect = () => {
   }, []);
 
   const fetchLink = useCallback(async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await backend.auth.getUser();
     if (!user) return;
 
-    const { data } = await supabase
+    const { data } = await backend
       .from("whatsapp_links")
       .select("*")
       .eq("user_id", user.id)
@@ -87,13 +87,13 @@ export const WhatsAppConnect = () => {
   }, [fetchLink, stopPolling]);
 
   const callWebhook = async (action: string, extraParams: Record<string, string> = {}) => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await backend.auth.getUser();
     if (!user) throw new Error("Not authenticated");
 
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await backend.auth.getSession();
 
     const response = await fetch(
-      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/whatsapp-webhook`,
+      `${import.meta.env.VITE_API_BASE_URL}/functions/v1/whatsapp-webhook`,
       {
         method: "POST",
         headers: {

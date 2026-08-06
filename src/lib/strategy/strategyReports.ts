@@ -1,9 +1,9 @@
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { buildStrategyGoal } from "@/lib/strategy/goalContext";
 import type { BusinessIdea, StrategyPlanStep, StrategyResult } from "@/lib/strategy/types";
 import { parseMissionResult } from "@/lib/execution/synthesizeDeliverable";
 
-// Supabase generated types lag some columns; cast to a loose client for these writes.
+// ShadowTalk backend generated types lag some columns; cast to a loose client for these writes.
 type LooseClient = {
   from: (table: string) => {
     insert: (row: Record<string, unknown>) => {
@@ -28,7 +28,7 @@ type LooseClient = {
     delete: () => { eq: (col: string, val: string) => Promise<{ error: unknown }> };
   };
 };
-const db = supabase as unknown as LooseClient;
+const db = backend as unknown as LooseClient;
 
 /** @deprecated Writes go to unified `missions` table */
 export async function createStrategyReport(

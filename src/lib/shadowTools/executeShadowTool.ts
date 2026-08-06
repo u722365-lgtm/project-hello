@@ -1,11 +1,11 @@
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import type { ToolType } from "@/hooks/useToolOrchestrator";
 import { buildExecutePath, inferDeliverableType } from "@/lib/execution/inferFromChat";
 import type { DeliverableType } from "@/lib/execution/types";
 import { chatAuthHeaders } from "./chatAuthHeaders";
 import type { ExecuteShadowToolContext, ShadowToolResult } from "./types";
 
-const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
+const CHAT_URL = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`;
 
 async function parseChatJsonResponse(resp: Response): Promise<Record<string, unknown>> {
   const text = await resp.text();
@@ -94,7 +94,7 @@ export async function executeShadowTool(
   switch (tool) {
     case "web_search": {
       const query = p.query || message;
-      const { data, error } = await supabase.functions.invoke("web-search", {
+      const { data, error } = await backend.functions.invoke("web-search", {
         body: { query, numResults: 6 },
       });
       if (error) throw new Error(error.message);
@@ -158,7 +158,7 @@ export async function executeShadowTool(
       const urlMatch = message.match(/https?:\/\/[^\s]+/i);
       const url = p.url || urlMatch?.[0];
       if (url) {
-        const { data, error } = await supabase.functions.invoke("website-security-scan", {
+        const { data, error } = await backend.functions.invoke("website-security-scan", {
           body: { url },
         });
         if (error) throw new Error(error.message);
@@ -179,7 +179,7 @@ export async function executeShadowTool(
     case "shadow_browser": {
       const url = p.url || message.match(/https?:\/\/[^\s]+/i)?.[0];
       if (url) {
-        const { data, error } = await supabase.functions.invoke("firecrawl-scrape", {
+        const { data, error } = await backend.functions.invoke("firecrawl-scrape", {
           body: { url, options: { formats: ["markdown"], onlyMainContent: true } },
         });
         if (error) throw new Error(error.message);
@@ -200,7 +200,7 @@ export async function executeShadowTool(
 
     case "code_executor": {
       const code = p.code || message;
-      const { data, error } = await supabase.functions.invoke("code-runner", {
+      const { data, error } = await backend.functions.invoke("code-runner", {
         body: { code, language: p.language || "javascript" },
       });
       if (error) throw new Error(error.message);
@@ -210,7 +210,7 @@ export async function executeShadowTool(
 
     case "file_manager": {
       const action = p.action || "list";
-      const { data, error } = await supabase.functions.invoke("file-manager", {
+      const { data, error } = await backend.functions.invoke("file-manager", {
         body: { action, path: p.path, content: p.content, name: p.name },
       });
       if (error) throw new Error(error.message);
@@ -238,7 +238,7 @@ export async function executeShadowTool(
     case "database_query":
     case "analytics_agent": {
       const query = p.query || message;
-      const { data, error } = await supabase.functions.invoke("postgres-query", {
+      const { data, error } = await backend.functions.invoke("postgres-query", {
         body: { query, limit: 25 },
       });
       if (error) throw new Error(error.message);
@@ -255,7 +255,7 @@ export async function executeShadowTool(
       const endpoint = p.endpoint || p.url || "";
       const method = (p.method as string) || "POST";
       const body = p.body || { input: message };
-      const { data, error } = await supabase.functions.invoke("api-gateway", {
+      const { data, error } = await backend.functions.invoke("api-gateway", {
         body: { endpoint, method, body },
       });
       if (error) throw new Error(error.message);

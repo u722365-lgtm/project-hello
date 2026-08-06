@@ -1,11 +1,11 @@
 import { useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { useShadowToolBridge } from "@/hooks/useShadowToolBridge";
 import type { ChatMode } from "@/components/chat/ModeSelector";
 import { SHADOWTALK_SELF_KNOWLEDGE_BRIEF } from "@/lib/shadowTalkProductKnowledge";
 import { detectOllamaLocalStatus, chatWithOllama } from "@/lib/chatOllamaFallback";
 
-const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
+const CHAT_URL = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`;
 
 export interface ChatToolRouterMessage {
   id: string;
@@ -69,8 +69,8 @@ export function useChatToolRouter(handlers: Parameters<typeof useShadowToolBridg
       saveAssistant: (content: string) => Promise<void>,
       signal?: AbortSignal
     ) => {
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      const { data: { session } } = await backend.auth.getSession();
+      const token = session?.access_token || import.meta.env.VITE_API_KEY;
       const aiMessageId = crypto.randomUUID();
 
       const resp = await fetch(CHAT_URL, {

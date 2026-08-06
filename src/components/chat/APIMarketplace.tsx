@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { useAuth } from "@/components/AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
@@ -121,7 +121,7 @@ export const APIMarketplace = ({ isOpen, onClose }: APIMarketplaceProps) => {
   const loadApiKeys = async () => {
     if (!user) return;
     
-    const { data, error } = await supabase
+    const { data, error } = await backend
       .from('api_keys')
       .select('*')
       .eq('user_id', user.id)
@@ -146,7 +146,7 @@ export const APIMarketplace = ({ isOpen, onClose }: APIMarketplaceProps) => {
       const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate()).toISOString();
       const dayEnd = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1).toISOString();
       
-      const { data, count } = await supabase
+      const { data, count } = await backend
         .from('usage_analytics')
         .select('tokens_used', { count: 'exact' })
         .eq('user_id', user.id)
@@ -183,7 +183,7 @@ export const APIMarketplace = ({ isOpen, onClose }: APIMarketplaceProps) => {
         .map(b => b.toString(16).padStart(2, '0'))
         .join('');
       
-      const { error } = await supabase
+      const { error } = await backend
         .from('api_keys')
         .insert({
           user_id: user.id,
@@ -212,7 +212,7 @@ export const APIMarketplace = ({ isOpen, onClose }: APIMarketplaceProps) => {
   };
 
   const deleteApiKey = async (keyId: string) => {
-    const { error } = await supabase
+    const { error } = await backend
       .from('api_keys')
       .delete()
       .eq('id', keyId);

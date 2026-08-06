@@ -12,7 +12,7 @@ import ProactiveOptInPrompt from "@/components/growth/ProactiveOptInPrompt";
 import { getProactiveTypeLabel, PROACTIVE_ETHICS } from "@/lib/ethicalGrowth";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 
 interface Message {
   role: "user" | "assistant";
@@ -100,16 +100,16 @@ const CustomerSupportWidget = () => {
     recordInteraction(userMessage.slice(0, 50));
 
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
+      const { data: sessionData } = await backend.auth.getSession();
       const accessToken = sessionData.session?.access_token;
 
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`,
+        `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            apikey: import.meta.env.VITE_API_KEY,
             ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
           },
             body: JSON.stringify({

@@ -1,4 +1,4 @@
-import { getSupabaseUrl } from "@/lib/supabaseEnv";
+import { getApiBaseUrl } from "@/lib/cloudEnv";
 
 export type ShareKind = "mission" | "presentation" | "chat";
 
@@ -28,7 +28,7 @@ export function buildAppShareUrl(opts: {
   return url.toString();
 }
 
-/** Public share link with dynamic Open Graph HTML (Supabase edge). */
+/** Public share link with dynamic Open Graph HTML (ShadowTalk backend edge). */
 export function buildShareOgLink(opts: {
   title: string;
   subtitle?: string;
@@ -43,7 +43,7 @@ export function buildShareOgLink(opts: {
     utm: opts.utm,
   });
 
-  const base = getSupabaseUrl();
+  const base = getApiBaseUrl();
   if (!base) {
     return redirect;
   }

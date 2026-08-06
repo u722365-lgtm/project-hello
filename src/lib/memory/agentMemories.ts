@@ -1,7 +1,7 @@
 import { toast } from "@/hooks/use-toast";
 import { reflectOnConversation, shouldReflect, type MemoryReflection } from "@/lib/memory/reflectionEngine";
 import { loadGuestMemories, upsertGuestMemory } from "@/lib/memory/guestMemoryStore";
-import { supabaseLoose } from "@/integrations/supabase/loose";
+import { backendLoose } from "@/integrations/local/loose";
 import type { MemoryRecord } from "@/lib/memory/guestMemoryStore";
 
 type ChatCompletionMessage = { role: string; content: unknown };
@@ -35,7 +35,7 @@ export async function getActiveMemories(user: { id?: string } | null = null): Pr
   if (!isMemoryEnabled()) return [];
   if (user?.id) {
     try {
-      const { data, error } = await supabaseLoose.from("user_memories").select("*").eq("user_id", user.id);
+      const { data, error } = await backendLoose.from("user_memories").select("*").eq("user_id", user.id);
       if (error) throw error;
       return (data ?? []) as MemoryRecord[];
     } catch {
@@ -62,7 +62,7 @@ export async function persistMemories(
         source: "reflection",
         updated_at: new Date().toISOString(),
       };
-      await supabaseLoose
+      await backendLoose
         .from("user_memories")
         .upsert(payload, { onConflict: "user_id,category,key" });
     }

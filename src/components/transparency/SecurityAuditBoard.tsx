@@ -27,7 +27,7 @@ const openSourceRefs = [
   { name: "Privacy Score Monitor", file: "src/hooks/usePrivacyScore.ts", desc: "Real-time tracker blocking and privacy event monitoring" },
   { name: "Zero-Knowledge Sync", file: "src/hooks/useZeroKnowledgeSync.ts", desc: "Offline-first sync queue with encrypted payloads" },
   { name: "Kill Switch", file: "src/hooks/useStealthKillSwitch.ts", desc: "Emergency network traffic blocker for complete isolation" },
-  { name: "RLS Policies", file: "supabase/migrations/", desc: "Row-Level Security ensuring data isolation per user" },
+  { name: "RLS Policies", file: "backend/migrations/", desc: "Row-Level Security ensuring data isolation per user" },
   { name: "Security Policy", file: "security.txt", desc: "Vulnerability disclosure and security contact information" },
 ];
 

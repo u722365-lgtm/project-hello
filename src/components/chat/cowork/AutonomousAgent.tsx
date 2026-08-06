@@ -16,7 +16,7 @@
  import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
  import { useToast } from "@/hooks/use-toast";
  import { cn } from "@/lib/utils";
- import { supabase } from "@/integrations/supabase/client";
+ import { backend } from "@/integrations/local/client";
  import ReactMarkdown from "react-markdown";
  import remarkGfm from "remark-gfm";
  
@@ -293,7 +293,7 @@
  
        // Call AI
         // Call AI - invoke returns data directly (not a Response object)
-        const { data: rawData, error: streamError } = await supabase.functions.invoke('chat', {
+        const { data: rawData, error: streamError } = await backend.functions.invoke('chat', {
           body: {
             messages: [
               { role: "system", content: systemPrompt },

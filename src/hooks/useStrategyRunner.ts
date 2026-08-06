@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { executeMissionTool } from "@/lib/see/missionToolExecutor";
 import { generateExecutionPlan } from "@/lib/execution/generateExecutionPlan";
 import type { DeliverableType } from "@/lib/execution/types";
@@ -58,7 +58,7 @@ export function useStrategyRunner() {
     setProgress(5);
     setSteps([]);
 
-    const { data: sessionData } = await supabase.auth.getSession();
+    const { data: sessionData } = await backend.auth.getSession();
     const token = sessionData.session?.access_token;
     if (!token) {
       setError("Sign in required to run Strategy Agent.");

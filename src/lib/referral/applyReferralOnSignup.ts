@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import {
   clearStoredReferralCode,
   getStoredReferralCode,
@@ -10,7 +10,7 @@ export async function applyReferralOnSignup(): Promise<void> {
   if (!code) return;
 
   try {
-    const { data, error } = await supabase.functions.invoke("record-referral", {
+    const { data, error } = await backend.functions.invoke("record-referral", {
       body: { referral_code: code },
     });
     if (!error && data?.ok) {

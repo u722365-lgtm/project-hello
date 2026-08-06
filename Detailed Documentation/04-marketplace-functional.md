@@ -10,7 +10,7 @@ Before this work, the marketplace was **partially real**:
 
 | Worked | Did not work |
 |--------|----------------|
-| Browse catalog (8 agents in prod Supabase) | Runnable config not wired to chat |
+| Browse catalog (8 agents in prod ShadowTalk backend) | Runnable config not wired to chat |
 | Install / uninstall (`user_installed_agents`) | Installed agents ignored in workspace |
 | Sign-in gate for install | “Added to workspace” toast was misleading |
 | | Download count only bumped in UI, not DB |
@@ -51,7 +51,7 @@ Configs live in:
 
 ### Database migration
 
-**File:** `supabase/migrations/20260530120000_marketplace_agent_runtime.sql`
+**File:** `backend/migrations/20260530120000_marketplace_agent_runtime.sql`
 
 - Adds `agent_config` JSONB on marketplace agents table.
 - Seeds runtime JSON for catalog agents.
@@ -64,7 +64,7 @@ New/updated behaviors:
 - **`runAgent(agent)`** — Install if needed → navigate to chat with `?agent=<id>`.
 - **`runAgent` for scripts category** — `openInIde()` with `ideScript` template.
 - **Pro gating** where applicable.
-- **`getAuthUser()` guard** — Safe when Supabase auth mock lacks `getUser` in tests.
+- **`getAuthUser()` guard** — Safe when ShadowTalk backend auth mock lacks `getUser` in tests.
 
 ### UI
 
@@ -103,7 +103,7 @@ New/updated behaviors:
 1. Sign in → Marketplace → Install → Run → confirm chat tone matches agent (e.g. legal, fitness).
 2. Confirm starter prompt chips appear when configured.
 3. Script agent → lands on `/ide` with correct language/file.
-4. Apply migration on Supabase staging; confirm download count increments via RPC.
+4. Apply migration on ShadowTalk backend staging; confirm download count increments via RPC.
 5. Tests: `npx vitest run src/lib/marketplace/resolveAgentConfig.test.ts`
 
 ## Tests fixed during implementation

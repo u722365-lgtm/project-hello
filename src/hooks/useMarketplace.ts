@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { useToast } from "@/hooks/use-toast";
 import type { InstalledMarketplaceAgent, MarketplaceAgent } from "@/lib/marketplace/types";
 import { resolveAgentRuntime, agentRequiresPro } from "@/lib/marketplace/resolveAgentConfig";
@@ -10,7 +10,7 @@ export type { MarketplaceAgent, InstalledMarketplaceAgent };
 
 async function incrementDownload(agentId: string) {
   try {
-    await (supabase.rpc as unknown as (fn: string, args: Record<string, unknown>) => Promise<unknown>)("increment_marketplace_download", { p_agent_id: agentId });
+    await (backend.rpc as unknown as (fn: string, args: Record<string, unknown>) => Promise<unknown>)("increment_marketplace_download", { p_agent_id: agentId });
   } catch {
     /* RPC may be unavailable until migration is applied */
   }
@@ -18,8 +18,8 @@ async function incrementDownload(agentId: string) {
 
 async function getAuthUser() {
   try {
-    if (typeof supabase.auth?.getUser !== "function") return null;
-    const { data } = await supabase.auth.getUser();
+    if (typeof backend.auth?.getUser !== "function") return null;
+    const { data } = await backend.auth.getUser();
     return data.user;
   } catch {
     return null;
@@ -36,7 +36,7 @@ export const useMarketplace = () => {
 
   const fetchAgents = async () => {
     setLoading(true);
-    const { data, error } = await supabase
+    const { data, error } = await backend
       .from("marketplace_agents")
       .select("*")
       .eq("is_active", true)
@@ -58,7 +58,7 @@ export const useMarketplace = () => {
       return;
     }
 
-    const { data: links } = await supabase
+    const { data: links } = await backend
       .from("user_installed_agents")
       .select("agent_id, installed_at")
       .eq("user_id", user.id);
@@ -72,7 +72,7 @@ export const useMarketplace = () => {
     const ids = links.map((d) => d.agent_id);
     setInstalledIds(new Set(ids));
 
-    const { data: agentRows } = await supabase
+    const { data: agentRows } = await backend
       .from("marketplace_agents")
       .select("*")
       .in("id", ids);
@@ -97,7 +97,7 @@ export const useMarketplace = () => {
     }
 
     setInstallingId(agentId);
-    const { error } = await supabase.from("user_installed_agents").insert({
+    const { error } = await backend.from("user_installed_agents").insert({
       user_id: user.id,
       agent_id: agentId,
     });
@@ -129,7 +129,7 @@ export const useMarketplace = () => {
     if (!user) return;
 
     setInstallingId(agentId);
-    const { error } = await supabase
+    const { error } = await backend
       .from("user_installed_agents")
       .delete()
       .eq("user_id", user.id)

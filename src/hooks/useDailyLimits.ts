@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { DAILY_LIMITS } from '@/lib/monetization';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 
 type ActionType = keyof typeof DAILY_LIMITS.free;
 
@@ -51,7 +51,7 @@ export function useDailyLimits() {
 
       if (user) {
         try {
-          const { data } = await supabase
+          const { data } = await backend
             .from('daily_usage')
             .select('*')
             .eq('user_id', user.id)
@@ -77,7 +77,7 @@ export function useDailyLimits() {
             const isToday = fresh.lastResetDate === today;
             const usageToSave = isToday ? fresh : getDefaultUsage();
 
-            await supabase.from('daily_usage').upsert({
+            await backend.from('daily_usage').upsert({
               user_id: user.id,
               usage_date: today,
               messages: usageToSave.messages,
@@ -165,7 +165,7 @@ export function useDailyLimits() {
       if (user) {
         const dbColumn = LOCAL_TO_DB[action];
         if (dbColumn) {
-          supabase
+          backend
             .from('daily_usage')
             .upsert({
               user_id: user.id,

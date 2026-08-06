@@ -1,5 +1,5 @@
 import { buildChatRequestBody } from "@/lib/chatRequest";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import type { PresentationData } from "@/components/presentation/types";
 import type { ThemeKey } from "@/components/presentation/types";
 import { THEMES as THEME_MAP } from "@/components/presentation/types";
@@ -50,7 +50,7 @@ export async function generateKimiPresentation(
 ): Promise<PresentationData> {
   const { topic, slideCount = 10, style = "corporate", mode = "adaptive", additionalContext, sourceDocument } = options;
 
-  const { data, error } = await supabase.functions.invoke("generate-presentation", {
+  const { data, error } = await backend.functions.invoke("generate-presentation", {
     body: buildChatRequestBody({
       topic,
       slideCount,

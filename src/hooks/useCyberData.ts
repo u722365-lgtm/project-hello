@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 
 // ── Incidents (War Room) ──────────────────────────────────
 
@@ -29,7 +29,7 @@ export function useIncidents() {
   return useQuery({
     queryKey: ["cyber-incidents"],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data } = await backend
         .from("cyber_incidents")
         .select("*")
         .order("created_at", { ascending: false });
@@ -43,7 +43,7 @@ export function useIncidentEvents(incidentId: string | null) {
     queryKey: ["cyber-incident-events", incidentId],
     enabled: !!incidentId,
     queryFn: async () => {
-      const { data } = await supabase
+      const { data } = await backend
         .from("cyber_incident_events")
         .select("*")
         .eq("incident_id", incidentId!)
@@ -57,9 +57,9 @@ export function useCreateIncident() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (incident: { title: string; severity: string }) => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await backend.auth.getUser();
       if (!user) throw new Error("Sign in required");
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from("cyber_incidents")
         .insert({ ...incident, user_id: user.id })
         .select()
@@ -81,9 +81,9 @@ export function useAddIncidentEvent() {
       severity: string;
       mitre_tactic?: string;
     }) => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await backend.auth.getUser();
       if (!user) throw new Error("Sign in required");
-      const { error } = await supabase
+      const { error } = await backend
         .from("cyber_incident_events")
         .insert({ ...event, user_id: user.id });
       if (error) throw error;
@@ -113,7 +113,7 @@ export function useResearchProjects() {
   return useQuery({
     queryKey: ["cyber-research-projects"],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data } = await backend
         .from("cyber_research_projects")
         .select("*")
         .order("created_at", { ascending: false });
@@ -134,9 +134,9 @@ export function useCreateResearchProject() {
       progress?: number;
       notes?: string;
     }) => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await backend.auth.getUser();
       if (!user) throw new Error("Sign in required");
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from("cyber_research_projects")
         .insert({ ...project, user_id: user.id })
         .select()
@@ -152,7 +152,7 @@ export function useUpdateResearchProject() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, ...updates }: { id: string; status?: string; progress?: number; notes?: string }) => {
-      const { error } = await supabase
+      const { error } = await backend
         .from("cyber_research_projects")
         .update({ ...updates, updated_at: new Date().toISOString() })
         .eq("id", id);
@@ -167,7 +167,7 @@ export function useUpdateResearchProject() {
 export function useHeaderAnalysis() {
   return useMutation({
     mutationFn: async (url: string) => {
-      const { data, error } = await supabase.functions.invoke("website-security-scan", {
+      const { data, error } = await backend.functions.invoke("website-security-scan", {
         body: { url, scanDepth: "standard" },
       });
       if (error) throw error;
@@ -183,9 +183,9 @@ export function useCyberStats() {
     queryKey: ["cyber-hero-stats"],
     queryFn: async () => {
       const [cveRes, actorRes, scanRes] = await Promise.all([
-        supabase.from("threat_intel_cves").select("id", { count: "exact", head: true }),
-        supabase.from("threat_actors").select("id", { count: "exact", head: true }),
-        supabase.from("cyber_scan_results").select("id", { count: "exact", head: true }),
+        backend.from("threat_intel_cves").select("id", { count: "exact", head: true }),
+        backend.from("threat_actors").select("id", { count: "exact", head: true }),
+        backend.from("cyber_scan_results").select("id", { count: "exact", head: true }),
       ]);
       return {
         cveCount: cveRes.count || 0,

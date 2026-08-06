@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { normalizePlanType, planDisplayName, PKR_MONTHLY, resolvePlanAmountUsd, type PaidPlanId } from "./planPricing";
 import { processManualPaymentAutomation } from "./paymentInvoice";
 
@@ -30,7 +30,7 @@ export interface SubmitManualPaymentResult {
 export async function submitManualPayment(
   input: SubmitManualPaymentInput,
 ): Promise<SubmitManualPaymentResult> {
-  const { data: auth } = await supabase.auth.getUser();
+  const { data: auth } = await backend.auth.getUser();
   const user = auth.user;
   if (!user?.email) {
     return { ok: false, error: "Sign in to submit payment proof." };
@@ -40,7 +40,7 @@ export async function submitManualPayment(
   if (input.receiptFile) {
     const ext = input.receiptFile.name.split(".").pop() ?? "jpg";
     const path = `${user.id}/${Date.now()}-receipt.${ext}`;
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await backend.storage
       .from("payment-receipts")
       .upload(path, input.receiptFile, { upsert: false });
     if (uploadError) {
@@ -51,7 +51,7 @@ export async function submitManualPayment(
 
   const planType = normalizePlanType(input.planKey);
 
-  const { data, error } = await supabase
+  const { data, error } = await backend
     .from("manual_payments")
     .insert({
       email: user.email,

@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 
 export interface VaultDocument {
   id: string;
@@ -166,10 +166,10 @@ export const useKnowledgeVault = () => {
 
       // Sync metadata to knowledge_entries table for cloud persistence
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user } } = await backend.auth.getUser();
         if (user) {
           for (const doc of newDocs) {
-            await supabase.from('knowledge_entries').insert({
+            await backend.from('knowledge_entries').insert({
               user_id: user.id,
               title: doc.name,
               content: doc.content.slice(0, 10000),

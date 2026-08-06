@@ -13,7 +13,7 @@ export default tseslint.config(
       "My-Presentations/**",
       "NED-UNI-NIC-Submission/**",
       "electron/**",
-      "supabase/functions/**",
+      "backend/functions/**",
     ],
   },
   {

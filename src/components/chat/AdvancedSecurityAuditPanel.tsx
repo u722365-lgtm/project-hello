@@ -69,7 +69,7 @@ import {
   Trash2
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import { useAuth } from '@/components/AuthProvider';
 
 // Types
@@ -185,7 +185,7 @@ const SECRET_PATTERNS: SecretPattern[] = [
   { name: 'Password in Code', pattern: /password['\"]?\s*[:=]\s*['\"][^'\"]{8,}['\"]/gi, severity: 'critical' },
   { name: 'Database URL', pattern: /(postgres|mysql|mongodb|redis):\/\/[^\s'"]+/gi, severity: 'critical' },
   { name: 'Bearer Token', pattern: /Bearer\s+[A-Za-z0-9-_.]+/g, severity: 'high' },
-  { name: 'Supabase Key', pattern: /eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+/g, severity: 'high' },
+  { name: 'ShadowTalk backend Key', pattern: /eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+/g, severity: 'high' },
   { name: 'Firebase Config', pattern: /apiKey:\s*['\"][A-Za-z0-9-_]+['\"]/g, severity: 'high' },
   { name: 'OpenAI Key', pattern: /sk-[A-Za-z0-9]{48}/g, severity: 'critical' },
   { name: 'Anthropic Key', pattern: /sk-ant-[A-Za-z0-9-_]{40,}/g, severity: 'critical' },
@@ -326,7 +326,7 @@ const AdvancedSecurityAuditPanel: React.FC<AdvancedSecurityAuditPanelProps> = ({
   const fetchHistoricalAudits = async () => {
     if (!user) return;
     
-    const { data, error } = await supabase
+    const { data, error } = await backend
       .from('security_audits')
       .select('*')
       .order('created_at', { ascending: false })
@@ -841,7 +841,7 @@ const AdvancedSecurityAuditPanel: React.FC<AdvancedSecurityAuditPanelProps> = ({
     const lowCount = vulns.filter(v => v.severity === 'low').length;
     const infoCount = vulns.filter(v => v.severity === 'info').length;
 
-    const { data: audit, error: auditError } = await supabase
+    const { data: audit, error: auditError } = await backend
       .from('security_audits')
       .insert({
         user_id: user.id,
@@ -884,13 +884,13 @@ const AdvancedSecurityAuditPanel: React.FC<AdvancedSecurityAuditPanelProps> = ({
         is_dependency: v.isDependency || false
       }));
 
-      await supabase.from('security_vulnerabilities').insert(vulnInserts);
+      await backend.from('security_vulnerabilities').insert(vulnInserts);
       fetchHistoricalAudits();
     }
   };
 
   const deleteAudit = async (auditId: string) => {
-    const { error } = await supabase
+    const { error } = await backend
       .from('security_audits')
       .delete()
       .eq('id', auditId);

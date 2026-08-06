@@ -20,7 +20,7 @@ import {
   type CustomAiProviderId,
 } from "@/lib/customApiKeys";
 import { toCustomAiProviderId, toServerProvider } from "@/lib/chatProviderBridge";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { useAuth } from "@/components/AuthProvider";
 import { useCustomApiKeys } from "@/hooks/useCustomApiKeys";
 
@@ -96,7 +96,7 @@ export function ByokProviderKeyDialog({ open, onOpenChange, provider, onSaved }:
         return;
       }
 
-      const { data, error } = await supabase.functions.invoke("test-custom-ai-key", {
+      const { data, error } = await backend.functions.invoke("test-custom-ai-key", {
         body: {
           provider: toCustomAiProviderId(byok) as CustomAiProviderId,
           apiKey: trimmed,

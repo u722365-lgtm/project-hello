@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import { privateRealtimeChannel } from '@/lib/realtimeChannel';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -104,12 +104,12 @@ export const RealTimeFeedback: React.FC = () => {
     loadStats();
 
     return () => {
-      supabase.removeChannel(channel);
+      backend.removeChannel(channel);
     };
   }, []);
 
   const loadInitialFeedback = async () => {
-    const { data, error } = await supabase
+    const { data, error } = await backend
       .from('feedback')
       .select('*')
       .order('created_at', { ascending: false })
@@ -124,7 +124,7 @@ export const RealTimeFeedback: React.FC = () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const { data, error } = await supabase
+    const { data, error } = await backend
       .from('feedback')
       .select('*')
       .gte('created_at', today.toISOString());
@@ -203,7 +203,7 @@ export const RealTimeFeedback: React.FC = () => {
   const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
 
   const handleQuickResolve = async (id: string) => {
-    const { error } = await supabase
+    const { error } = await backend
       .from('feedback')
       .update({ status: 'resolved' })
       .eq('id', id);

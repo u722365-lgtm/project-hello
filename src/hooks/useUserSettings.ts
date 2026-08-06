@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import { useAuth } from '@/components/AuthProvider';
 
 export function useUserSettings<T = any>(settingKey: string, defaultValue: T) {
@@ -22,7 +22,7 @@ export function useUserSettings<T = any>(settingKey: string, defaultValue: T) {
 
     const load = async () => {
       try {
-        const { data, error } = await supabase
+        const { data, error } = await backend
           .from('user_settings')
           .select('setting_value')
           .eq('user_id', user.id)
@@ -40,7 +40,7 @@ export function useUserSettings<T = any>(settingKey: string, defaultValue: T) {
             const parsed = JSON.parse(stored);
             setValue(parsed as T);
             // Save to DB
-            await supabase.from('user_settings').upsert({
+            await backend.from('user_settings').upsert({
               user_id: user.id,
               setting_key: settingKey,
               setting_value: parsed,
@@ -66,7 +66,7 @@ export function useUserSettings<T = any>(settingKey: string, defaultValue: T) {
 
     setIsSaving(true);
     try {
-      await supabase.from('user_settings').upsert({
+      await backend.from('user_settings').upsert({
         user_id: user.id,
         setting_key: settingKey,
         setting_value: newValue as any,

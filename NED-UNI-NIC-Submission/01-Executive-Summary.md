@@ -56,7 +56,7 @@ We are seeking incubation support from NED UNI NIC to:
 ## Team
 
 - **Founder/CEO & Lead Engineer** — Full-stack developer, AI/ML specialist
-- Building with: React, TypeScript, Supabase, WebGPU, Gemini AI, Edge Functions
+- Building with: React, TypeScript, ShadowTalk backend, WebGPU, Gemini AI, Edge Functions
 
 ---
 

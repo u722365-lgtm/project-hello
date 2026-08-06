@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/components/AuthProvider";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { privateRealtimeChannel } from "@/lib/realtimeChannel";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -37,7 +37,7 @@ interface Participant {
   joined_at: string;
 }
 
-const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
+const CHAT_URL = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`;
 
 const CollaborativeRoom = () => {
   const { roomId } = useParams<{ roomId: string }>();
@@ -121,9 +121,9 @@ const CollaborativeRoom = () => {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(messagesChannel);
-      supabase.removeChannel(participantsChannel);
-      supabase.removeChannel(documentChannel);
+      backend.removeChannel(messagesChannel);
+      backend.removeChannel(participantsChannel);
+      backend.removeChannel(documentChannel);
       if (documentUpdateTimeout.current) {
         clearTimeout(documentUpdateTimeout.current);
       }
@@ -138,7 +138,7 @@ const CollaborativeRoom = () => {
   const loadRoomData = async () => {
     if (!roomId) return;
     
-    const { data: room } = await supabase
+    const { data: room } = await backend
       .from('chat_rooms')
       .select('name, created_by')
       .eq('id', roomId)
@@ -149,7 +149,7 @@ const CollaborativeRoom = () => {
       setRoomCreatorId(room.created_by);
     }
     
-    const { data: msgs } = await supabase
+    const { data: msgs } = await backend
       .from('room_messages')
       .select('*')
       .eq('room_id', roomId)
@@ -164,7 +164,7 @@ const CollaborativeRoom = () => {
     if (!roomId) return;
     
     setDocumentLoading(true);
-    const { data } = await supabase
+    const { data } = await backend
       .from('room_documents')
       .select('content')
       .eq('room_id', roomId)
@@ -185,14 +185,14 @@ const CollaborativeRoom = () => {
     }
     
     documentUpdateTimeout.current = setTimeout(async () => {
-      const { data: existing } = await supabase
+      const { data: existing } = await backend
         .from('room_documents')
         .select('id')
         .eq('room_id', roomId)
         .maybeSingle();
       
       if (existing) {
-        await supabase
+        await backend
           .from('room_documents')
           .update({ 
             content, 
@@ -200,7 +200,7 @@ const CollaborativeRoom = () => {
           })
           .eq('room_id', roomId);
       } else {
-        await supabase
+        await backend
           .from('room_documents')
           .insert({ 
             room_id: roomId, 
@@ -219,7 +219,7 @@ const CollaborativeRoom = () => {
   const loadParticipants = async () => {
     if (!roomId) return;
     
-    const { data } = await supabase
+    const { data } = await backend
       .from('room_participants')
       .select('*')
       .eq('room_id', roomId);
@@ -232,7 +232,7 @@ const CollaborativeRoom = () => {
     
     const displayName = user.email?.split('@')[0] || 'Anonymous';
     
-    await supabase
+    await backend
       .from('room_participants')
       .upsert({
         room_id: roomId,
@@ -244,7 +244,7 @@ const CollaborativeRoom = () => {
   const leaveRoom = async () => {
     if (!user || !roomId) return;
     
-    await supabase
+    await backend
       .from('room_participants')
       .delete()
       .eq('room_id', roomId)
@@ -257,7 +257,7 @@ const CollaborativeRoom = () => {
     const displayName = user.email?.split('@')[0] || 'Anonymous';
     
     // Insert user message
-    const { error } = await supabase
+    const { error } = await backend
       .from('room_messages')
       .insert({
         room_id: roomId,
@@ -277,7 +277,7 @@ const CollaborativeRoom = () => {
     setIsLoading(true);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await backend.auth.getSession();
       
       const chatMessages = messages.slice(-10).map(m => ({
         role: m.role,
@@ -326,7 +326,7 @@ const CollaborativeRoom = () => {
       }
 
       if (assistantContent) {
-        await supabase
+        await backend
           .from('room_messages')
           .insert({
             room_id: roomId,

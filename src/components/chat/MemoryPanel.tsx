@@ -14,7 +14,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { useAuth } from "@/components/AuthProvider";
 
 interface Memory {
@@ -45,7 +45,7 @@ export const MemoryPanel = ({ onMemoryUpdate }: MemoryPanelProps) => {
     const loadMemories = async () => {
       setIsLoading(true);
       try {
-        const { data, error } = await supabase
+        const { data, error } = await backend
           .from('ai_memories')
           .select('*')
           .eq('user_id', user.id)
@@ -69,7 +69,7 @@ export const MemoryPanel = ({ onMemoryUpdate }: MemoryPanelProps) => {
             onMemoryUpdate?.(parsed);
             // Migrate to backend
             for (const m of parsed) {
-              await supabase.from('ai_memories').upsert({
+              await backend.from('ai_memories').upsert({
                 id: m.id,
                 user_id: user.id,
                 content: m.content,
@@ -116,7 +116,7 @@ export const MemoryPanel = ({ onMemoryUpdate }: MemoryPanelProps) => {
     setNewMemory("");
 
     // Sync to backend
-    await supabase.from('ai_memories').insert({
+    await backend.from('ai_memories').insert({
       id: memory.id,
       user_id: user.id,
       content: memory.content,
@@ -133,7 +133,7 @@ export const MemoryPanel = ({ onMemoryUpdate }: MemoryPanelProps) => {
 
     // Delete from backend
     if (user) {
-      await supabase.from('ai_memories').delete().eq('id', id).eq('user_id', user.id);
+      await backend.from('ai_memories').delete().eq('id', id).eq('user_id', user.id);
     }
 
     toast({ title: "Memory deleted" });
@@ -154,7 +154,7 @@ export const MemoryPanel = ({ onMemoryUpdate }: MemoryPanelProps) => {
 
     // Sync to backend
     if (user) {
-      await supabase.from('ai_memories').update({ content: editContent }).eq('id', id).eq('user_id', user.id);
+      await backend.from('ai_memories').update({ content: editContent }).eq('id', id).eq('user_id', user.id);
     }
 
     toast({ title: "Memory updated" });

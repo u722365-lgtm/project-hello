@@ -1,10 +1,10 @@
-import { supabase } from "@/integrations/supabase/client";
-import type { UserIdentity, Provider } from "@supabase/supabase-js";
+import { backend } from "@/integrations/local/client";
+import type { UserIdentity } from "@/lib/backend-types";
 
-export type AuthProvider = Extract<Provider, "google" | "apple" | "github" | "slack" | "notion">;
+export type AuthProvider = "google" | "apple" | "github" | "slack" | "notion";
 
 export async function getLinkedIdentities(): Promise<UserIdentity[]> {
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await backend.auth.getUser();
   return user?.identities ?? [];
 }
 
@@ -14,7 +14,7 @@ export function hasProvider(identities: UserIdentity[], provider: string): boole
 
 export async function linkAuthProvider(provider: AuthProvider): Promise<{ error?: string }> {
   try {
-    const { data, error } = await supabase.auth.linkIdentity({
+    const { data, error } = await backend.auth.linkIdentity({
       provider,
       options: {
         redirectTo: `${window.location.origin}/profile?tab=linked`,
@@ -35,7 +35,7 @@ export async function linkAuthProvider(provider: AuthProvider): Promise<{ error?
 }
 
 export async function unlinkAuthProvider(identity: UserIdentity): Promise<{ error?: string }> {
-  const { error } = await supabase.auth.unlinkIdentity(identity);
+  const { error } = await backend.auth.unlinkIdentity(identity);
   if (error) return { error: error.message };
   return {};
 }

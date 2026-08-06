@@ -4,7 +4,7 @@
  */
 
 import { useCallback, useRef, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { streamChatCompletion } from "@/lib/see/chatCompletion";
 
 export interface GlobalChatMessage {
@@ -34,8 +34,8 @@ export function useGlobalChat() {
     async (messages: GlobalChatMessage[], opts: GlobalChatOptions = {}): Promise<GlobalChatResponse> => {
       setIsLoading(true);
       try {
-        const { data } = await supabase.auth.getSession();
-        const token = data.session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+        const { data } = await backend.auth.getSession();
+        const token = data.session?.access_token || import.meta.env.VITE_API_KEY;
 
         const lastUser = [...messages].reverse().find((m) => m.role === "user");
         const prompt = [opts.systemPrompt, lastUser?.content].filter(Boolean).join("\n\n");

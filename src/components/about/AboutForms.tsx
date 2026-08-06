@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import {
   MessageCircle, Bug, Handshake, Rocket,
   Send, Loader2, CheckCircle2
@@ -60,7 +60,7 @@ const AboutForms = () => {
 
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("send-contact-email", {
+      const { data, error } = await backend.functions.invoke("send-contact-email", {
         body: {
           name: form.name.trim(),
           email: form.email.trim(),

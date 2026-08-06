@@ -1,6 +1,6 @@
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
+const API_URL = import.meta.env.VITE_API_BASE_URL as string;
 
 export interface PublishAnswerInput {
   prompt: string;
@@ -17,7 +17,7 @@ export interface PublishedAnswer {
 }
 
 export async function publishSharedAnswer(input: PublishAnswerInput): Promise<PublishedAnswer> {
-  const { data, error } = await supabase.functions.invoke("share-answer", { body: input });
+  const { data, error } = await backend.functions.invoke("share-answer", { body: input });
   if (error) throw new Error(error.message);
   if (!data?.ok || !data?.slug) throw new Error(data?.error ?? "Failed to publish");
   const slug: string = data.slug;
@@ -25,6 +25,6 @@ export async function publishSharedAnswer(input: PublishAnswerInput): Promise<Pu
   return {
     slug,
     url: `${base}/s/${slug}?utm_source=shared_answer&utm_medium=viral`,
-    ogImageUrl: `${SUPABASE_URL}/functions/v1/og-answer?slug=${slug}`,
+    ogImageUrl: `${API_URL}/functions/v1/og-answer?slug=${slug}`,
   };
 }

@@ -121,7 +121,7 @@ export const MultiModalFusion = ({
 
     // Process item using real AI via vision-analyze or chat
     try {
-      const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
+      const CHAT_URL = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`;
       
       let promptContent = `Analyze this ${item.type} input`;
       if (item.type === 'image' && item.data) {
@@ -138,7 +138,7 @@ export const MultiModalFusion = ({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`
+          Authorization: `Bearer ${import.meta.env.VITE_API_KEY}`
         },
         body: stringifyChatBody({
           messages: [{ role: "user", content: promptContent }],

@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { hasAnalyticsConsent } from "./consent";
 
 const LAST_FETCH_KEY = "shadowtalk_daily_insights_date";
@@ -9,14 +9,14 @@ export async function maybeFetchDailyInsights(userId: string): Promise<void> {
   const today = new Date().toISOString().split("T")[0];
   if (localStorage.getItem(LAST_FETCH_KEY) === today) return;
 
-  const { data: memories } = await supabase
+  const { data: memories } = await backend
     .from("ai_memories")
     .select("content")
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
     .limit(10);
 
-  const { data: recentMessages } = await supabase
+  const { data: recentMessages } = await backend
     .from("messages")
     .select("content, role")
     .eq("user_id", userId)
@@ -28,8 +28,8 @@ export async function maybeFetchDailyInsights(userId: string): Promise<void> {
     .map((m) => String(m.content).slice(0, 80))
     .slice(0, 5);
 
-  const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-insights`;
-  const { data: sessionData } = await supabase.auth.getSession();
+  const url = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/generate-insights`;
+  const { data: sessionData } = await backend.auth.getSession();
   const token = sessionData.session?.access_token;
   if (!token) return;
 
@@ -52,7 +52,7 @@ export async function maybeFetchDailyInsights(userId: string): Promise<void> {
   const insights = payload.insights || [];
 
   for (const ins of insights.slice(0, 3)) {
-    await supabase.from("daily_insights").insert({
+    await backend.from("daily_insights").insert({
       user_id: userId,
       title: ins.title?.slice(0, 120) || "Insight",
       content: ins.content?.slice(0, 2000) || "",

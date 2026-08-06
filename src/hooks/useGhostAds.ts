@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { openDB } from 'idb';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 
 interface GhostAd {
   id: string;
@@ -56,7 +56,7 @@ export const useGhostAds = () => {
   // Cache sponsor data locally for offline use
   const cacheSponsors = useCallback(async () => {
     try {
-      const { data } = await supabase
+      const { data } = await backend
         .from('sponsor_partners')
         .select('*')
         .eq('is_active', true)
@@ -166,7 +166,7 @@ export const useGhostAds = () => {
     // Sync immediately if online
     if (navigator.onLine) {
       try {
-        await supabase.from('affiliate_clicks').insert({
+        await backend.from('affiliate_clicks').insert({
           partner_id: partnerId,
           session_id: crypto.randomUUID(),
           converted: clicked,
@@ -200,7 +200,7 @@ export const useGhostAds = () => {
     let synced = 0;
     for (const impression of unsynced) {
       try {
-        await supabase.from('affiliate_clicks').insert({
+        await backend.from('affiliate_clicks').insert({
           partner_id: impression.partnerId,
           session_id: impression.adId,
           converted: impression.clicked,

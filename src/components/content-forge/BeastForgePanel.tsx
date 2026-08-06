@@ -10,7 +10,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import GenerationProgress, { type GenerationPhase } from "@/components/presentation/GenerationProgress";
 import {
   KIMI_DOCUMENT_TYPES,
@@ -67,7 +67,7 @@ export function BeastForgePanel({ initialTopic = "", onComplete }: BeastForgePan
     setSlideCountResult(0);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await backend.auth.getSession();
       const { content: doc } = await runUnifiedDocumentPipeline({
         topic,
         docType,

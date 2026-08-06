@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { hasAnalyticsConsent } from "./consent";
 import type { LearnedProfile } from "./types";
 
@@ -30,7 +30,7 @@ export async function syncProfileToMemories(
 
   for (const hint of hints) {
     const content = `${MEMORY_PREFIX}${hint.content}`;
-    const { data: dupRows } = await supabase
+    const { data: dupRows } = await backend
       .from("ai_memories")
       .select("id")
       .eq("user_id", userId)
@@ -39,7 +39,7 @@ export async function syncProfileToMemories(
       .limit(1);
     if (dupRows && dupRows.length > 0) continue;
 
-    await supabase.from("ai_memories").insert({
+    await backend.from("ai_memories").insert({
       user_id: userId,
       content,
       category: hint.category,

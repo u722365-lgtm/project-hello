@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { useAuth } from "@/components/AuthProvider";
 import { motion } from "framer-motion";
 import {
@@ -50,7 +50,7 @@ const ReferralProgram = () => {
   const loadReferralData = async () => {
     if (!user) return;
     try {
-      let { data: codeData, error: codeError } = await supabase
+      let { data: codeData, error: codeError } = await backend
         .from("user_referral_codes")
         .select("*")
         .eq("user_id", user.id)
@@ -58,7 +58,7 @@ const ReferralProgram = () => {
 
       if (!codeData && !codeError) {
         const newCode = `ST${user.id.slice(0, 8).toUpperCase()}`;
-        const { data: newCodeData } = await supabase
+        const { data: newCodeData } = await backend
           .from("user_referral_codes")
           .insert({ user_id: user.id, referral_code: newCode })
           .select()
@@ -75,7 +75,7 @@ const ReferralProgram = () => {
         });
       }
 
-      const { data: referralData } = await supabase
+      const { data: referralData } = await backend
         .from("referrals")
         .select("id, referred_email_masked, status, commission_amount, created_at, converted_at")
         .eq("referrer_id", user.id)

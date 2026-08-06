@@ -1,4 +1,4 @@
-/** Client mirror of supabase/functions/_shared/shadowspectre.ts — keep in sync. */
+/** Client mirror of backend/functions/_shared/shadowspectre.ts — keep in sync. */
 
 import type { AuthorizationContext, ShadowSpectreHead } from "./types";
 

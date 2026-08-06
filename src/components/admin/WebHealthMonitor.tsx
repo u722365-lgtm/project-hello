@@ -17,7 +17,7 @@ import {
   HardDrive
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 
@@ -54,10 +54,10 @@ export const WebHealthMonitor: React.FC = () => {
     setIsChecking(true);
     const healthChecks: HealthStatus[] = [];
 
-    // Check Supabase Database
+    // Check ShadowTalk backend Database
     const dbStart = performance.now();
     try {
-      const { error } = await supabase.from('profiles').select('id').limit(1);
+      const { error } = await backend.from('profiles').select('id').limit(1);
       const dbLatency = Math.round(performance.now() - dbStart);
       healthChecks.push({
         name: 'Database',
@@ -78,7 +78,7 @@ export const WebHealthMonitor: React.FC = () => {
     // Check Auth Service
     const authStart = performance.now();
     try {
-      const { error } = await supabase.auth.getSession();
+      const { error } = await backend.auth.getSession();
       const authLatency = Math.round(performance.now() - authStart);
       healthChecks.push({
         name: 'Authentication',
@@ -99,7 +99,7 @@ export const WebHealthMonitor: React.FC = () => {
     // Check Edge Functions
     const edgeStart = performance.now();
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/functions/v1/`, {
         method: 'OPTIONS'
       });
       const edgeLatency = Math.round(performance.now() - edgeStart);

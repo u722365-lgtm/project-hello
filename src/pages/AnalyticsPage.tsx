@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/components/AuthProvider";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -69,10 +69,10 @@ const AnalyticsPage = ({ embedded = false }: { embedded?: boolean }) => {
         const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString();
 
         const [messagesRes, usageRes, dailyRes, recentMsgsRes] = await Promise.all([
-          supabase.from("messages").select("id", { count: "exact", head: true }).eq("user_id", user.id),
-          supabase.from("usage_analytics").select("tokens_used, feature_used, created_at").eq("user_id", user.id),
-          supabase.from("daily_usage").select("usage_date, messages, code_generations, image_generations, web_searches, deep_research").eq("user_id", user.id).gte("usage_date", sevenDaysAgo.slice(0, 10)).order("usage_date", { ascending: true }),
-          supabase.from("messages").select("created_at, personality").eq("user_id", user.id).gte("created_at", sevenDaysAgo).order("created_at", { ascending: true }),
+          backend.from("messages").select("id", { count: "exact", head: true }).eq("user_id", user.id),
+          backend.from("usage_analytics").select("tokens_used, feature_used, created_at").eq("user_id", user.id),
+          backend.from("daily_usage").select("usage_date, messages, code_generations, image_generations, web_searches, deep_research").eq("user_id", user.id).gte("usage_date", sevenDaysAgo.slice(0, 10)).order("usage_date", { ascending: true }),
+          backend.from("messages").select("created_at, personality").eq("user_id", user.id).gte("created_at", sevenDaysAgo).order("created_at", { ascending: true }),
         ]);
 
         const totalTokens = usageRes.data?.reduce((sum, item) => sum + (item.tokens_used || 0), 0) || 0;

@@ -21,7 +21,7 @@ import {
   Users,
   Route
 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import { format, subDays } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -45,7 +45,7 @@ export const AnalyticsExport: React.FC = () => {
 
       switch (exportType) {
         case 'geographic':
-          const { data: geoData, error: geoError } = await supabase
+          const { data: geoData, error: geoError } = await backend
             .from('user_locations')
             .select('*')
             .gte('created_at', dateRange.from.toISOString())
@@ -58,7 +58,7 @@ export const AnalyticsExport: React.FC = () => {
           break;
 
         case 'timezone':
-          const { data: tzData, error: tzError } = await supabase
+          const { data: tzData, error: tzError } = await backend
             .from('user_locations')
             .select('timezone, country, country_code, last_seen_at')
             .gte('created_at', dateRange.from.toISOString())
@@ -86,7 +86,7 @@ export const AnalyticsExport: React.FC = () => {
           break;
 
         case 'journeys':
-          const { data: journeyData, error: journeyError } = await supabase
+          const { data: journeyData, error: journeyError } = await backend
             .from('user_journeys')
             .select('*')
             .gte('created_at', dateRange.from.toISOString())
@@ -99,7 +99,7 @@ export const AnalyticsExport: React.FC = () => {
           break;
 
         case 'usage':
-          const { data: usageData, error: usageError } = await supabase
+          const { data: usageData, error: usageError } = await backend
             .from('usage_analytics')
             .select('*')
             .gte('created_at', dateRange.from.toISOString())

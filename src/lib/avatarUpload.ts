@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 
 const MAX_BYTES = 5 * 1024 * 1024;
 const ALLOWED = ["image/jpeg", "image/png", "image/webp", "image/gif"];
@@ -17,7 +17,7 @@ export async function uploadProfileAvatar(
   const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
   const path = `${userId}/avatar.${ext}`;
 
-  const { error: uploadError } = await supabase.storage.from("avatars").upload(path, file, {
+  const { error: uploadError } = await backend.storage.from("avatars").upload(path, file, {
     upsert: true,
     contentType: file.type,
   });
@@ -26,10 +26,10 @@ export async function uploadProfileAvatar(
     return { error: uploadError.message };
   }
 
-  const { data } = supabase.storage.from("avatars").getPublicUrl(path);
+  const { data } = backend.storage.from("avatars").getPublicUrl(path);
   const publicUrl = `${data.publicUrl}?t=${Date.now()}`;
 
-  const { error: profileError } = await supabase
+  const { error: profileError } = await backend
     .from("profiles")
     .update({ avatar_url: publicUrl, updated_at: new Date().toISOString() })
     .eq("id", userId);

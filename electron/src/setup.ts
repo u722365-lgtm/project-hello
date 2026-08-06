@@ -227,14 +227,14 @@ function isDesktopAppOrigin(origin: string, customScheme: string): boolean {
   );
 }
 
-/** Track shadowtalk:// Origin for Supabase responses (production edge may return the web ACAO). */
-function setupDesktopSupabaseCors(customScheme: string): Map<number, string> {
+/** Track shadowtalk:// Origin for ShadowTalk backend responses (production edge may return the web ACAO). */
+function setupDesktopApiCors(customScheme: string): Map<number, string> {
   const pendingOrigins = new Map<number, string>();
-  const supabaseFilter = { urls: ['https://*.supabase.co/*', 'https://*.supabase.in/*'] };
+  const apiFilter = { urls: ['https://*.shadowtalk-ai.com/*', 'https://*.shadowtalk-ai.com/*'] };
 
   const fallbackOrigin = `${customScheme}://localhost`;
 
-  session.defaultSession.webRequest.onBeforeSendHeaders(supabaseFilter, (details, callback) => {
+  session.defaultSession.webRequest.onBeforeSendHeaders(apiFilter, (details, callback) => {
     const origin = details.requestHeaders.Origin ?? details.requestHeaders.origin;
     if (origin && isDesktopAppOrigin(origin, customScheme)) {
       pendingOrigins.set(details.id, origin);
@@ -254,7 +254,7 @@ function setupDesktopSupabaseCors(customScheme: string): Map<number, string> {
 
 // Set a CSP up for our application based on the custom scheme
 export function setupContentSecurityPolicy(customScheme: string): void {
-  const pendingOrigins = setupDesktopSupabaseCors(customScheme);
+  const pendingOrigins = setupDesktopApiCors(customScheme);
 
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
     const responseHeaders = { ...details.responseHeaders };
@@ -268,8 +268,8 @@ export function setupContentSecurityPolicy(customScheme: string): void {
 
     responseHeaders['Content-Security-Policy'] = [
       electronIsDev
-        ? `default-src ${customScheme}://* 'unsafe-inline' devtools://* 'unsafe-eval' data: blob:; connect-src ${customScheme}://* https: wss: http://localhost:* http://127.0.0.1:* https://huggingface.co https://*.hf.co https://cdn.jsdelivr.net https://raw.githubusercontent.com https://*.supabase.co; img-src ${customScheme}://* https: data: blob:; media-src ${customScheme}://* https: blob:;`
-        : `default-src ${customScheme}://* 'unsafe-inline' 'unsafe-eval' data: blob:; connect-src ${customScheme}://* https: wss: http://127.0.0.1:* http://localhost:* https://huggingface.co https://*.hf.co https://cdn.jsdelivr.net https://raw.githubusercontent.com https://*.supabase.co wss://*.supabase.co; img-src ${customScheme}://* https: data: blob:; media-src ${customScheme}://* https: blob:; worker-src ${customScheme}://* blob:;`,
+        ? `default-src ${customScheme}://* 'unsafe-inline' devtools://* 'unsafe-eval' data: blob:; connect-src ${customScheme}://* https: wss: http://localhost:* http://127.0.0.1:* https://huggingface.co https://*.hf.co https://cdn.jsdelivr.net https://raw.githubusercontent.com https://*.backend.co; img-src ${customScheme}://* https: data: blob:; media-src ${customScheme}://* https: blob:;`
+        : `default-src ${customScheme}://* 'unsafe-inline' 'unsafe-eval' data: blob:; connect-src ${customScheme}://* https: wss: http://127.0.0.1:* http://localhost:* https://huggingface.co https://*.hf.co https://cdn.jsdelivr.net https://raw.githubusercontent.com https://*.backend.co wss://*.backend.co; img-src ${customScheme}://* https: data: blob:; media-src ${customScheme}://* https: blob:; worker-src ${customScheme}://* blob:;`,
     ];
 
     callback({ responseHeaders });

@@ -1,7 +1,7 @@
 import { capture, flush } from "@/lib/selfHealing/errorCapture";
 import { isSelfHealRemoteEnabled } from "@/lib/selfHealing/selfHealConfig";
 import { startAutoRecoverySync } from "@/lib/selfHealing/autoRecover";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import {
   getHealClientId,
   isShadowHealEngineEnabled,
@@ -23,8 +23,8 @@ async function sendHeartbeat(
 ): Promise<void> {
   if (!isSelfHealRemoteEnabled()) return;
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    await (supabase as unknown as { from: (t: string) => { insert: (v: unknown) => Promise<unknown> } }).from("shadowtalk_heal_heartbeats").insert({
+    const { data: { user } } = await backend.auth.getUser();
+    await (backend as unknown as { from: (t: string) => { insert: (v: unknown) => Promise<unknown> } }).from("shadowtalk_heal_heartbeats").insert({
       client_id: getHealClientId(),
       user_id: user?.id ?? null,
       route,
@@ -37,7 +37,7 @@ async function sendHeartbeat(
   }
 
   try {
-    await supabase.functions.invoke("shadow-heal-watchdog", {
+    await backend.functions.invoke("shadow-heal-watchdog", {
       body: {
         client_id: getHealClientId(),
         route,

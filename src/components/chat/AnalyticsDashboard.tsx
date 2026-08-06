@@ -15,7 +15,7 @@ import {
   X
 } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 
 interface AnalyticsDashboardProps {
   onClose: () => void;
@@ -77,7 +77,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         const sevenDaysAgo = new Date();
         sevenDaysAgo.setDate(now.getDate() - 6);
 
-        const { data, error } = await supabase
+        const { data, error } = await backend
           .from('usage_analytics')
           .select('created_at, query_category, tokens_used')
           .eq('user_id', user.id)

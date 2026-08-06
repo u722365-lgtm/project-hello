@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { BarChart3, MessageSquare, Image, Code, Globe, TrendingUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { useAuth } from "@/components/AuthProvider";
 import {
   BarChart,
@@ -46,7 +46,7 @@ const UsageAnalytics = () => {
 
     try {
       // Get usage analytics
-      const { data: analyticsData } = await supabase
+      const { data: analyticsData } = await backend
         .from('usage_analytics')
         .select('*')
         .eq('user_id', user.id)

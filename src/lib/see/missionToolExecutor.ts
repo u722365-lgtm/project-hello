@@ -1,6 +1,6 @@
 import { executeLocalMissionTool } from "@/lib/desktop/localToolExecutor";
 import { shouldUseLocalAgent } from "@/lib/desktop/sovereignAgentMode";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { streamChatCompletion } from "./chatCompletion";
 import type { MissionPlanStep, MissionStepProof, MissionToolName, ToolExecutionResult } from "./types";
 
@@ -73,7 +73,7 @@ export async function executeMissionTool(
       case "verification":
       case "deep_research": {
         const query = inferQuery(step, goal);
-        const { data, error } = await supabase.functions.invoke("web-search", {
+        const { data, error } = await backend.functions.invoke("web-search", {
           body: { query, numResults: tool === "deep_research" ? 8 : 5 },
         });
         if (error) throw new Error(error.message);
@@ -128,7 +128,7 @@ export async function executeMissionTool(
           );
         }
 
-        const { data, error } = await supabase.functions.invoke("firecrawl-scrape", {
+        const { data, error } = await backend.functions.invoke("firecrawl-scrape", {
           body: { url, options: { formats: ["markdown"], onlyMainContent: true } },
         });
         if (error) throw new Error(error.message);
@@ -154,7 +154,7 @@ export async function executeMissionTool(
         if (!url) {
           return { success: false, output: "Security audit requires a target URL.", error: "NO_URL" };
         }
-        const { data, error } = await supabase.functions.invoke("website-security-scan", {
+        const { data, error } = await backend.functions.invoke("website-security-scan", {
           body: { url },
         });
         if (error) throw new Error(error.message);
@@ -186,7 +186,7 @@ export async function executeMissionTool(
         }
 
         const params = step.tool_params || {};
-        const { data, error } = await supabase.functions.invoke("shadow-agent-tools", {
+        const { data, error } = await backend.functions.invoke("shadow-agent-tools", {
           body: {
             tool: "send_email",
             params: {
@@ -217,7 +217,7 @@ export async function executeMissionTool(
               : tool === "get_contacts"
                 ? "get_contacts"
                 : "create_event";
-        const { data, error } = await supabase.functions.invoke("shadow-agent-tools", {
+        const { data, error } = await backend.functions.invoke("shadow-agent-tools", {
           body: { tool: agentTool, params: step.tool_params || {} },
         });
         if (error) throw new Error(error.message);

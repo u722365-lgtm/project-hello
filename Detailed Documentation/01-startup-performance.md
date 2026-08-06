@@ -12,7 +12,7 @@ Users experienced **device and app lag** when opening ShadowTalk—especially on
 
 Work was split into:
 
-1. **Shared platform metrics** — Centralized loading of public stats so multiple components do not each fetch Supabase independently on boot.
+1. **Shared platform metrics** — Centralized loading of public stats so multiple components do not each fetch ShadowTalk backend independently on boot.
 2. **Faster boot path** — Reduce synchronous work before the user can navigate or type in chat.
 3. **Lazy landing** — Defer non-critical landing sections until after first paint.
 4. **Deferred chrome** — Sidebars, toolbars, and secondary panels mount after the shell is usable.
@@ -31,7 +31,7 @@ Work was split into:
 ## Design principles
 
 - **Nothing critical waits on WebGPU** — Probing runs async; chat can fall back to cloud immediately.
-- **One metrics fetch** — Avoid N+1 Supabase calls on the marketing home page.
+- **One metrics fetch** — Avoid N+1 ShadowTalk backend calls on the marketing home page.
 - **Progressive enhancement** — Shell first, polish second.
 
 ## How to verify

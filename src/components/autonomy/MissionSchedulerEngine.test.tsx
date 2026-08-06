@@ -17,8 +17,8 @@ vi.mock("@/hooks/useMissionExecutor", () => ({
   useMissionExecutor: () => ({ executeMission }),
 }));
 
-vi.mock("@/integrations/supabase/client", () => ({
-  supabase: {
+vi.mock("@/integrations/local/client", () => ({
+  backend: {
     from: (...args: unknown[]) => fromMock(...args),
   },
 }));

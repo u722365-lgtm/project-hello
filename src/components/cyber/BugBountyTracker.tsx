@@ -14,7 +14,7 @@ import {
   ExternalLink, Bug, Award, BarChart3, CheckCircle2, XCircle, AlertTriangle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -49,7 +49,7 @@ export default function BugBountyTracker() {
   const { data: programs = [] } = useQuery({
     queryKey: ["bug-bounty-programs"],
     queryFn: async () => {
-      const { data } = await supabase.from("bug_bounty_programs").select("*").order("created_at", { ascending: false });
+      const { data } = await backend.from("bug_bounty_programs").select("*").order("created_at", { ascending: false });
       return data || [];
     },
   });
@@ -57,16 +57,16 @@ export default function BugBountyTracker() {
   const { data: submissions = [] } = useQuery({
     queryKey: ["bug-bounty-submissions"],
     queryFn: async () => {
-      const { data } = await supabase.from("bug_bounty_submissions").select("*").order("submitted_at", { ascending: false });
+      const { data } = await backend.from("bug_bounty_submissions").select("*").order("submitted_at", { ascending: false });
       return data || [];
     },
   });
 
   const addProgram = useMutation({
     mutationFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await backend.auth.getUser();
       if (!user) throw new Error("Sign in required");
-      const { error } = await supabase.from("bug_bounty_programs").insert({ ...newProgram, user_id: user.id });
+      const { error } = await backend.from("bug_bounty_programs").insert({ ...newProgram, user_id: user.id });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -80,9 +80,9 @@ export default function BugBountyTracker() {
 
   const addSubmission = useMutation({
     mutationFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await backend.auth.getUser();
       if (!user) throw new Error("Sign in required");
-      const { error } = await supabase.from("bug_bounty_submissions").insert({ ...newSubmission, user_id: user.id, program_id: newSubmission.program_id || null });
+      const { error } = await backend.from("bug_bounty_submissions").insert({ ...newSubmission, user_id: user.id, program_id: newSubmission.program_id || null });
       if (error) throw error;
     },
     onSuccess: () => {

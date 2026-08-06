@@ -149,7 +149,7 @@ export const useOfflineSync = () => {
           message.status = 'syncing';
           await db.put(QUEUE_STORE, message);
 
-          // Simulate sync (in real implementation, this would call Supabase)
+          // Simulate sync (in real implementation, this would call ShadowTalk backend)
           // For now, we'll just mark them as synced after a brief delay
           await new Promise(resolve => setTimeout(resolve, 100));
 

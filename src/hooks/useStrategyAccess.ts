@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import { useAuth } from '@/components/AuthProvider';
 
 export function useStrategyAccess() {
@@ -20,7 +20,7 @@ export function useStrategyAccess() {
       startOfMonth.setDate(1);
       startOfMonth.setHours(0, 0, 0, 0);
 
-      const { count, error: usageError } = await supabase
+      const { count, error: usageError } = await backend
         .from('strategy_usage')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id)
@@ -41,7 +41,7 @@ export function useStrategyAccess() {
 
   const recordUsage = async (businessName: string, industry: string) => {
     if (!user) return;
-    await supabase.from('strategy_usage').insert({
+    await backend.from('strategy_usage').insert({
       user_id: user.id,
       business_name: businessName,
       industry,

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { RefreshCw, ExternalLink, Globe, MousePointerClick, Eye, TrendingUp } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { toast } from "sonner";
 
 interface Row {
@@ -38,7 +38,7 @@ export default function GoogleSearchConsoleSummary() {
     setLoading(true);
     setError(null);
     try {
-      const { data, error } = await supabase.functions.invoke("gsc-summary");
+      const { data, error } = await backend.functions.invoke("gsc-summary");
       if (error) throw new Error(error.message);
       if (data?.error) throw new Error(data.error);
       setData(data as GscSummary);

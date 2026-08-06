@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import {
   buildCommunityHighlights,
   type CommunityHighlight,
@@ -30,9 +30,9 @@ export function usePlatformMetrics(): PlatformMetrics {
       const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
       const [usersRes, convsRes, activityRes] = await Promise.all([
-        supabase.from("profiles").select("id", { count: "exact", head: true }),
-        supabase.from("conversations").select("id", { count: "exact", head: true }),
-        supabase.from("usage_analytics").select("user_id").gte("created_at", dayAgo).limit(400),
+        backend.from("profiles").select("id", { count: "exact", head: true }),
+        backend.from("conversations").select("id", { count: "exact", head: true }),
+        backend.from("usage_analytics").select("user_id").gte("created_at", dayAgo).limit(400),
       ]);
 
       if (cancelled) return;

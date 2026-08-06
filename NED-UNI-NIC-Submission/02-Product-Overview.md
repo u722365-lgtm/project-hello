@@ -86,11 +86,11 @@ ShadowTalk AI is an **On-Device AI Operating System** that provides sovereign in
 ## Technology Stack
 
 - **Frontend:** React 18, TypeScript, Tailwind CSS, Framer Motion
-- **Backend:** Supabase (PostgreSQL, Edge Functions, Auth, Storage)
+- **Backend:** ShadowTalk backend (PostgreSQL, Edge Functions, Auth, Storage)
 - **AI Models:** Google Gemini 2.5 Pro/Flash, WebGPU local inference
 - **Security:** AES-256 encryption, bcrypt, zero-knowledge architecture
 - **PWA:** Service workers, offline storage, push notifications
-- **Deployment:** Lovable Cloud, CDN-distributed
+- **Deployment:** ShadowTalk local runtime, CDN-distributed
 
 ## Target Users
 

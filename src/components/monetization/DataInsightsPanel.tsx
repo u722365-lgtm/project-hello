@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { useServerSyncQueue } from '@/hooks/useServerSyncQueue';
 import { useAuth } from '@/components/AuthProvider';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import { BarChart3, Upload, Shield, Database, Clock, TrendingUp, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -32,7 +32,7 @@ const DataInsightsPanel = () => {
     try {
       const [count, { data }] = await Promise.all([
         syncQueue.getPendingCount(),
-        supabase
+        backend
           .from('usage_analytics')
           .select('*')
           .eq('user_id', user.id)

@@ -614,7 +614,7 @@ export const DOC_FAQ: DocFaqItem[] = [
   },
   {
     q: "Does ShadowTalk have an API?",
-    a: "Yes — REST endpoints on Supabase edge functions (chat, web-search, security scan, etc.). API keys are provisioned for Elite plans; see the API tab in these docs or /api.",
+    a: "Yes — REST endpoints on ShadowTalk backend edge functions (chat, web-search, security scan, etc.). API keys are provisioned for Elite plans; see the API tab in these docs or /api.",
   },
   {
     q: "Is there a desktop app?",

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -64,7 +64,7 @@ export const UserRoleManager: React.FC = () => {
     setLoading(true);
     try {
       // Fetch all user roles
-      const { data: rolesData, error: rolesError } = await supabase
+      const { data: rolesData, error: rolesError } = await backend
         .from('user_roles')
         .select('*')
         .order('created_at', { ascending: false });
@@ -74,7 +74,7 @@ export const UserRoleManager: React.FC = () => {
       // Fetch profiles for display names
       const userIds = rolesData?.map(r => r.user_id) || [];
       if (userIds.length > 0) {
-        const { data: profilesData } = await supabase
+        const { data: profilesData } = await backend
           .from('profiles')
           .select('id, display_name')
           .in('id', userIds);
@@ -103,7 +103,7 @@ export const UserRoleManager: React.FC = () => {
     try {
       // First, we need to find the user by email using a different approach
       // Since we can't directly query auth.users, we'll search profiles or subscribers
-      const { data: subscribers } = await supabase
+      const { data: subscribers } = await backend
         .from('subscribers')
         .select('user_id, email')
         .eq('email', newRoleEmail.toLowerCase())
@@ -117,7 +117,7 @@ export const UserRoleManager: React.FC = () => {
       const userId = subscribers.user_id;
 
       // Check if role already exists
-      const { data: existing } = await supabase
+      const { data: existing } = await backend
         .from('user_roles')
         .select('id')
         .eq('user_id', userId)
@@ -130,7 +130,7 @@ export const UserRoleManager: React.FC = () => {
       }
 
       // Insert new role
-      const { error } = await supabase
+      const { error } = await backend
         .from('user_roles')
         .insert({
           user_id: userId,
@@ -155,7 +155,7 @@ export const UserRoleManager: React.FC = () => {
     if (!confirm(`Are you sure you want to remove this ${role} role?`)) return;
 
     try {
-      const { error } = await supabase
+      const { error } = await backend
         .from('user_roles')
         .delete()
         .eq('id', roleId);

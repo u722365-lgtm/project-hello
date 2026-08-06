@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Wrench, X, AlertTriangle, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";

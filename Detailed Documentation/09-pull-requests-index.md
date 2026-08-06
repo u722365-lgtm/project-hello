@@ -50,10 +50,10 @@ Examples: `cursor/desktop-app-7adb`, `cursor/offline-mode-7adb`, `cursor/gemini-
 ## Migrations (marketplace runtime)
 
 ```bash
-supabase/migrations/20260530120000_marketplace_agent_runtime.sql
+backend/migrations/20260530120000_marketplace_agent_runtime.sql
 ```
 
-Apply via Supabase CLI or dashboard before DB-backed agent configs match bundled definitions.
+Apply via ShadowTalk backend CLI or dashboard before DB-backed agent configs match bundled definitions.
 
 ---
 

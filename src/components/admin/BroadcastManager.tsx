@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Send, Mail, Bell, Radio, AlertTriangle, Info, Zap, Users, RefreshCw, CheckCircle2, XCircle } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import { toast } from 'sonner';
 
 const broadcastTypes = [
@@ -52,7 +52,7 @@ export const BroadcastManager: React.FC = () => {
   const fetchSubscribers = async () => {
     setLoadingSubs(true);
     try {
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from('subscribers')
         .select('*')
         .order('created_at', { ascending: false });
@@ -60,7 +60,7 @@ export const BroadcastManager: React.FC = () => {
       if (error) throw error;
       setSubscribers(data || []);
       // Auto-select all subscribed users
-      const subscribedIds = new Set((data || []).filter(s => s.subscribed).map(s => s.id));
+      const subscribedIds = new Set<string>(((data || []) as any[]).filter((s) => s.subscribed).map((s) => String(s.id)));
       setSelectedIds(subscribedIds);
     } catch (err) {
       console.error('Failed to fetch subscribers:', err);
@@ -115,7 +115,7 @@ export const BroadcastManager: React.FC = () => {
 
     setSending(true);
     try {
-      const response = await supabase.functions.invoke('send-broadcast', {
+      const response = await backend.functions.invoke('send-broadcast', {
         body: { subject, message, type, sendEmail, sendNotification },
       });
 

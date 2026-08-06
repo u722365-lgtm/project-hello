@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { markSelfHealRemoteDisabled, markSelfHealRemoteEnabled } from "@/lib/selfHealing/selfHealConfig";
 
 let probePromise: Promise<boolean> | null = null;
@@ -9,7 +9,7 @@ export async function probeSelfHealEndpoint(): Promise<boolean> {
 
   probePromise = (async () => {
     try {
-      const { data, error } = await supabase.functions.invoke("self-heal", {
+      const { data, error } = await backend.functions.invoke("self-heal", {
         body: { health: true },
       });
       if (error) {

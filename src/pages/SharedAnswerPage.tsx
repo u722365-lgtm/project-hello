@@ -4,12 +4,12 @@ import { Helmet } from "react-helmet-async";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { motion } from "framer-motion";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Sparkles, ArrowRight, Loader2, MessageSquare } from "lucide-react";
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
+const API_URL = import.meta.env.VITE_API_BASE_URL as string;
 
 interface SharedAnswer {
   slug: string;
@@ -31,7 +31,7 @@ const SharedAnswerPage = () => {
     let cancelled = false;
     (async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data, error } = await (supabase as any).rpc("get_shared_answer", { _slug: slug });
+      const { data, error } = await (backend as any).rpc("get_shared_answer", { _slug: slug });
       if (cancelled) return;
       const row = Array.isArray(data) ? data[0] : null;
       if (error || !row) {
@@ -42,7 +42,7 @@ const SharedAnswerPage = () => {
       setState("ready");
       // fire-and-forget view increment
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      void (supabase as any).rpc("increment_shared_answer_views", { _slug: slug });
+      void (backend as any).rpc("increment_shared_answer_views", { _slug: slug });
     })();
     return () => { cancelled = true; };
   }, [slug]);
@@ -51,7 +51,7 @@ const SharedAnswerPage = () => {
     () => (typeof window !== "undefined" ? window.location.href : ""),
     [],
   );
-  const ogImage = `${SUPABASE_URL}/functions/v1/og-answer?slug=${slug}`;
+  const ogImage = `${API_URL}/functions/v1/og-answer?slug=${slug}`;
   const title = data?.title || "Answer from ShadowTalk AI";
   const description = data?.prompt?.slice(0, 155) ?? "Free AI chatbot — no login required.";
 

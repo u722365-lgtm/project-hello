@@ -10,7 +10,7 @@ export interface ShadowTalkConfig {
   sovereign: { mode: SovereignMode };
   ollama: { url: string; model: string };
   pledge: { deviceOnly: boolean; cloudOptIn: boolean };
-  supabase?: {
+  backend?: {
     url?: string;
     anonKey?: string;
     accessToken?: string;
@@ -35,7 +35,7 @@ function mergeConfig(partial: Partial<ShadowTalkConfig>): ShadowTalkConfig {
     sovereign: { ...DEFAULTS.sovereign, ...partial.sovereign },
     ollama: { ...DEFAULTS.ollama, ...partial.ollama },
     pledge: { ...DEFAULTS.pledge, ...partial.pledge },
-    supabase: { ...partial.supabase },
+    backend: { ...partial.backend },
   };
 }
 

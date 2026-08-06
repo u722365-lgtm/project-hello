@@ -13,7 +13,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -59,7 +59,7 @@ interface CreativeSynthesisProps {
 // Constants
 // ──────────────────────────────────────────────
 
-const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
+const CHAT_URL = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`;
 
 const OUTPUT_FORMATS: OutputFormat[] = [
   { id: "twitter_thread", label: "𝕏 Thread", icon: Twitter, category: "social", description: "Viral tweet thread with hooks" },
@@ -178,7 +178,7 @@ export const CreativeSynthesis = ({ isOpen, onClose, onInsertToChat, initialProm
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_API_KEY}`,
       },
       body: stringifyChatBody({
         messages: [{ role: "user", content: prompt }],
@@ -218,7 +218,7 @@ export const CreativeSynthesis = ({ isOpen, onClose, onInsertToChat, initialProm
     setOutputs(selectedFormats.map(f => ({ formatId: f, content: "", isGenerating: true })));
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await backend.auth.getSession();
 
       const promises = selectedFormats.map(async (formatId, i) => {
         try {

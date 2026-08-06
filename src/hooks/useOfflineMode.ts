@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/components/AuthProvider';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 
 interface CachedConversation {
   id: string;
@@ -112,7 +112,7 @@ export const useOfflineMode = () => {
 
       // Store in offline_sync_queue table
       for (const msg of messages) {
-        await supabase.from('offline_sync_queue').insert({
+        await backend.from('offline_sync_queue').insert({
           user_id: user.id,
           operation_type: 'offline_message',
           operation_data: { content: msg.content, timestamp: msg.timestamp },

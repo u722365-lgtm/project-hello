@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { privateRealtimeChannel } from "@/lib/realtimeChannel";
 import { useAuth } from "@/components/AuthProvider";
-import type { RealtimeChannel } from "@supabase/supabase-js";
+import type { RealtimeChannel } from "@/lib/backend-types";
 
 export interface UserPresence {
   id: string;
@@ -87,7 +87,7 @@ export const useRealtimePresence = ({ channelName, throttleMs = 50 }: UseRealtim
 
     return () => {
       if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
+        backend.removeChannel(channelRef.current);
       }
       setIsConnected(false);
     };

@@ -27,7 +27,7 @@ The AI Chat Engine is ShadowTalk's core intelligence layer — a multi-model con
 
 ## Technical Implementation
 
-- **Backend:** Supabase Edge Function (`chat/index.ts`)
+- **Backend:** ShadowTalk backend Edge Function (`chat/index.ts`)
 - **AI Provider:** Google Gemini API via Lovable AI proxy
 - **Database:** `conversations` and `messages` tables with RLS
 - **Frontend:** React with streaming response rendering

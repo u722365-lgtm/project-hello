@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import { privateRealtimeChannel, userScopedRealtimeTopic } from '@/lib/realtimeChannel';
 import { useAuth } from '@/components/AuthProvider';
 import { useToast } from '@/hooks/use-toast';
@@ -47,7 +47,7 @@ export function useBusinessMemory() {
     }
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from('business_memories')
         .select('*')
         .eq('user_id', user.id)
@@ -91,7 +91,7 @@ export function useBusinessMemory() {
         .subscribe();
 
       return () => {
-        supabase.removeChannel(channel);
+        backend.removeChannel(channel);
       };
     }
   }, [user, fetchMemories]);
@@ -108,7 +108,7 @@ export function useBusinessMemory() {
 
     setSaving(true);
     try {
-      const { error } = await supabase
+      const { error } = await backend
         .from('business_memories')
         .insert({
           user_id: user.id,
@@ -146,7 +146,7 @@ export function useBusinessMemory() {
 
     setSaving(true);
     try {
-      const { error } = await supabase
+      const { error } = await backend
         .from('business_memories')
         .update(data)
         .eq('id', id)
@@ -178,7 +178,7 @@ export function useBusinessMemory() {
     if (!user) return false;
 
     try {
-      const { error } = await supabase
+      const { error } = await backend
         .from('business_memories')
         .delete()
         .eq('id', id)

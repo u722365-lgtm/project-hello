@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Sparkles, Loader2, RefreshCw, Lightbulb, MapPin, Leaf } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import { toast } from 'sonner';
 
 interface AISuggestion {
@@ -31,7 +31,7 @@ const AISuggestions: React.FC<AISuggestionsProps> = ({ location, co2Saved, actio
   const getSuggestions = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('chat', {
+      const { data, error } = await backend.functions.invoke('chat', {
         body: {
           message: `Based on this user's eco profile, suggest 4 personalized eco-actions. User location: ${location || 'Unknown'}. CO2 saved so far: ${co2Saved}kg. Actions completed: ${actionsCompleted}. Streak: ${streak} days. Recent categories: ${recentCategories.join(', ') || 'none'}. 
           

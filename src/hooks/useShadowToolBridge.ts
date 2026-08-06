@@ -5,7 +5,7 @@ import { useToolOrchestrator, type ToolType } from "@/hooks/useToolOrchestrator"
 import { executeShadowTool } from "@/lib/shadowTools/executeShadowTool";
 import { SHADOWTALK_SELF_KNOWLEDGE_BRIEF } from "@/lib/shadowTalkProductKnowledge";
 import type { ShadowToolResult } from "@/lib/shadowTools/types";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 
 export interface ShadowToolUIHandlers {
   openImageGenerator: (prompt: string, autoGenerate?: boolean) => void;
@@ -97,7 +97,7 @@ export function useShadowToolBridge(handlers: ShadowToolUIHandlers) {
 
       const {
         data: { session },
-      } = await supabase.auth.getSession();
+      } = await backend.auth.getSession();
 
       try {
         const result = await executeShadowTool(

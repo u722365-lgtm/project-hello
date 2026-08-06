@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { buildChatRequestBody } from "@/lib/chatRequest";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -118,7 +118,7 @@ export function DocumentForgePanel({
     setPipelinePhase("planning");
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await backend.auth.getSession();
       const result = await runUnifiedDocumentPipeline({
         topic,
         docType,
@@ -162,7 +162,7 @@ export function DocumentForgePanel({
     setIsRevising(true);
     setPreviousContent(generatedContent);
     try {
-      const { data, error } = await supabase.functions.invoke("document-ai", {
+      const { data, error } = await backend.functions.invoke("document-ai", {
         body: buildChatRequestBody({ action, content: generatedContent }),
       });
       if (error) throw error;

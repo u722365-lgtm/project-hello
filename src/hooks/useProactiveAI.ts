@@ -66,7 +66,7 @@ function isProactiveAIEnabled(): boolean {
 }
 
 function getProactiveAIUrl(): string | null {
-  const base = import.meta.env.VITE_SUPABASE_URL;
+  const base = import.meta.env.VITE_API_BASE_URL;
   if (!base) return null;
   return `${base}/functions/v1/proactive-ai`;
 }
@@ -111,9 +111,9 @@ async function generateAIMessage(context: {
   }
 
   try {
-    const { supabase } = await import("@/integrations/supabase/client");
-    const { data: { session } } = await supabase.auth.getSession();
-    const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? "";
+    const { backend } = await import("@/integrations/local/client");
+    const { data: { session } } = await backend.auth.getSession();
+    const anonKey = import.meta.env.VITE_API_KEY ?? "";
     const token = session?.access_token ?? anonKey;
 
     lastApiCallTimestamp = now;

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import { useAuth } from '@/components/AuthProvider';
 
 // ─── AI Memory System ───
@@ -61,10 +61,10 @@ export const useIntelligenceHub = () => {
     setIsLoading(true);
     try {
       const [memRes, insRes, knRes, stRes] = await Promise.all([
-        supabase.from('ai_memories').select('*').eq('user_id', user.id).order('last_referenced_at', { ascending: false }).limit(50),
-        supabase.from('daily_insights').select('*').eq('user_id', user.id).order('generated_at', { ascending: false }).limit(20),
-        supabase.from('knowledge_entries').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(100),
-        supabase.from('user_streaks').select('*').eq('user_id', user.id).single(),
+        backend.from('ai_memories').select('*').eq('user_id', user.id).order('last_referenced_at', { ascending: false }).limit(50),
+        backend.from('daily_insights').select('*').eq('user_id', user.id).order('generated_at', { ascending: false }).limit(20),
+        backend.from('knowledge_entries').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(100),
+        backend.from('user_streaks').select('*').eq('user_id', user.id).single(),
       ]);
       if (memRes.data) setMemories(memRes.data as AIMemory[]);
       if (insRes.data) setInsights(insRes.data as DailyInsight[]);
@@ -96,7 +96,7 @@ export const useIntelligenceHub = () => {
       const longestStreak = Math.max(newStreak, streak.longest_streak);
       const multiplier = Math.min(1 + (newStreak * 0.1), 3.0); // Max 3x
       
-      await supabase.from('user_streaks').update({
+      await backend.from('user_streaks').update({
         current_streak: newStreak,
         longest_streak: longestStreak,
         last_active_date: today,
@@ -107,7 +107,7 @@ export const useIntelligenceHub = () => {
       setStreak(prev => prev ? { ...prev, current_streak: newStreak, longest_streak: longestStreak, last_active_date: today, total_active_days: prev.total_active_days + 1, streak_multiplier: multiplier } : null);
     } else {
       // First ever visit — upsert to avoid 409 conflict on duplicate
-      const { data } = await supabase.from('user_streaks').upsert({
+      const { data } = await backend.from('user_streaks').upsert({
         user_id: user.id,
         current_streak: 1,
         longest_streak: 1,
@@ -146,7 +146,7 @@ export const useIntelligenceHub = () => {
           m.content.toLowerCase().includes(match[1].toLowerCase()) && m.category === category
         );
         if (!existing) {
-          const { data } = await supabase.from('ai_memories').insert({
+          const { data } = await backend.from('ai_memories').insert({
             user_id: user.id,
             content,
             category,
@@ -181,7 +181,7 @@ export const useIntelligenceHub = () => {
         k.title.toLowerCase() === title.toLowerCase()
       );
       if (!existing && title.length > 5) {
-        const { data } = await supabase.from('knowledge_entries').insert({
+        const { data } = await backend.from('knowledge_entries').insert({
           user_id: user.id,
           title,
           content: aiResponse.slice(0, 2000),
@@ -205,7 +205,7 @@ export const useIntelligenceHub = () => {
   // ─── Mark insight as read ───
   const markInsightRead = useCallback(async (id: string) => {
     if (!user) return;
-    await supabase.from('daily_insights').update({ is_read: true }).eq('id', id);
+    await backend.from('daily_insights').update({ is_read: true }).eq('id', id);
     setInsights(prev => prev.map(i => i.id === id ? { ...i, is_read: true } : i));
   }, [user]);
 
@@ -214,7 +214,7 @@ export const useIntelligenceHub = () => {
     if (!user) return;
     const insight = insights.find(i => i.id === id);
     if (!insight) return;
-    await supabase.from('daily_insights').update({ is_pinned: !insight.is_pinned }).eq('id', id);
+    await backend.from('daily_insights').update({ is_pinned: !insight.is_pinned }).eq('id', id);
     setInsights(prev => prev.map(i => i.id === id ? { ...i, is_pinned: !i.is_pinned } : i));
   }, [user, insights]);
 
@@ -231,14 +231,14 @@ export const useIntelligenceHub = () => {
   // ─── Delete memory ───
   const deleteMemory = useCallback(async (id: string) => {
     if (!user) return;
-    await supabase.from('ai_memories').delete().eq('id', id);
+    await backend.from('ai_memories').delete().eq('id', id);
     setMemories(prev => prev.filter(m => m.id !== id));
   }, [user]);
 
   // ─── Delete knowledge entry ───
   const deleteKnowledgeEntry = useCallback(async (id: string) => {
     if (!user) return;
-    await supabase.from('knowledge_entries').delete().eq('id', id);
+    await backend.from('knowledge_entries').delete().eq('id', id);
     setKnowledgeEntries(prev => prev.filter(k => k.id !== id));
   }, [user]);
 

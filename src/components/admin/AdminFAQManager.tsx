@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,7 +27,7 @@ export function AdminFAQManager() {
 
   const load = async () => {
     setLoading(true);
-    const { data, error } = await supabase
+    const { data, error } = await backend
       .from("faq_items")
       .select("*")
       .order("sort_order", { ascending: true });
@@ -45,7 +45,7 @@ export function AdminFAQManager() {
       toast.error("Question and answer required");
       return;
     }
-    const { error } = await supabase.from("faq_items").insert({
+    const { error } = await backend.from("faq_items").insert({
       question: question.trim(),
       answer: answer.trim(),
       category: category.trim() || "general",
@@ -62,7 +62,7 @@ export function AdminFAQManager() {
   };
 
   const togglePublish = async (row: FaqRow) => {
-    const { error } = await supabase
+    const { error } = await backend
       .from("faq_items")
       .update({ is_published: !row.is_published })
       .eq("id", row.id);
@@ -72,7 +72,7 @@ export function AdminFAQManager() {
 
   const remove = async (id: string) => {
     if (!confirm("Delete this FAQ?")) return;
-    const { error } = await supabase.from("faq_items").delete().eq("id", id);
+    const { error } = await backend.from("faq_items").delete().eq("id", id);
     if (error) toast.error("Delete failed");
     else {
       toast.success("Deleted");

@@ -28,7 +28,7 @@ Engineering and product documentation for **ShadowTalk AI**. Written for develop
 ## Repository
 
 - **GitHub:** `zain836/shadowtalk-ai-903ca615`
-- **App root:** `/workspace` (Vite + React + Supabase)
+- **App root:** `/workspace` (Vite + React + ShadowTalk backend)
 - **Cloud agent branches:** `cursor/<name>-7adb`
 
 ---

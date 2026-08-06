@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import Navigation from "@/components/Navigation";
 import SlideRenderer from "@/components/presentation/SlideRenderer";
 import GenerationProgress, { GenerationPhase } from "@/components/presentation/GenerationProgress";
@@ -148,7 +148,7 @@ const PresentationBuilderPage = ({ embedded = false }: PresentationBuilderPagePr
     setGenerationPhase("researching");
 
     try {
-      const { data, error } = await supabase.functions.invoke("analyze-website", {
+      const { data, error } = await backend.functions.invoke("analyze-website", {
         body: { url: websiteUrl, action: "analyze" },
       });
       if (error) {
@@ -216,7 +216,7 @@ const PresentationBuilderPage = ({ embedded = false }: PresentationBuilderPagePr
 
       const enrichedContext = `${editablePlanContext}\n\nDETAILED SLIDE PLAN:\n${slideInstructions}\n\nWebsite URL: ${websiteUrl}\nNarrative Arc: ${websitePlan?.presentationPlan?.narrativeArc || ''}`;
 
-      const { data, error } = await supabase.functions.invoke("generate-presentation", {
+      const { data, error } = await backend.functions.invoke("generate-presentation", {
         body: { 
           topic: editablePlanTitle, 
           slideCount: websitePlan?.presentationPlan?.estimatedSlideCount || parseInt(slideCount), 
@@ -270,7 +270,7 @@ const PresentationBuilderPage = ({ embedded = false }: PresentationBuilderPagePr
     phaseTimers.push(setTimeout(() => setGenerationPhase("polishing"), 22000));
 
     try {
-      const { data, error } = await supabase.functions.invoke("generate-presentation", {
+      const { data, error } = await backend.functions.invoke("generate-presentation", {
         body: {
           topic,
           slideCount: parseInt(slideCount),
@@ -545,7 +545,7 @@ const PresentationBuilderPage = ({ embedded = false }: PresentationBuilderPagePr
           setIsExporting(false);
           return;
         }
-        const { data, error } = await supabase.functions.invoke("upload-presentation-onedrive", {
+        const { data, error } = await backend.functions.invoke("upload-presentation-onedrive", {
           body: { filename, base64, folderPath: folderPath.trim() || undefined },
         });
         if (error || (data && data.error)) {

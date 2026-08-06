@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { privateRealtimeChannel } from "@/lib/realtimeChannel";
 import { useAuth } from "@/components/AuthProvider";
 
@@ -26,7 +26,7 @@ export function useUserNotifications() {
     }
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from("user_notifications")
         .select("*")
         .eq("user_id", user.id)
@@ -69,12 +69,12 @@ export function useUserNotifications() {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      backend.removeChannel(channel);
     };
   }, [user]);
 
   const markAsRead = useCallback(async (id: string) => {
-    await supabase.from("user_notifications").update({ is_read: true }).eq("id", id);
+    await backend.from("user_notifications").update({ is_read: true }).eq("id", id);
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, is_read: true } : n)));
   }, []);
 
@@ -82,7 +82,7 @@ export function useUserNotifications() {
     if (!user) return;
     const unreadIds = notifications.filter((n) => !n.is_read).map((n) => n.id);
     if (!unreadIds.length) return;
-    await supabase.from("user_notifications").update({ is_read: true }).in("id", unreadIds);
+    await backend.from("user_notifications").update({ is_read: true }).in("id", unreadIds);
     setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
   }, [notifications, user]);
 

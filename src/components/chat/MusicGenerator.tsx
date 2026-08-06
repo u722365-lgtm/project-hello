@@ -48,8 +48,8 @@ const SFX_PRESETS = [
   { label: "Success", prompt: "Achievement unlocked celebration jingle" },
 ];
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const API_URL = import.meta.env.VITE_API_BASE_URL;
+const API_KEY = import.meta.env.VITE_API_KEY;
 
 export function MusicGenerator({ isOpen, onClose, initialPrompt, autoGenerate, onInsertToChat }: MusicGeneratorProps) {
   const { toast } = useToast();
@@ -71,12 +71,12 @@ export function MusicGenerator({ isOpen, onClose, initialPrompt, autoGenerate, o
     setIsGenerating(true);
     
     try {
-      const response = await fetch(`${SUPABASE_URL}/functions/v1/elevenlabs-audio`, {
+      const response = await fetch(`${API_URL}/functions/v1/elevenlabs-audio`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`,
+          apikey: API_KEY,
+          Authorization: `Bearer ${API_KEY}`,
         },
         body: JSON.stringify({
           prompt: finalPrompt,

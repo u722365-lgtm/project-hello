@@ -2,7 +2,7 @@
  * Auto-recovery primitives applied at runtime based on AI-approved fix proposals.
  * Listens to proposed `runtime_handler` shapes from the self-heal edge function.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { isSelfHealRemoteEnabled } from "@/lib/selfHealing/selfHealConfig";
 
 interface RuntimeHandler {
@@ -49,7 +49,7 @@ export function startAutoRecoverySync() {
   const pull = async () => {
     if (stopped || !isSelfHealRemoteEnabled()) return;
     try {
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from("shadowtalk_fix_proposals")
         .select("id, runtime_handler, error_id, status, patch_strategy")
         .eq("status", "approved")

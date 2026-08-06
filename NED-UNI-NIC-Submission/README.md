@@ -43,7 +43,7 @@
 - **Features:** 15+ major features shipped
 - **Industries Served:** 12 sectors (Finance, Legal, Healthcare, Tech, etc.)
 - **Pricing:** Free tier → $5/mo Pro → $15/mo Premium → $20/mo Elite → $99 Lifetime
-- **Tech Stack:** React, TypeScript, Supabase, WebGPU, Gemini AI, Edge Functions
+- **Tech Stack:** React, TypeScript, ShadowTalk backend, WebGPU, Gemini AI, Edge Functions
 
 ---
 

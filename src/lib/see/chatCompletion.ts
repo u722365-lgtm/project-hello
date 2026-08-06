@@ -3,7 +3,7 @@ import { stringifyChatBody } from "@/lib/chatRequest";
 import { chat as ollamaChat, getStatus as getOllamaStatus } from "@/lib/ollama/unifiedClient";
 import { shouldPreferOllamaInference } from "@/lib/desktop/sovereignMode";
 
-const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
+const CHAT_URL = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`;
 
 async function tryOllamaFallback(userContent: string, signal?: AbortSignal): Promise<string | null> {
   try {

@@ -3,7 +3,7 @@ import { Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/components/AuthProvider";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { useToast } from "@/hooks/use-toast";
 import { ChatMode } from "@/components/chat/ModeSelector";
 import { AIProvider } from "@/components/chat/ProviderSelector";
@@ -199,10 +199,10 @@ import { buildMemoryContextForUser } from "@/lib/memory/promptInjector";
 import {
   getChatFetchHeaders,
   getChatFunctionUrl,
-  isSupabaseConfigured,
+  isCloudConfigured,
   DESKTOP_ENV_SETUP_HINT,
   formatChatFetchError,
-} from "@/lib/supabaseEnv";
+} from "@/lib/cloudEnv";
 import { isShadowTalkDesktop } from "@/lib/desktopBridge";
 import { desktopChatStream } from "@/lib/desktopChatFetch";
 import { reflectOnConversation, shouldReflect, type MemoryReflection } from "@/lib/memory/reflectionEngine";
@@ -572,7 +572,7 @@ const ChatbotPage = () => {
 
     if (marketplaceCatalogLoading) return;
 
-    void supabase
+    void backend
       .from("marketplace_agents")
       .select("*")
       .eq("id", agentId)
@@ -602,7 +602,7 @@ const ChatbotPage = () => {
 
   const loadConversations = async () => {
     if (!user) return;
-    const { data, error } = await supabase
+    const { data, error } = await backend
       .from('conversations')
       .select('*')
       .eq('user_id', user.id)
@@ -630,7 +630,7 @@ const ChatbotPage = () => {
 
   const loadConversation = async (conversationId: string) => {
     setCurrentConversationId(conversationId);
-    const { data, error } = await supabase
+    const { data, error } = await backend
       .from('messages')
       .select('*')
       .eq('conversation_id', conversationId)
@@ -703,14 +703,14 @@ const ChatbotPage = () => {
 
     if (!user) return;
 
-    const { error: msgError } = await supabase
+    const { error: msgError } = await backend
       .from("messages")
       .delete()
       .eq("conversation_id", convId)
       .eq("user_id", user.id);
 
     if (msgError) {
-      const { error: convError } = await supabase
+      const { error: convError } = await backend
         .from("conversations")
         .delete()
         .eq("id", convId)
@@ -722,7 +722,7 @@ const ChatbotPage = () => {
       setConversations((prev) => prev.filter((c) => c.id !== convId));
       resetToNewChat();
     } else {
-      await supabase
+      await backend
         .from("conversations")
         .update({ title: "New Chat", updated_at: new Date().toISOString() })
         .eq("id", convId)
@@ -746,7 +746,7 @@ const ChatbotPage = () => {
 
     if (!user) return;
 
-    const { error } = await supabase
+    const { error } = await backend
       .from("conversations")
       .delete()
       .eq("id", conversationId)
@@ -804,7 +804,7 @@ const ChatbotPage = () => {
 
     if (!user) return;
 
-    const { error } = await supabase
+    const { error } = await backend
       .from("conversations")
       .update({ archived_at: archivedAt } as never)
       .eq("id", conversationId)
@@ -837,7 +837,7 @@ const ChatbotPage = () => {
 
     if (!user) return;
 
-    const { error } = await supabase
+    const { error } = await backend
       .from("conversations")
       .update({ archived_at: null } as never)
       .eq("id", conversationId)
@@ -872,7 +872,7 @@ const ChatbotPage = () => {
       return;
     }
 
-    const { error } = await supabase.from("conversations").delete().eq("user_id", user.id);
+    const { error } = await backend.from("conversations").delete().eq("user_id", user.id);
 
     if (error) {
       toast({ title: "Could not delete chats", description: error.message, variant: "destructive" });
@@ -902,7 +902,7 @@ const ChatbotPage = () => {
     const titleToSave = chatPrivate.active
       ? await chatPrivate.wrapForStorage("New Chat")
       : "New Chat";
-    const { data, error } = await supabase
+    const { data, error } = await backend
       .from('conversations')
       .insert({ user_id: user.id, title: titleToSave })
       .select()
@@ -952,7 +952,7 @@ const ChatbotPage = () => {
     if (!user || !conversationId || !shouldPersistChatToCloud()) return null;
 
     const contentToSave = await chatPrivate.wrapForStorage(content);
-    const { data } = await supabase
+    const { data } = await backend
       .from('messages')
       .insert({ conversation_id: conversationId, user_id: user.id, content: contentToSave, role, personality })
       .select().single();
@@ -960,7 +960,7 @@ const ChatbotPage = () => {
     if (role === 'user' && messages.length <= 1) {
       const titlePlain = content.trim().split(/\s+/).slice(0, 3).join(' ').slice(0, 25) || 'New Chat';
       const title = await chatPrivate.wrapForStorage(titlePlain);
-      await supabase.from('conversations').update({ title, updated_at: new Date().toISOString() }).eq('id', conversationId);
+      await backend.from('conversations').update({ title, updated_at: new Date().toISOString() }).eq('id', conversationId);
       const displayTitle = chatPrivate.active
         ? "Private Chat"
         : titlePlain;
@@ -1281,13 +1281,13 @@ const ChatbotPage = () => {
       }
 
       const chatUrl = getChatFunctionUrl();
-      if (!chatUrl || !isSupabaseConfigured()) {
+      if (!chatUrl || !isCloudConfigured()) {
         throw new Error(
           `Chat is not configured for this build. ${DESKTOP_ENV_SETUP_HINT}`,
         );
       }
 
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await backend.auth.getSession();
       const learnedHint = getChatDefaults()?.systemHintAddon;
       const memoryContext = getMemoryContext();
       const businessMemory = [learnedHint, memoryContext].filter(Boolean).join("\n").trim();
@@ -1532,7 +1532,7 @@ const ChatbotPage = () => {
     );
 
     if (user && currentConversationId && !isGuestConversationId(currentConversationId)) {
-      await supabase
+      await backend
         .from("messages")
         .update({ content: trimmed })
         .eq("id", target.id)
@@ -1962,7 +1962,7 @@ const ChatbotPage = () => {
       ]);
 
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await backend.auth.getSession();
         const project = await generateAppProject({
           prompt: msgContent,
           platform,

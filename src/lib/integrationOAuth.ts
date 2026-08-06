@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 
 export type IntegrationProvider = "google" | "github" | "slack" | "notion";
 
@@ -27,14 +27,14 @@ export async function connectIntegration(
   provider: IntegrationProvider,
   scope?: string,
 ): Promise<OAuthConnectResult> {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await backend.auth.getSession();
   if (!session) {
     return { ok: false, error: "Sign in required" };
   }
 
   const returnTo = getOAuthReturnPath();
 
-  const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/oauth-initiate`, {
+  const resp = await fetch(`${import.meta.env.VITE_API_BASE_URL}/functions/v1/oauth-initiate`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -102,12 +102,12 @@ export function openOAuthPopup(authUrl: string, provider: IntegrationProvider): 
 }
 
 export async function disconnectIntegration(provider: IntegrationProvider): Promise<void> {
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await backend.auth.getUser();
   if (!user) return;
 
-  await supabase.from("oauth_tokens").delete().eq("user_id", user.id).eq("provider", provider);
+  await backend.from("oauth_tokens").delete().eq("user_id", user.id).eq("provider", provider);
 
-  await supabase
+  await backend
     .from("shadow_vault_connections")
     .update({ is_connected: false, is_active: false })
     .eq("user_id", user.id)
@@ -118,12 +118,12 @@ export async function fetchConnectedIntegrations(): Promise<{
   oauth: string[];
   whatsapp: boolean;
 }> {
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await backend.auth.getUser();
   if (!user) return { oauth: [], whatsapp: false };
 
   const [{ data: tokens }, { data: wa }] = await Promise.all([
-    supabase.from("oauth_tokens").select("provider").eq("user_id", user.id),
-    supabase
+    backend.from("oauth_tokens").select("provider").eq("user_id", user.id),
+    backend
       .from("whatsapp_links")
       .select("id")
       .eq("user_id", user.id)
@@ -149,7 +149,7 @@ function providerDisplayName(provider: IntegrationProvider): string {
 }
 
 export async function upsertVaultConnection(provider: IntegrationProvider): Promise<void> {
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await backend.auth.getUser();
   if (!user) return;
 
   const serviceType =
@@ -161,7 +161,7 @@ export async function upsertVaultConnection(provider: IntegrationProvider): Prom
           ? "storage"
           : "email";
 
-  await supabase.from("shadow_vault_connections").upsert(
+  await backend.from("shadow_vault_connections").upsert(
     {
       user_id: user.id,
       service_name: providerDisplayName(provider),

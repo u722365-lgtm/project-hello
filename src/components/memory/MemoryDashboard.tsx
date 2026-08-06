@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { supabaseLoose } from "@/integrations/supabase/loose";
+import { backendLoose } from "@/integrations/local/loose";
 import { useAuth } from "@/components/AuthProvider";
 import type { MemoryRecordLike } from "@/lib/memory/promptInjector";
 import { loadGuestMemories, upsertGuestMemory, deleteGuestMemory } from "@/lib/memory/guestMemoryStore";
@@ -45,7 +45,7 @@ export default function MemoryDashboard() {
   async function loadRemoteMemories() {
     setLoading(true);
     setError(null);
-    const { data, error } = await supabaseLoose
+    const { data, error } = await backendLoose
       .from("user_memories")
       .select("*")
       .order("confidence", { ascending: false });
@@ -70,7 +70,7 @@ export default function MemoryDashboard() {
       source: record.source ?? "manual",
       updated_at: new Date().toISOString(),
     };
-    const { error } = await supabaseLoose.from("user_memories").upsert(
+    const { error } = await backendLoose.from("user_memories").upsert(
       record.id ? { id: record.id, ...payload } : payload,
       { onConflict: "id" }
     );
@@ -117,7 +117,7 @@ export default function MemoryDashboard() {
     setError(null);
     try {
       if (user && m.id) {
-        const { error } = await supabaseLoose.from("user_memories").delete().eq("id", m.id);
+        const { error } = await backendLoose.from("user_memories").delete().eq("id", m.id);
         if (error) throw new Error(error.message);
       } else if (m.id) {
         deleteGuestMemory(m.id);

@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Shield, Building2, ExternalLink, CheckCircle2, AlertCircle, Lock } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { useAuth } from "@/components/AuthProvider";
 
 interface SSOConfig {
@@ -63,12 +63,12 @@ export const SSOProvider: React.FC<SSOProviderProps> = ({ workspaceId, onConfigu
         throw new Error("All SAML fields are required");
       }
 
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await backend.auth.getSession();
       if (!session?.access_token) {
         throw new Error("You must be signed in to configure SSO");
       }
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sso-configure`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/functions/v1/sso-configure`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -113,12 +113,12 @@ export const SSOProvider: React.FC<SSOProviderProps> = ({ workspaceId, onConfigu
         throw new Error("Client ID, Client Secret, and Authorization URL are required");
       }
 
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await backend.auth.getSession();
       if (!session?.access_token) {
         throw new Error("You must be signed in to configure SSO");
       }
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sso-configure`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/functions/v1/sso-configure`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -163,12 +163,12 @@ export const SSOProvider: React.FC<SSOProviderProps> = ({ workspaceId, onConfigu
         throw new Error("Client ID and Issuer URL are required");
       }
 
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await backend.auth.getSession();
       if (!session?.access_token) {
         throw new Error("You must be signed in to configure SSO");
       }
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sso-configure`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/functions/v1/sso-configure`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -319,13 +319,13 @@ export const SSOProvider: React.FC<SSOProviderProps> = ({ workspaceId, onConfigu
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">ACS URL:</span>
                     <code className="text-xs bg-background px-2 py-1 rounded">
-                      {`${import.meta.env.VITE_SUPABASE_URL}/auth/v1/sso/saml/acs`}
+                      {`${import.meta.env.VITE_API_BASE_URL}/auth/v1/sso/saml/acs`}
                     </code>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Entity ID:</span>
                     <code className="text-xs bg-background px-2 py-1 rounded">
-                      {`${import.meta.env.VITE_SUPABASE_URL}/auth/v1/sso/saml/metadata`}
+                      {`${import.meta.env.VITE_API_BASE_URL}/auth/v1/sso/saml/metadata`}
                     </code>
                   </div>
                 </div>
@@ -397,7 +397,7 @@ export const SSOProvider: React.FC<SSOProviderProps> = ({ workspaceId, onConfigu
               <div className="bg-muted/50 rounded-lg p-4">
                 <Label className="text-sm font-medium">Redirect URI</Label>
                 <code className="block mt-2 text-xs bg-background px-3 py-2 rounded">
-                  {`${import.meta.env.VITE_SUPABASE_URL}/auth/v1/callback`}
+                  {`${import.meta.env.VITE_API_BASE_URL}/auth/v1/callback`}
                 </code>
               </div>
 

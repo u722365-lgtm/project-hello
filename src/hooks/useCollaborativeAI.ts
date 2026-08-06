@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { privateRealtimeChannel } from "@/lib/realtimeChannel";
 import { useAuth } from "@/components/AuthProvider";
 
@@ -23,7 +23,7 @@ export const useCollaborativeAI = ({ roomId, enabled = true }: UseCollaborativeA
   const [sharedMessages, setSharedMessages] = useState<SharedAIMessage[]>([]);
   const [isAIProcessing, setIsAIProcessing] = useState(false);
   const [activeAIUser, setActiveAIUser] = useState<string | null>(null);
-  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const channelRef = useRef<ReturnType<typeof backend.channel> | null>(null);
 
   useEffect(() => {
     if (!user || !roomId || !enabled) return;
@@ -42,7 +42,7 @@ export const useCollaborativeAI = ({ roomId, enabled = true }: UseCollaborativeA
     channelRef.current = channel;
 
     return () => {
-      supabase.removeChannel(channel);
+      backend.removeChannel(channel);
     };
   }, [user, roomId, enabled]);
 
@@ -79,7 +79,7 @@ export const useCollaborativeAI = ({ roomId, enabled = true }: UseCollaborativeA
 
     try {
       // Call chat function
-      const { data, error } = await supabase.functions.invoke("chat", {
+      const { data, error } = await backend.functions.invoke("chat", {
         body: {
           messages: [{ role: "user", content: query }],
           personality: "default",

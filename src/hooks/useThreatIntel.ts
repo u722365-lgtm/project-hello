@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { privateRealtimeChannel } from "@/lib/realtimeChannel";
 
 export interface CVE {
@@ -47,10 +47,10 @@ export function useLiveCVEs() {
   return useQuery({
     queryKey: ["threat-intel-cves"],
     queryFn: async () => {
-      const { data: session } = await supabase.auth.getSession();
+      const { data: session } = await backend.auth.getSession();
       if (!session.session) {
         // Return cached DB data for non-auth fallback
-        const { data } = await supabase
+        const { data } = await backend
           .from("threat_intel_cves")
           .select("*")
           .order("published_at", { ascending: false })
@@ -59,7 +59,7 @@ export function useLiveCVEs() {
       }
 
       // Trigger fresh fetch via edge function
-      const { data, error } = await supabase.functions.invoke("fetch-threat-intel", {
+      const { data, error } = await backend.functions.invoke("fetch-threat-intel", {
         body: { action: "fetch-cves" },
       });
 
@@ -75,7 +75,7 @@ export function useThreatActors() {
   return useQuery({
     queryKey: ["threat-actors"],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data } = await backend
         .from("threat_actors")
         .select("*")
         .order("last_seen_at", { ascending: false });
@@ -89,7 +89,7 @@ export function useScanHistory() {
   return useQuery({
     queryKey: ["cyber-scan-history"],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data } = await backend
         .from("cyber_scan_results")
         .select("*")
         .order("created_at", { ascending: false })
@@ -104,7 +104,7 @@ export function useWebsiteScan() {
 
   return useMutation({
     mutationFn: async ({ url, scanDepth }: { url: string; scanDepth: string }) => {
-      const { data, error } = await supabase.functions.invoke("fetch-threat-intel", {
+      const { data, error } = await backend.functions.invoke("fetch-threat-intel", {
         body: { action: "scan-website", url, scanDepth },
       });
       if (error) throw error;
@@ -133,7 +133,7 @@ export function useRealtimeCVEs(onNewCVE: (cve: CVE) => void) {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      backend.removeChannel(channel);
     };
   };
 

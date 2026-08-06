@@ -1,7 +1,7 @@
 import { useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { useAuth } from "@/components/AuthProvider";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { useUserNotifications, type UserNotification } from "@/hooks/useUserNotifications";
@@ -49,7 +49,7 @@ export function useUpdateNotifications() {
   const initialized = useRef(false);
 
   const handleGuestUpdates = useCallback(async () => {
-    const { data, error } = await (supabase
+    const { data, error } = await (backend
       .from("app_updates" as never) as unknown as {
         select: (cols: string) => {
           order: (col: string, opts: { ascending: boolean }) => {

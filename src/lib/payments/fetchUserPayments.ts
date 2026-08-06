@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 
 export interface UserPaymentRow {
   id: string;
@@ -12,10 +12,10 @@ export interface UserPaymentRow {
 }
 
 export async function fetchUserRecentPayments(limit = 3): Promise<UserPaymentRow[]> {
-  const { data: auth } = await supabase.auth.getUser();
+  const { data: auth } = await backend.auth.getUser();
   if (!auth.user) return [];
 
-  const { data, error } = await supabase
+  const { data, error } = await backend
     .from("manual_payments")
     .select("id, status, plan_type, amount, currency, payment_method, created_at, verified_at")
     .eq("user_id", auth.user.id)

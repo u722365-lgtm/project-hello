@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
-import type { User, Session } from '@/lib/supabase-types';
+import type { User, Session } from '@/lib/backend-types';
 import {
   clearExplicitSignOut,
   isAnonymousUser,

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { X, Megaphone, AlertTriangle, Info, Sparkles } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { privateRealtimeChannel } from "@/lib/realtimeChannel";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -44,7 +44,7 @@ export const AnnouncementBanner = () => {
   useEffect(() => {
     const load = async () => {
       const now = new Date().toISOString();
-      const { data } = await supabase
+      const { data } = await backend
         .from("announcements")
         .select("id, title, message, type")
         .eq("is_active", true)
@@ -70,7 +70,7 @@ export const AnnouncementBanner = () => {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      backend.removeChannel(channel);
     };
   }, []);
 

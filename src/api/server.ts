@@ -21,19 +21,19 @@ export async function server(): Promise<ServerApi> {
     }
   }
 
-  const { getChatFunctionUrl, getChatFetchHeaders } = await import('@/lib/supabaseEnv');
+  const { getChatFunctionUrl, getChatFetchHeaders } = await import('@/lib/cloudEnv');
   const url = getChatFunctionUrl();
   return {
     health: async () => {
-      if (!url) return { ok: false, platform: 'supabase' };
+      if (!url) return { ok: false, platform: 'backend' };
       try {
         const res = await fetch(`${url}/health`, {
           method: 'GET',
           headers: getChatFetchHeaders(),
         });
-        return { ok: res.ok, platform: 'supabase' };
+        return { ok: res.ok, platform: 'backend' };
       } catch {
-        return { ok: false, platform: 'supabase' };
+        return { ok: false, platform: 'backend' };
       }
     },
   };

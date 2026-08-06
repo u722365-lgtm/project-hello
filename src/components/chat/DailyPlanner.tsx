@@ -11,7 +11,7 @@ import { stringifyChatBody } from "@/lib/chatRequest";
  import { ScrollArea } from "@/components/ui/scroll-area";
  import { Switch } from "@/components/ui/switch";
  import { useToast } from "@/hooks/use-toast";
- import { supabase } from "@/integrations/supabase/client";
+ import { backend } from "@/integrations/local/client";
  import { motion, AnimatePresence, Reorder } from "framer-motion";
  
  interface DailyPlannerProps {
@@ -51,7 +51,7 @@ import { stringifyChatBody } from "@/lib/chatRequest";
  };
  
  const STORAGE_KEY = "shadowtalk_daily_plan";
- const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
+ const CHAT_URL = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`;
  
  export const DailyPlanner = ({ isOpen, onClose, onPlanGenerated }: DailyPlannerProps) => {
    const { toast } = useToast();
@@ -128,13 +128,13 @@ import { stringifyChatBody } from "@/lib/chatRequest";
      setIsGenerating(true);
  
      try {
-       const { data: { session } } = await supabase.auth.getSession();
+       const { data: { session } } = await backend.auth.getSession();
        
        const response = await fetch(CHAT_URL, {
          method: "POST",
          headers: {
            "Content-Type": "application/json",
-           Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`
+           Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_API_KEY}`
          },
          body: stringifyChatBody({
            messages: [{ 

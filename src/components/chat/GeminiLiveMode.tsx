@@ -231,12 +231,12 @@ export const GeminiLiveMode = ({ isOpen, onClose, onInsertToChat }: GeminiLiveMo
     
     // Call real AI backend
     try {
-      const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
+      const CHAT_URL = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`;
       const resp = await fetch(CHAT_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`
+          Authorization: `Bearer ${import.meta.env.VITE_API_KEY}`
         },
         body: stringifyChatBody({
           messages: [

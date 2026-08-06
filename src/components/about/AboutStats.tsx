@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { BarChart3, Users, Code2, Globe, Zap, Clock } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 
 function AnimatedCounter({ value, suffix }: { value: number; suffix: string }) {
   const [displayed, setDisplayed] = useState(0);
@@ -51,12 +51,12 @@ const AboutStats = () => {
   useEffect(() => {
     const fetchStats = async () => {
       const [usersRes, convsRes, scansRes, bugsRes, feedbackRes, ratingsRes] = await Promise.all([
-        supabase.from("profiles").select("id", { count: "exact", head: true }),
-        supabase.from("conversations").select("id", { count: "exact", head: true }),
-        supabase.from("cyber_scan_results").select("id", { count: "exact", head: true }),
-        supabase.from("bug_bounty_submissions").select("id", { count: "exact", head: true }),
-        supabase.from("feedback").select("id", { count: "exact", head: true }),
-        supabase.from("feedback").select("rating").not("rating", "is", null),
+        backend.from("profiles").select("id", { count: "exact", head: true }),
+        backend.from("conversations").select("id", { count: "exact", head: true }),
+        backend.from("cyber_scan_results").select("id", { count: "exact", head: true }),
+        backend.from("bug_bounty_submissions").select("id", { count: "exact", head: true }),
+        backend.from("feedback").select("id", { count: "exact", head: true }),
+        backend.from("feedback").select("rating").not("rating", "is", null),
       ]);
 
       const ratings = ratingsRes.data || [];

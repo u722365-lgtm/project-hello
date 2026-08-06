@@ -140,8 +140,8 @@ def main():
     doc.add_heading("Deploy checklist (production)", 2)
     for item in [
         "Merge PR #105 and redeploy on Lovable",
-        "Run migration 20260611120000_payment_receipts_unblock.sql in Supabase",
-        "Deploy: supabase functions deploy verify-manual-payment",
+        "Run migration 20260611120000_payment_receipts_unblock.sql in ShadowTalk backend",
+        "Deploy: backend functions deploy verify-manual-payment",
         "Optional: set LEMONSQUEEZY_* and VITE_LEMONSQUEEZY_VARIANT_* env vars",
     ]:
         doc.add_paragraph(item, style="List Number")
@@ -194,10 +194,10 @@ def main():
         doc,
         ["Blocker", "Impact", "Fix"],
         [
-            ("Migrations not applied", "Features break silently", "Run SQL in Supabase dashboard"),
-            ("Edge functions not deployed", "Verify flow fails", "Deploy via Supabase CLI"),
+            ("Migrations not applied", "Features break silently", "Run SQL in ShadowTalk backend dashboard"),
+            ("Edge functions not deployed", "Verify flow fails", "Deploy via ShadowTalk backend CLI"),
             ("Lovable not redeployed", "Users see old UI", "Merge + redeploy gemini branch"),
-            ("SUPABASE_ACCESS_TOKEN missing", "CI skips deploy", "Add GitHub secret"),
+            ("API_ACCESS_TOKEN missing", "CI skips deploy", "Add GitHub secret"),
             ("Resend domain unverified", "Emails fail", "Verify domain (lower priority)"),
         ],
     )
@@ -250,7 +250,7 @@ def main():
     doc.add_heading("12. Next Actions (Priority Order)", 1)
     actions = [
         "Merge PR #105 → redeploy Lovable",
-        "Run payment migration on production Supabase",
+        "Run payment migration on production ShadowTalk backend",
         "Deploy verify-manual-payment edge function",
         "Test full flow: pay → submit receipt → admin verify → Pro active",
         "Post LinkedIn announcement with checkout link",

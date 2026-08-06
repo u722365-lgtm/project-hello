@@ -46,10 +46,10 @@ st config set pledge.deviceOnly false
 st config set pledge.cloudOptIn true
 ```
 
-Set Supabase env vars for cloud (only when opted in):
+Set ShadowTalk backend env vars for cloud (only when opted in):
 
 ```bash
-export SHADOWTALK_SUPABASE_URL=https://xxx.supabase.co
+export SHADOWTALK_API_URL=https://api.shadowtalk-ai.com
 export SHADOWTALK_ANON_KEY=eyJ...
 export SHADOWTALK_ACCESS_TOKEN=eyJ...  # optional, for authenticated chat
 ```

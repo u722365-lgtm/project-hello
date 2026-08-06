@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { privateRealtimeChannel } from "@/lib/realtimeChannel";
 import { Clock, TrendingUp, Users, Sun, Moon, Sunrise, Sunset } from "lucide-react";
 import { motion } from "framer-motion";
@@ -64,14 +64,14 @@ export const TimezoneInsights = () => {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      backend.removeChannel(channel);
     };
   }, []);
 
   const loadTimezoneData = async () => {
     try {
       // Get locations grouped by timezone
-      const { data: locations } = await supabase
+      const { data: locations } = await backend
         .from("user_locations")
         .select("timezone, created_at")
         .not("timezone", "is", null);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import { useAuth } from '@/components/AuthProvider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -71,7 +71,7 @@ export const AnnouncementManager: React.FC = () => {
   const fetchAnnouncements = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from('announcements')
         .select('*')
         .order('created_at', { ascending: false });
@@ -134,7 +134,7 @@ export const AnnouncementManager: React.FC = () => {
       };
 
       if (editingAnnouncement) {
-        const { error } = await supabase
+        const { error } = await backend
           .from('announcements')
           .update(announcementData)
           .eq('id', editingAnnouncement.id);
@@ -142,7 +142,7 @@ export const AnnouncementManager: React.FC = () => {
         if (error) throw error;
         toast.success('Announcement updated');
       } else {
-        const { error } = await supabase
+        const { error } = await backend
           .from('announcements')
           .insert({
             ...announcementData,
@@ -166,7 +166,7 @@ export const AnnouncementManager: React.FC = () => {
 
   const handleToggleActive = async (announcement: Announcement) => {
     try {
-      const { error } = await supabase
+      const { error } = await backend
         .from('announcements')
         .update({ is_active: !announcement.is_active })
         .eq('id', announcement.id);
@@ -189,7 +189,7 @@ export const AnnouncementManager: React.FC = () => {
     if (!confirm('Are you sure you want to delete this announcement?')) return;
 
     try {
-      const { error } = await supabase
+      const { error } = await backend
         .from('announcements')
         .delete()
         .eq('id', id);

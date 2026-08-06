@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/components/AuthProvider";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { SSOProvider } from "@/components/enterprise/SSOProvider";
 import { WhiteLabelBranding } from "@/components/chat/WhiteLabelBranding";
 import { Button } from "@/components/ui/button";
@@ -52,7 +52,7 @@ const EnterpriseSettingsPage = () => {
     let cancelled = false;
 
     const loadWorkspace = async () => {
-      const { data: existing } = await supabase
+      const { data: existing } = await backend
         .from("workspaces")
         .select("id")
         .eq("owner_id", user.id)
@@ -66,7 +66,7 @@ const EnterpriseSettingsPage = () => {
       }
 
       const slug = `workspace-${user.id.slice(0, 8)}`;
-      const { data: created } = await supabase
+      const { data: created } = await backend
         .from("workspaces")
         .insert({ owner_id: user.id, name: "My Workspace", slug })
         .select("id")
@@ -89,11 +89,11 @@ const EnterpriseSettingsPage = () => {
       setTeamLoading(true);
       try {
         const [{ data: members }, { data: invites }] = await Promise.all([
-          supabase
+          backend
             .from("workspace_members")
             .select("id, role, user_id, profiles(display_name)")
             .eq("workspace_id", workspaceId),
-          supabase
+          backend
             .from("workspace_invitations")
             .select("id, email, role, expires_at")
             .eq("workspace_id", workspaceId)
@@ -132,7 +132,7 @@ const EnterpriseSettingsPage = () => {
     try {
       const token = crypto.randomUUID();
       const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
-      const { error } = await supabase.from("workspace_invitations").insert({
+      const { error } = await backend.from("workspace_invitations").insert({
         workspace_id: workspaceId,
         email: inviteEmail.trim().toLowerCase(),
         role: inviteRole,
@@ -143,7 +143,7 @@ const EnterpriseSettingsPage = () => {
       if (error) throw error;
       toast({ title: "Invitation sent", description: `${inviteEmail} can join your workspace.` });
       setInviteEmail("");
-      const { data: invites } = await supabase
+      const { data: invites } = await backend
         .from("workspace_invitations")
         .select("id, email, role, expires_at")
         .eq("workspace_id", workspaceId)

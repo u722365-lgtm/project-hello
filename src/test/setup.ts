@@ -1,9 +1,9 @@
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
-import { createMockSupabase } from './mocks/supabaseClient';
+import { createMockBackend } from './mocks/backendClient';
 
-vi.mock('@/integrations/supabase/client', () => ({
-  supabase: createMockSupabase(),
+vi.mock('@/integrations/local/client', () => ({
+  backend: createMockBackend(),
 }));
 
 // Mock matchMedia for components that use it
@@ -75,13 +75,13 @@ const localStorageMock = (() => {
 Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 Object.defineProperty(window, 'sessionStorage', { value: localStorageMock });
 
-// Mock import.meta.env for Supabase
+// Mock import.meta.env for ShadowTalk backend
 if (typeof process !== 'undefined') {
   (globalThis as any).import = {
     meta: {
       env: {
-        VITE_SUPABASE_URL: 'https://test.supabase.co',
-        VITE_SUPABASE_PUBLISHABLE_KEY: 'test-key',
+        VITE_API_BASE_URL: 'https://api.shadowtalk-ai.com',
+        VITE_API_KEY: 'test-key',
       },
     },
   };

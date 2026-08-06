@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 
 interface ImpactData {
   co2Saved: number;
@@ -90,7 +90,7 @@ const ImpactDashboard: React.FC<ImpactDashboardProps> = ({ impact, level, xp, st
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const { data: userData } = await supabase.auth.getUser();
+      const { data: userData } = await backend.auth.getUser();
       const userId = userData.user?.id;
 
       // Build 7 empty buckets keyed by weekday.
@@ -107,7 +107,7 @@ const ImpactDashboard: React.FC<ImpactDashboardProps> = ({ impact, level, xp, st
       }
 
       const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString();
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from('eco_actions')
         .select('co2_saved, water_saved, energy_saved, completed_at')
         .eq('user_id', userId)

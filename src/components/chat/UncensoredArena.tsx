@@ -14,7 +14,7 @@ import { stringifyChatBody } from "@/lib/chatRequest";
 type Phase = "intro" | "disclaimer" | "arena";
 type Msg = { role: "user" | "assistant"; content: string };
 
-const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
+const CHAT_URL = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`;
 
 const ARENA_PROMPTS = [
   { icon: Eye, label: "Recon a target with nmap + amass" },
@@ -64,8 +64,8 @@ export function UncensoredArena({ open, onClose }: Props) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          apikey: import.meta.env.VITE_API_KEY,
+          Authorization: `Bearer ${import.meta.env.VITE_API_KEY}`,
         },
         body: stringifyChatBody({
           messages: next,

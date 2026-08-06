@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/components/AuthProvider';
 import { useAdminCheck } from '@/hooks/useAdminCheck';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -191,14 +191,14 @@ const AdminPage = () => {
   const fetchAllData = async () => {
     setLoadingData(true);
     try {
-      const { data: convData, error: convError } = await supabase
+      const { data: convData, error: convError } = await backend
         .from('conversations')
         .select('*')
         .order('updated_at', { ascending: false });
       if (convError) throw convError;
       setConversations(convData || []);
 
-      const { data: msgData, error: msgError } = await supabase
+      const { data: msgData, error: msgError } = await backend
         .from('messages')
         .select('conversation_id');
       if (msgError) throw msgError;
@@ -212,14 +212,14 @@ const AdminPage = () => {
         message_count: msgCounts[conv.id] || 0
       })));
 
-      const { data: subData, error: subError } = await supabase
+      const { data: subData, error: subError } = await backend
         .from('subscribers')
         .select('*')
         .order('created_at', { ascending: false });
       if (subError) throw subError;
       setSubscribers(subData || []);
 
-      const { data: feedbackData, error: feedbackError } = await supabase
+      const { data: feedbackData, error: feedbackError } = await backend
         .from('feedback')
         .select('*')
         .order('created_at', { ascending: false });
@@ -227,7 +227,7 @@ const AdminPage = () => {
       setFeedback(feedbackData || []);
 
       const uniqueUserIds = new Set(convData?.map(c => c.user_id) || []);
-      const { count: growthPending } = await (supabase as unknown as { from: (t: string) => { select: (c: string, o?: object) => { eq: (col: string, v: string) => Promise<{ count: number | null }> } } })
+      const { count: growthPending } = await (backend as unknown as { from: (t: string) => { select: (c: string, o?: object) => { eq: (col: string, v: string) => Promise<{ count: number | null }> } } })
         .from('shadowscale_action_queue')
         .select('id', { count: 'exact', head: true })
         .eq('status', 'pending');
@@ -254,8 +254,8 @@ const AdminPage = () => {
   const handleDeleteConversation = async (conversationId: string) => {
     if (!confirm('Delete this conversation and all its messages?')) return;
     try {
-      await supabase.from('messages').delete().eq('conversation_id', conversationId);
-      await supabase.from('conversations').delete().eq('id', conversationId);
+      await backend.from('messages').delete().eq('conversation_id', conversationId);
+      await backend.from('conversations').delete().eq('id', conversationId);
       setConversations(prev => prev.filter(c => c.id !== conversationId));
       toast.success('Conversation deleted');
     } catch (error) {
@@ -265,7 +265,7 @@ const AdminPage = () => {
 
   const handleUpdateFeedbackStatus = async (feedbackId: string, newStatus: string) => {
     try {
-      const { error } = await supabase.from('feedback').update({ status: newStatus }).eq('id', feedbackId);
+      const { error } = await backend.from('feedback').update({ status: newStatus }).eq('id', feedbackId);
       if (error) throw error;
       setFeedback(prev => prev.map(f => f.id === feedbackId ? { ...f, status: newStatus } : f));
       toast.success(`Feedback marked as ${newStatus}`);
@@ -275,7 +275,7 @@ const AdminPage = () => {
   const handleDeleteFeedback = async (feedbackId: string) => {
     if (!confirm('Delete this feedback?')) return;
     try {
-      const { error } = await supabase.from('feedback').delete().eq('id', feedbackId);
+      const { error } = await backend.from('feedback').delete().eq('id', feedbackId);
       if (error) throw error;
       setFeedback(prev => prev.filter(f => f.id !== feedbackId));
       toast.success('Feedback deleted');

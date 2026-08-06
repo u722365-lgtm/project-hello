@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -31,7 +31,7 @@ interface VisualReasoningProps {
   onInsertToChat: (content: string) => void;
 }
 
-const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
+const CHAT_URL = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`;
 
 const ANALYSIS_MODES = [
   { id: "explain", label: "Explain", icon: Brain, desc: "Explain the logic within the image" },
@@ -91,7 +91,7 @@ export const VisualReasoning = ({ isOpen, onClose, onInsertToChat }: VisualReaso
     setResults([]);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await backend.auth.getSession();
       
       const modePrompts: Record<string, string> = {
         explain: "Analyze this image and explain the logic, structure, or meaning within it in detail. Break down any complex concepts.",
@@ -107,7 +107,7 @@ export const VisualReasoning = ({ isOpen, onClose, onInsertToChat }: VisualReaso
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`
+          Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_API_KEY}`
         },
         body: stringifyChatBody({
           messages: [

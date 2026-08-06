@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, Users, Award, ArrowUp } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 
 interface ImpactComparisonProps {
   co2Saved: number;
@@ -27,7 +27,7 @@ const ImpactComparison: React.FC<ImpactComparisonProps> = ({ co2Saved, actionsCo
     let cancelled = false;
     const load = async () => {
       try {
-        const { data, error } = await supabase
+        const { data, error } = await backend
           .from('eco_stats')
           .select('co2_saved, actions_completed, streak, level')
           .order('updated_at', { ascending: false })

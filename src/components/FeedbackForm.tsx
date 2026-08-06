@@ -19,7 +19,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { MessageSquareHeart, Star, Send } from "lucide-react";
-// Supabase removed — feedback is now local-only
+// ShadowTalk backend removed — feedback is now local-only
 import { useAuth } from "@/components/AuthProvider";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
