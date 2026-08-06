@@ -1,4 +1,4 @@
-import type { RealtimeChannel, RealtimeChannelOptions } from "@backend/backend-js";
+import type { RealtimeChannel, RealtimeChannelOptions } from "@/lib/backend-types";
 import { backend } from "@/integrations/local/client";
 
 /** Per-user Realtime topic (must match `can_access_realtime_topic` in SQL migrations). */

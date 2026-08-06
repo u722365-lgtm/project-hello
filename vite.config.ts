@@ -24,8 +24,8 @@ export default defineConfig(({ mode }) => {
       },
     },
     define: {
-      'import.meta.env.VITE_API_BASE_URL': JSON.stringify('https://api.shadowtalk-ai.com'),
-      'import.meta.env.VITE_API_KEY': JSON.stringify('removed'),
+      'import.meta.env.VITE_API_BASE_URL': JSON.stringify(''),
+      'import.meta.env.VITE_API_KEY': JSON.stringify(''),
       'import.meta.env.VITE_LOCAL_FIRST': JSON.stringify(false),
     },
      build: {

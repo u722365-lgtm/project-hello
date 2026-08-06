@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { backend } from "@/integrations/local/client";
 import { privateRealtimeChannel } from "@/lib/realtimeChannel";
 import { useAuth } from "@/components/AuthProvider";
-import type { RealtimeChannel } from "@backend/backend-js";
+import type { RealtimeChannel } from "@/lib/backend-types";
 
 export interface UserPresence {
   id: string;

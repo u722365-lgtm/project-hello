@@ -1,5 +1,5 @@
 /**
- * Local type stubs — replaces @backend/backend-js type imports.
+ * Local type stubs — replaces local backend type imports.
  * All ShadowTalk backend has been removed from ShadowTalk.
  */
 

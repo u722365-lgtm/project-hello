@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
-import type { UserIdentity } from "@backend/backend-js";
+import type { UserIdentity } from "@/lib/backend-types";
 import {
   connectIntegration,
   disconnectIntegration,

@@ -3,7 +3,7 @@
  * Default: on (consumer builds). Enterprise mode still requires work email.
  */
 
-import type { User } from "@backend/backend-js";
+import type { User } from "@/lib/backend-types";
 import { isAutonomousModeEnabled } from "@/lib/autonomy/config";
 import { shouldUseLocalMissionStore as sovereignLocalMissions } from "@/lib/desktop/sovereignAgentMode";
 

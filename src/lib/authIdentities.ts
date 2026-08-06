@@ -1,5 +1,5 @@
 import { backend } from "@/integrations/local/client";
-import type { UserIdentity, Provider } from "@backend/backend-js";
+import type { UserIdentity, Provider } from "@/lib/backend-types";
 
 export type AuthProvider = Extract<Provider, "google" | "apple" | "github" | "slack" | "notion">;
 
