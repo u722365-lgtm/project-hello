@@ -1,0 +1,39 @@
+# ShadowTalk AI — Supabase CLI Configuration
+# Docs: https://supabase.com/docs/guides/cli/config
+
+[project]
+id = "ivqmcwzbfijszkqgvmly"
+name = "ShadowTalk AI"
+
+[api]
+port = 54321
+schemas = ["public"]
+extra_search_path = ["public"]
+
+[db]
+port = 54322
+
+[studio]
+port = 54323
+
+[auth]
+site_url = "https://shadowtalk-ai.com"
+additional_redirect_urls = ["http://localhost:5173"]
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = true
+
+[auth.external.google]
+enabled = true
+client_id = "your-google-client-id"
+secret = "your-google-client-secret"
+
+[auth.external.apple]
+enabled = true
+client_id = "your-apple-client-id"
+secret = "your-apple-client-secret"
+
+[storage]
+file_size_limit = "52428800"
