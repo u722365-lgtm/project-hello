@@ -66,7 +66,15 @@ const channelStub = {
   state: 'closed' as string,
 };
 
-export const backend = {
+const channelFns = {
+  channel: (_name?: string, _opts?: any) => channelStub,
+  removeChannel: (_c?: any) => {},
+  removeAllChannels: () => {},
+  getChannels: () => [] as any[],
+};
+
+export const backend: any = {
+  ...channelFns,
   auth: authStub,
   from: (_table: string) => chainable(emptyArray),
   rpc: (_fn: string, _params?: any) => noopPromise({ data: null, error: null }),

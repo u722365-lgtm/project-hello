@@ -33,6 +33,10 @@ export interface Provider {
 }
 
 export interface RealtimeChannel {
+  presenceState: <T = any>() => Record<string, T[]>;
+  track: (payload: any) => Promise<any>;
+  untrack: () => Promise<any>;
+  [key: string]: any;
   on: (...args: any[]) => RealtimeChannel;
   subscribe: (cb?: Function) => { unsubscribe: () => void };
   unsubscribe: () => void;
