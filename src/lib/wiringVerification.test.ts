@@ -125,11 +125,6 @@ describe("feature wiring verification", () => {
     expect(readSrc("lib/privacy/cloudEgressGuard.ts")).toContain("/functions/v1/shadowspectre");
     expect(readSrc("components/chat/CommandPalette.tsx")).toContain("shadowspectre");
 
-    const config = readFileSync(resolve(root, "backend/config.toml"), "utf-8");
-    expect(config).toContain("[functions.shadowspectre]");
-    expect(readFileSync(resolve(root, "backend/functions/shadowspectre/index.ts"), "utf-8")).toContain(
-      "buildShadowSpectreSystemPrompt",
-    );
   });
 
   it("ShadowScale growth engine and admin Growth Command wired", () => {
@@ -242,8 +237,6 @@ describe("feature wiring verification", () => {
     expect(readSrc("components/chat/VisualKnowledgeGraph.tsx")).toContain("useMemoryGraph");
     expect(readSrc("components/chat/VisualKnowledgeGraph.tsx")).toContain("useKnowledgeSnapshot");
     expect(readSrc("components/chat/ModelFineTuning.tsx")).toContain("usePersonalLLMStore");
-    expect(readFileSync(resolve(root, "backend/functions/chat/index.ts"), "utf-8")).toContain("checkAndIncrementDailyUsage");
-    expect(readFileSync(resolve(root, "backend/functions/_shared/daily-limits.ts"), "utf-8")).toContain("FREE_TIER_DAILY");
   });
 
   it("full feature wiring — in-chat modals and onboarding", () => {

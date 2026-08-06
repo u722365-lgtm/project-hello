@@ -6,7 +6,7 @@ import {
   isCloudConfigured,
 } from './cloudEnv';
 
-describe('supabaseEnv', () => {
+describe('cloudEnv', () => {
   it('detects configured ShadowTalk backend from vitest env', () => {
     expect(isCloudConfigured()).toBe(true);
     expect(getChatFunctionUrl()).toBe('https://api.shadowtalk-ai.com/functions/v1/chat');
