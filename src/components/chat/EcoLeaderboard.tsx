@@ -69,7 +69,7 @@ const EcoLeaderboard: React.FC<EcoLeaderboardProps> = ({ currentUserId }) => {
           .select('id, display_name')
           .in('id', userIds);
 
-        const profileMap = new Map(profiles?.map(p => [p.id, p.display_name]) || []);
+        const profileMap = new Map<string, string>(profiles?.map((p: any) => [p.id as string, p.display_name as string]) || []);
 
         // Also fetch actions count filtered by timeframe
         let actionCounts = new Map<string, number>();
