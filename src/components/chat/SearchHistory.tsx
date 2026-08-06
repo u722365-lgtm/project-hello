@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import { useAuth } from '@/components/AuthProvider';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -34,7 +34,7 @@ export const SearchHistory = ({ onSelectQuery }: SearchHistoryProps) => {
     if (!user) return;
     setIsLoading(true);
     
-    const { data, error } = await supabase
+    const { data, error } = await backend
       .from('search_history')
       .select('*')
       .eq('user_id', user.id)
@@ -56,7 +56,7 @@ export const SearchHistory = ({ onSelectQuery }: SearchHistoryProps) => {
   const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     
-    const { error } = await supabase
+    const { error } = await backend
       .from('search_history')
       .delete()
       .eq('id', id);
@@ -69,7 +69,7 @@ export const SearchHistory = ({ onSelectQuery }: SearchHistoryProps) => {
   const handleClearAll = async () => {
     if (!user) return;
     
-    const { error } = await supabase
+    const { error } = await backend
       .from('search_history')
       .delete()
       .eq('user_id', user.id);
@@ -159,7 +159,7 @@ export const SearchHistory = ({ onSelectQuery }: SearchHistoryProps) => {
 // Helper function to save a search to history
 export const saveSearchToHistory = async (userId: string, query: string, resultsCount: number = 0) => {
   try {
-    await supabase.from('search_history').insert({
+    await backend.from('search_history').insert({
       user_id: userId,
       query,
       results_count: resultsCount,

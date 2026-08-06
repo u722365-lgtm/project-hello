@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { useToast } from "@/hooks/use-toast";
 import type { useE2EE } from "@/hooks/useE2EE";
 
@@ -58,7 +58,7 @@ export function useChatConversations(
 
   const loadConversations = useCallback(async (): Promise<ChatConversation[]> => {
     if (!userId) return [];
-    const { data, error } = await supabase
+    const { data, error } = await backend
       .from("conversations")
       .select("id, title, created_at, updated_at")
       .eq("user_id", userId)
@@ -81,7 +81,7 @@ export function useChatConversations(
 
   const loadMessages = useCallback(
     async (conversationId: string): Promise<ChatMessageRow[]> => {
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from("messages")
         .select("*")
         .eq("conversation_id", conversationId)
@@ -108,7 +108,7 @@ export function useChatConversations(
     async (title = "New Chat"): Promise<string | null> => {
       if (!userId) return null;
       const titleToSave = await encryptText(title);
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from("conversations")
         .insert({ user_id: userId, title: titleToSave })
         .select("id, created_at")
@@ -141,7 +141,7 @@ export function useChatConversations(
       if (!userId || !conversationId) return null;
       const contentToSave = await encryptText(content);
 
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from("messages")
         .insert({
           conversation_id: conversationId,
@@ -161,12 +161,12 @@ export function useChatConversations(
       if (options?.updateTitleFromContent && role === "user") {
         const title = content.trim().split(/\s+/).slice(0, 3).join(" ").slice(0, 25) || "New Chat";
         const titleToSave = await encryptText(title);
-        await supabase
+        await backend
           .from("conversations")
           .update({ title: titleToSave, updated_at: new Date().toISOString() })
           .eq("id", conversationId);
       } else {
-        await supabase
+        await backend
           .from("conversations")
           .update({ updated_at: new Date().toISOString() })
           .eq("id", conversationId);
@@ -179,7 +179,7 @@ export function useChatConversations(
 
   const deleteConversation = useCallback(
     async (conversationId: string) => {
-      const { error } = await supabase.from("conversations").delete().eq("id", conversationId);
+      const { error } = await backend.from("conversations").delete().eq("id", conversationId);
       if (error) {
         toast({ title: "Delete failed", description: error.message, variant: "destructive" });
         return false;

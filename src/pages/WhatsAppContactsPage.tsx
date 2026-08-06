@@ -29,7 +29,7 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { parseVCard } from "@/lib/whatsapp/vcardParser";
 import { useNavigate } from "react-router-dom";
 import { canUseCloudAI } from "@/lib/privacy/deviceOnlyPledge";
@@ -80,12 +80,12 @@ export default function WhatsAppContactsPage() {
 
   const load = async () => {
     setLoading(true);
-    const { data: session } = await supabase.auth.getSession();
+    const { data: session } = await backend.auth.getSession();
     if (!session.session) {
       navigate("/auth");
       return;
     }
-    const { data, error } = await supabase
+    const { data, error } = await backend
       .from("whatsapp_contacts")
       .select("*")
       .order("name", { ascending: true });
@@ -132,7 +132,7 @@ export default function WhatsAppContactsPage() {
       toast.error("No contacts found in this file. Make sure it's a .vcf export.");
       return;
     }
-    const { data: session } = await supabase.auth.getSession();
+    const { data: session } = await backend.auth.getSession();
     const uid = session.session?.user.id;
     if (!uid) return;
     const rows = parsed.map((p) => ({
@@ -141,7 +141,7 @@ export default function WhatsAppContactsPage() {
       phone: p.phone.slice(0, 32),
       source: "vcard",
     }));
-    const { error, count } = await supabase
+    const { error, count } = await backend
       .from("whatsapp_contacts")
       .upsert(rows, { onConflict: "user_id,phone", count: "exact" });
     if (error) toast.error(error.message);
@@ -150,7 +150,7 @@ export default function WhatsAppContactsPage() {
   };
 
   const saveContact = async (c: Partial<Contact> & { name: string; phone: string }) => {
-    const { data: session } = await supabase.auth.getSession();
+    const { data: session } = await backend.auth.getSession();
     const uid = session.session?.user.id;
     if (!uid) return;
     const payload = {
@@ -163,13 +163,13 @@ export default function WhatsAppContactsPage() {
       source: c.source ?? "manual",
     };
     if ((c as Contact).id) {
-      const { error } = await supabase
+      const { error } = await backend
         .from("whatsapp_contacts")
         .update(payload)
         .eq("id", (c as Contact).id);
       if (error) return toast.error(error.message);
     } else {
-      const { error } = await supabase.from("whatsapp_contacts").upsert(payload, {
+      const { error } = await backend.from("whatsapp_contacts").upsert(payload, {
         onConflict: "user_id,phone",
       });
       if (error) return toast.error(error.message);
@@ -183,7 +183,7 @@ export default function WhatsAppContactsPage() {
   const deleteContacts = async (ids: string[]) => {
     if (!ids.length) return;
     if (!confirm(`Delete ${ids.length} contact${ids.length > 1 ? "s" : ""}?`)) return;
-    const { error } = await supabase.from("whatsapp_contacts").delete().in("id", ids);
+    const { error } = await backend.from("whatsapp_contacts").delete().in("id", ids);
     if (error) toast.error(error.message);
     else {
       toast.success("Deleted");
@@ -210,7 +210,7 @@ export default function WhatsAppContactsPage() {
 
       let txt = "";
       if (canUseCloudAI()) {
-        const { data, error } = await supabase.functions.invoke("chat", {
+        const { data, error } = await backend.functions.invoke("chat", {
           body: { messages, personality: "professional" },
         });
         if (error) throw error;
@@ -263,7 +263,7 @@ export default function WhatsAppContactsPage() {
       toast.success(`Opened ${first.length} chats`);
     }
     // Mark last_messaged_at
-    supabase
+    backend
       .from("whatsapp_contacts")
       .update({ last_messaged_at: new Date().toISOString() })
       .in(
@@ -577,7 +577,7 @@ export default function WhatsAppContactsPage() {
               onClick={() => {
                 if (!draftTarget) return;
                 openWhatsApp(draftTarget.phone, draftMsg);
-                supabase
+                backend
                   .from("whatsapp_contacts")
                   .update({ last_messaged_at: new Date().toISOString() })
                   .eq("id", draftTarget.id)

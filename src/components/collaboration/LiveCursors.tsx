@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { privateRealtimeChannel } from "@/lib/realtimeChannel";
 import { useAuth } from "@/components/AuthProvider";
 
@@ -32,7 +32,7 @@ const getUserColor = (userId: string) => {
 export const LiveCursors = ({ channelName, containerRef, enabled = true }: LiveCursorsProps) => {
   const { user } = useAuth();
   const [cursors, setCursors] = useState<Map<string, CursorPosition>>(new Map());
-  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const channelRef = useRef<ReturnType<typeof backend.channel> | null>(null);
   const throttleRef = useRef<number>(0);
   
   const userName = user?.email?.split('@')[0] || 'Anonymous';
@@ -111,7 +111,7 @@ export const LiveCursors = ({ channelName, containerRef, enabled = true }: LiveC
     }, 2000);
     
     return () => {
-      supabase.removeChannel(channel);
+      backend.removeChannel(channel);
       clearInterval(cleanupInterval);
     };
   }, [user, channelName, enabled]);

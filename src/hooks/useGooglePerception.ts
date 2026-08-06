@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import { useAuth } from '@/components/AuthProvider';
 
 // =============================================================================
@@ -57,7 +57,7 @@ export const useGooglePerception = () => {
     if (!user) return false;
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from('oauth_tokens')
         .select('*')
         .eq('user_id', user.id)
@@ -245,8 +245,8 @@ export const useGooglePerception = () => {
   const syncViaEdgeFunctions = useCallback(async (): Promise<PerceptionEvent[]> => {
     try {
       const [emailRes, calendarRes] = await Promise.all([
-        supabase.functions.invoke('email-sync'),
-        supabase.functions.invoke('calendar-sync'),
+        backend.functions.invoke('email-sync'),
+        backend.functions.invoke('calendar-sync'),
       ]);
 
       const events: PerceptionEvent[] = [];

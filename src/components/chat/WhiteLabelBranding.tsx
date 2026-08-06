@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { useAuth } from "@/components/AuthProvider";
 
 interface BrandingConfig {
@@ -65,7 +65,7 @@ export const WhiteLabelBranding = ({ onClose, workspaceId }: WhiteLabelBrandingP
         let wsId = currentWorkspaceId;
         
         if (!wsId) {
-          const { data: workspaces } = await supabase
+          const { data: workspaces } = await backend
             .from('workspaces')
             .select('id')
             .eq('owner_id', user.id)
@@ -77,7 +77,7 @@ export const WhiteLabelBranding = ({ onClose, workspaceId }: WhiteLabelBrandingP
           } else {
             // Create a default workspace for the user
             const slug = `workspace-${user.id.slice(0, 8)}`;
-            const { data: newWorkspace, error: createError } = await supabase
+            const { data: newWorkspace, error: createError } = await backend
               .from('workspaces')
               .insert({
                 name: 'My Workspace',
@@ -95,7 +95,7 @@ export const WhiteLabelBranding = ({ onClose, workspaceId }: WhiteLabelBrandingP
         }
 
         if (wsId) {
-          const { data: brandingData, error } = await supabase
+          const { data: brandingData, error } = await backend
             .from('workspace_branding')
             .select('*')
             .eq('workspace_id', wsId)
@@ -181,9 +181,9 @@ export const WhiteLabelBranding = ({ onClose, workspaceId }: WhiteLabelBrandingP
     if (user && currentWorkspaceId) {
       setIsSaving(true);
       try {
-        const { data: session } = await supabase.auth.getSession();
+        const { data: session } = await backend.auth.getSession();
         
-        const response = await supabase.functions.invoke('save-workspace-branding', {
+        const response = await backend.functions.invoke('save-workspace-branding', {
           body: {
             workspaceId: currentWorkspaceId,
             appName: branding.appName,

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import { privateRealtimeChannel } from '@/lib/realtimeChannel';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -126,8 +126,8 @@ export const RealTimeUserFlow: React.FC = () => {
     loadStats();
 
     return () => {
-      supabase.removeChannel(presenceChannel);
-      supabase.removeChannel(analyticsChannel);
+      backend.removeChannel(presenceChannel);
+      backend.removeChannel(analyticsChannel);
     };
   }, []);
 
@@ -135,7 +135,7 @@ export const RealTimeUserFlow: React.FC = () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const { data, error } = await supabase
+    const { data, error } = await backend
       .from('usage_analytics')
       .select('*')
       .gte('created_at', today.toISOString());

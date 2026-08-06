@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import { stringifyChatBody } from "@/lib/chatRequest";
 
 // =============================================================================
@@ -109,7 +109,7 @@ const SPECIALIST_AGENTS: SpecialistAgent[] = [
   },
 ];
 
-const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
+const CHAT_URL = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`;
 
 export const useCognitiveLoop = () => {
   const [state, setState] = useState<CognitiveState>({
@@ -135,7 +135,7 @@ export const useCognitiveLoop = () => {
     const startTime = Date.now();
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await backend.auth.getSession();
       if (!session?.access_token) {
         throw new Error('AUTH_REQUIRED');
       }
@@ -268,7 +268,7 @@ Now provide your perspective as the ${agent.name}. If you disagree with any poin
     responses: AgentResponse[]
   ): Promise<string> => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await backend.auth.getSession();
       if (!session?.access_token) {
         return responses.map(r => `**${r.agentName}**: ${r.response}`).join('\n\n');
       }
@@ -444,12 +444,12 @@ Provide the BEST possible answer by combining their expertise.`;
 
       let memoryUpdated = false;
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user } } = await backend.auth.getUser();
         if (user) {
           // Store key insights from this cognitive loop as memories
           const memoryContent = `Query: ${query}\nConsensus: ${consensusLevel.toFixed(0)}%\nDominant Agent: ${dominantAgent}\nKey insight: ${finalAnswer.slice(0, 500)}`;
           
-          await supabase.from('ai_memories').insert({
+          await backend.from('ai_memories').insert({
             user_id: user.id,
             content: memoryContent,
             category: 'cognitive_loop',

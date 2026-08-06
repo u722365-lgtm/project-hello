@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -69,7 +69,7 @@ export const ProfileManager: React.FC = () => {
     setLoading(true);
     try {
       // Fetch all profiles
-      const { data: profilesData, error: profilesError } = await supabase
+      const { data: profilesData, error: profilesError } = await backend
         .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
@@ -77,7 +77,7 @@ export const ProfileManager: React.FC = () => {
       if (profilesError) throw profilesError;
 
       // Fetch subscription info
-      const { data: subsData } = await supabase
+      const { data: subsData } = await backend
         .from('subscribers')
         .select('*');
 
@@ -111,7 +111,7 @@ export const ProfileManager: React.FC = () => {
 
     setSaving(true);
     try {
-      const { error } = await supabase
+      const { error } = await backend
         .from('profiles')
         .update({
           display_name: editForm.display_name || null,

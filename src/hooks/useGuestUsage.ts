@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import { GUEST_LIMITS } from '@/lib/productClaims';
 
 export { GUEST_LIMITS };
@@ -68,7 +68,7 @@ export function useGuestUsage() {
 
     // Sync to backend
     const sessionId = getSessionId();
-    supabase
+    backend
       .from('guest_usage')
       .update({
         chats: newUsage.chats,

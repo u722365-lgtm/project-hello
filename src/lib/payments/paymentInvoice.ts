@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 
 export interface PaymentInvoiceResult {
   ok: boolean;
@@ -27,7 +27,7 @@ export async function createPaymentInvoice(input: {
   amount: number;
   currency: "USD" | "PKR";
 }): Promise<PaymentInvoiceResult> {
-  const { data, error } = await supabase.functions.invoke("create-payment-invoice", {
+  const { data, error } = await backend.functions.invoke("create-payment-invoice", {
     body: input,
   });
 
@@ -48,7 +48,7 @@ export async function processManualPaymentAutomation(input: {
   paymentId: string;
   invoiceDraftId?: string | null;
 }): Promise<ProcessPaymentResult> {
-  const { data, error } = await supabase.functions.invoke("process-manual-payment", {
+  const { data, error } = await backend.functions.invoke("process-manual-payment", {
     body: input,
   });
 

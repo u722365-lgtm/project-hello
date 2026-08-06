@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -504,7 +504,7 @@ const SecurityAuditPanel: React.FC<SecurityAuditPanelProps> = ({
     try {
       setScanProgress(prev => ({ ...prev!, phase: 'Fetching website source code & assets...', progress: 15 }));
       
-      const { data, error } = await supabase.functions.invoke('website-security-scan', {
+      const { data, error } = await backend.functions.invoke('website-security-scan', {
         body: { url: urlInput.trim(), scanDepth: scanMode === 'full' ? 'deep' : 'standard' },
       });
 

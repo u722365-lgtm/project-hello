@@ -1,4 +1,4 @@
-import type { Session } from "@/lib/supabase-types";
+import type { Session } from "@/lib/backend-types";
 
 /** Set when user explicitly signs out — blocks silent re-login until they sign in again. */
 export const SIGNED_OUT_FLAG = "shadowtalk_signed_out";

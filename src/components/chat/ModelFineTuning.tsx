@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { usePersonalLLMStore } from "@/hooks/usePersonalLLMStore";
 import { syncPersonalExamplesToSovereign } from "@/lib/personalModel";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { useAuth } from "@/components/AuthProvider";
 
 interface TrainingExample {
@@ -82,7 +82,7 @@ export const ModelFineTuning = ({ onClose }: ModelFineTuningProps) => {
     const loadModels = async () => {
       setIsLoading(true);
       try {
-        const { data, error } = await supabase
+        const { data, error } = await backend
           .from('custom_models')
           .select('*')
           .eq('user_id', user.id)
@@ -192,9 +192,9 @@ export const ModelFineTuning = ({ onClose }: ModelFineTuningProps) => {
     // Save to cloud if user is authenticated
     if (user) {
       try {
-        const { data: session } = await supabase.auth.getSession();
+        const { data: session } = await backend.auth.getSession();
         
-        const response = await supabase.functions.invoke('save-custom-model', {
+        const response = await backend.functions.invoke('save-custom-model', {
           body: {
             name: currentModel.name,
             basePersonality: currentModel.basePersonality,
@@ -263,7 +263,7 @@ export const ModelFineTuning = ({ onClose }: ModelFineTuningProps) => {
     // Delete from cloud if synced
     if (user && modelToDelete?.id) {
       try {
-        await supabase
+        await backend
           .from('custom_models')
           .delete()
           .eq('id', modelToDelete.id)
@@ -298,7 +298,7 @@ export const ModelFineTuning = ({ onClose }: ModelFineTuningProps) => {
     if (user) {
       try {
         // Deactivate all models first
-        await supabase
+        await backend
           .from('custom_models')
           .update({ is_active: false })
           .eq('user_id', user.id);
@@ -306,7 +306,7 @@ export const ModelFineTuning = ({ onClose }: ModelFineTuningProps) => {
         // Activate the selected model
         const modelToActivate = models.find(m => m.name === name);
         if (modelToActivate?.id) {
-          await supabase
+          await backend
             .from('custom_models')
             .update({ is_active: true })
             .eq('id', modelToActivate.id);

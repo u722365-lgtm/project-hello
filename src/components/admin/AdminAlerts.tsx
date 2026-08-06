@@ -15,7 +15,7 @@ import {
   RefreshCw,
   Settings
 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import { privateRealtimeChannel } from '@/lib/realtimeChannel';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -53,14 +53,14 @@ export const AdminAlerts: React.FC = () => {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      backend.removeChannel(channel);
     };
   }, []);
 
   const fetchAlerts = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from('admin_alerts')
         .select('*')
         .eq('is_dismissed', false)
@@ -85,12 +85,12 @@ export const AdminAlerts: React.FC = () => {
       const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
 
       // Get recent usage analytics
-      const { data: recentData } = await supabase
+      const { data: recentData } = await backend
         .from('usage_analytics')
         .select('id, created_at')
         .gte('created_at', oneHourAgo.toISOString());
 
-      const { data: previousData } = await supabase
+      const { data: previousData } = await backend
         .from('usage_analytics')
         .select('id, created_at')
         .gte('created_at', twoHoursAgo.toISOString())
@@ -122,7 +122,7 @@ export const AdminAlerts: React.FC = () => {
       }
 
       // Check for high error rate
-      const { data: errorData } = await supabase
+      const { data: errorData } = await backend
         .from('feedback')
         .select('id')
         .eq('category', 'bug')
@@ -150,7 +150,7 @@ export const AdminAlerts: React.FC = () => {
 
   const createAlert = async (alertData: Omit<AdminAlert, 'id' | 'is_read' | 'is_dismissed' | 'triggered_at'>) => {
     try {
-      await supabase.from('admin_alerts').insert(alertData);
+      await backend.from('admin_alerts').insert(alertData);
     } catch (error) {
       console.error('Error creating alert:', error);
     }
@@ -158,7 +158,7 @@ export const AdminAlerts: React.FC = () => {
 
   const markAsRead = async (alertId: string) => {
     try {
-      await supabase
+      await backend
         .from('admin_alerts')
         .update({ is_read: true, read_at: new Date().toISOString() })
         .eq('id', alertId);
@@ -173,7 +173,7 @@ export const AdminAlerts: React.FC = () => {
 
   const dismissAlert = async (alertId: string) => {
     try {
-      await supabase
+      await backend
         .from('admin_alerts')
         .update({ is_dismissed: true, dismissed_at: new Date().toISOString() })
         .eq('id', alertId);

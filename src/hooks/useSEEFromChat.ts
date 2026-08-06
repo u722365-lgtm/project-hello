@@ -1,6 +1,6 @@
 import { useCallback, useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { detectComplexTask } from "@/lib/see/complexTaskDetector";
 import { inferDeliverableType } from "@/lib/execution/inferFromChat";
 import { useMissions, Mission } from "@/hooks/useMissions";
@@ -92,7 +92,7 @@ export const useSEEFromChat = () => {
       const finalResult = await executeMission(mission);
       await fetchMissions();
 
-      const { data: updatedRow } = await supabase
+      const { data: updatedRow } = await backend
         .from("missions")
         .select("*")
         .eq("id", mission.id)

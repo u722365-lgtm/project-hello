@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { useAuth } from "@/components/AuthProvider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,7 +30,7 @@ export default function SessionsPage() {
 
   const load = async () => {
     if (!user) return;
-    const { data, error } = await supabase
+    const { data, error } = await backend
       .from("user_sessions")
       .select("*")
       .eq("user_id", user.id)
@@ -52,7 +52,7 @@ export default function SessionsPage() {
 
   const revoke = async (id: string) => {
     setBusy(true);
-    const { error } = await supabase
+    const { error } = await backend
       .from("user_sessions")
       .update({ revoked_at: new Date().toISOString(), is_current: false })
       .eq("id", id);
@@ -65,7 +65,7 @@ export default function SessionsPage() {
   const revokeAllOthers = async () => {
     if (!user) return;
     setBusy(true);
-    const { error } = await supabase
+    const { error } = await backend
       .from("user_sessions")
       .update({ revoked_at: new Date().toISOString(), is_current: false })
       .eq("user_id", user.id)

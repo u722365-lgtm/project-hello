@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { toast } from "sonner";
 import { Loader2, CheckCircle, Sparkles, Mail, ArrowRight, Zap } from "lucide-react";
 import { z } from "zod";
@@ -41,7 +41,7 @@ const NewsletterSubscription = () => {
     setIsLoading(true);
     try {
       // Use the new newsletter_subscriptions table
-      const { data: existing } = await supabase
+      const { data: existing } = await backend
         .from("newsletter_subscriptions")
         .select("id, is_active")
         .eq("email", email)
@@ -51,7 +51,7 @@ const NewsletterSubscription = () => {
         if (existing.is_active) {
           toast.info("You're already subscribed to our newsletter!");
         } else {
-          await supabase
+          await backend
             .from("newsletter_subscriptions")
             .update({ is_active: true, unsubscribed_at: null })
             .eq("id", existing.id);
@@ -59,7 +59,7 @@ const NewsletterSubscription = () => {
           setIsSubscribed(true);
         }
       } else {
-        const { error } = await supabase
+        const { error } = await backend
           .from("newsletter_subscriptions")
           .insert({ email, is_active: true, source: 'website' });
         if (error) throw error;

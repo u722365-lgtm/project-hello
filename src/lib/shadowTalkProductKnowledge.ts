@@ -1,6 +1,6 @@
 /**
  * Client-side ShadowTalk self-knowledge (summary).
- * Full authoritative text lives in supabase/functions/_shared/shadowTalkProductKnowledge.ts
+ * Full authoritative text lives in backend/functions/_shared/shadowTalkProductKnowledge.ts
  */
 
 import { FOUNDER_KNOWLEDGE_BRIEF, isFounderEmail } from "@/lib/founderKnowledge";

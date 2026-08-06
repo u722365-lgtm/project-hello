@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,7 +42,7 @@ export const TwoFactorSetup = () => {
 
   const loadFactors = async () => {
     try {
-      const { data, error } = await supabase.auth.mfa.listFactors();
+      const { data, error } = await backend.auth.mfa.listFactors();
       if (error) throw error;
       setFactors(data?.totp || []);
     } catch (err: any) {
@@ -55,7 +55,7 @@ export const TwoFactorSetup = () => {
   const handleEnroll = async () => {
     setIsEnrolling(true);
     try {
-      const { data, error } = await supabase.auth.mfa.enroll({
+      const { data, error } = await backend.auth.mfa.enroll({
         factorType: "totp",
         friendlyName: "Authenticator App",
       });
@@ -83,10 +83,10 @@ export const TwoFactorSetup = () => {
     }
     setIsVerifying(true);
     try {
-      const { data: challenge, error: challengeError } = await supabase.auth.mfa.challenge({ factorId });
+      const { data: challenge, error: challengeError } = await backend.auth.mfa.challenge({ factorId });
       if (challengeError) throw challengeError;
 
-      const { error: verifyError } = await supabase.auth.mfa.verify({
+      const { error: verifyError } = await backend.auth.mfa.verify({
         factorId,
         challengeId: challenge.id,
         code: verifyCode,
@@ -114,7 +114,7 @@ export const TwoFactorSetup = () => {
 
     setIsUnenrolling(true);
     try {
-      const { error } = await supabase.auth.mfa.unenroll({ factorId: verifiedFactor.id });
+      const { error } = await backend.auth.mfa.unenroll({ factorId: verifiedFactor.id });
       if (error) throw error;
 
       toast({ title: "2FA Disabled", description: "Two-factor authentication has been removed." });

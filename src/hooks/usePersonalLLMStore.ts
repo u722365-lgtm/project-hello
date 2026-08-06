@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 
 // =============================================================================
 // HYBRID STORAGE: Local-first IndexedDB + Cloud backup when authenticated
@@ -99,12 +99,12 @@ export function usePersonalLLMStore() {
   // Check auth state
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await backend.auth.getUser();
       setUserId(user?.id || null);
     };
     checkAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+    const { data: { subscription } } = backend.auth.onAuthStateChange((_, session) => {
       setUserId(session?.user?.id || null);
     });
 
@@ -124,7 +124,7 @@ export function usePersonalLLMStore() {
     try {
       for (const convo of unsyncedConvos) {
         // Upsert conversation
-        const { error: convoError } = await supabase
+        const { error: convoError } = await backend
           .from('personal_llm_conversations')
           .upsert({
             id: convo.id,
@@ -155,7 +155,7 @@ export function usePersonalLLMStore() {
         }));
 
         if (messagesToSync.length > 0) {
-          const { error: msgError } = await supabase
+          const { error: msgError } = await backend
             .from('personal_llm_messages')
             .upsert(messagesToSync, { onConflict: 'id' });
 
@@ -194,7 +194,7 @@ export function usePersonalLLMStore() {
 
     try {
       // Fetch cloud conversations
-      const { data: cloudConvos, error: convoError } = await supabase
+      const { data: cloudConvos, error: convoError } = await backend
         .from('personal_llm_conversations')
         .select('*')
         .eq('user_id', userId)
@@ -213,7 +213,7 @@ export function usePersonalLLMStore() {
         }
 
         // Fetch messages
-        const { data: cloudMessages } = await supabase
+        const { data: cloudMessages } = await backend
           .from('personal_llm_messages')
           .select('*')
           .eq('conversation_id', cloudConvo.id)
@@ -380,7 +380,7 @@ export function usePersonalLLMStore() {
 
     // Also delete from cloud if authenticated
     if (userId) {
-      await supabase
+      await backend
         .from('personal_llm_conversations')
         .delete()
         .eq('id', conversationId)

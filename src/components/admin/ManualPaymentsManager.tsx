@@ -44,7 +44,7 @@ import {
   Phone,
   FileText
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
@@ -93,7 +93,7 @@ export function ManualPaymentsManager() {
     }
     let cancelled = false;
     setLoadingReceipt(true);
-    void supabase.storage
+    void backend.storage
       .from("payment-receipts")
       .createSignedUrl(selectedPayment.receipt_url, 3600)
       .then(({ data, error }) => {
@@ -109,7 +109,7 @@ export function ManualPaymentsManager() {
   const loadPayments = async () => {
     setLoading(true);
     try {
-      let query = supabase
+      let query = backend
         .from('manual_payments')
         .select('*')
         .order('created_at', { ascending: false });
@@ -139,7 +139,7 @@ export function ManualPaymentsManager() {
     
     setProcessing(true);
     try {
-      const { data, error } = await supabase.functions.invoke("verify-manual-payment", {
+      const { data, error } = await backend.functions.invoke("verify-manual-payment", {
         body: { paymentId: selectedPayment.id, action: "verify", notes: notes || null },
       });
 
@@ -171,7 +171,7 @@ export function ManualPaymentsManager() {
     
     setProcessing(true);
     try {
-      const { data, error } = await supabase.functions.invoke("verify-manual-payment", {
+      const { data, error } = await backend.functions.invoke("verify-manual-payment", {
         body: { paymentId: selectedPayment.id, action: "reject", notes: notes || null },
       });
 

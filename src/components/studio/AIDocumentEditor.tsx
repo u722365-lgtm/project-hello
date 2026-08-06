@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FileText, Wand2, RefreshCw, AlignLeft, Languages, CheckCheck,
@@ -63,7 +63,7 @@ export const AIDocumentEditor: React.FC = () => {
       setHistory(prev => [...prev, content]);
       setOriginalContent(content);
 
-      const { data, error } = await supabase.functions.invoke("document-ai", {
+      const { data, error } = await backend.functions.invoke("document-ai", {
         body: {
           action,
           content: content.trim(),

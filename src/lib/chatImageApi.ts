@@ -3,9 +3,9 @@
  * Uses existing /functions/v1/chat handlers (imageEdit, decodeImage).
  */
 
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { stringifyChatBody } from "@/lib/chatRequest";
-import { getChatFetchHeaders, getChatFunctionUrl } from "@/lib/supabaseEnv";
+import { getChatFetchHeaders, getChatFunctionUrl } from "@/lib/cloudEnv";
 import { selfHealedFetch } from "@/lib/selfHealing/selfHealedFetch";
 
 export interface ChatImageResult {
@@ -43,7 +43,7 @@ async function callChatImageMode(body: Record<string, unknown> & { signal?: Abor
   const chatUrl = getChatFunctionUrl();
   if (!chatUrl) throw new Error("Chat is not configured for this build.");
 
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await backend.auth.getSession();
   const resp = await selfHealedFetch(chatUrl, {
     method: "POST",
     headers: getChatFetchHeaders(session?.access_token),

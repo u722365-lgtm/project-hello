@@ -227,10 +227,10 @@ function isDesktopAppOrigin(origin: string, customScheme: string): boolean {
   );
 }
 
-/** Track shadowtalk:// Origin for Supabase responses (production edge may return the web ACAO). */
+/** Track shadowtalk:// Origin for ShadowTalk backend responses (production edge may return the web ACAO). */
 function setupDesktopSupabaseCors(customScheme: string): Map<number, string> {
   const pendingOrigins = new Map<number, string>();
-  const supabaseFilter = { urls: ['https://*.supabase.co/*', 'https://*.supabase.in/*'] };
+  const supabaseFilter = { urls: ['https://*.backend.co/*', 'https://*.backend.in/*'] };
 
   const fallbackOrigin = `${customScheme}://localhost`;
 
@@ -268,8 +268,8 @@ export function setupContentSecurityPolicy(customScheme: string): void {
 
     responseHeaders['Content-Security-Policy'] = [
       electronIsDev
-        ? `default-src ${customScheme}://* 'unsafe-inline' devtools://* 'unsafe-eval' data: blob:; connect-src ${customScheme}://* https: wss: http://localhost:* http://127.0.0.1:* https://huggingface.co https://*.hf.co https://cdn.jsdelivr.net https://raw.githubusercontent.com https://*.supabase.co; img-src ${customScheme}://* https: data: blob:; media-src ${customScheme}://* https: blob:;`
-        : `default-src ${customScheme}://* 'unsafe-inline' 'unsafe-eval' data: blob:; connect-src ${customScheme}://* https: wss: http://127.0.0.1:* http://localhost:* https://huggingface.co https://*.hf.co https://cdn.jsdelivr.net https://raw.githubusercontent.com https://*.supabase.co wss://*.supabase.co; img-src ${customScheme}://* https: data: blob:; media-src ${customScheme}://* https: blob:; worker-src ${customScheme}://* blob:;`,
+        ? `default-src ${customScheme}://* 'unsafe-inline' devtools://* 'unsafe-eval' data: blob:; connect-src ${customScheme}://* https: wss: http://localhost:* http://127.0.0.1:* https://huggingface.co https://*.hf.co https://cdn.jsdelivr.net https://raw.githubusercontent.com https://*.backend.co; img-src ${customScheme}://* https: data: blob:; media-src ${customScheme}://* https: blob:;`
+        : `default-src ${customScheme}://* 'unsafe-inline' 'unsafe-eval' data: blob:; connect-src ${customScheme}://* https: wss: http://127.0.0.1:* http://localhost:* https://huggingface.co https://*.hf.co https://cdn.jsdelivr.net https://raw.githubusercontent.com https://*.backend.co wss://*.backend.co; img-src ${customScheme}://* https: data: blob:; media-src ${customScheme}://* https: blob:; worker-src ${customScheme}://* blob:;`,
     ];
 
     callback({ responseHeaders });

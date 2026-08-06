@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import { useAuth } from '@/components/AuthProvider';
 
 const getSessionId = () => {
@@ -32,7 +32,7 @@ export const useJourneyTracking = () => {
         : null;
 
       try {
-        await supabase
+        await backend
           .from('user_journeys')
           .insert({
             user_id: user?.id || null,

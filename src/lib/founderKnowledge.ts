@@ -1,6 +1,6 @@
 /**
  * Client-side founder knowledge (summary).
- * Full authoritative text: supabase/functions/_shared/founderKnowledge.ts
+ * Full authoritative text: backend/functions/_shared/founderKnowledge.ts
  */
 
 export const FOUNDER_KNOWLEDGE_BRIEF = `**Zain Ahmed** — CEO & Founder of ShadowTalk AI. 17, from Karachi, Pakistan. Built ShadowTalk (sovereign E2EE AI workspace), SocialSync (23+ businesses in 24h), offline LLM stack. Mentored by Sir Zia Khan (Governor Sindh IT Initiative). Mission: intelligence you own, not rent. Full story: /about`;

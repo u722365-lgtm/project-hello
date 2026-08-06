@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import { openDB, IDBPDatabase } from 'idb';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 
 /**
  * Offline Analytics Queue — Tracks usage events locally and batch-syncs
@@ -145,7 +145,7 @@ export const useOfflineAnalytics = () => {
 
     try {
       const db = await getDb();
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await backend.auth.getUser();
       if (!user) {
         setSyncing(false);
         return;
@@ -171,7 +171,7 @@ export const useOfflineAnalytics = () => {
         const sorted = events.sort((a, b) => a.timestamp.localeCompare(b.timestamp));
         const features = [...new Set(events.map(e => e.eventType))];
 
-        await supabase.from('offline_session_analytics').upsert({
+        await backend.from('offline_session_analytics').upsert({
           user_id: user.id,
           session_start: sorted[0].timestamp,
           session_end: sorted[sorted.length - 1].timestamp,

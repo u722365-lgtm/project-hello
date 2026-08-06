@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import { useAuth } from '@/components/AuthProvider';
 import { openDB } from 'idb';
 
@@ -132,18 +132,18 @@ export const useZeroKnowledgeSync = () => {
 
     switch (item.action) {
       case 'create': {
-        const { error } = await (supabase.from(table as any) as any).insert(item.data);
+        const { error } = await (backend.from(table as any) as any).insert(item.data);
         if (error) throw error;
         break;
       }
       case 'update': {
         const { id, ...updateData } = item.data;
-        const { error } = await (supabase.from(table as any) as any).update(updateData).eq('id', id);
+        const { error } = await (backend.from(table as any) as any).update(updateData).eq('id', id);
         if (error) throw error;
         break;
       }
       case 'delete': {
-        const { error } = await (supabase.from(table as any) as any).delete().eq('id', item.data.id);
+        const { error } = await (backend.from(table as any) as any).delete().eq('id', item.data.id);
         if (error) throw error;
         break;
       }

@@ -10,7 +10,7 @@ export async function selfHealedFetch(
   });
 }
 
-/** supabase.functions.invoke with self-heal retry */
+/** backend.functions.invoke with self-heal retry */
 export async function invokeWithSelfHeal<T = unknown>(
   invoke: () => Promise<{ data: T; error: Error | null }>,
 ): Promise<{ data: T; error: Error | null }> {

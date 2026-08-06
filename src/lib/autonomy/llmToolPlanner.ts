@@ -3,11 +3,11 @@
  * Falls back to regex detection when the model is unavailable.
  */
 
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { stringifyChatBody } from "@/lib/chatRequest";
 import type { ToolDetectionResult, ToolType } from "@/hooks/useToolOrchestrator";
 
-const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
+const CHAT_URL = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`;
 
 const ROUTABLE_TOOLS = [
   "web_search",
@@ -83,12 +83,12 @@ function parsePlannerJson(raw: string): PlannerPlan | null {
 }
 
 async function callPlannerLlm(system: string, user: string, signal?: AbortSignal): Promise<string> {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await backend.auth.getSession();
   const resp = await fetch(CHAT_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+      Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_API_KEY}`,
     },
     body: stringifyChatBody({
       messages: [

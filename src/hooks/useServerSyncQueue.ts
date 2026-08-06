@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import { useAuth } from '@/components/AuthProvider';
 
 /**
@@ -17,7 +17,7 @@ export const useServerSyncQueue = () => {
     if (!user) return null;
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from('offline_sync_queue')
         .insert({
           user_id: user.id,
@@ -41,7 +41,7 @@ export const useServerSyncQueue = () => {
     if (!user) return 0;
 
     try {
-      const { data: pending, error } = await supabase
+      const { data: pending, error } = await backend
         .from('offline_sync_queue')
         .select('*')
         .eq('user_id', user.id)
@@ -56,14 +56,14 @@ export const useServerSyncQueue = () => {
       let processed = 0;
       for (const item of pending) {
         try {
-          await supabase
+          await backend
             .from('offline_sync_queue')
             .update({ status: 'completed', processed_at: new Date().toISOString() })
             .eq('id', item.id);
           processed++;
         } catch {
           const retries = (item.retry_count || 0) + 1;
-          await supabase
+          await backend
             .from('offline_sync_queue')
             .update({
               status: retries >= item.max_retries ? 'failed' : 'pending',
@@ -82,7 +82,7 @@ export const useServerSyncQueue = () => {
 
   const getPendingCount = useCallback(async () => {
     if (!user) return 0;
-    const { count } = await supabase
+    const { count } = await backend
       .from('offline_sync_queue')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', user.id)

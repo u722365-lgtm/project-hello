@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { openDB } from 'idb';
 import { useAuth } from '@/components/AuthProvider';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 
 interface CreditState {
   balance: number;
@@ -59,7 +59,7 @@ export const useOfflineCredits = () => {
     });
   }, []);
 
-  // Load credits from local storage + Supabase
+  // Load credits from local storage + ShadowTalk backend
   useEffect(() => {
     const loadCredits = async () => {
       try {
@@ -70,7 +70,7 @@ export const useOfflineCredits = () => {
 
         if (user && navigator.onLine) {
           // Sync from server
-          const { data } = await supabase
+          const { data } = await backend
             .from('shadow_credits')
             .select('*')
             .eq('user_id', user.id)
@@ -172,7 +172,7 @@ export const useOfflineCredits = () => {
 
     // Sync to server if online
     if (user && navigator.onLine) {
-      await supabase
+      await backend
         .from('shadow_credits')
         .upsert({
           user_id: user.id,
@@ -204,7 +204,7 @@ export const useOfflineCredits = () => {
 
     // Batch insert credit_transactions
     for (const transaction of unsynced) {
-      await supabase.from('credit_transactions').insert({
+      await backend.from('credit_transactions').insert({
         user_id: user.id,
         amount: transaction.amount,
         transaction_type: transaction.type,
@@ -219,7 +219,7 @@ export const useOfflineCredits = () => {
     }
 
     // Update server balance
-    await supabase
+    await backend
       .from('shadow_credits')
       .upsert({
         user_id: user.id,

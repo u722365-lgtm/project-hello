@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Navigation from "@/components/Navigation";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -39,14 +39,14 @@ const SelfHealingPage = () => {
 
   const load = async () => {
     setLoading(true);
-    const { data: errs } = await supabase
+    const { data: errs } = await backend
       .from("shadowtalk_errors")
       .select("id, kind, message, occurrences, status, last_seen_at, route, source_file")
       .order("last_seen_at", { ascending: false })
       .limit(100);
     setErrors((errs ?? []) as ErrorRow[]);
 
-    const { data: props } = await supabase
+    const { data: props } = await backend
       .from("shadowtalk_fix_proposals")
       .select("*")
       .order("created_at", { ascending: false })
@@ -62,18 +62,18 @@ const SelfHealingPage = () => {
 
   useEffect(() => {
     void load();
-    const ch = supabase
+    const ch = backend
       .channel("self-heal")
       .on("postgres_changes", { event: "*", schema: "public", table: "shadowtalk_errors" }, load)
       .on("postgres_changes", { event: "*", schema: "public", table: "shadowtalk_fix_proposals" }, load)
       .subscribe();
     return () => {
-      void supabase.removeChannel(ch);
+      void backend.removeChannel(ch);
     };
   }, []);
 
   const approve = async (id: string) => {
-    const { error } = await supabase
+    const { error } = await backend
       .from("shadowtalk_fix_proposals")
       .update({ status: "approved", applied_at: new Date().toISOString() })
       .eq("id", id);
@@ -83,7 +83,7 @@ const SelfHealingPage = () => {
   };
 
   const reject = async (id: string) => {
-    await supabase.from("shadowtalk_fix_proposals").update({ status: "rejected" }).eq("id", id);
+    await backend.from("shadowtalk_fix_proposals").update({ status: "rejected" }).eq("id", id);
     void load();
   };
 

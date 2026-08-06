@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import {
   consumeLocalMissionQuota,
   getLocalMissionQuotaInfo,
@@ -62,7 +62,7 @@ export const useMissionQuota = () => {
         return;
       }
 
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await backend.auth.getUser();
       if (!user) {
         setQuotaInfo({
           used: 0,
@@ -78,7 +78,7 @@ export const useMissionQuota = () => {
       // Failed/cancelled missions with retry_count < MAX_FREE_RETRIES don't count
       const monthStart = getMonthStart();
       
-      const { count, error } = await supabase
+      const { count, error } = await backend
         .from('missions')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id)

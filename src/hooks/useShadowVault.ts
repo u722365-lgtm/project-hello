@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import { useToast } from '@/hooks/use-toast';
 import { encryptData, decryptData } from '@/lib/e2e-encryption';
 
@@ -55,10 +55,10 @@ export const useShadowVault = () => {
   // Fetch all connections
   const fetchConnections = useCallback(async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await backend.auth.getUser();
       if (!user) return;
 
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from('shadow_vault_connections')
         .select('id, user_id, service_name, service_type, is_connected, is_active, scopes, permissions, last_used_at, last_sync_at, sync_status, created_at, updated_at')
         .eq('user_id', user.id)
@@ -109,7 +109,7 @@ export const useShadowVault = () => {
 
     setIsLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await backend.auth.getUser();
       if (!user) {
         toast({ title: "Sign in required", variant: "destructive" });
         return null;
@@ -122,7 +122,7 @@ export const useShadowVault = () => {
         encryptedCredentials = await encryptData(dataToEncrypt, masterPassword);
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from('shadow_vault_connections')
         .upsert({
           user_id: user.id,
@@ -173,7 +173,7 @@ export const useShadowVault = () => {
     }
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from('shadow_vault_connections')
         .select('credentials_encrypted, iv, salt')
         .eq('id', connectionId)
@@ -203,7 +203,7 @@ export const useShadowVault = () => {
   // Remove a connection
   const removeConnection = useCallback(async (connectionId: string) => {
     try {
-      const { error } = await supabase
+      const { error } = await backend
         .from('shadow_vault_connections')
         .delete()
         .eq('id', connectionId);
@@ -221,7 +221,7 @@ export const useShadowVault = () => {
   // Toggle connection active state
   const toggleConnection = useCallback(async (connectionId: string, isActive: boolean) => {
     try {
-      const { error } = await supabase
+      const { error } = await backend
         .from('shadow_vault_connections')
         .update({ is_active: isActive })
         .eq('id', connectionId);
@@ -239,7 +239,7 @@ export const useShadowVault = () => {
   // Update last used timestamp
   const markAsUsed = useCallback(async (connectionId: string) => {
     try {
-      await supabase
+      await backend
         .from('shadow_vault_connections')
         .update({ last_used_at: new Date().toISOString() })
         .eq('id', connectionId);

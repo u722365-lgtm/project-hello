@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
-import type { UserIdentity } from "@supabase/supabase-js";
+import type { UserIdentity } from "@backend/backend-js";
 import {
   connectIntegration,
   disconnectIntegration,
@@ -299,7 +299,7 @@ export const LinkedAccountsTab = ({ userId, email }: LinkedAccountsTabProps) => 
           <p className="text-[11px] text-muted-foreground flex items-start gap-1.5 pt-2 border-t border-border/40">
             <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
             Google Workspace needs <code className="text-[10px]">GOOGLE_OAUTH_CLIENT_ID</code> on the server.
-            GitHub, Slack, and Notion need matching OAuth app credentials — if Connect fails, ask your admin to add them in Supabase secrets.
+            GitHub, Slack, and Notion need matching OAuth app credentials — if Connect fails, ask your admin to add them in ShadowTalk backend secrets.
           </p>
         </CardContent>
       </Card>

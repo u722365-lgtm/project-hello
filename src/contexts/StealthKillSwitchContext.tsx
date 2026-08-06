@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { useAuth } from "@/components/AuthProvider";
 import { applyShadowMode, initShadowMode } from "@/lib/shadowMode";
 import {
@@ -72,7 +72,7 @@ export function StealthKillSwitchProvider({ children }: { children: ReactNode })
     async (isActive: boolean, lastActivated: string | null, totalBlocked: number) => {
       if (!user) return;
       try {
-        await supabase.from("user_settings").upsert(
+        await backend.from("user_settings").upsert(
           {
             user_id: user.id,
             setting_key: "stealth_mode",
@@ -157,13 +157,13 @@ export function StealthKillSwitchProvider({ children }: { children: ReactNode })
     }
   }, [engageStealth]);
 
-  // Signed-in users: merge account preference from Supabase
+  // Signed-in users: merge account preference from ShadowTalk backend
   useEffect(() => {
     if (!user) return;
 
     const loadFromBackend = async () => {
       try {
-        const { data, error } = await supabase
+        const { data, error } = await backend
           .from("user_settings")
           .select("setting_value")
           .eq("user_id", user.id)

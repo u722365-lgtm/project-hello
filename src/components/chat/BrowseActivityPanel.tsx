@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 
 // ─── Types ──────────────────────────────────────────────────────
 
@@ -447,7 +447,7 @@ export function useAutoBrowse() {
 
       // Try to load the search page via proxy
       try {
-        const { data: proxyData } = await supabase.functions.invoke('web-proxy', {
+        const { data: proxyData } = await backend.functions.invoke('web-proxy', {
           body: { url: searchUrl, mode: "full" },
         });
         if (proxyData?.html) {
@@ -464,7 +464,7 @@ export function useAutoBrowse() {
       let searchResults: { url: string; title: string; snippet?: string }[] = [];
 
       try {
-        const { data } = await supabase.functions.invoke('web-search', {
+        const { data } = await backend.functions.invoke('web-search', {
           body: { query, numResults: 5 },
         });
         if (data?.results) {
@@ -509,7 +509,7 @@ export function useAutoBrowse() {
         // Fetch page via proxy for real rendering
         let extractedContent = "";
         try {
-          const { data: pageData } = await supabase.functions.invoke('web-proxy', {
+          const { data: pageData } = await backend.functions.invoke('web-proxy', {
             body: { url: result.url, mode: "full" },
           });
           if (pageData?.html) {
@@ -540,7 +540,7 @@ export function useAutoBrowse() {
         });
 
         try {
-          const { data: extractData } = await supabase.functions.invoke('web-proxy', {
+          const { data: extractData } = await backend.functions.invoke('web-proxy', {
             body: { url: result.url, mode: "extract" },
           });
           if (extractData?.content) {

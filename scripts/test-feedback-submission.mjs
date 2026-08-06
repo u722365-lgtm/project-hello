@@ -3,13 +3,13 @@
  * Inserts a test feedback row and triggers send-feedback-notification.
  * Usage: node scripts/test-feedback-submission.mjs
  */
-const SUPABASE_URL =
-  process.env.SUPABASE_URL ??
-  process.env.VITE_SUPABASE_URL ??
-  "https://axsudmhjpfzffcicfvuj.supabase.co";
+const API_URL =
+  process.env.API_URL ??
+  process.env.VITE_API_BASE_URL ??
+  "https://api.shadowtalk-ai.com";
 const ANON =
-  process.env.SUPABASE_ANON_KEY ??
-  process.env.VITE_SUPABASE_PUBLISHABLE_KEY ??
+  process.env.API_ANON_KEY ??
+  process.env.VITE_API_KEY ??
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4c3VkbWhqcGZ6ZmZjaWNmdnVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyNzY2NTgsImV4cCI6MjA4MDg1MjY1OH0.Jdbo00BVo0QqChuZCxwHYwzdyJK4oBzCxelv1hILEZ4";
 
 const message = `[TEST ${new Date().toISOString()}] Cursor agent feedback verification — safe to ignore.`;
@@ -21,7 +21,7 @@ async function main() {
     "Content-Type": "application/json",
   };
 
-  const insertRes = await fetch(`${SUPABASE_URL}/rest/v1/feedback`, {
+  const insertRes = await fetch(`${API_URL}/rest/v1/feedback`, {
     method: "POST",
     headers: { ...headers, Prefer: "return=representation" },
     body: JSON.stringify({
@@ -41,7 +41,7 @@ async function main() {
   const row = Array.isArray(insertBody) ? insertBody[0] : insertBody;
   console.log("Inserted feedback:", row.id);
 
-  const notifyRes = await fetch(`${SUPABASE_URL}/functions/v1/send-feedback-notification`, {
+  const notifyRes = await fetch(`${API_URL}/functions/v1/send-feedback-notification`, {
     method: "POST",
     headers,
     body: JSON.stringify({

@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 
 // Categories of business intents for B2B analytics
 export const INTENT_CATEGORIES = [
@@ -100,7 +100,7 @@ export function useBusinessIntents() {
         .replace(/\b[A-Z][a-z]+ [A-Z][a-z]+\b/g, '[name]')
         .slice(0, 100);
 
-      await supabase.from('business_intents').insert({
+      await backend.from('business_intents').insert({
         intent_category: detected.category,
         intent_keywords: detected.keywords,
         query_summary: summary,

@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import type { BusinessIdea, StrategyResult } from "@/lib/strategy/types";
 import { buildStrategyGoal } from "@/lib/strategy/goalContext";
 import type { MissionPlanStep } from "@/lib/see/types";
@@ -60,7 +60,7 @@ financialProjections must have 12 months. sources[].verified is true only for re
   signal?.addEventListener("abort", onAbort);
 
   try {
-    const { data, error } = await supabase.functions.invoke("chat", {
+    const { data, error } = await backend.functions.invoke("chat", {
       body: {
         messages: [{ role: "user", content: prompt }],
         isResearch: true,

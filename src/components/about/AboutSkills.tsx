@@ -21,7 +21,7 @@ const skillCategories = [
     skills: [
       { name: "React / TypeScript", level: 94 },
       { name: "Node.js / Deno", level: 88 },
-      { name: "Supabase / Postgres", level: 90 },
+      { name: "ShadowTalk backend / Postgres", level: 90 },
       { name: "REST & GraphQL APIs", level: 86 },
     ],
     color: "secondary",

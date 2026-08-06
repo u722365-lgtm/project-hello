@@ -9,10 +9,10 @@ vi.mock('@/components/AuthProvider', () => ({
   }),
 }));
 
-vi.mock('@/integrations/supabase/client', () => {
+vi.mock('@/integrations/local/client', () => {
   const insert = vi.fn().mockResolvedValue({ error: null });
   return {
-    supabase: {
+    backend: {
       from: vi.fn(() => ({ insert })),
     },
   };

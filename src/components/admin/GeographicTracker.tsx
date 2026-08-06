@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { privateRealtimeChannel } from "@/lib/realtimeChannel";
 import { Globe, MapPin, Users, Activity, TrendingUp, Grid3X3, CircleDot } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -88,12 +88,12 @@ export const GeographicTracker = () => {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      backend.removeChannel(channel);
     };
   }, []);
 
   const loadUserLocations = async () => {
-    const { data: locationData } = await supabase
+    const { data: locationData } = await backend
       .from("user_locations")
       .select("*")
       .order("last_seen_at", { ascending: false });

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { useAuth } from "@/components/AuthProvider";
 import { isHeavyDownloadInProgress } from "@/lib/offline/forceOfflineSession";
 import { markExplicitSignOut } from "@/lib/persistentAuth";
@@ -68,20 +68,20 @@ export function useSessionTracking() {
       try {
         const ip_hash = await ipHash();
         // Mark all other sessions as not current, then upsert this one as current
-        await supabase
+        await backend
           .from("user_sessions")
           .update({ is_current: false })
           .eq("user_id", user.id)
           .neq("session_token", token);
 
-        const { data: existing } = await supabase
+        const { data: existing } = await backend
           .from("user_sessions")
           .select("id")
           .eq("session_token", token)
           .maybeSingle();
 
         if (existing) {
-          await supabase
+          await backend
             .from("user_sessions")
             .update({
               is_current: true,
@@ -93,7 +93,7 @@ export function useSessionTracking() {
             })
             .eq("session_token", token);
         } else {
-          await supabase.from("user_sessions").insert({
+          await backend.from("user_sessions").insert({
             user_id: user.id,
             session_token: token,
             device_label: deviceLabel(),
@@ -111,7 +111,7 @@ export function useSessionTracking() {
       if (cancelled) return;
       if (isHeavyDownloadInProgress()) return;
       try {
-        const { data } = await supabase
+        const { data } = await backend
           .from("user_sessions")
           .select("revoked_at")
           .eq("session_token", token)
@@ -119,13 +119,13 @@ export function useSessionTracking() {
 
         if (data?.revoked_at) {
           markExplicitSignOut();
-          await supabase.auth.signOut();
+          await backend.auth.signOut();
           localStorage.removeItem(SESSION_TOKEN_KEY);
           window.location.href = "/auth";
           return;
         }
 
-        await supabase
+        await backend
           .from("user_sessions")
           .update({ last_seen_at: new Date().toISOString() })
           .eq("session_token", token);

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -92,7 +92,7 @@ export function UsageBasedBilling() {
   const loadUsageData = useCallback(async () => {
     const limits = PLAN_LIMITS[userPlan] || PLAN_LIMITS.free;
     
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await backend.auth.getUser();
     if (!user) return;
 
     // Get current month start
@@ -101,7 +101,7 @@ export function UsageBasedBilling() {
     const cycleEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
     // Fetch real usage data from usage_analytics for current billing cycle
-    const { data: usageData } = await supabase
+    const { data: usageData } = await backend
       .from('usage_analytics')
       .select('action_type')
       .eq('user_id', user.id)

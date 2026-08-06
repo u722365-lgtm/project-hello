@@ -1,5 +1,5 @@
-import { supabase } from "@/integrations/supabase/client";
-import { supabaseLoose } from "@/integrations/supabase/loose";
+import { backend } from "@/integrations/local/client";
+import { backendLoose } from "@/integrations/local/loose";
 
 export interface ShadowScaleClientSignals {
   amplify_shares: boolean;
@@ -24,7 +24,7 @@ export function getShadowScaleSignals(): ShadowScaleClientSignals {
 
 export async function refreshShadowScaleSignals(): Promise<ShadowScaleClientSignals> {
   try {
-    const { data } = await supabaseLoose.from("shadowscale_client_signals").select("*").eq("id", 1).maybeSingle();
+    const { data } = await backendLoose.from("shadowscale_client_signals").select("*").eq("id", 1).maybeSingle();
     if (data) {
       cached = {
         amplify_shares: Boolean(data.amplify_shares),
@@ -51,7 +51,7 @@ export function isVideoStudioPromoActive(): boolean {
 }
 
 export function subscribeShadowScaleSignals(onChange: () => void): () => void {
-  const channel = supabase
+  const channel = backend
     .channel("shadowscale-signals")
     .on(
       "postgres_changes",
@@ -65,6 +65,6 @@ export function subscribeShadowScaleSignals(onChange: () => void): () => void {
   if (!loaded) void refreshShadowScaleSignals().then(onChange);
 
   return () => {
-    void supabase.removeChannel(channel);
+    void backend.removeChannel(channel);
   };
 }

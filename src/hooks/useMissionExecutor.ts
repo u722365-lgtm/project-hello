@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { useToast } from "@/hooks/use-toast";
 import { useMissions, Mission, MissionStep } from "./useMissions";
 import { generateExecutionPlan } from "@/lib/execution/generateExecutionPlan";
@@ -66,7 +66,7 @@ export const useMissionExecutor = () => {
         await updateLocalMission(missionId, payload);
         return;
       }
-      await supabase
+      await backend
         .from("missions")
         .update({
           steps: JSON.parse(JSON.stringify(payload.steps)),
@@ -263,7 +263,7 @@ export const useMissionExecutor = () => {
       const isLocalMission = mission.id.startsWith("local-mission-");
       const {
         data: { session },
-      } = await supabase.auth.getSession();
+      } = await backend.auth.getSession();
       if (
         !session &&
         !isLocalMission &&

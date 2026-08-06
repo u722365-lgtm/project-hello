@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { stringifyChatBody } from "@/lib/chatRequest";
@@ -598,10 +598,10 @@ export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl, emb
   // ─── Auth helper ───────────────────────────────────────────
 
   const getAuthHeaders = useCallback(async () => {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await backend.auth.getSession();
     return {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+      Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_API_KEY}`,
     };
   }, []);
 
@@ -618,7 +618,7 @@ export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl, emb
     setSearchResults([]);
 
     try {
-      const { data, error } = await supabase.functions.invoke("firecrawl-scrape", {
+      const { data, error } = await backend.functions.invoke("firecrawl-scrape", {
         body: {
           url,
           options: { formats: ["markdown", "screenshot", "links"], onlyMainContent: false },
@@ -645,7 +645,7 @@ export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl, emb
 
       const headers = await getAuthHeaders();
       const response = await fetchAIWithRetry(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/web-proxy`,
+        `${import.meta.env.VITE_API_BASE_URL}/functions/v1/web-proxy`,
         {
           method: "POST", headers,
           body: stringifyChatBody({ url, mode: "proxy" }),
@@ -693,7 +693,7 @@ export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl, emb
     setUrlInput(searchUrl);
 
     try {
-      const { data, error } = await supabase.functions.invoke("web-search", {
+      const { data, error } = await backend.functions.invoke("web-search", {
         body: { query, numResults: 8 },
       });
       if (error) throw new Error(error.message);
@@ -961,7 +961,7 @@ export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl, emb
     try {
       const headers = await getAuthHeaders();
       const response = await fetchAIWithRetry(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`,
+        `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`,
         {
           method: "POST", headers,
           body: stringifyChatBody({
@@ -986,7 +986,7 @@ export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl, emb
       const aiMsgId = crypto.randomUUID();
       setBrowseTogetherMessages(prev => [...prev, { id: aiMsgId, role: "ai", content: "", timestamp: new Date(), type: "translation" }]);
       const response = await fetchAIWithRetry(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`,
+        `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`,
         {
           method: "POST", headers,
           body: stringifyChatBody({
@@ -1012,7 +1012,7 @@ export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl, emb
       const aiMsgId = crypto.randomUUID();
       setBrowseTogetherMessages(prev => [...prev, { id: aiMsgId, role: "ai", content: "", timestamp: new Date(), type: "extraction" }]);
       const response = await fetchAIWithRetry(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`,
+        `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`,
         {
           method: "POST", headers,
           body: stringifyChatBody({
@@ -1039,7 +1039,7 @@ export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl, emb
     try {
       const headers = await getAuthHeaders();
       const response = await fetchAIWithRetry(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`,
+        `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`,
         { method: "POST", headers, body: stringifyChatBody({ messages: [{ role: "user", content: searchQuery }], personality: "professional" }) }
       );
       await parseStreamingResponse(response, content => setAiSummary(content));
@@ -1075,7 +1075,7 @@ export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl, emb
     try {
       const headers = await getAuthHeaders();
       const response = await fetchAIWithRetry(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`,
+        `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`,
         {
           method: "POST", headers,
           body: stringifyChatBody({
@@ -1118,7 +1118,7 @@ export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl, emb
     try {
       const headers = await getAuthHeaders();
       const response = await fetchAIWithRetry(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`,
+        `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`,
         {
           method: "POST", headers,
           body: stringifyChatBody({

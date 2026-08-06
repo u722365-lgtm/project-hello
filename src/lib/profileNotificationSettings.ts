@@ -1,4 +1,4 @@
-import type { Json } from "@/integrations/supabase/types";
+import type { Json } from "@/integrations/local/types";
 
 export const NOTIFICATION_PREFS_KEY = "notification_preferences";
 

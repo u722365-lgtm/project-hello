@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { stringifyChatBody } from "@/lib/chatRequest";
@@ -72,7 +72,7 @@ const MODEL_INFO: Record<string, { name: string; speed: string; quality: string;
   "gpt-5": { name: "GPT-5", speed: "Medium", quality: "Highest", cost: "$$$" },
 };
 
-const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
+const CHAT_URL = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`;
 
 export const MultiModelOrchestrator = ({ 
   isOpen, 
@@ -150,7 +150,7 @@ export const MultiModelOrchestrator = ({
     setSteps(initialSteps);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await backend.auth.getSession();
       let accumulatedResult = "";
       
       for (let i = 0; i < initialSteps.length; i++) {
@@ -174,7 +174,7 @@ export const MultiModelOrchestrator = ({
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`
+            Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_API_KEY}`
           },
           body: stringifyChatBody({
             messages: [{ role: "user", content: contextPrompt }],

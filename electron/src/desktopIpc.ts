@@ -185,7 +185,7 @@ export function registerDesktopIpc(): void {
 
   ipcMain.handle(CHANNEL.chatStream, async (event, payload: ChatStreamPayload) => {
     const { requestId, url, headers, body } = payload;
-    if (!url.includes('.supabase.co/functions/v1/') && !url.includes('.supabase.in/functions/v1/')) {
+    if (!url.includes('.backend.co/functions/v1/') && !url.includes('.backend.in/functions/v1/')) {
       throw new Error('Invalid chat URL');
     }
     void pumpChatSse(event.sender, requestId, url, headers, body);

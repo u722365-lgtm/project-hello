@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -40,7 +40,7 @@ export const GeminiKeyAnalytics = ({ onClose }: GeminiKeyAnalyticsProps) => {
     setIsLoading(true);
     try {
       // Fetch all keys with their stats
-      const { data: keysData, error: keysError } = await supabase
+      const { data: keysData, error: keysError } = await backend
         .from('gemini_api_keys')
         .select('id, key_string, usage_count, exhaustion_count, is_exhausted, last_exhausted_at')
         .order('usage_count', { ascending: false });
@@ -48,7 +48,7 @@ export const GeminiKeyAnalytics = ({ onClose }: GeminiKeyAnalyticsProps) => {
       if (keysError) throw keysError;
 
       // Fetch analytics summary
-      const { data: analyticsData, error: analyticsError } = await supabase
+      const { data: analyticsData, error: analyticsError } = await backend
         .from('gemini_key_analytics')
         .select('response_time_ms, was_exhausted');
 

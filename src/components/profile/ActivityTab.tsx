@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -34,21 +34,21 @@ export const ActivityTab = ({ userId }: ActivityTabProps) => {
     const fetchActivity = async () => {
       try {
         const [convList, convCount, msgCount, streakRes] = await Promise.all([
-          supabase
+          backend
             .from("conversations")
             .select("id, title, created_at, updated_at")
             .eq("user_id", userId)
             .order("updated_at", { ascending: false })
             .limit(15),
-          supabase
+          backend
             .from("conversations")
             .select("id", { count: "exact", head: true })
             .eq("user_id", userId),
-          supabase
+          backend
             .from("messages")
             .select("id", { count: "exact", head: true })
             .eq("user_id", userId),
-          supabase.from("user_streaks").select("*").eq("user_id", userId).maybeSingle(),
+          backend.from("user_streaks").select("*").eq("user_id", userId).maybeSingle(),
         ]);
 
         setConversations(convList.data || []);

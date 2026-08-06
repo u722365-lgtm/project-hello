@@ -13,7 +13,7 @@ import {
   FolderTree, Undo2, Redo2, Command, ArrowRight
 } from "lucide-react";
 import { Github } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -771,7 +771,7 @@ export const ShadowCowork = ({ isOpen, onClose, onInsertToChat }: ShadowCoworkPr
           // Make AI call
           (async () => {
             try {
-              const response = await supabase.functions.invoke('chat', {
+              const response = await backend.functions.invoke('chat', {
                 body: {
                   messages: [
                     { role: "system", content: "You are a helpful coding assistant. Keep responses concise and terminal-friendly." },
@@ -861,7 +861,7 @@ export const ShadowCowork = ({ isOpen, onClose, onInsertToChat }: ShadowCoworkPr
         ? `Current file: ${selectedFile.name}\n\`\`\`${getLanguageFromFilename(selectedFile.name)}\n${fileContent}\n\`\`\`\n\n`
         : "";
       
-      const response = await supabase.functions.invoke('chat', {
+      const response = await backend.functions.invoke('chat', {
         body: {
           messages: [
             { 

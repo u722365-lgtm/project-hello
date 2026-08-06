@@ -448,7 +448,7 @@ const DocsPage = () => {
                 <Card className="card-glass">
                   <CardContent className="pt-6 grid gap-3 md:grid-cols-2 text-sm text-muted-foreground">
                     <p><strong className="text-foreground">Frontend:</strong> React 18, Vite, TypeScript, Tailwind, Framer Motion, shadcn/ui</p>
-                    <p><strong className="text-foreground">Backend:</strong> Supabase (Auth, Postgres, RLS, Edge Functions)</p>
+                    <p><strong className="text-foreground">Backend:</strong> ShadowTalk backend (Auth, Postgres, RLS, Edge Functions)</p>
                     <p><strong className="text-foreground">AI routing:</strong> Edge functions → Gemini / Kimi / local WebGPU</p>
                     <p><strong className="text-foreground">IDE sandbox:</strong> Monaco + WebContainer (Computer Mode)</p>
                     <p><strong className="text-foreground">Offline:</strong> SmolLM / Gemma via WebGPU + WASM transformers</p>
@@ -1020,7 +1020,7 @@ const DocsPage = () => {
                   <Card className="card-glass mb-6 overflow-hidden">
                     <CardHeader className="relative z-10"><CardTitle>Base URL</CardTitle></CardHeader>
                     <CardContent className="relative z-10">
-                      <code className="px-4 py-2.5 rounded-xl glass-subtle text-primary text-sm font-mono inline-block">https://{'{project-id}'}.supabase.co</code>
+                      <code className="px-4 py-2.5 rounded-xl glass-subtle text-primary text-sm font-mono inline-block">https://{'{project-id}'}.backend.co</code>
                       <p className="text-xs text-muted-foreground mt-2">Contact support for API key provisioning (Elite plan)</p>
                     </CardContent>
                   </Card>

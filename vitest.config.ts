@@ -5,15 +5,15 @@ import path from 'path';
 export default defineConfig({
   plugins: [react()],
   define: {
-    'import.meta.env.VITE_SUPABASE_URL': JSON.stringify('https://test.supabase.co'),
-    'import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY': JSON.stringify('test-key'),
+    'import.meta.env.VITE_API_BASE_URL': JSON.stringify('https://api.shadowtalk-ai.com'),
+    'import.meta.env.VITE_API_KEY': JSON.stringify('test-key'),
   },
   test: {
     environment: 'happy-dom',
     setupFiles: ['./src/test/setup.ts'],
     env: {
-      VITE_SUPABASE_URL: 'https://test.supabase.co',
-      VITE_SUPABASE_PUBLISHABLE_KEY: 'test-publishable-key',
+      VITE_API_BASE_URL: 'https://api.shadowtalk-ai.com',
+      VITE_API_KEY: 'test-publishable-key',
     },
     globals: true,
     include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/components/AuthProvider";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,7 +49,7 @@ const ChatRoomsPage = () => {
   }, [user]);
 
   const loadRooms = async () => {
-    const { data, error } = await supabase
+    const { data, error } = await backend
       .from('chat_rooms')
       .select('*')
       .order('created_at', { ascending: false });
@@ -62,7 +62,7 @@ const ChatRoomsPage = () => {
   const createRoom = async () => {
     if (!newRoom.name.trim() || !user) return;
 
-    const { data, error } = await supabase
+    const { data, error } = await backend
       .from('chat_rooms')
       .insert({
         name: newRoom.name,
@@ -86,7 +86,7 @@ const ChatRoomsPage = () => {
   };
 
   const deleteRoom = async (roomId: string) => {
-    const { error } = await supabase
+    const { error } = await backend
       .from('chat_rooms')
       .delete()
       .eq('id', roomId);

@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PlanetaryActionPanel from "@/components/chat/PlanetaryActionPanel";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 
 interface PlanetaryActionModalProps {
   isOpen: boolean;
@@ -15,7 +15,7 @@ export function PlanetaryActionModal({ isOpen, onClose }: PlanetaryActionModalPr
   const onGetActions = useCallback(async (location: string) => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("chat", {
+      const { data, error } = await backend.functions.invoke("chat", {
         body: { getEcoActions: true, location },
       });
       if (error) throw error;

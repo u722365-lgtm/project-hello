@@ -17,7 +17,7 @@ import { Mail, MessageSquare, MapPin, Clock, Send, Loader2 } from "lucide-react"
 import { FollowUsSection } from "@/components/FollowUsSection";
 import { useState } from "react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 
 const ContactPage = () => {
   const [formData, setFormData] = useState({
@@ -37,7 +37,7 @@ const ContactPage = () => {
     setIsSubmitting(true);
     
     try {
-      const { data, error } = await supabase.functions.invoke("send-contact-email", {
+      const { data, error } = await backend.functions.invoke("send-contact-email", {
         body: { ...formData, source: "Contact Page" },
       });
       if (error) throw error;

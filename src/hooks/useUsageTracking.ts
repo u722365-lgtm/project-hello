@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import { useAuth } from '@/components/AuthProvider';
-import type { Json } from '@/integrations/supabase/types';
+import type { Json } from '@/integrations/local/types';
 
 export type ActionType = 
   | 'chat_message' 
@@ -59,7 +59,7 @@ export const useUsageTracking = () => {
         });
       }
 
-      await supabase.from('usage_analytics').insert({
+      await backend.from('usage_analytics').insert({
         user_id: user.id,
         action_type: actionType,
         query_category: queryCategory,

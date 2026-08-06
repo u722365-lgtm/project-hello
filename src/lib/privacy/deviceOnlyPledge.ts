@@ -138,7 +138,7 @@ export function canUseCloudAI(): boolean {
   return false;
 }
 
-/** Supabase messages/conversations — operator-visible unless E2EE-only client storage */
+/** ShadowTalk backend messages/conversations — operator-visible unless E2EE-only client storage */
 export function shouldPersistChatToCloud(): boolean {
   return canUseCloudAI();
 }

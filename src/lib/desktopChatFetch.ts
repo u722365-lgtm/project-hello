@@ -1,4 +1,4 @@
-import { getChatFetchHeaders } from "@/lib/supabaseEnv";
+import { getChatFetchHeaders } from "@/lib/cloudEnv";
 import { getDesktopAPI } from "@/lib/desktopBridge";
 
 export type DesktopChatStreamEnd =

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -101,7 +101,7 @@ export const GeminiKeysManager = () => {
   const fetchKeys = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from('gemini_api_keys')
         .select('*')
         .order('created_at', { ascending: false });
@@ -119,7 +119,7 @@ export const GeminiKeysManager = () => {
   const fetchAnalytics = async () => {
     try {
       const sevenDaysAgo = subDays(new Date(), 7).toISOString();
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from('gemini_key_analytics')
         .select('key_id, request_count, was_exhausted, created_at')
         .gte('created_at', sevenDaysAgo)
@@ -134,7 +134,7 @@ export const GeminiKeysManager = () => {
 
   const fetchSettings = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from('gemini_settings')
         .select('setting_key, setting_value');
 
@@ -171,7 +171,7 @@ export const GeminiKeysManager = () => {
       ];
 
       for (const update of updates) {
-        const { error } = await supabase
+        const { error } = await backend
           .from('gemini_settings')
           .update({ setting_value: update.setting_value })
           .eq('setting_key', update.setting_key);
@@ -190,7 +190,7 @@ export const GeminiKeysManager = () => {
 
   const handleReEnableKey = async (keyId: string) => {
     try {
-      const { error } = await supabase
+      const { error } = await backend
         .from('gemini_api_keys')
         .update({ auto_disabled: false, disabled_reason: null, is_exhausted: false })
         .eq('id', keyId);
@@ -338,7 +338,7 @@ export const GeminiKeysManager = () => {
     setTestResult(null);
 
     try {
-      const { data, error } = await supabase.functions.invoke('test-gemini-key', {
+      const { data, error } = await backend.functions.invoke('test-gemini-key', {
         body: { apiKey: newKey.trim() }
       });
 
@@ -373,7 +373,7 @@ export const GeminiKeysManager = () => {
 
     setAdding(true);
     try {
-      const { error } = await supabase
+      const { error } = await backend
         .from('gemini_api_keys')
         .insert({ key_string: newKey.trim() });
 
@@ -399,7 +399,7 @@ export const GeminiKeysManager = () => {
     if (!confirm('Are you sure you want to delete this API key?')) return;
 
     try {
-      const { error } = await supabase
+      const { error } = await backend
         .from('gemini_api_keys')
         .delete()
         .eq('id', keyId);
@@ -416,7 +416,7 @@ export const GeminiKeysManager = () => {
 
   const handleResetKey = async (keyId: string) => {
     try {
-      const { error } = await supabase
+      const { error } = await backend
         .from('gemini_api_keys')
         .update({ is_exhausted: false })
         .eq('id', keyId);
@@ -437,7 +437,7 @@ export const GeminiKeysManager = () => {
     if (!confirm('Reset all exhausted keys to available?')) return;
 
     try {
-      const { error } = await supabase
+      const { error } = await backend
         .from('gemini_api_keys')
         .update({ is_exhausted: false })
         .eq('is_exhausted', true);

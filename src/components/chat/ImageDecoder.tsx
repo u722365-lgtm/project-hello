@@ -3,9 +3,9 @@ import { stringifyChatBody } from "@/lib/chatRequest";
  import { Scan, Loader2, Download, X, Image as ImageIcon, FileText, Sparkles } from "lucide-react";
  import { Button } from "@/components/ui/button";
  import { useToast } from "@/hooks/use-toast";
- import { supabase } from "@/integrations/supabase/client";
+ import { backend } from "@/integrations/local/client";
  
- const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
+ const CHAT_URL = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`;
  
  interface ImageDecoderProps {
    onClose: () => void;
@@ -60,14 +60,14 @@ import { stringifyChatBody } from "@/lib/chatRequest";
      setEnhancedImage("");
  
      try {
-       const { data: { session } } = await supabase.auth.getSession();
+       const { data: { session } } = await backend.auth.getSession();
  
        // Step 1: Analyze the image professionally
        const analysisResp = await fetch(CHAT_URL, {
          method: "POST",
          headers: {
            "Content-Type": "application/json",
-           Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+           Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_API_KEY}`,
          },
          body: stringifyChatBody({
            decodeImage: true,
@@ -89,7 +89,7 @@ import { stringifyChatBody } from "@/lib/chatRequest";
          method: "POST",
          headers: {
            "Content-Type": "application/json",
-           Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+           Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_API_KEY}`,
          },
          body: stringifyChatBody({
            generateImage: true,

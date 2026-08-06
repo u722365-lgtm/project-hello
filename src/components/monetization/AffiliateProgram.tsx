@@ -16,7 +16,7 @@ import {
   Wallet,
   ArrowUpRight
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { useAuth } from "@/components/AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 
@@ -99,7 +99,7 @@ export function AffiliateProgram() {
     if (!user) return;
 
     // Get or create referral code
-    const { data: codeData } = await supabase
+    const { data: codeData } = await backend
       .from('user_referral_codes')
       .select('referral_code')
       .eq('user_id', user.id)
@@ -109,12 +109,12 @@ export function AffiliateProgram() {
       setReferralCode(codeData.referral_code);
     } else {
       const newCode = `ST${user.id.slice(0, 8).toUpperCase()}`;
-      await supabase.from('user_referral_codes').insert({ user_id: user.id, referral_code: newCode });
+      await backend.from('user_referral_codes').insert({ user_id: user.id, referral_code: newCode });
       setReferralCode(newCode);
     }
 
     // Get referral stats
-    const { data: referrals } = await supabase
+    const { data: referrals } = await backend
       .from('referrals')
       .select('*')
       .eq('referrer_id', user.id);
@@ -124,7 +124,7 @@ export function AffiliateProgram() {
       const earnings = referrals.reduce((sum, r) => sum + (r.commission_amount || 0), 0);
       
       // Fetch real click count from affiliate_clicks
-      const { count: clickCount } = await supabase
+      const { count: clickCount } = await backend
         .from('affiliate_clicks')
         .select('id', { count: 'exact', head: true })
         .eq('user_id', user.id);

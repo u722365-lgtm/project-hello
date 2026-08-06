@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/components/AuthProvider";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,7 +43,7 @@ import {
   Dialog, DialogContent, DialogDescription, DialogFooter,
   DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
-import type { Json } from "@/integrations/supabase/types";
+import type { Json } from "@/integrations/local/types";
 import {
   DEFAULT_EXTENDED_NOTIF,
   NOTIFICATION_PREFS_KEY,
@@ -146,8 +146,8 @@ const ProfilePage = () => {
   const loadProfile = async () => {
     if (!user) return;
     const [profileRes, settingsRes] = await Promise.all([
-      supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
-      supabase
+      backend.from("profiles").select("*").eq("id", user.id).maybeSingle(),
+      backend
         .from("user_settings")
         .select("setting_value")
         .eq("user_id", user.id)
@@ -171,7 +171,7 @@ const ProfilePage = () => {
     } else {
       const defaultName = user.email?.split("@")[0] || "User";
       setDisplayName(defaultName);
-      await supabase.from("profiles").insert({ id: user.id, display_name: defaultName });
+      await backend.from("profiles").insert({ id: user.id, display_name: defaultName });
     }
 
     const ext = parseExtendedNotif(settingsRes.data?.setting_value);
@@ -186,7 +186,7 @@ const ProfilePage = () => {
   const persistProfile = useCallback(
     async (opts?: { silent?: boolean }) => {
       if (!user) return false;
-      const { error } = await supabase.from("profiles").upsert({
+      const { error } = await backend.from("profiles").upsert({
         id: user.id,
         display_name: displayName,
         bio,
@@ -213,7 +213,7 @@ const ProfilePage = () => {
       setNotifProductUpdates(next.productUpdates);
       setNotifSecurityAlerts(next.securityAlerts);
       setNotifWeeklyDigest(next.weeklyDigest);
-      await supabase.from("user_settings").upsert(
+      await backend.from("user_settings").upsert(
         {
           user_id: user.id,
           setting_key: NOTIFICATION_PREFS_KEY,
@@ -260,7 +260,7 @@ const ProfilePage = () => {
   const handleManageSubscription = async () => {
     setIsManagingSubscription(true);
     try {
-      const { data, error } = await supabase.functions.invoke("stripe-portal");
+      const { data, error } = await backend.functions.invoke("stripe-portal");
       if (error) throw new Error(error.message);
       if (data?.url) window.open(data.url, "_blank");
     } catch (error) {
@@ -281,7 +281,7 @@ const ProfilePage = () => {
     }
     setIsChangingPassword(true);
     try {
-      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      const { error } = await backend.auth.updateUser({ password: newPassword });
       if (error) throw error;
       toast({ title: "Password updated", description: "Your password has been changed successfully" });
       setShowPasswordDialog(false);
@@ -302,7 +302,7 @@ const ProfilePage = () => {
   const handleDeleteAccount = async () => {
     setIsDeletingAccount(true);
     try {
-      const { data, error } = await supabase.functions.invoke("delete-account", {
+      const { data, error } = await backend.functions.invoke("delete-account", {
         body: { confirm: "DELETE" },
       });
       if (error) throw new Error(error.message);

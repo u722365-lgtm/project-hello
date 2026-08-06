@@ -13,7 +13,7 @@ import {
   MapPin,
   RefreshCw
 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import { privateRealtimeChannel } from '@/lib/realtimeChannel';
 import { format } from 'date-fns';
 
@@ -61,14 +61,14 @@ export const UserJourneyTracker: React.FC = () => {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      backend.removeChannel(channel);
     };
   }, []);
 
   const fetchJourneyData = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from('user_journeys')
         .select('*')
         .order('timestamp', { ascending: false })

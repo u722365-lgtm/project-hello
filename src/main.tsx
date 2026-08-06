@@ -17,8 +17,8 @@ applyPerfProfile();
  // Environment validation
  const validateEnvironment = () => {
    const requiredVars = [
-     'VITE_SUPABASE_URL',
-     'VITE_SUPABASE_PUBLISHABLE_KEY',
+     'VITE_API_BASE_URL',
+     'VITE_API_KEY',
    ];
    
    const missing = requiredVars.filter(

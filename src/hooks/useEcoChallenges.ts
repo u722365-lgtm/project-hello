@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { useAuth } from "@/components/AuthProvider";
 
 export interface EcoChallenge {
@@ -107,7 +107,7 @@ export function useEcoChallenges() {
       for (const def of CHALLENGE_DEFS) {
         const { start, end } = windowForChallenge(def.id);
 
-        const { data: participantRows } = await supabase
+        const { data: participantRows } = await backend
           .from("eco_actions")
           .select("user_id")
           .eq("category", def.category)
@@ -117,21 +117,21 @@ export function useEcoChallenges() {
 
         let progress = 0;
         if (def.id === "energy-sprint") {
-          const { data: sums } = await supabase
+          const { data: sums } = await backend
             .from("eco_actions")
             .select("energy_saved")
             .eq("category", "energy")
             .gte("completed_at", start);
           progress = (sums ?? []).reduce((s, r) => s + (r.energy_saved ?? 0), 0);
         } else if (def.id === "water-month") {
-          const { data: sums } = await supabase
+          const { data: sums } = await backend
             .from("eco_actions")
             .select("water_saved")
             .eq("category", "water")
             .gte("completed_at", start);
           progress = (sums ?? []).reduce((s, r) => s + (r.water_saved ?? 0), 0);
         } else {
-          const { count: actionCount } = await supabase
+          const { count: actionCount } = await backend
             .from("eco_actions")
             .select("id", { count: "exact", head: true })
             .eq("category", def.category)
@@ -141,7 +141,7 @@ export function useEcoChallenges() {
 
         let joined = false;
         if (user) {
-          const { count: userActions } = await supabase
+          const { count: userActions } = await backend
             .from("eco_actions")
             .select("id", { count: "exact", head: true })
             .eq("user_id", user.id)

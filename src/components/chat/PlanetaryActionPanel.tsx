@@ -44,7 +44,7 @@ import {
   Crown
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import { useAuth } from '@/components/AuthProvider';
 import EcoLeaderboard from './EcoLeaderboard';
 import { useFeatureGating } from '@/hooks/useFeatureGating';
@@ -220,7 +220,7 @@ const PlanetaryActionPanel: React.FC<PlanetaryActionPanelProps> = ({
     if (!user) return;
     
     try {
-      const { data: stats } = await supabase
+      const { data: stats } = await backend
         .from('eco_stats')
         .select('*')
         .eq('user_id', user.id)
@@ -242,7 +242,7 @@ const PlanetaryActionPanel: React.FC<PlanetaryActionPanelProps> = ({
       }
 
       // Load badges
-      const { data: earnedBadges } = await supabase
+      const { data: earnedBadges } = await backend
         .from('user_badges')
         .select('badge_id')
         .eq('user_id', user.id);
@@ -420,7 +420,7 @@ const PlanetaryActionPanel: React.FC<PlanetaryActionPanelProps> = ({
         });
         // Save badge to database
         if (user) {
-          supabase.from('user_badges').insert({
+          backend.from('user_badges').insert({
             user_id: user.id,
             badge_id: badge.id,
             badge_name: badge.name,
@@ -437,7 +437,7 @@ const PlanetaryActionPanel: React.FC<PlanetaryActionPanelProps> = ({
 
     // Save to database
     if (user) {
-      await supabase.from('eco_actions').insert({
+      await backend.from('eco_actions').insert({
         user_id: user.id,
         title: action.title,
         description: action.description,
@@ -449,7 +449,7 @@ const PlanetaryActionPanel: React.FC<PlanetaryActionPanelProps> = ({
         eroi: action.eroi,
       });
 
-      await supabase.from('eco_stats').upsert({
+      await backend.from('eco_stats').upsert({
         user_id: user.id,
         co2_saved: newTotalImpact.co2Saved,
         water_saved: newTotalImpact.waterSaved,

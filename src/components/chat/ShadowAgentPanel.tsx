@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/components/AuthProvider';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { stringifyChatBody } from "@/lib/chatRequest";
 
@@ -196,7 +196,7 @@ const ShadowAgentPanel: React.FC<ShadowAgentPanelProps> = ({ onExecuteTask, isEx
     const loadMemory = async () => {
       if (!user) return;
       try {
-        const { data } = await supabase
+        const { data } = await backend
           .from('business_memories')
           .select('*')
           .eq('user_id', user.id)
@@ -469,11 +469,11 @@ const ShadowAgentPanel: React.FC<ShadowAgentPanelProps> = ({ onExecuteTask, isEx
     }), 80);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await backend.auth.getSession();
       const industry = INDUSTRIES.find(i => i.id === selectedIndustry);
       const regionLabels = selectedRegions.map(r => REGIONS.find(reg => reg.id === r)?.label || r);
       
-      const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`, {
+      const resp = await fetch(`${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

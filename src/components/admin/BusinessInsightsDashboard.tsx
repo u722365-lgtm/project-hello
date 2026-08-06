@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { INTENT_CATEGORIES } from "@/hooks/useBusinessIntents";
 import { format, subDays, startOfDay, endOfDay } from "date-fns";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from "recharts";
@@ -49,7 +49,7 @@ export function BusinessInsightsDashboard() {
       const startDate = startOfDay(subDays(new Date(), days)).toISOString();
 
       // Fetch intent counts by category
-      const { data: intentData, error: intentError } = await supabase
+      const { data: intentData, error: intentError } = await backend
         .from('business_intents')
         .select('intent_category')
         .gte('created_at', startDate);
@@ -77,7 +77,7 @@ export function BusinessInsightsDashboard() {
       setIntents(stats);
 
       // Fetch region stats
-      const { data: regionData, error: regionError } = await supabase
+      const { data: regionData, error: regionError } = await backend
         .from('business_intents')
         .select('region')
         .gte('created_at', startDate)
@@ -100,7 +100,7 @@ export function BusinessInsightsDashboard() {
       );
 
       // Generate trend data from real database records
-      const { data: allIntentData, error: trendError } = await supabase
+      const { data: allIntentData, error: trendError } = await backend
         .from('business_intents')
         .select('created_at')
         .gte('created_at', startDate);

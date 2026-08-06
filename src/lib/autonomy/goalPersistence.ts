@@ -2,7 +2,7 @@
  * Cross-session goal tracking — inferred from chat and pursued proactively.
  */
 
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 
 const STORAGE_KEY = "shadowtalk_active_goals_v1";
 
@@ -140,7 +140,7 @@ export function getStaleGoals(maxAgeHours = 24): UserGoal[] {
 export async function syncGoalToAiMemories(userId: string, goal: UserGoal): Promise<void> {
   try {
     const content = `Goal: ${goal.title} — ${goal.description}`;
-    const { data: existing } = await supabase
+    const { data: existing } = await backend
       .from("ai_memories")
       .select("id")
       .eq("user_id", userId)
@@ -149,7 +149,7 @@ export async function syncGoalToAiMemories(userId: string, goal: UserGoal): Prom
       .limit(1);
     if (existing?.length) return;
 
-    await supabase.from("ai_memories").insert({
+    await backend.from("ai_memories").insert({
       user_id: userId,
       content,
       category: "goal",

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/components/AuthProvider";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -66,7 +66,7 @@ const APIPage = () => {
 
   const fetchKeys = useCallback(async () => {
     if (!user) { setApiKeys([]); setLoading(false); return; }
-    const { data, error } = await supabase
+    const { data, error } = await backend
       .from("api_keys")
       .select("id, name, key_prefix, key_hash, created_at, last_used_at, is_active, rate_limit")
       .eq("user_id", user.id)
@@ -91,7 +91,7 @@ const APIPage = () => {
       const prefix = fullKey.slice(0, 12) + "...";
       const hash = await hashKey(fullKey);
 
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from("api_keys")
         .insert({
           user_id: user.id,
@@ -122,7 +122,7 @@ const APIPage = () => {
   const deleteKey = async (id: string) => {
     setDeletingId(id);
     try {
-      const { error } = await supabase.from("api_keys").delete().eq("id", id);
+      const { error } = await backend.from("api_keys").delete().eq("id", id);
       if (error) throw error;
       setApiKeys(prev => prev.filter(k => k.id !== id));
       setRevealedKeys(prev => { const n = { ...prev }; delete n[id]; return n; });

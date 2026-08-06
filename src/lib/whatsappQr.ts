@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 
 export type WhatsAppQrStatus = "pending" | "scanned" | "connected" | "disconnected" | "expired";
 
@@ -13,11 +13,11 @@ export interface WhatsAppQrStartResult {
 }
 
 async function callWhatsAppQr(action: string): Promise<WhatsAppQrStartResult> {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await backend.auth.getSession();
   if (!session) return { error: "Sign in required" };
 
   const response = await fetch(
-    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/whatsapp-qr`,
+    `${import.meta.env.VITE_API_BASE_URL}/functions/v1/whatsapp-qr`,
     {
       method: "POST",
       headers: {

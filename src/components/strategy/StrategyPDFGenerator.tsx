@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/components/AuthProvider";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import type { BusinessIdea, StrategyResult } from "@/lib/strategy/types";
@@ -458,7 +458,7 @@ export const StrategyPDFGenerator = ({
         try {
           const memorySummary = `Industry: ${businessIdea.industry} | Location: ${businessIdea.location} | Target: ${businessIdea.targetMarket || 'General'} | Investment: ${businessIdea.initialInvestment || 'N/A'}\n\nExecutive Summary: ${result.executiveSummary?.substring(0, 500)}...\n\nKey Recommendations: ${result.recommendations?.slice(0, 3).join('; ')}`;
           
-          await supabase.from('business_memories').insert({
+          await backend.from('business_memories').insert({
             user_id: user.id,
             title: `Strategy Report: ${businessIdea.name}`,
             content: memorySummary,

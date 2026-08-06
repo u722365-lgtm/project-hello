@@ -19,11 +19,11 @@ export interface ElevenLabsTtsResult {
 export async function fetchElevenLabsSpeech(
   options: ElevenLabsTtsOptions
 ): Promise<ElevenLabsTtsResult> {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  const supabaseUrl = import.meta.env.VITE_API_BASE_URL;
+  const anonKey = import.meta.env.VITE_API_KEY;
 
   if (!supabaseUrl || !anonKey) {
-    return { ok: false, error: "Supabase is not configured", code: "CONFIG_ERROR" };
+    return { ok: false, error: "ShadowTalk backend is not configured", code: "CONFIG_ERROR" };
   }
 
   const text = options.text?.trim();

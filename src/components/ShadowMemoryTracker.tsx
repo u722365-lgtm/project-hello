@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useShadowMemoryContext } from '@/contexts/ShadowMemoryContext';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 
 /**
  * Invisible component that auto-logs navigation, auth, and page-level activity
@@ -31,7 +31,7 @@ export const ShadowMemoryTracker = () => {
   // Track auth state changes
   useEffect(() => {
     if (!isReady) return;
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    const { data: { subscription } } = backend.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_IN') log('auth', 'Signed in');
       if (event === 'SIGNED_OUT') log('auth', 'Signed out');
       if (event === 'PASSWORD_RECOVERY') log('auth', 'Password recovery initiated');

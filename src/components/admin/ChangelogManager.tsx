@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { useAuth } from "@/components/AuthProvider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -61,7 +61,7 @@ export const ChangelogManager: React.FC = () => {
   const fetchEntries = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from("changelog_entries")
         .select("*")
         .order("created_at", { ascending: false });
@@ -106,7 +106,7 @@ export const ChangelogManager: React.FC = () => {
   };
 
   const notifyUsers = async (source: "changelog", record: Record<string, unknown>) => {
-    const { error } = await supabase.functions.invoke("notify-app-update", {
+    const { error } = await backend.functions.invoke("notify-app-update", {
       body: { source, record },
     });
     if (error) console.warn("[changelog] notify invoke", error);
@@ -132,7 +132,7 @@ export const ChangelogManager: React.FC = () => {
 
       if (editing) {
         const wasPublished = editing.is_published;
-        const { data, error } = await supabase
+        const { data, error } = await backend
           .from("changelog_entries")
           .update(payload)
           .eq("id", editing.id)
@@ -146,7 +146,7 @@ export const ChangelogManager: React.FC = () => {
           toast.success("Changelog updated");
         }
       } else {
-        const { data, error } = await supabase
+        const { data, error } = await backend
           .from("changelog_entries")
           .insert({ ...payload, created_by: user?.id })
           .select()
@@ -172,7 +172,7 @@ export const ChangelogManager: React.FC = () => {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this changelog entry?")) return;
-    const { error } = await supabase.from("changelog_entries").delete().eq("id", id);
+    const { error } = await backend.from("changelog_entries").delete().eq("id", id);
     if (error) toast.error("Delete failed");
     else {
       toast.success("Deleted");

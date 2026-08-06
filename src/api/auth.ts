@@ -1,5 +1,5 @@
 // Scaffolding stub — the platform-specific auth backend is unused in web builds.
-// Real auth flows use @/components/AuthProvider directly with the Supabase client.
+// Real auth flows use @/components/AuthProvider directly with the ShadowTalk backend client.
 export interface AuthApi {
   biometric(reason?: string): Promise<boolean>;
   signIn(payload: { email: string; password: string }): Promise<{ success: boolean; error?: string }>;

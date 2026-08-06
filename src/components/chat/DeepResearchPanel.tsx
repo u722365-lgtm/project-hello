@@ -7,7 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { useFeatureGating } from "@/hooks/useFeatureGating";
 import { useToast } from "@/hooks/use-toast";
@@ -42,7 +42,7 @@ interface DeepResearchPanelProps {
   embedded?: boolean;
 }
 
-const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
+const CHAT_URL = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`;
 
 export const DeepResearchPanel = ({ isOpen, onClose, onInsertToChat, initialQuery, autoResearch, embedded }: DeepResearchPanelProps) => {
   const [query, setQuery] = useState(initialQuery || "");
@@ -121,7 +121,7 @@ export const DeepResearchPanel = ({ isOpen, onClose, onInsertToChat, initialQuer
         await new Promise(r => setTimeout(r, 400));
       }
 
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await backend.auth.getSession();
       
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
@@ -130,7 +130,7 @@ export const DeepResearchPanel = ({ isOpen, onClose, onInsertToChat, initialQuer
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`
+          Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_API_KEY}`
         },
         body: stringifyChatBody({
           deepResearch: true,

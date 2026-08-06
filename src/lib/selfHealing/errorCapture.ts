@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import {
   isSelfHealRemoteEnabled,
   shouldIgnoreCapturedError,
@@ -125,7 +125,7 @@ export async function flush(): Promise<void> {
     writeQueue(queue);
 
     try {
-      const { data, error } = await supabase.functions.invoke("self-heal", { body: next });
+      const { data, error } = await backend.functions.invoke("self-heal", { body: next });
       if (error || data?.ok === false) {
         consecutiveFailures += 1;
         if (consecutiveFailures < MAX_FAILURES) {

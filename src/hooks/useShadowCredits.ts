@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import { useAuth } from '@/components/AuthProvider';
 
 export interface CreditBalance {
@@ -50,7 +50,7 @@ export function useShadowCredits() {
     }
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from('shadow_credits')
         .select('*')
         .eq('user_id', user.id)
@@ -66,7 +66,7 @@ export function useShadowCredits() {
         });
       } else {
         // Initialize credits for new user with 5 free credits
-        const { data: newData, error: insertError } = await supabase
+        const { data: newData, error: insertError } = await backend
           .from('shadow_credits')
           .insert({ user_id: user.id, balance: 5, total_purchased: 0, total_consumed: 0 })
           .select()
@@ -81,7 +81,7 @@ export function useShadowCredits() {
         });
 
         // Log the bonus transaction
-        await supabase.from('credit_transactions').insert({
+        await backend.from('credit_transactions').insert({
           user_id: user.id,
           amount: 5,
           transaction_type: 'bonus',
@@ -100,7 +100,7 @@ export function useShadowCredits() {
     if (!user) return;
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from('credit_transactions')
         .select('*')
         .eq('user_id', user.id)
@@ -140,7 +140,7 @@ export function useShadowCredits() {
 
     try {
       // Update balance
-      const { error: updateError } = await supabase
+      const { error: updateError } = await backend
         .from('shadow_credits')
         .update({
           balance: balance.balance - cost,
@@ -151,7 +151,7 @@ export function useShadowCredits() {
       if (updateError) throw updateError;
 
       // Log transaction
-      await supabase.from('credit_transactions').insert({
+      await backend.from('credit_transactions').insert({
         user_id: user.id,
         amount: -cost,
         transaction_type: 'consume',
@@ -185,7 +185,7 @@ export function useShadowCredits() {
       const currentBalance = balance?.balance || 0;
       const currentPurchased = balance?.totalPurchased || 0;
 
-      const { error: updateError } = await supabase
+      const { error: updateError } = await backend
         .from('shadow_credits')
         .upsert({
           user_id: user.id,
@@ -195,7 +195,7 @@ export function useShadowCredits() {
 
       if (updateError) throw updateError;
 
-      await supabase.from('credit_transactions').insert({
+      await backend.from('credit_transactions').insert({
         user_id: user.id,
         amount,
         transaction_type: type,

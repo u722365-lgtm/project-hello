@@ -1,2 +1,0 @@
-DROP POLICY IF EXISTS "email-assets public read" ON storage.objects;
-CREATE POLICY "email-assets admins read" ON storage.objects FOR SELECT USING (bucket_id = 'email-assets' AND has_role(auth.uid(), 'admin'::app_role));

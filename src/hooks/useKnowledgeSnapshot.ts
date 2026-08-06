@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import { useAuth } from '@/components/AuthProvider';
 
 export const useKnowledgeSnapshot = () => {
@@ -17,7 +17,7 @@ export const useKnowledgeSnapshot = () => {
     const checksum = `v1-${raw.length}-${raw.slice(0, 64)}`;
 
     try {
-      await supabase.from('knowledge_snapshots').insert({
+      await backend.from('knowledge_snapshots').insert({
         user_id: user.id,
         snapshot_data: snapshotData as any,
         entity_count: entities.length,
@@ -35,7 +35,7 @@ export const useKnowledgeSnapshot = () => {
     if (!user) return null;
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from('knowledge_snapshots')
         .select('*')
         .eq('user_id', user.id)

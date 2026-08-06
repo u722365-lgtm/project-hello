@@ -24,7 +24,7 @@ describe("Shadow Heal Engine wiring", () => {
 
   it("edge watchdog function exists", () => {
     const fn = readFileSync(
-      resolve(root, "supabase/functions/shadow-heal-watchdog/index.ts"),
+      resolve(root, "backend/functions/shadow-heal-watchdog/index.ts"),
       "utf-8",
     );
     expect(fn).toContain("shadow-heal-watchdog");

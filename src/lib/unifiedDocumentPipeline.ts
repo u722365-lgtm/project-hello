@@ -156,7 +156,7 @@ export async function fetchDocumentResearch(
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+      Authorization: `Bearer ${accessToken || import.meta.env.VITE_API_KEY}`,
     },
     body: stringifyChatBody({
       deepResearch: true,

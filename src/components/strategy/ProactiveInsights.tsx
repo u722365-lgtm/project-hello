@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Sparkles, TrendingUp, Zap, Eye, Lightbulb, Rocket, 
@@ -60,12 +60,12 @@ export const ProactiveInsights = () => {
     setCompletedTasks(new Set());
 
     try {
-      const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
+      const CHAT_URL = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`;
       const resp = await fetch(CHAT_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`
+          Authorization: `Bearer ${import.meta.env.VITE_API_KEY}`
         },
         body: stringifyChatBody({
           messages: [{ role: "user", content: "Generate 5 proactive business growth insights for a privacy-first AI chat platform. For each, provide: title, description, urgency (low/medium/high/critical), impact score (1-100), category, and actionable next step. Format as JSON array." }],

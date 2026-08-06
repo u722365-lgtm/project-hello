@@ -6,20 +6,20 @@ function getSupabaseEnv(): { url: string; anonKey: string; accessToken?: string 
   const cfg = loadConfig();
   const url =
     process.env.SHADOWTALK_SUPABASE_URL ||
-    process.env.VITE_SUPABASE_URL ||
-    cfg.supabase?.url ||
+    process.env.VITE_API_BASE_URL ||
+    cfg.backend?.url ||
     "";
   const anonKey =
     process.env.SHADOWTALK_ANON_KEY ||
-    process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-    cfg.supabase?.anonKey ||
+    process.env.VITE_API_KEY ||
+    cfg.backend?.anonKey ||
     "";
   const accessToken =
-    process.env.SHADOWTALK_ACCESS_TOKEN || cfg.supabase?.accessToken;
+    process.env.SHADOWTALK_ACCESS_TOKEN || cfg.backend?.accessToken;
 
   if (!url || !anonKey) {
     throw new Error(
-      "Supabase not configured. Set SHADOWTALK_SUPABASE_URL and SHADOWTALK_ANON_KEY, or use config set supabase.url",
+      "ShadowTalk backend not configured. Set SHADOWTALK_SUPABASE_URL and SHADOWTALK_ANON_KEY, or use config set backend.url",
     );
   }
 

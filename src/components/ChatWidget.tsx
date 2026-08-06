@@ -4,10 +4,10 @@ import ChatbotLogo from "@/components/ChatbotLogo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { stringifyChatBody } from "@/lib/chatRequest";
 
-const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
+const CHAT_URL = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`;
 
 const ChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -19,7 +19,7 @@ const ChatWidget = () => {
     (async () => {
       try {
         // Real total registered users — no fabricated count.
-        const { count } = await supabase
+        const { count } = await backend
           .from("profiles")
           .select("id", { count: "exact", head: true });
         if (!cancelled) setOnlineUsers(count ?? 0);
@@ -63,7 +63,7 @@ const ChatWidget = () => {
     setIsLoading(true);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await backend.auth.getSession();
 
       const chatHistory = messages.slice(-8).map(m => ({
         role: m.type === 'user' ? 'user' : 'assistant',

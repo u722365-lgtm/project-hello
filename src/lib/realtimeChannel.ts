@@ -1,5 +1,5 @@
-import type { RealtimeChannel, RealtimeChannelOptions } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
+import type { RealtimeChannel, RealtimeChannelOptions } from "@backend/backend-js";
+import { backend } from "@/integrations/local/client";
 
 /** Per-user Realtime topic (must match `can_access_realtime_topic` in SQL migrations). */
 export function userScopedRealtimeTopic(prefix: string, userId: string): string {
@@ -11,7 +11,7 @@ export function privateRealtimeChannel(
   topic: string,
   options?: RealtimeChannelOptions,
 ): RealtimeChannel {
-  return supabase.channel(topic, {
+  return backend.channel(topic, {
     ...options,
     config: {
       ...options?.config,

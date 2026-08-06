@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { useAuth } from "@/components/AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 import { useMissionExecutor } from "@/hooks/useMissionExecutor";
@@ -55,7 +55,7 @@ export function MissionSchedulerEngine() {
         if (!user) return;
 
         const now = new Date().toISOString();
-        const { data, error } = await supabase
+        const { data, error } = await backend
           .from("missions")
           .select("*")
           .eq("user_id", user.id)
@@ -74,7 +74,7 @@ export function MissionSchedulerEngine() {
 
           trackAgenticEvent("mission_start", { source: "scheduler", goal: mission.title.slice(0, 80) });
 
-          await supabase
+          await backend
             .from("missions")
             .update({ status: "running", started_at: new Date().toISOString() })
             .eq("id", mission.id);

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { useAuth } from "@/components/AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 import { queueChatInsert } from "@/lib/pendingChatInsert";
@@ -31,7 +31,7 @@ export function ScriptSchedulerEngine() {
     const tick = async () => {
       try {
         const now = new Date().toISOString();
-        const { data, error } = await supabase
+        const { data, error } = await backend
           .from("automation_scripts")
           .select("id, name, script_code, trigger_config, run_count")
           .eq("user_id", user.id)
@@ -48,7 +48,7 @@ export function ScriptSchedulerEngine() {
           if (runningIds.has(row.id)) continue;
           runningIds.add(row.id);
 
-          const { data: execution, error: execError } = await supabase
+          const { data: execution, error: execError } = await backend
             .from("script_executions")
             .insert({
               script_id: row.id,
@@ -67,7 +67,7 @@ export function ScriptSchedulerEngine() {
           const nextConfig = advanceScheduleConfig(schedule as unknown as Record<string, unknown>);
           const runCount = (row.run_count ?? 0) + 1;
 
-          await supabase
+          await backend
             .from("automation_scripts")
             .update({
               run_count: runCount,
@@ -82,7 +82,7 @@ export function ScriptSchedulerEngine() {
           );
 
           if (execution?.id) {
-            await supabase
+            await backend
               .from("script_executions")
               .update({
                 status: "completed",

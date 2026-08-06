@@ -1,5 +1,5 @@
-import { supabase } from "@/integrations/supabase/client";
-import { supabaseLoose } from "@/integrations/supabase/loose";
+import { backend } from "@/integrations/local/client";
+import { backendLoose } from "@/integrations/local/loose";
 import { drainGrowthEvents } from "./growthEvents";
 import {
   getShadowScaleClientId,
@@ -12,7 +12,7 @@ import { refreshShadowScaleSignals, subscribeShadowScaleSignals } from "./shadow
 async function sendHeartbeat(route: string, userId: string | null): Promise<void> {
   const events = drainGrowthEvents();
   try {
-    await supabaseLoose.from("shadowscale_heartbeats").insert({
+    await backendLoose.from("shadowscale_heartbeats").insert({
       client_id: getShadowScaleClientId(),
       user_id: userId,
       route,
@@ -23,7 +23,7 @@ async function sendHeartbeat(route: string, userId: string | null): Promise<void
   }
 
   try {
-    await supabase.functions.invoke("shadow-scale-orchestrator", {
+    await backend.functions.invoke("shadow-scale-orchestrator", {
       body: {
         client_id: getShadowScaleClientId(),
         user_id: userId,

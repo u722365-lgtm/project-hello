@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { useToast } from "@/hooks/use-toast";
 
 interface VoiceCopilotMessage {
@@ -36,7 +36,7 @@ export const useVoiceCopilot = (options: UseVoiceCopilotOptions = {}) => {
     setConversationHistory(prev => [...prev, userMsg]);
 
     try {
-      const { data, error } = await supabase.functions.invoke("voice-copilot", {
+      const { data, error } = await backend.functions.invoke("voice-copilot", {
         body: {
           transcript,
           conversationHistory: conversationHistory.slice(-6).map(m => ({

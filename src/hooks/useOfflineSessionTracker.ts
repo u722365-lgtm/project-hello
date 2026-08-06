@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import { useAuth } from '@/components/AuthProvider';
 
 interface OfflineSession {
@@ -59,7 +59,7 @@ export const useOfflineSessionTracker = () => {
     const durationMs = now.getTime() - session.startedAt.getTime();
 
     try {
-      await supabase.from('offline_session_analytics').insert({
+      await backend.from('offline_session_analytics').insert({
         user_id: user.id,
         session_start: session.startedAt.toISOString(),
         session_end: now.toISOString(),

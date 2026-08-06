@@ -21,7 +21,7 @@ import {
   History
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import { useAuth } from '@/components/AuthProvider';
 import { buildScheduleConfig, type SchedulePreset } from '@/lib/scriptSchedule';
 
@@ -82,7 +82,7 @@ export const ScriptAutomation: React.FC<ScriptAutomationProps> = ({
     const fetchScripts = async () => {
       setIsLoading(true);
       try {
-        const { data, error } = await supabase
+        const { data, error } = await backend
           .from('automation_scripts')
           .select('*')
           .eq('user_id', user.id)
@@ -104,7 +104,7 @@ export const ScriptAutomation: React.FC<ScriptAutomationProps> = ({
   // Fetch executions for a script
   const fetchExecutions = async (scriptId: string) => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from('script_executions')
         .select('*')
         .eq('script_id', scriptId)
@@ -136,7 +136,7 @@ export const ScriptAutomation: React.FC<ScriptAutomationProps> = ({
 
     setIsSaving(true);
     try {
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from('automation_scripts')
         .insert({
           user_id: user.id,
@@ -187,7 +187,7 @@ export const ScriptAutomation: React.FC<ScriptAutomationProps> = ({
 
   const toggleScript = async (id: string, currentStatus: boolean) => {
     try {
-      const { error } = await supabase
+      const { error } = await backend
         .from('automation_scripts')
         .update({ is_active: !currentStatus, updated_at: new Date().toISOString() })
         .eq('id', id);
@@ -206,7 +206,7 @@ export const ScriptAutomation: React.FC<ScriptAutomationProps> = ({
 
   const deleteScript = async (id: string) => {
     try {
-      const { error } = await supabase
+      const { error } = await backend
         .from('automation_scripts')
         .delete()
         .eq('id', id);
@@ -226,7 +226,7 @@ export const ScriptAutomation: React.FC<ScriptAutomationProps> = ({
 
     try {
       // Create execution record
-      const { data: execution, error: execError } = await supabase
+      const { data: execution, error: execError } = await backend
         .from('script_executions')
         .insert({
           script_id: script.id,
@@ -240,7 +240,7 @@ export const ScriptAutomation: React.FC<ScriptAutomationProps> = ({
       if (execError) throw execError;
 
       // Update script run count and last_run_at
-      const { error: updateError } = await supabase
+      const { error: updateError } = await backend
         .from('automation_scripts')
         .update({
           run_count: script.run_count + 1,
@@ -262,7 +262,7 @@ export const ScriptAutomation: React.FC<ScriptAutomationProps> = ({
       onRunScript(script.script_code);
 
       // Update execution status to completed
-      await supabase
+      await backend
         .from('script_executions')
         .update({
           status: 'completed',

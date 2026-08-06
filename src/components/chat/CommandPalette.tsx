@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { useFeatureGating } from "@/hooks/useFeatureGating";
 import {
   CommandDialog,
@@ -53,10 +53,10 @@ export const CommandPalette = ({ open, onOpenChange, onAction }: CommandPaletteP
   // Load recent commands from backend, fallback to localStorage
   useEffect(() => {
     const loadRecent = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await backend.auth.getUser();
       if (user) {
         try {
-          const { data } = await supabase
+          const { data } = await backend
             .from('user_settings')
             .select('setting_value')
             .eq('user_id', user.id)
@@ -82,9 +82,9 @@ export const CommandPalette = ({ open, onOpenChange, onAction }: CommandPaletteP
     localStorage.setItem('shadowtalk_recent_commands', JSON.stringify(updated));
 
     // Sync to backend
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await backend.auth.getUser();
     if (user) {
-      supabase.from('user_settings').upsert({
+      backend.from('user_settings').upsert({
         user_id: user.id,
         setting_key: 'recent_commands',
         setting_value: updated,

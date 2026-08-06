@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import { useAuth } from '@/components/AuthProvider';
 
 export const useAdminCheck = () => {
@@ -16,7 +16,7 @@ export const useAdminCheck = () => {
       }
 
       try {
-        const { data, error } = await supabase
+        const { data, error } = await backend
           .from('user_roles')
           .select('role')
           .eq('user_id', user.id)

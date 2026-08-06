@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -72,7 +72,7 @@ const RoomModeration = ({
   const handleKick = async (participant: Participant) => {
     setIsProcessing(true);
     
-    const { error } = await supabase
+    const { error } = await backend
       .from('room_participants')
       .delete()
       .eq('room_id', roomId)
@@ -94,14 +94,14 @@ const RoomModeration = ({
     setIsProcessing(true);
     
     // First kick the user
-    await supabase
+    await backend
       .from('room_participants')
       .delete()
       .eq('room_id', roomId)
       .eq('user_id', participant.user_id);
     
     // Then add to ban list
-    const { error } = await supabase
+    const { error } = await backend
       .from('room_bans')
       .insert({
         room_id: roomId,
@@ -127,7 +127,7 @@ const RoomModeration = ({
   };
 
   const handleClearMessages = async (userId: string, displayName: string) => {
-    const { error } = await supabase
+    const { error } = await backend
       .from('room_messages')
       .delete()
       .eq('room_id', roomId)
@@ -259,7 +259,7 @@ const RoomModeration = ({
                   size="sm"
                   className="justify-start"
                   onClick={async () => {
-                    const { error } = await supabase
+                    const { error } = await backend
                       .from('room_messages')
                       .delete()
                       .eq('room_id', roomId);

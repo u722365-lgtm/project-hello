@@ -12,7 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { stringifyChatBody } from "@/lib/chatRequest";
 import { consumeChatSSE } from "@/lib/agenticChatStream";
@@ -42,7 +42,7 @@ interface AgenticTaskRunnerProps {
   autoStart?: boolean;
 }
 
-const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
+const CHAT_URL = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`;
 
 const TASK_TEMPLATES = [
   { icon: Globe, label: "Research & Report", prompt: "Research [topic] and create a detailed report" },
@@ -86,7 +86,7 @@ export const AgenticTaskRunner = ({ isOpen, onClose, onTaskComplete, initialGoal
     addLog("Analyzing goal and creating execution plan...");
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await backend.auth.getSession();
       
       // Step 1: Plan the task - use standard chat to generate a plan
       addLog("Generating task steps...");
@@ -95,7 +95,7 @@ export const AgenticTaskRunner = ({ isOpen, onClose, onTaskComplete, initialGoal
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`
+          Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_API_KEY}`
         },
         body: stringifyChatBody({
           messages: [{ 
@@ -174,7 +174,7 @@ export const AgenticTaskRunner = ({ isOpen, onClose, onTaskComplete, initialGoal
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`
+              Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_API_KEY}`
             },
             body: stringifyChatBody({
               messages: [{ role: "user", content: `Execute this step for the goal "${goal}": ${step.action}. Provide a concise result.` }],
@@ -216,7 +216,7 @@ export const AgenticTaskRunner = ({ isOpen, onClose, onTaskComplete, initialGoal
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`
+          Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_API_KEY}`
         },
         body: stringifyChatBody({
           messages: [{ role: "user", content: goal }],

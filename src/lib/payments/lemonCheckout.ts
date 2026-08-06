@@ -1,6 +1,6 @@
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 
-/** Variant IDs — set in Supabase secrets + optional Vite env for UI hints */
+/** Variant IDs — set in ShadowTalk backend secrets + optional Vite env for UI hints */
 const VARIANT_BY_PLAN: Record<string, string | undefined> = {
   pro: import.meta.env.VITE_LEMONSQUEEZY_VARIANT_PRO,
   premium: import.meta.env.VITE_LEMONSQUEEZY_VARIANT_PREMIUM,
@@ -18,7 +18,7 @@ export async function startLemonCheckout(planKey: string): Promise<{ ok: boolean
     return { ok: false, error: "Card checkout is not configured yet. Use JazzCash, Easypaisa, or USDT below." };
   }
 
-  const { data, error } = await supabase.functions.invoke("lemonsqueezy-checkout", {
+  const { data, error } = await backend.functions.invoke("lemonsqueezy-checkout", {
     body: { variantId },
   });
 

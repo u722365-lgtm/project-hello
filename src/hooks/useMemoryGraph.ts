@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
 import { useAuth } from '@/components/AuthProvider';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 
 // =============================================================================
 // CONTEXTUAL MEMORY GRAPHS - Beyond RAG
@@ -197,7 +197,7 @@ export const useMemoryGraph = () => {
 
     // Sync to cloud knowledge_entries
     try {
-      await supabase.from('knowledge_entries').insert({
+      await backend.from('knowledge_entries').insert({
         user_id: user.id,
         title: `Episode: ${episode.context}`,
         content: `User: ${episode.userInput}\nAI: ${episode.aiResponse}`,
@@ -334,7 +334,7 @@ export const useMemoryGraph = () => {
 
     // Sync to cloud
     try {
-      await supabase.from('knowledge_entries').insert({
+      await backend.from('knowledge_entries').insert({
         user_id: user.id,
         title: newNode.label,
         content: JSON.stringify(newNode.properties),
@@ -503,7 +503,7 @@ export const useMemoryGraph = () => {
 
     // Also clear cloud knowledge entries from memory graph
     try {
-      await supabase
+      await backend
         .from('knowledge_entries')
         .delete()
         .eq('user_id', user.id)

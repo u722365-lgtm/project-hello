@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { useAuth } from "@/components/AuthProvider";
 
 const SESSION_KEY = "shadowtalk_session_id";
@@ -24,7 +24,7 @@ const getOrCreateSessionId = (): string => {
 
 async function invokeTrackLocation(sessionId: string, userId: string | null): Promise<void> {
   try {
-    const { error } = await supabase.functions.invoke("track-location", {
+    const { error } = await backend.functions.invoke("track-location", {
       body: { sessionId, userId },
     });
     if (error) {

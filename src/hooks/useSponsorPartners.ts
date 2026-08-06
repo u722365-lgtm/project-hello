@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import { useAuth } from '@/components/AuthProvider';
 
 export interface SponsorPartner {
@@ -31,7 +31,7 @@ export function useSponsorPartners() {
   // Fetch all active sponsor partners
   const fetchPartners = useCallback(async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from('sponsor_partners')
         .select('*')
         .eq('is_active', true)
@@ -86,7 +86,7 @@ export function useSponsorPartners() {
   // Track affiliate click
   const trackClick = useCallback(async (partnerId: string, sessionId?: string): Promise<void> => {
     try {
-      await supabase.from('affiliate_clicks').insert({
+      await backend.from('affiliate_clicks').insert({
         user_id: user?.id || null,
         partner_id: partnerId,
         session_id: sessionId || crypto.randomUUID(),

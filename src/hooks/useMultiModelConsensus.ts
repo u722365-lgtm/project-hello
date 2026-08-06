@@ -1,6 +1,6 @@
 import { stringifyChatBody } from "@/lib/chatRequest";
  import { useState, useCallback, useRef } from 'react';
- import { supabase } from '@/integrations/supabase/client';
+ import { backend } from '@/integrations/local/client';
  
  // =============================================================================
  // MULTI-MODEL CONSENSUS ENGINE - Beat Grok with Superior Reasoning
@@ -51,7 +51,7 @@ import { stringifyChatBody } from "@/lib/chatRequest";
  // Premium models for synthesis
  const SYNTHESIS_MODEL = 'google/gemini-2.5-pro';
  
- const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
+ const CHAT_URL = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`;
  
  export const useMultiModelConsensus = () => {
    const [state, setState] = useState<ConsensusState>({
@@ -73,13 +73,13 @@ import { stringifyChatBody } from "@/lib/chatRequest";
      const startTime = Date.now();
      
      try {
-       const { data: { session } } = await supabase.auth.getSession();
+       const { data: { session } } = await backend.auth.getSession();
        
        const response = await fetch(CHAT_URL, {
          method: 'POST',
          headers: {
            'Content-Type': 'application/json',
-           Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+           Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_API_KEY}`,
          },
          body: stringifyChatBody({
            messages: [

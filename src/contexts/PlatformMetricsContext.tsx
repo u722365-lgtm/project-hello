@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import {
   buildCommunityHighlights,
   type PlatformMetrics,
@@ -56,7 +56,7 @@ function writeCache(metrics: PlatformMetrics) {
 
 async function fetchMetrics(): Promise<PlatformMetrics> {
   try {
-    const { data, error } = await (supabase as unknown as { rpc: (name: string) => Promise<{ data: unknown; error: unknown }> }).rpc("get_public_platform_metrics");
+    const { data, error } = await (backend as unknown as { rpc: (name: string) => Promise<{ data: unknown; error: unknown }> }).rpc("get_public_platform_metrics");
     if (!error && data && typeof data === "object") {
       const row = data as {
         totalUsers?: number;
@@ -79,9 +79,9 @@ async function fetchMetrics(): Promise<PlatformMetrics> {
   const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
   const [usersRes, convsRes, activityRes] = await Promise.all([
-    supabase.from("profiles").select("id", { count: "exact", head: true }),
-    supabase.from("conversations").select("id", { count: "exact", head: true }),
-    supabase.from("usage_analytics").select("user_id").gte("created_at", dayAgo).limit(400),
+    backend.from("profiles").select("id", { count: "exact", head: true }),
+    backend.from("conversations").select("id", { count: "exact", head: true }),
+    backend.from("usage_analytics").select("user_id").gte("created_at", dayAgo).limit(400),
   ]);
 
   const dau = new Set((activityRes.data ?? []).map((r) => r.user_id)).size;

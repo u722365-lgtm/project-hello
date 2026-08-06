@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { getTier, type PowerTier } from "@/hooks/useReferralTracking";
 
 export type ReferrerStatus = "identified" | "offered" | "active" | "champion";
@@ -42,7 +42,7 @@ export function usePowerReferrers() {
     let cancelled = false;
 
     const load = async () => {
-      const { data: codes, error } = await supabase
+      const { data: codes, error } = await backend
         .from("user_referral_codes")
         .select("id, user_id, referral_code, total_referrals, successful_conversions, total_earnings")
         .order("total_referrals", { ascending: false })
@@ -57,7 +57,7 @@ export function usePowerReferrers() {
       }
 
       const userIds = codes.map((c) => c.user_id);
-      const { data: profiles } = await supabase
+      const { data: profiles } = await backend
         .from("profiles")
         .select("id, display_name")
         .in("id", userIds);
@@ -66,7 +66,7 @@ export function usePowerReferrers() {
 
       const enriched: PowerReferrer[] = [];
       for (const code of codes) {
-        const { count: sessionCount } = await supabase
+        const { count: sessionCount } = await backend
           .from("conversations")
           .select("id", { count: "exact", head: true })
           .eq("user_id", code.user_id);

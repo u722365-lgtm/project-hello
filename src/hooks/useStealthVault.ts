@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import { useAuth } from '@/components/AuthProvider';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -44,7 +44,7 @@ export const useStealthVault = () => {
     setIsLoading(true);
     try {
       // Fetch encrypted entries
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from('stealth_vault')
         .select('*')
         .eq('user_id', user.id)
@@ -138,7 +138,7 @@ export const useStealthVault = () => {
     try {
       const encrypted = await encryptEntry(title, content, vaultPassword);
 
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from('stealth_vault')
         .insert({
           user_id: user.id,
@@ -202,7 +202,7 @@ export const useStealthVault = () => {
         updateData.category = category;
       }
 
-      const { error } = await supabase
+      const { error } = await backend
         .from('stealth_vault')
         .update(updateData)
         .eq('id', id)
@@ -237,7 +237,7 @@ export const useStealthVault = () => {
     
     setIsLoading(true);
     try {
-      const { error } = await supabase
+      const { error } = await backend
         .from('stealth_vault')
         .delete()
         .eq('id', id)
@@ -284,7 +284,7 @@ export const useStealthVault = () => {
       for (const entry of entries) {
         const encrypted = await encryptEntry(entry.title, entry.content, newPassword);
         
-        await supabase
+        await backend
           .from('stealth_vault')
           .update({
             title_encrypted: encrypted.titleEncrypted,

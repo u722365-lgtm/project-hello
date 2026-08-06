@@ -24,8 +24,8 @@ export default defineConfig(({ mode }) => {
       },
     },
     define: {
-      'import.meta.env.VITE_SUPABASE_URL': JSON.stringify('https://removed.supabase.co'),
-      'import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY': JSON.stringify('removed'),
+      'import.meta.env.VITE_API_BASE_URL': JSON.stringify('https://api.shadowtalk-ai.com'),
+      'import.meta.env.VITE_API_KEY': JSON.stringify('removed'),
       'import.meta.env.VITE_LOCAL_FIRST': JSON.stringify(false),
     },
      build: {
@@ -164,7 +164,7 @@ export default defineConfig(({ mode }) => {
                   }
                 }
               },
-              // Supabase caching removed
+              // ShadowTalk backend caching removed
             ]
         },
         devOptions: {
@@ -184,7 +184,7 @@ export default defineConfig(({ mode }) => {
       ],
       alias: {
         "@": path.resolve(__dirname, "./src"),
-        "@supabase/supabase-js": path.resolve(__dirname, "src/lib/supabase-types.ts"),
+        "@backend/backend-js": path.resolve(__dirname, "src/lib/backend-types.ts"),
         react: path.resolve(__dirname, "node_modules/react"),
         "react-dom": path.resolve(__dirname, "node_modules/react-dom"),
         "react/jsx-runtime": path.resolve(__dirname, "node_modules/react/jsx-runtime.js"),

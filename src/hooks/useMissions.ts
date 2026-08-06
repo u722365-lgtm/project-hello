@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 import { privateRealtimeChannel, userScopedRealtimeTopic } from '@/lib/realtimeChannel';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -110,10 +110,10 @@ export const useMissions = () => {
         return;
       }
 
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await backend.auth.getUser();
       if (!user) return;
 
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from('missions')
         .select('*')
         .eq('user_id', user.id)
@@ -143,13 +143,13 @@ export const useMissions = () => {
 
   // Fetch actions for a specific mission
   const fetchActions = useCallback(async (missionId: string) => {
-    // Local / anonymous missions are not persisted to Supabase
+    // Local / anonymous missions are not persisted to ShadowTalk backend
     if (!missionId || missionId.startsWith('local-mission-')) {
       setActions([]);
       return;
     }
     try {
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from('mission_actions')
         .select('*')
         .eq('mission_id', missionId)
@@ -191,13 +191,13 @@ export const useMissions = () => {
         return newMission;
       }
 
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await backend.auth.getUser();
       if (!user) {
         toast({ title: "Sign in required", description: "Please sign in to create missions", variant: "destructive" });
         return null;
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from('missions')
         .insert({
           user_id: user.id,
@@ -281,7 +281,7 @@ export const useMissions = () => {
         if (result) dbUpdates.result = JSON.parse(JSON.stringify(result));
       }
       
-      const { error } = await supabase
+      const { error } = await backend
         .from('missions')
         .update(dbUpdates)
         .eq('id', missionId);
@@ -323,10 +323,10 @@ export const useMissions = () => {
     try {
       // Skip DB for local / anonymous missions
       if (!missionId || missionId.startsWith('local-mission-')) return null;
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await backend.auth.getUser();
       if (!user) return null;
 
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from('mission_actions')
         .insert({
           mission_id: missionId,
@@ -389,7 +389,7 @@ export const useMissions = () => {
         if (output_data) dbUpdates.output_data = JSON.parse(JSON.stringify(output_data));
       }
       
-      const { error } = await supabase
+      const { error } = await backend
         .from('mission_actions')
         .update(dbUpdates)
         .eq('id', actionId);
@@ -419,7 +419,7 @@ export const useMissions = () => {
     let cancelled = false;
 
     const subscribe = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await backend.auth.getUser();
       if (!user || cancelled) return;
 
       channel = privateRealtimeChannel(userScopedRealtimeTopic('missions', user.id))
@@ -477,7 +477,7 @@ export const useMissions = () => {
 
     return () => {
       cancelled = true;
-      if (channel) supabase.removeChannel(channel);
+      if (channel) backend.removeChannel(channel);
     };
   }, [activeMission]);
 

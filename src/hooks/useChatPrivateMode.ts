@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { useToast } from "@/hooks/use-toast";
 import type { useE2EE } from "@/hooks/useE2EE";
 import {
@@ -61,12 +61,12 @@ export function useChatPrivateMode(e2ee: E2EEApi) {
           ? row.content
           : await wrapForStorage(row.content);
         if (contentToSave !== row.content) {
-          await supabase.from("messages").update({ content: contentToSave }).eq("id", row.id);
+          await backend.from("messages").update({ content: contentToSave }).eq("id", row.id);
         }
       }
 
       const titleToSave = await wrapForStorage(titlePlain);
-      await supabase
+      await backend
         .from("conversations")
         .update({ title: titleToSave, updated_at: new Date().toISOString() })
         .eq("id", conversationId);

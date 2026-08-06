@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 
 export function useBlogPosts() {
   const [posts, setPosts] = useState<any[]>([]);
@@ -7,7 +7,7 @@ export function useBlogPosts() {
 
   useEffect(() => {
     const load = async () => {
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from('blog_posts')
         .select('*')
         .eq('is_published', true)
@@ -28,7 +28,7 @@ export function useChangelogEntries() {
 
   useEffect(() => {
     const load = async () => {
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from('changelog_entries')
         .select('*')
         .eq('is_published', true)
@@ -49,7 +49,7 @@ export function useFAQItems() {
 
   useEffect(() => {
     const load = async () => {
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from('faq_items')
         .select('*')
         .eq('is_published', true)
@@ -70,7 +70,7 @@ export function useStatusMonitors() {
 
   useEffect(() => {
     const load = async () => {
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from('status_monitors')
         .select('*')
         .eq('is_active', true)
@@ -101,7 +101,7 @@ export function useCommunityEvents() {
   useEffect(() => {
     const load = async () => {
       const now = new Date().toISOString();
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from("announcements")
         .select("id, title, message, type, starts_at, ends_at, is_active")
         .eq("is_active", true)
@@ -142,7 +142,7 @@ export function useDocsPages() {
 
   useEffect(() => {
     const load = async () => {
-      const { data, error } = await supabase
+      const { data, error } = await backend
         .from('docs_pages')
         .select('*')
         .eq('is_published', true)

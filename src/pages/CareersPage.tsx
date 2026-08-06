@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { FollowUsSection } from "@/components/FollowUsSection";
 
 const fadeUp = {
@@ -77,7 +77,7 @@ const CareersPage = () => {
 
     setIsSubmitting(true);
     try {
-      const { data, error } = await supabase.functions.invoke("send-job-application", {
+      const { data, error } = await backend.functions.invoke("send-job-application", {
         body: { ...form, position: selectedPosition },
       });
 

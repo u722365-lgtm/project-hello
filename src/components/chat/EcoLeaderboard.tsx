@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Trophy, Leaf, Droplets, Zap, TrendingUp, Medal, Crown, Star, Users, Loader2
 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { backend } from '@/integrations/local/client';
 
 interface LeaderboardEntry {
   id: string;
@@ -48,7 +48,7 @@ const EcoLeaderboard: React.FC<EcoLeaderboardProps> = ({ currentUserId }) => {
         }
 
         // Fetch eco_stats for leaderboard rankings
-        const { data: stats, error } = await supabase
+        const { data: stats, error } = await backend
           .from('eco_stats')
           .select('*')
           .order('co2_saved', { ascending: false })
@@ -64,7 +64,7 @@ const EcoLeaderboard: React.FC<EcoLeaderboardProps> = ({ currentUserId }) => {
 
         // Fetch display names for all users
         const userIds = stats.map(s => s.user_id);
-        const { data: profiles } = await supabase
+        const { data: profiles } = await backend
           .from('profiles')
           .select('id, display_name')
           .in('id', userIds);
@@ -75,7 +75,7 @@ const EcoLeaderboard: React.FC<EcoLeaderboardProps> = ({ currentUserId }) => {
         let actionCounts = new Map<string, number>();
         if (startDate) {
           for (const stat of stats) {
-            const { count } = await supabase
+            const { count } = await backend
               .from('eco_actions')
               .select('id', { count: 'exact', head: true })
               .eq('user_id', stat.user_id)

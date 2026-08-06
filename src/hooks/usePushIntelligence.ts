@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 import { useAuth } from "@/components/AuthProvider";
 import { usePushNotifications } from "./usePushNotifications";
 
@@ -36,7 +36,7 @@ export const usePushIntelligence = ({
     lastCheckRef.current = now;
 
     try {
-      const { data, error } = await supabase.functions.invoke("push-intelligence", {
+      const { data, error } = await backend.functions.invoke("push-intelligence", {
         body: { action: "check" },
       });
 
@@ -71,7 +71,7 @@ export const usePushIntelligence = ({
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke("push-intelligence", {
+      const { data, error } = await backend.functions.invoke("push-intelligence", {
         body: { action: "briefing" },
       });
 
