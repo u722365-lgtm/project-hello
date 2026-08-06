@@ -184,7 +184,6 @@ export default defineConfig(({ mode }) => {
       ],
       alias: {
         "@": path.resolve(__dirname, "./src"),
-        "@backend/backend-js": path.resolve(__dirname, "src/lib/backend-types.ts"),
         react: path.resolve(__dirname, "node_modules/react"),
         "react-dom": path.resolve(__dirname, "node_modules/react-dom"),
         "react/jsx-runtime": path.resolve(__dirname, "node_modules/react/jsx-runtime.js"),
@@ -192,7 +191,7 @@ export default defineConfig(({ mode }) => {
       },
     },
     optimizeDeps: {
-      // Fresh dep graph on each dev server start — avoids mixed ?v= chunk hashes on Lovable
+      // Fresh dep graph on each dev server start — avoids mixed ?v= chunk hashes
       force: mode === "development",
       exclude: ["@ffmpeg/ffmpeg", "@ffmpeg/util"],
       include: [
