@@ -7,25 +7,31 @@
 function chainable<T = any>(result: T = {} as T): any {
   const handler: ProxyHandler<any> = {
     get(_target, prop) {
-      if (prop === 'then') return undefined;
-      if (typeof prop === 'symbol') return undefined;
-      if (
-        ['select','insert','update','upsert','delete','eq','neq','gt','gte',
-         'lt','lte','like','ilike','is','in','not','or','and','notIn',
-         'filter','match','order','limit','single','maybeSingle','range',
-         'rpc','contains','cs','cd','ov','sl','sr','nx','pg',
-         'onConflict','ignoreDuplicates'].includes(prop as string)
-      ) {
-        return (..._args: any[]) => chainable(result);
+      // Make every chain awaitable so `await backend.from(..).select()` yields a
+      // plain result object ({ data, error }) instead of a Proxy.
+      if (prop === 'then') {
+        return (onFulfilled?: (v: any) => any, onRejected?: (e: any) => any) =>
+          Promise.resolve(result).then(onFulfilled, onRejected);
       }
-      return chainable(result);
+      if (prop === 'catch') {
+        return (onRejected?: (e: any) => any) => Promise.resolve(result).catch(onRejected as any);
+      }
+      if (prop === 'finally') {
+        return (cb?: () => void) => Promise.resolve(result).finally(cb as any);
+      }
+      if (prop === 'data') return (result as any)?.data ?? null;
+      if (prop === 'error') return (result as any)?.error ?? null;
+      if (prop === 'count') return (result as any)?.count ?? 0;
+      if (typeof prop === 'symbol') return undefined;
+      return (..._args: any[]) => chainable(result);
     },
     apply(_target, _thisArg, _args) {
       return chainable(result);
     },
   };
-  return new Proxy(function() {}, handler);
+  return new Proxy(function () {}, handler);
 }
+
 
 const emptyData = { data: null, error: null, count: 0, status: 200, statusText: 'OK' };
 const emptyArray = { data: [], error: null, count: 0, status: 200, statusText: 'OK' };
