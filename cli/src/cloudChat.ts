@@ -5,7 +5,7 @@ import type { ChatMessage } from "./ollama.js";
 function getApiEnv(): { url: string; anonKey: string; accessToken?: string } {
   const cfg = loadConfig();
   const url =
-    process.env.SHADOWTALK_SUPABASE_URL ||
+    process.env.SHADOWTALK_API_URL ||
     process.env.VITE_API_BASE_URL ||
     cfg.backend?.url ||
     "";
@@ -19,7 +19,7 @@ function getApiEnv(): { url: string; anonKey: string; accessToken?: string } {
 
   if (!url || !anonKey) {
     throw new Error(
-      "ShadowTalk backend not configured. Set SHADOWTALK_SUPABASE_URL and SHADOWTALK_ANON_KEY, or use config set backend.url",
+      "ShadowTalk backend not configured. Set SHADOWTALK_API_URL and SHADOWTALK_ANON_KEY, or use config set backend.url",
     );
   }
 

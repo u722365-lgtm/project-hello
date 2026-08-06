@@ -76,8 +76,8 @@ Open [http://localhost:5173](http://localhost:5173) — you land on **`/chatbot`
 `.env` / `.env.local`:
 
 ```env
-VITE_SUPABASE_URL=https://your-project.backend.co
-VITE_SUPABASE_PUBLISHABLE_KEY=your-anon-key
+VITE_API_BASE_URL=
+VITE_API_KEY=
 ```
 
 Enable **Anonymous sign-ins** in ShadowTalk backend Auth for Gemini-style auto session on first visit.
