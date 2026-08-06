@@ -60,7 +60,7 @@ export const BroadcastManager: React.FC = () => {
       if (error) throw error;
       setSubscribers(data || []);
       // Auto-select all subscribed users
-      const subscribedIds = new Set((data || []).filter(s => s.subscribed).map(s => s.id as string));
+      const subscribedIds = new Set<string>(((data || []) as any[]).filter((s) => s.subscribed).map((s) => String(s.id)));
       setSelectedIds(subscribedIds);
     } catch (err) {
       console.error('Failed to fetch subscribers:', err);

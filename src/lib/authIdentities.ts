@@ -1,7 +1,7 @@
 import { backend } from "@/integrations/local/client";
-import type { UserIdentity, Provider } from "@/lib/backend-types";
+import type { UserIdentity } from "@/lib/backend-types";
 
-export type AuthProvider = Extract<Provider, "google" | "apple" | "github" | "slack" | "notion">;
+export type AuthProvider = "google" | "apple" | "github" | "slack" | "notion";
 
 export async function getLinkedIdentities(): Promise<UserIdentity[]> {
   const { data: { user } } = await backend.auth.getUser();
