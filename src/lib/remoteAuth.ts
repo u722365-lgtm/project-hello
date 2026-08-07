@@ -1,7 +1,9 @@
 /**
- * Remote auth stub — all OAuth providers removed.
- * ShadowTalk now uses local-only authentication.
+ * Remote auth — uses Supabase Auth when configured.
+ * Falls back to local-only when Supabase is not available.
  */
+
+import { backend, isConfigured } from '@/integrations/local/client';
 
 export type AuthProvider = "google" | "apple";
 
@@ -12,24 +14,34 @@ type SignInOptions = {
 
 export class MissingOAuthSecretError extends Error {
   constructor(provider: string) {
-    super(`${provider} OAuth is no longer available. Please use email login.`);
+    super(`${provider} OAuth is not yet configured. Please use email login.`);
     this.name = "MissingOAuthSecretError";
   }
 }
 
-export async function signInWithRemoteProvider(provider: AuthProvider, _opts?: SignInOptions) {
-  return {
-    error: new MissingOAuthSecretError(provider),
-  };
+export async function signInWithRemoteProvider(provider: AuthProvider, opts?: SignInOptions) {
+  if (!isConfigured) {
+    return { error: new Error('Supabase not configured. Please add VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY to .env') };
+  }
+  try {
+    const { data, error } = await backend.auth.signInWithOAuth({
+      provider,
+      redirectTo: opts?.redirect_uri || window.location.origin + '/auth',
+    });
+    if (error) return { error };
+    return { redirected: true, url: data.url };
+  } catch (err: any) {
+    return { error: err };
+  }
 }
 
 export function isLocalFirst(): boolean {
-  return true;
+  return !isConfigured;
 }
 
 export async function signInWithLocalPreferredProvider() {
   return {
-    redirected: true,
-    error: new Error("Local-only mode. Please sign in with email."),
+    redirected: false,
+    error: new Error('Local-only mode. Please sign in with email.'),
   };
 }

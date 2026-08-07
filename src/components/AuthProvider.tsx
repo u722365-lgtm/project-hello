@@ -1,10 +1,13 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import type { User, Session } from '@/lib/backend-types';
+import { backend, isConfigured } from '@/integrations/local/client';
 import {
   clearExplicitSignOut,
+  hasExplicitSignOut,
   isAnonymousUser,
   markExplicitSignOut,
   restoreOrCreateSession,
+  saveLocalUser,
 } from '@/lib/persistentAuth';
 
 type UserPlan = 'free' | 'pro' | 'premium' | 'lifetime' | 'elite' | 'enterprise';
@@ -31,6 +34,27 @@ export const useAuth = () => {
   }
   return context;
 };
+
+/** Convert a Supabase AuthSession into our local Session type. */
+function toLocalSession(supabaseSession: any): Session | null {
+  if (!supabaseSession) return null;
+  return {
+    access_token: supabaseSession.access_token,
+    refresh_token: supabaseSession.refresh_token,
+    token_type: supabaseSession.token_type,
+    expires_in: supabaseSession.expires_in,
+    expires_at: supabaseSession.expires_at,
+    user: {
+      id: supabaseSession.user?.id || '',
+      email: supabaseSession.user?.email || null,
+      is_anonymous: supabaseSession.user?.is_anonymous ?? false,
+      app_metadata: supabaseSession.user?.app_metadata || {},
+      user_metadata: supabaseSession.user?.user_metadata || {},
+      aud: supabaseSession.user?.aud || 'authenticated',
+      created_at: supabaseSession.user?.created_at || new Date().toISOString(),
+    },
+  };
+}
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -61,7 +85,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const checkSubscription = useCallback(async () => {
-    // All users are free tier — no backend to check
     setSubscribed(false);
     setUserPlan('free');
     setSubscriptionEnd(null);
@@ -69,24 +92,71 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     let mounted = true;
+    let authSubscription: any = null;
 
     const bootstrap = async () => {
-      let restored: Session | null = null;
       try {
-        restored = await restoreOrCreateSession();
-        if (!mounted) return;
-        applySession(restored);
-        if (restored?.user) {
-          void checkSubscription();
+        // If Supabase is configured, use the real auth session
+        if (isConfigured) {
+          const { data: { session: sbSession } } = await backend.auth.getSession();
+          if (!mounted) return;
+
+          if (sbSession) {
+            const local = toLocalSession(sbSession);
+            applySession(local);
+            if (sbSession.user) {
+              saveLocalUser(sbSession.user.email || '', sbSession.user.id);
+            }
+            clearExplicitSignOut();
+            void checkSubscription();
+          } else if (hasExplicitSignOut()) {
+            applySession(null);
+          } else {
+            const restored = await restoreOrCreateSession();
+            if (mounted) {
+              applySession(restored);
+              if (restored?.user) void checkSubscription();
+            }
+          }
+
+          // Listen for auth state changes (login, logout, token refresh)
+          const { data } = backend.auth.onAuthStateChange(
+            (_event, sbSession) => {
+              if (!mounted) return;
+              const local = toLocalSession(sbSession);
+              applySession(local);
+              if (sbSession?.user) {
+                saveLocalUser(sbSession.user.email || '', sbSession.user.id);
+                clearExplicitSignOut();
+                void checkSubscription();
+              }
+            }
+          );
+          if (mounted) {
+            authSubscription = data?.subscription ?? null;
+          }
         } else {
-          setUserPlan('free');
-          setSubscribed(false);
-          setSubscriptionEnd(null);
+          // Local-only mode — use localStorage
+          const restored = await restoreOrCreateSession();
+          if (!mounted) return;
+          applySession(restored);
+          if (restored?.user) {
+            void checkSubscription();
+          } else {
+            setUserPlan('free');
+            setSubscribed(false);
+            setSubscriptionEnd(null);
+          }
         }
       } catch (error) {
         console.warn('[Auth] Session bootstrap failed:', error);
         if (mounted) {
-          applySession(null);
+          try {
+            const restored = await restoreOrCreateSession();
+            applySession(restored);
+          } catch {
+            applySession(null);
+          }
           setUserPlan('free');
           setSubscribed(false);
           setSubscriptionEnd(null);
@@ -103,6 +173,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return () => {
       mounted = false;
+      authSubscription?.unsubscribe();
     };
   }, [applySession, checkSubscription]);
 
@@ -110,6 +181,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     markExplicitSignOut();
     if (typeof localStorage !== 'undefined') {
       localStorage.removeItem('shadowtalk-local-user');
+    }
+    // Sign out from Supabase if configured
+    if (isConfigured) {
+      try {
+        await backend.auth.signOut();
+      } catch (err) {
+        console.warn('[Auth] Supabase signOut error:', err);
+      }
     }
     applySession(null);
     setUserPlan('free');

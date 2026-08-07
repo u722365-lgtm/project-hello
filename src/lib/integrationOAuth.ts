@@ -1,4 +1,5 @@
-import { backend } from "@/integrations/local/client";
+import { backend, isConfigured } from "@/integrations/local/client";
+import { getApiBaseUrl } from "@/lib/cloudEnv";
 
 export type IntegrationProvider = "google" | "github" | "slack" | "notion";
 
@@ -34,7 +35,12 @@ export async function connectIntegration(
 
   const returnTo = getOAuthReturnPath();
 
-  const resp = await fetch(`${import.meta.env.VITE_API_BASE_URL}/functions/v1/oauth-initiate`, {
+  const baseUrl = getApiBaseUrl();
+  if (!baseUrl || !isConfigured) {
+    return { ok: false, error: "Supabase not configured" };
+  }
+
+  const resp = await fetch(`${baseUrl}/functions/v1/oauth-initiate`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

@@ -1,15 +1,21 @@
 /** Build-time ShadowTalk backend config (Vite inlines VITE_* at compile time). */
 
+/** Returns the Supabase project URL (supports both new and legacy env var names). */
 export function getApiBaseUrl(): string {
-  const url = import.meta.env.VITE_API_BASE_URL as string | undefined;
+  const url =
+    (import.meta.env.VITE_SUPABASE_URL as string | undefined) ||
+    (import.meta.env.VITE_API_BASE_URL as string | undefined);
   if (!url || url.includes("your-project")) {
     return "";
   }
   return url.replace(/\/$/, "");
 }
 
+/** Returns the Supabase anon key (supports both new and legacy env var names). */
 export function getApiKey(): string {
-  const key = import.meta.env.VITE_API_KEY as string | undefined;
+  const key =
+    (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined) ||
+    (import.meta.env.VITE_API_KEY as string | undefined);
   if (!key || key.includes("your_anon_key")) {
     return "";
   }

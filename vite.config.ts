@@ -23,11 +23,9 @@ export default defineConfig(({ mode }) => {
         "Cross-Origin-Embedder-Policy": "credentialless",
       },
     },
-    define: {
-      'import.meta.env.VITE_API_BASE_URL': JSON.stringify(''),
-      'import.meta.env.VITE_API_KEY': JSON.stringify(''),
-      'import.meta.env.VITE_LOCAL_FIRST': JSON.stringify(false),
-    },
+    // NOTE: Do NOT hardcode VITE_SUPABASE_URL or VITE_SUPABASE_PUBLISHABLE_KEY here.
+    // They are read from .env automatically by Vite.
+    // The old VITE_API_BASE_URL / VITE_API_KEY overrides were removed — use the new names.
      build: {
        // Production optimizations
        target: 'es2020',
