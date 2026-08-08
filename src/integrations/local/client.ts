@@ -1,22 +1,22 @@
 /**
- * ShadowTalk AI — Supabase Backend Client
- * 
- * Replaces the previous no-op stub with a real Supabase client.
- * All 200+ files that reference `backend.*` now connect to your Supabase project.
- * 
- * Requires VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in .env
- * (Also supports legacy names: VITE_API_BASE_URL / VITE_API_KEY)
- * Falls back to local-only stub if not configured.
+ * ShadowTalk AI — Backend client
+ *
+ * Backend selection (first match wins):
+ *   1. Firebase   — when VITE_FIREBASE_* env vars are present (Auth + Firestore + Storage)
+ *   2. Legacy REST backend — when VITE_API_BASE_URL / VITE_API_KEY are present
+ *   3. Local-only stub — everything becomes a safe no-op
+ *
+ * Every call site keeps using the same surface: `backend.from()`, `backend.auth.*`,
+ * `backend.storage.from()`.
  */
 
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import type { Database } from './types';
+import { createClient } from '@supabase/supabase-js';
+import { isFirebaseConfigured } from '../firebase/app';
 
 // ============================================================
 // Configuration
 // ============================================================
 
-// Support both new (VITE_SUPABASE_*) and legacy (VITE_API_*) env var names
 const SUPABASE_URL =
   (import.meta.env.VITE_SUPABASE_URL as string | undefined) ||
   (import.meta.env.VITE_API_BASE_URL as string | undefined);
@@ -25,15 +25,25 @@ const SUPABASE_ANON_KEY =
   (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined) ||
   (import.meta.env.VITE_API_KEY as string | undefined);
 
-const isConfigured = Boolean(
+const isLegacyConfigured = Boolean(
   SUPABASE_URL &&
   SUPABASE_ANON_KEY &&
   !SUPABASE_URL.includes('your-project') &&
   !SUPABASE_ANON_KEY.includes('your_anon_key')
 );
 
+/** True when any real backend (Firebase or legacy REST) is wired up. */
+const isConfigured = isFirebaseConfigured || isLegacyConfigured;
+
+/** Which backend is actually serving requests. */
+export const backendKind: 'firebase' | 'legacy' | 'local' = isFirebaseConfigured
+  ? 'firebase'
+  : isLegacyConfigured
+    ? 'legacy'
+    : 'local';
+
 // ============================================================
-// Stub fallback (used when Supabase is not configured)
+// Stub fallback (used when no backend is configured)
 // ============================================================
 
 function chainable<T = any>(result: T = {} as T): any {
@@ -66,11 +76,14 @@ const emptyData = { data: null, error: null, count: 0, status: 200, statusText: 
 const emptyArray = { data: [], error: null, count: 0, status: 200, statusText: 'OK' };
 const noopPromise = <T = any>(v: T): Promise<T> => Promise.resolve(v);
 
-const channelStub = {
-  on: function() { return channelStub; },
-  subscribe: function(cb?: Function) { if (cb) cb('SUBSCRIBED', {}); return { unsubscribe: () => {} }; },
+const channelStub: any = {
+  on: function () { return channelStub; },
+  subscribe: function (cb?: Function) { if (cb) cb('SUBSCRIBED', {}); return { unsubscribe: () => {} }; },
   unsubscribe: () => {},
   send: () => ({ ok: true }),
+  track: async () => ({}),
+  untrack: async () => ({}),
+  presenceState: () => ({}),
   state: 'closed' as string,
 };
 
@@ -133,49 +146,56 @@ function createStubClient(): any {
 }
 
 // ============================================================
-// Real Supabase Client
+// Client factory
 // ============================================================
 
-let _client: SupabaseClient<Database> | null = null;
+let _client: any = null;
 
-function getOrCreateClient(): SupabaseClient<Database> {
+function getOrCreateClient(): any {
   if (_client) return _client;
 
-  if (!isConfigured) {
-    console.warn(
-      '[ShadowTalk] Supabase not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in .env. ' +
-      'Running in local-only mode — all backend operations are no-ops.'
-    );
-    _client = createStubClient() as any;
+  if (isFirebaseConfigured) {
+    // Loaded lazily so projects without Firebase config never pay the bundle cost at init.
+    const { createFirebaseBackend } = requireFirebaseAdapter();
+    _client = createFirebaseBackend();
+    console.log('[ShadowTalk] Firebase backend initialized (Auth + Firestore + Storage).');
     return _client;
   }
 
-  _client = createClient<Database>(SUPABASE_URL!, SUPABASE_ANON_KEY!, {
-    auth: {
-      autoRefreshToken: true,
-      persistSession: true,
-      detectSessionInUrl: true,
-      storageKey: 'shadowtalk-auth-token',
-    },
-    realtime: {
-      params: {
-        eventsPerSecond: 10,
+  if (isLegacyConfigured) {
+    _client = createClient(SUPABASE_URL!, SUPABASE_ANON_KEY!, {
+      auth: {
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true,
+        storageKey: 'shadowtalk-auth-token',
       },
-    },
-    db: {
-      schema: 'public',
-    },
-  });
+      realtime: { params: { eventsPerSecond: 10 } },
+      db: { schema: 'public' },
+    });
+    console.log('[ShadowTalk] Legacy REST backend initialized.');
+    return _client;
+  }
 
-  console.log('[ShadowTalk] Supabase client initialized successfully.');
+  console.warn(
+    '[ShadowTalk] No backend configured. Set the VITE_FIREBASE_* variables in .env to connect Firebase. ' +
+    'Running in local-only mode — all backend operations are no-ops.'
+  );
+  _client = createStubClient();
   return _client;
+}
+
+// Static import kept in a helper so the module graph stays synchronous for the proxy.
+import { createFirebaseBackend as _createFirebaseBackend } from '../firebase/adapter';
+function requireFirebaseAdapter() {
+  return { createFirebaseBackend: _createFirebaseBackend };
 }
 
 // ============================================================
 // Export: lazy-initialized singleton
 // ============================================================
 
-export const backend: ReturnType<typeof getOrCreateClient> = new Proxy({} as any, {
+export const backend: any = new Proxy({} as any, {
   get(_, prop) {
     const client = getOrCreateClient();
     const value = (client as any)[prop as string];
@@ -186,5 +206,4 @@ export const backend: ReturnType<typeof getOrCreateClient> = new Proxy({} as any
   },
 });
 
-// Re-export for convenience
-export { isConfigured };
+export { isConfigured, isFirebaseConfigured };

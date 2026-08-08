@@ -32,7 +32,8 @@ export interface ByokStreamResult {
   model: string;
   ttftMs?: number;
   totalMs: number;
-}\n
+}
+
 // ---- SSE line parser (OpenAI format) ----
 function parseSseLine(line: string): string | null {
   if (!line.startsWith('data: ') || line === 'data: [DONE]') return null;
