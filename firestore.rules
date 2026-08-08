@@ -1,0 +1,56 @@
+rules_version = '2';
+
+// ShadowTalk AI — Firestore Security Rules
+// Deploy with: firebase deploy --only firestore:rules
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/user_roles/$(request.auth.uid))
+        && get(/databases/$(database)/documents/user_roles/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function ownsExisting() {
+      return signedIn() && resource.data.user_id == request.auth.uid;
+    }
+
+    function ownsIncoming() {
+      return signedIn() && request.resource.data.user_id == request.auth.uid;
+    }
+
+    // Roles are admin-managed only — never writable by the user they describe.
+    match /user_roles/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    // Publicly readable content collections.
+    match /blog_posts/{doc}      { allow read: if true; allow write: if isAdmin(); }
+    match /shared_answers/{doc}  { allow read: if true; allow create: if signedIn(); allow update, delete: if ownsExisting() || isAdmin(); }
+    match /shared_missions/{doc} { allow read: if true; allow create: if signedIn(); allow update, delete: if ownsExisting() || isAdmin(); }
+    match /announcements/{doc}   { allow read: if true; allow write: if isAdmin(); }
+
+    // Write-only intake collections (no public reads — they contain emails).
+    match /feedback/{doc}                { allow create: if true; allow read, update, delete: if isAdmin(); }
+    match /newsletter_subscriptions/{doc} { allow create: if true; allow read, update, delete: if isAdmin(); }
+    match /contact_messages/{doc}         { allow create: if true; allow read, update, delete: if isAdmin(); }
+
+    // Billing / entitlement state — readable by owner, writable only by admins or server.
+    match /subscribers/{doc}       { allow read: if ownsExisting() || isAdmin(); allow write: if isAdmin(); }
+    match /manual_payments/{doc}   { allow read: if ownsExisting() || isAdmin(); allow create: if ownsIncoming(); allow update, delete: if isAdmin(); }
+    match /referrals/{doc}         { allow read: if ownsExisting() || isAdmin(); allow write: if isAdmin(); }
+    match /user_referral_codes/{doc} { allow read: if ownsExisting() || isAdmin(); allow write: if isAdmin(); }
+
+    // Default: every other collection is per-user private data keyed by user_id.
+    match /{collection}/{doc} {
+      allow read: if ownsExisting() || isAdmin();
+      allow create: if ownsIncoming();
+      allow update, delete: if ownsExisting() || isAdmin();
+    }
+  }
+}
