@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { saveLocalUser } from "@/lib/persistentAuth";
 import { clearExplicitSignOut, consumeReturnPath, hasExplicitSignOut } from "@/lib/persistentAuth";
 import { backend, isConfigured } from "@/integrations/local/client";
+import { isFirebaseConfigured, firebaseOAuthSignIn } from "@/integrations/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
@@ -261,9 +262,36 @@ const AuthPage = () => {
     } finally { setLoading(false); }
   };
 
-  // OAuth providers removed — local-only authentication
+  // Firebase OAuth handler
+  const handleFirebaseOAuth = async (provider: 'google' | 'apple' | 'github' | 'twitter') => {
+    if (!isFirebaseConfigured) {
+      toast({ title: 'Not configured', description: 'Firebase is not set up. Add VITE_FIREBASE_* to .env', variant: 'destructive' });
+      return;
+    }
+    setLoading(true);
+    try {
+      const result = await firebaseOAuthSignIn(provider);
+      if (result.success && result.user) {
+        saveLocalUser(result.user.email || '', result.user.uid);
+        clearExplicitSignOut();
+        toast({ title: 'Success', description: `Signed in with ${provider}!` });
+        navigate(consumeReturnPath());
+      } else if (result.error !== 'Popup closed') {
+        toast({ title: `${provider} Sign-in Failed`, description: result.error, variant: 'destructive' });
+      }
+    } catch (err: any) {
+      toast({ title: 'Authentication Failed', description: err?.message || 'Unknown error', variant: 'destructive' });
+    } finally { setLoading(false); }
+  };
 
+  const showFirebaseOAuth = isFirebaseConfigured;
 
+  const oauthButtons = [
+    { id: 'google' as const, label: 'Google', icon: 'G' },
+    { id: 'github' as const, label: 'GitHub', icon: 'GH' },
+    { id: 'apple' as const, label: 'Apple', icon: '' },
+    { id: 'twitter' as const, label: 'X (Twitter)', icon: 'X' },
+  ];
 
   return (
     <GlassMonolithDesign showBack onBack={() => navigate("/")} backLabel="Back to Home">
@@ -515,6 +543,34 @@ const AuthPage = () => {
 
                   </motion.div>
                 </motion.form>
+
+            {/* Firebase OAuth buttons */
+            {showFirebaseOAuth && (
+              <motion.div
+                className="mt-4"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+              >
+                <div className="relative flex items-center justify-center my-4">
+                  <Separator className="absolute w-full" />
+                  <span className="relative bg-background px-3 text-[10px] text-muted-foreground uppercase tracking-wider">or continue with</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {oauthButtons.map((btn) => (
+                    <Button
+                      key={btn.id}
+                      variant="outline"
+                      className="h-10 gap-2 border-border/50 bg-muted/20 hover:bg-muted/40 text-sm font-medium"
+                      disabled={loading}
+                      onClick={() => handleFirebaseOAuth(btn.id)}
+                    >
+                      {btn.icon}
+                      {btn.label}
+                    </Button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
 
             {/* Toggle */}
             <motion.div
