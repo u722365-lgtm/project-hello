@@ -183,13 +183,30 @@ const firebaseAuth = {
     }
   },
   signInWithOAuth: async ({ provider }: { provider: string; options?: any }) => {
+    const fbProvider = providerFor(provider) as any;
     try {
-      const cred = await signInWithPopup(getFirebaseAuth(), providerFor(provider) as any);
+      const cred = await signInWithPopup(getFirebaseAuth(), fbProvider);
       return { data: { provider, url: null, user: mapUser(cred.user) }, error: null };
     } catch (error: any) {
+      // Popups can be blocked (cross-origin isolation, mobile webviews) — fall back to redirect.
+      const code = String(error?.code ?? '');
+      if (
+        code.includes('popup-blocked') ||
+        code.includes('popup-closed-by-user') ||
+        code.includes('cancelled-popup-request') ||
+        code.includes('operation-not-supported-in-this-environment')
+      ) {
+        try {
+          await signInWithRedirect(getFirebaseAuth(), fbProvider);
+          return { data: { provider, url: window.location.href }, error: null };
+        } catch (redirectError: any) {
+          return { data: { provider, url: null }, error: { message: redirectError?.message ?? 'OAuth sign in failed' } };
+        }
+      }
       return { data: { provider, url: null }, error: { message: error?.message ?? 'OAuth sign in failed' } };
     }
   },
+
   signOut: async () => {
     try {
       await fbSignOut(getFirebaseAuth());
