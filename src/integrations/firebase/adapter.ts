@@ -27,6 +27,7 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signInWithPopup,
+  signInWithRedirect,
   signInAnonymously as fbSignInAnonymously,
   signOut as fbSignOut,
   sendPasswordResetEmail,
