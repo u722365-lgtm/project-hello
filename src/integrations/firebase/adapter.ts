@@ -33,7 +33,6 @@ import {
   updateEmail,
   updatePassword,
   updateProfile,
-  onAuthStateChange as _unused,
   GoogleAuthProvider,
   OAuthProvider,
   type User as FirebaseUser,
