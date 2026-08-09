@@ -544,7 +544,7 @@ const AuthPage = () => {
                   </motion.div>
                 </motion.form>
 
-            {/* Firebase OAuth buttons */
+            {/* Firebase OAuth buttons */}
             {showFirebaseOAuth && (
               <motion.div
                 className="mt-4"
