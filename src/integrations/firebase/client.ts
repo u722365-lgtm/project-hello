@@ -73,7 +73,7 @@ import {
   getDownloadURL,
   deleteObject,
   listAll,
-  Storage as FbStorage,
+  FirebaseStorage as FbStorage,
 } from 'firebase/storage';
 import {
   getMessaging,

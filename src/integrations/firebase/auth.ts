@@ -18,7 +18,7 @@ import {
   getIdToken,
   signInWithCustomToken,
 } from './client';
-import { GoogleAuthProvider, AppleAuthProvider, GithubAuthProvider, TwitterAuthProvider, OAuthProvider } from 'firebase/auth';
+import { GoogleAuthProvider, GithubAuthProvider, TwitterAuthProvider, OAuthProvider } from 'firebase/auth';
 
 // ============================================================
 // Provider instances
@@ -28,7 +28,7 @@ const googleProvider = new GoogleAuthProvider();
 googleProvider.addScope('email');
 googleProvider.addScope('profile');
 
-const appleProvider = new AppleAuthProvider();
+const appleProvider = new OAuthProvider('apple.com');
 appleProvider.addScope('email');
 appleProvider.addScope('fullName');
 
@@ -241,7 +241,7 @@ export async function sendPhoneOtp(phoneNumber: string): Promise<{ success: bool
   if (!isFirebaseConfigured || !_recaptchaVerifier) return { success: false, error: 'Phone auth not initialized' };
 
   try {
-    const { signInWithPhoneNumber, ConfirmationResult } = await import('firebase/auth');
+    const { signInWithPhoneNumber } = await import('firebase/auth');
     const confirmation = await signInWithPhoneNumber(auth as any, phoneNumber, _recaptchaVerifier);
     // Store confirmation for verifyPhoneOtp
     (window as any).__firebasePhoneConfirmation = confirmation;
