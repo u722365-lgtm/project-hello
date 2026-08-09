@@ -23,7 +23,7 @@ import {
 // Presence System
 // ============================================================
 
-interface PresenceState {
+export interface PresenceState {
   uid: string;
   email?: string;
   display_name?: string;

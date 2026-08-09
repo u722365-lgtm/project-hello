@@ -20,7 +20,7 @@ import {
   query,
   where,
   orderBy,
-  limit as limitQuery,
+  limitQuery,
   onSnapshot,
   writeBatch,
   serverTimestamp,
@@ -214,4 +214,5 @@ export async function incrementFirestoreUsage(userId: string, field: 'messages' 
 }
 
 // Re-export Timestamp for use in queries
-export { serverTimestamp, increment, arrayUnion, arrayRemove, Timestamp };
+export { serverTimestamp, increment, Timestamp };
+export { arrayUnion, arrayRemove } from 'firebase/firestore';
