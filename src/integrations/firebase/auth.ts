@@ -211,6 +211,9 @@ function mapAuthError(err: any): string {
     'auth/cancelled-popup-request': 'Only one popup request is allowed at a time.',
     'auth/invalid-credential': 'Invalid email or password',
     'auth/network-request-failed': 'Network error. Check your connection.',
+    'auth/operation-not-allowed': 'Email/password sign-in is not enabled for this project yet. Enable the Email/Password provider in Firebase Authentication → Sign-in method, or use Google/Apple sign-in.',
+    'auth/admin-restricted-operation': 'This sign-in method is restricted for this project. Enable it in Firebase Authentication → Sign-in method.',
+    'auth/unauthorized-domain': 'This domain is not authorized for sign-in. Add it in Firebase Authentication → Settings → Authorized domains.',
   };
   return messages[code] || err?.message || 'Authentication failed';
 }
