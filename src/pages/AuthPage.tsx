@@ -179,88 +179,41 @@ const AuthPage = () => {
     setLoading(true);
     try {
       if (isOffline) {
-        if (!isLogin) { toast({ title: "Offline", description: "You need to be online to create an account", variant: "destructive" }); return; }
-        const result = await verifyOfflineCredentials(cleanEmail, cleanPassword);
-        if (result.success) { toast({ title: "Success", description: "Logged in offline!" }); navigate('/chatbot'); }
-        else { toast({ title: "Error", description: result.error, variant: "destructive" }); }
+        toast({ title: "You're offline", description: "Firebase sign-in needs an internet connection.", variant: "destructive" });
         return;
       }
 
-      // ---- Supabase-connected auth ----
-      if (isConfigured) {
-        if (isLogin) {
-          const { data, error } = await backend.auth.signInWithPassword({
-            email: cleanEmail,
-            password: cleanPassword,
-          });
-          if (error) throw error;
-          // Persist user info locally for offline fallback
-          saveLocalUser(cleanEmail, data.user?.id);
-          clearExplicitSignOut();
-          toast({ title: "Success", description: "Logged in successfully!" });
-          setLoading(false);
-          await playWelcomeVoice(cleanEmail);
-          navigate(consumeReturnPath());
-        } else {
-          const { data, error } = await backend.auth.signUp({
-            email: cleanEmail,
-            password: cleanPassword,
-          });
-          if (error) throw error;
-          // User may need email confirmation — check session
-          if (data.session) {
-            saveLocalUser(cleanEmail, data.user?.id);
-            clearExplicitSignOut();
-            toast({ title: "Success", description: "Account created successfully!" });
-            setLoading(false);
-            await playWelcomeVoice(cleanEmail);
-            navigate(consumeReturnPath());
-          } else {
-            toast({ title: "Check your email", description: "We sent a confirmation link to " + cleanEmail });
-          }
-        }
+      // ---- Firebase Authentication (email + password) ----
+      if (isLogin) {
+        const { data, error } = await backend.auth.signInWithPassword({
+          email: cleanEmail,
+          password: cleanPassword,
+        });
+        if (error) throw error;
+        saveLocalUser(cleanEmail, data.user?.id);
+        clearExplicitSignOut();
+        toast({ title: "Success", description: "Logged in successfully!" });
+        setLoading(false);
+        await playWelcomeVoice(cleanEmail);
+        navigate(consumeReturnPath());
       } else {
-        // ---- Local-only fallback (no Supabase) ----
-        if (isLogin) {
-          if (typeof localStorage !== 'undefined') {
-            const stored = localStorage.getItem('shadowtalk-local-user');
-            if (stored) {
-              const parsed = JSON.parse(stored);
-              if (parsed.email !== cleanEmail) {
-                throw new Error('Invalid email or password');
-              }
-            } else {
-              throw new Error('No account found. Please create an account first.');
-            }
-          }
-          saveLocalUser(cleanEmail);
-          clearExplicitSignOut();
-          toast({ title: "Success", description: "Logged in successfully (local mode)!" });
-          setLoading(false);
-          await playWelcomeVoice(cleanEmail);
-          navigate(consumeReturnPath());
-        } else {
-          if (typeof localStorage !== 'undefined') {
-            const existing = localStorage.getItem('shadowtalk-local-user');
-            if (existing) {
-              const parsed = JSON.parse(existing);
-              if (parsed.email === cleanEmail) {
-                throw new Error('An account with this email already exists. Please sign in.');
-              }
-            }
-          }
-          saveLocalUser(cleanEmail);
-          clearExplicitSignOut();
-          toast({ title: "Success", description: "Account created successfully (local mode)!" });
-          setLoading(false);
-          await playWelcomeVoice(cleanEmail);
-          navigate(consumeReturnPath());
-        }
+        const { data, error } = await backend.auth.signUp({
+          email: cleanEmail,
+          password: cleanPassword,
+        });
+        if (error) throw error;
+        saveLocalUser(cleanEmail, data.user?.id);
+        clearExplicitSignOut();
+        toast({ title: "Success", description: "Account created successfully!" });
+        setLoading(false);
+        await playWelcomeVoice(cleanEmail);
+        navigate(consumeReturnPath());
       }
     } catch (error: any) {
       toast({ title: "Authentication Failed", description: error?.message || 'Unknown error', variant: "destructive" });
     } finally { setLoading(false); }
   };
+
 
   // Firebase OAuth handler
   const handleFirebaseOAuth = async (provider: 'google' | 'apple' | 'github' | 'twitter') => {
