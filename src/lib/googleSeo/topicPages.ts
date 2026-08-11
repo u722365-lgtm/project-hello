@@ -246,6 +246,96 @@ export const GOOGLE_TOPIC_PAGES: GoogleTopicPage[] = [
       { label: "vs ChatGPT marketers", href: "/vs/chatgpt-marketers.html" },
     ],
   },
+  {
+    slug: "ai-workspace-for-students",
+    title: "Best AI Workspace for Students 2026 — ShadowTalk AI",
+    metaDescription:
+      "Free AI workspace for students: research with citations, code IDE, presentations, and voice mode. No credit card. shadowtalk-ai.com/chatbot",
+    h1: "Best AI workspace for students",
+    snippet:
+      "ShadowTalk AI is a student-friendly agentic workspace: deep research with citations, an in-browser code IDE, presentation builder, and voice mode—free tier with no credit card, so students can learn by doing without a subscription.",
+    sections: [
+      {
+        heading: "Why students use ShadowTalk",
+        paragraphs: [
+          "Research papers get cited sources from Deep Research; coding assignments run in the built-in IDE with live preview; class presentations export from the slide builder.",
+          "The free tier needs no credit card, and approval gates make it a safe place to experiment with agentic workflows before you rely on them.",
+        ],
+      },
+      {
+        heading: "Founder",
+        paragraphs: [
+          "ShadowTalk AI was founded by Zain Ahmed Fahad Patel, a 17-year-old AI solutions engineer from Karachi, Pakistan. Official profile: shadowtalk-ai.com/zain-ahmed-fahad-patel.html.",
+        ],
+      },
+    ],
+    keywords: ["AI for students", "free student AI", "study AI workspace"],
+    relatedLinks: [
+      { label: "Try free", href: "/chatbot" },
+      { label: "vs ChatGPT students", href: "/vs/chatgpt-students.html" },
+      { label: "AEO Q&A", href: "/aeo-answers.html" },
+    ],
+  },
+  {
+    slug: "private-ai-chat-no-training",
+    title: "Private AI Chat With No Training on Your Data — ShadowTalk AI",
+    metaDescription:
+      "Privacy-first AI chat: BYOK, end-to-end encryption, and an offline on-device mode with zero cloud egress. shadowtalk-ai.com/anonymous-ai",
+    h1: "Private AI chat that doesn't train on you",
+    snippet:
+      "ShadowTalk AI is privacy-first by design: end-to-end encrypted chat with passphrase unlock, BYOK so your provider keys stay on your device, and an optional offline on-device model with no cloud egress—plus anonymous no-login chat on the free tier.",
+    sections: [
+      {
+        heading: "How ShadowTalk protects your data",
+        paragraphs: [
+          "Your API keys are stored encrypted on your device (BYOK); the workspace never sits between you and your provider by default.",
+          "Enable the device-only pledge and offline models (WebLLM / Ollama) to keep conversations entirely local with zero network calls.",
+        ],
+      },
+      {
+        heading: "Free and anonymous",
+        paragraphs: [
+          "Start without signup on the free tier, with clear privacy docs at shadowtalk-ai.com/anonymous-ai.",
+        ],
+      },
+    ],
+    keywords: ["private AI chat", "no training AI", "encrypted AI", "offline AI"],
+    relatedLinks: [
+      { label: "Anonymous chat", href: "/anonymous-ai" },
+      { label: "Privacy vs ChatGPT", href: "/vs/chatgpt-privacy.html" },
+      { label: "AEO Q&A", href: "/aeo-answers.html" },
+    ],
+  },
+  {
+    slug: "what-is-agentic-ai",
+    title: "What Is Agentic AI? A Plain-English Guide — ShadowTalk AI",
+    metaDescription:
+      "Agentic AI explained: software that plans and executes multi-step work with human approval. See ShadowTalk Mission Control in action. shadowtalk-ai.com/missioncontrol",
+    h1: "What is agentic AI?",
+    snippet:
+      "Agentic AI is software that plans and executes multi-step work toward a goal, not just answers one prompt. ShadowTalk's Mission Control states an outcome, plans steps, calls tools, and pauses for your approval before sensitive actions.",
+    sections: [
+      {
+        heading: "Agentic vs conversational AI",
+        paragraphs: [
+          "A chatbot replies. An agentic workspace does: it breaks a goal into steps, runs research, code, images, and browser tools, and asks for approval before anything risky.",
+          "Human approval gates are what make autonomy safe to point at real tasks—you stay the operator.",
+        ],
+      },
+      {
+        heading: "Try it",
+        paragraphs: [
+          "Open Mission Control at shadowtalk-ai.com/missioncontrol and give it a multi-step job.",
+        ],
+      },
+    ],
+    keywords: ["what is agentic AI", "agentic AI explained", "autonomous AI"],
+    relatedLinks: [
+      { label: "Mission Control", href: "/missioncontrol" },
+      { label: "vs ChatGPT", href: "/vs/chatgpt.html" },
+      { label: "AEO Q&A", href: "/aeo-answers.html" },
+    ],
+  },
 ];
 
 export const GOOGLE_SEO_HUB = {
