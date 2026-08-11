@@ -82,11 +82,15 @@ export function ChatShadowSidebar({
         transition={spring}
         className={cn(
           "relative flex items-center rounded-xl text-[13px] font-medium transition-colors",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60",
+          "focus-visible:ring-offset-2 focus-visible:ring-offset-background",
           isCollapsed ? "justify-center h-11 w-11 mx-auto" : "gap-3 w-full px-3 py-2.5",
           opts.primary
             ? "bg-primary/15 border border-primary/30 text-sidebar-foreground hover:bg-primary/22"
             : "text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/50",
         )}
+        aria-label={opts.label}
+        title={isCollapsed ? undefined : opts.label}
       >
         {opts.icon}
         {!isCollapsed && <span className="flex-1 text-left">{opts.label}</span>}

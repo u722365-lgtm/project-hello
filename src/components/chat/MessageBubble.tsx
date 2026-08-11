@@ -1,5 +1,11 @@
 import React, { useMemo } from 'react';
-import { User, Copy, RefreshCw, Volume2, VolumeX, Lock, Edit2, ExternalLink, Compass, Sparkles, Share2 } from 'lucide-react';
+import { User, Copy, RefreshCw, Volume2, VolumeX, Lock, Edit2, ExternalLink, Compass, Sparkles, Share2, MoreHorizontal } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { formatCopyWithAttribution } from '@/lib/growth/selfMarketing';
 import { useUserReferralCode } from '@/hooks/useUserReferralCode';
 import { Button } from '@/components/ui/button';
@@ -400,7 +406,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 
         {/* Actions */}
         {!isWelcome && (
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0 mt-2">
+          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0 focus-within:translate-y-0 mt-2">
             {isUser ? (
               <Button 
                 variant="ghost" 
@@ -417,41 +423,14 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  onClick={() => onTextToSpeech(message.content, message.id)} 
-                  disabled={isLoading} 
-                  className={`h-8 px-3 text-[11px] text-muted-foreground/60 hover:text-foreground rounded-full hover:bg-muted/40 ${
-                    userPlan !== 'pro' && userPlan !== 'elite' ? 'opacity-40' : ''
-                  }`}
-                >
-                  {speakingMessageId === message.id && isSpeaking 
-                    ? <VolumeX className="h-3 w-3 mr-1.5" /> 
-                    : <Volume2 className="h-3 w-3 mr-1.5" />
-                  }
-                  {userPlan !== 'pro' && userPlan !== 'elite' && <Lock className="h-2.5 w-2.5 mr-1" />}
-                  {speakingMessageId === message.id && isSpeaking ? 'Stop' : 'Listen'}
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
                   onClick={() => onRegenerate(index)} 
                   disabled={isLoading} 
                   className="h-8 px-3 text-[11px] text-muted-foreground/60 hover:text-foreground rounded-full hover:bg-muted/40"
+                  aria-label="Regenerate response"
                 >
                   <RefreshCw className={`h-3 w-3 mr-1.5 ${isLoading ? 'animate-spin' : ''}`} />
-                  Retry
+                  Regenerate
                 </Button>
-                {onShareReply && message.content.trim().length > 120 && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onShareReply(message.content)}
-                    disabled={isLoading}
-                    className="h-8 px-3 text-[11px] text-primary/80 hover:text-primary rounded-full hover:bg-primary/10"
-                  >
-                    <Share2 className="h-3 w-3 mr-1.5" />
-                    Share
-                  </Button>
-                )}
               </>
             )}
             <Button 
@@ -459,10 +438,53 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
               size="sm" 
               onClick={handleCopy} 
               className="h-8 px-3 text-[11px] text-muted-foreground/60 hover:text-foreground rounded-full hover:bg-muted/40"
+              aria-label="Copy message"
             >
               <Copy className="h-3 w-3 mr-1.5" />
               Copy
             </Button>
+            {!isUser && (
+              /* Spec §10 / §15 — secondary actions live behind a "More" menu. */
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 text-muted-foreground/60 hover:text-foreground rounded-full hover:bg-muted/40"
+                    aria-label="More actions"
+                  >
+                    <MoreHorizontal className="h-3.5 w-3.5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-48">
+                  <DropdownMenuItem
+                    onClick={() => onTextToSpeech(message.content, message.id)}
+                    disabled={isLoading}
+                    className="gap-2 text-[13px]"
+                  >
+                    {speakingMessageId === message.id && isSpeaking ? (
+                      <VolumeX className="h-3.5 w-3.5" />
+                    ) : (
+                      <Volume2 className="h-3.5 w-3.5" />
+                    )}
+                    {speakingMessageId === message.id && isSpeaking ? 'Stop reading' : 'Read aloud'}
+                    {userPlan !== 'pro' && userPlan !== 'elite' && (
+                      <Lock className="h-3 w-3 ml-auto opacity-60" aria-label="Upgrade required" />
+                    )}
+                  </DropdownMenuItem>
+                  {onShareReply && (
+                    <DropdownMenuItem
+                      onClick={() => onShareReply(message.content)}
+                      disabled={isLoading}
+                      className="gap-2 text-[13px]"
+                    >
+                      <Share2 className="h-3.5 w-3.5" />
+                      Share reply
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         )}
       </div>

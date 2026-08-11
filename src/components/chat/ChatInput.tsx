@@ -228,6 +228,7 @@ export const ChatInput = ({
                         size="icon"
                         variant="ghost"
                         className="shadowtalk-composer__mic text-destructive hover:bg-destructive/10"
+                        aria-label="Stop generating"
                       >
                         <Square className="h-4 w-4 fill-current" />
                       </Button>
@@ -240,6 +241,8 @@ export const ChatInput = ({
                           isListening ? "bg-primary text-primary-foreground border-primary" : ""
                         }`}
                         disabled={isLoading}
+                        aria-label={isListening ? "Stop voice input" : "Start voice input"}
+                        aria-pressed={isListening}
                       >
                         {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
                       </Button>
@@ -264,8 +267,12 @@ export const ChatInput = ({
             </div>
           </div>
 
-          <p className="shadowtalk-composer__hint hidden sm:block">
-            Enter to send · Shift+Enter for new line
+          <p className="shadowtalk-composer__hint hidden sm:block" role="status" aria-live="polite">
+            {isLoading
+              ? "ShadowTalk is thinking… press Stop to cancel"
+              : canSend
+                ? "Enter to send · Shift+Enter for new line"
+                : "Type a message to get started · Shift+Enter for new line"}
           </p>
         </div>
       </div>
@@ -373,6 +380,7 @@ export const ChatInput = ({
                         size="icon"
                         variant="ghost"
                         className="h-9 w-9 rounded-full text-destructive hover:bg-destructive/10"
+                        aria-label="Stop generating"
                       >
                         <Square className="h-4 w-4 fill-current" />
                       </Button>
@@ -387,6 +395,8 @@ export const ChatInput = ({
                             : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
                         }`}
                         disabled={isLoading}
+                        aria-label={isListening ? "Stop voice input" : "Start voice input"}
+                        aria-pressed={isListening}
                       >
                         {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
                       </Button>
@@ -406,6 +416,7 @@ export const ChatInput = ({
                     size="icon"
                     className="h-9 w-9 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-all disabled:opacity-40"
                     disabled={!message.trim() && !selectedFile}
+                    aria-label="Send message"
                   >
                     <Send className="h-4 w-4" />
                   </Button>
@@ -415,6 +426,7 @@ export const ChatInput = ({
                   onClick={onStopGeneration}
                   size="icon"
                   className="h-9 w-9 rounded-full bg-destructive/80 hover:bg-destructive text-white shadow-lg shadow-destructive/20"
+                  aria-label="Stop generating"
                 >
                   <Square className="h-3.5 w-3.5 fill-current" />
                 </Button>
@@ -425,6 +437,7 @@ export const ChatInput = ({
                     size="icon"
                     className="h-9 w-9 rounded-full bg-white text-black hover:bg-white/90 shadow-lg transition-all duration-300 disabled:opacity-10 disabled:bg-white/5 disabled:text-white/20 hover:scale-105 active:scale-95"
                     disabled={!message.trim() && !selectedFile}
+                    aria-label="Send message"
                   >
                     <Send className="h-4 w-4" />
                   </Button>

@@ -358,6 +358,7 @@ export const ChatHeader = ({
           size="icon" 
           onClick={onToggleSidebar} 
           className="h-10 w-10 rounded-full text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all"
+          aria-label="Toggle sidebar"
         >
           <Menu className="h-[22px] w-[22px]" />
         </Button>
@@ -373,7 +374,10 @@ export const ChatHeader = ({
       <div className="flex items-center gap-2 md:gap-4">
         {/* Personality Selector */}
         <Select value={personality} onValueChange={(v) => onPersonalityChange(v as Personality)}>
-          <SelectTrigger className="w-[110px] md:w-[130px] h-9 rounded-full border-white/10 bg-white/5 hover:bg-white/10 transition-all focus:ring-0 focus:ring-offset-0 hidden sm:flex">
+          <SelectTrigger
+            aria-label="Assistant personality"
+            className="w-[110px] md:w-[130px] h-9 rounded-full border-white/10 bg-white/5 hover:bg-white/10 transition-all focus:ring-0 focus:ring-offset-0 hidden sm:flex"
+          >
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="rounded-2xl bg-[#1e1f20]/95 backdrop-blur-2xl border-white/10 shadow-2xl">
@@ -406,12 +410,12 @@ export const ChatHeader = ({
         {/* User Profile / Unified Settings */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <div className="relative group cursor-pointer">
+            <button type="button" aria-label="Account and more actions" className="relative group cursor-pointer rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background">
               <div className="absolute -inset-1 rounded-full bg-gradient-to-tr from-blue-500 to-violet-500 blur-sm opacity-0 group-hover:opacity-40 transition-all duration-500" />
               <div className="relative w-10 h-10 rounded-full bg-gradient-to-tr from-[#1e1f20] to-[#2b2c2d] border border-white/10 flex items-center justify-center text-[14px] font-bold text-white shadow-xl">
                 {userInitials}
               </div>
-            </div>
+            </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-64 p-2 bg-[#1e1f20]/98 backdrop-blur-3xl border border-white/10 rounded-[24px] shadow-2xl">
             <div className="px-4 py-4 mb-1 flex items-center gap-3">

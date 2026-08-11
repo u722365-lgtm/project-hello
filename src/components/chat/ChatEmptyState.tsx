@@ -1,5 +1,6 @@
+import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { Sparkles, Code2, Search, PenLine, Zap, Target } from "lucide-react";
+import { Sparkles, Code2, Search, PenLine, Zap, BarChart3, ShieldCheck, Cloud } from "lucide-react";
 import { ShadowTalkOrb } from "@/components/chat/ShadowTalkOrb";
 import { useSettingsMotion } from "@/hooks/useSettingsMotion";
 import { settingsHapticTick } from "@/lib/settingsFeedback";
@@ -8,14 +9,17 @@ import { BRAND } from "@/lib/brand";
 import { resolveEnterpriseTenant } from "@/lib/enterpriseTenants";
 import { useAuth } from "@/components/AuthProvider";
 import { UseCaseQuickLinks } from "@/components/growth/UseCaseQuickLinks";
+import {
+  canUseCloudAI,
+  isDeviceOnlyPledgeActive,
+} from "@/lib/privacy/deviceOnlyPledge";
 
+/** Spec §7 — four labelled starting shortcuts (prompt shortcuts, not new pages). */
 const DEFAULT_QUICK_PROMPTS = [
-  { label: "Plan my day", prompt: "Plan my day around meetings, writing, and deep work.", icon: Target },
-  { label: "Draft an email", prompt: "Draft a short professional email about ", icon: PenLine },
-  { label: "Summarize this topic", prompt: "Summarize the key points about ", icon: Search },
-  { label: "Build a landing page", prompt: "Give me a clean landing page structure for ", icon: Code2 },
-  { label: "Research for me", prompt: "Research the latest on ", icon: Search },
-  { label: "Debug this code", prompt: "Debug this code and explain the fix: ", icon: Code2 },
+  { label: "Research", prompt: "Research the latest on ", icon: Search },
+  { label: "Write", prompt: "Help me write ", icon: PenLine },
+  { label: "Code", prompt: "Write code that ", icon: Code2 },
+  { label: "Analyze", prompt: "Analyze this and tell me what matters: ", icon: BarChart3 },
 ] as const;
 
 interface ChatEmptyStateProps {
@@ -38,6 +42,18 @@ export function ChatEmptyState({
   const tenant = resolveEnterpriseTenant(user?.email);
   const quickPrompts = tenant?.quickPrompts ?? DEFAULT_QUICK_PROMPTS;
 
+  // Spec §14 — only claim what the code actually guarantees. Chat can be
+  // persisted to the cloud whenever cloud AI is allowed (see
+  // shouldPersistChatToCloud in lib/privacy/deviceOnlyPledge), so the
+  // "no data stored" claim is only true in device-only mode.
+  const privacy = useMemo(() => {
+    const deviceOnly = isDeviceOnlyPledgeActive() && !canUseCloudAI();
+    return deviceOnly
+      ? { label: "Anonymous · on-device only", deviceOnly: true }
+      : { label: "Anonymous · cloud AI enabled", deviceOnly: false };
+  }, []);
+  const PrivacyIcon = privacy.deviceOnly ? ShieldCheck : Cloud;
+
   return (
     <motion.div
       variants={staggerList}
@@ -50,22 +66,31 @@ export function ChatEmptyState({
       </motion.div>
 
       <motion.h1 variants={staggerItem} className="shadowtalk-chat-greeting">
-        Hello, <span className="gradient-text">{userDisplayName}</span>
+        <span className="gradient-text">What are you working on?</span>
       </motion.h1>
+      <motion.p variants={staggerItem} className="text-sm text-muted-foreground mt-1">
+        Hello, {userDisplayName}
+      </motion.p>
       <motion.p variants={staggerItem} className="shadowtalk-chat-tagline text-base sm:text-lg font-semibold tracking-tight">
         <span className="gradient-text">{tenant?.welcomeSubtitle ?? BRAND.tagline}</span>
       </motion.p>
       <motion.p variants={staggerItem} className="text-xs text-muted-foreground mt-1">
-        Try ShadowTalk — sovereign AI, local-first, and no data stored.
+        Try ShadowTalk — sovereign AI you control.
       </motion.p>
 
       <motion.div
         variants={staggerItem}
-        className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-medium text-emerald-400"
-        aria-label="Privacy status"
+        className={cn(
+          "mt-3 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium",
+          privacy.deviceOnly
+            ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
+            : "border-border/60 bg-muted/30 text-muted-foreground",
+        )}
+        role="status"
+        aria-label={`Privacy status: ${privacy.label}`}
       >
-        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-        Anonymous · local-first · no data stored
+        <PrivacyIcon className="h-3 w-3 shrink-0" aria-hidden />
+        {privacy.label}
       </motion.div>
 
       {apiConnectedLabel && (
@@ -103,8 +128,10 @@ export function ChatEmptyState({
                 "inline-flex items-center gap-2 rounded-full border border-border/50",
                 "bg-muted/30 px-3.5 py-2 text-xs font-medium text-muted-foreground",
                 "hover:border-primary/40 hover:text-foreground hover:bg-primary/10",
-                "transition-colors",
+                "transition-colors focus-visible:outline-none focus-visible:ring-2",
+                "focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
               )}
+              aria-label={`Start a ${item.label} prompt`}
             >
               <Icon className="h-3.5 w-3.5 text-primary shrink-0" />
               {item.label}
