@@ -70,7 +70,9 @@ export default defineConfig(({ mode }) => {
      },
     plugins: [
       react(),
+      mcpPlugin(),
       VitePWA({
+
         registerType: "autoUpdate",
         includeAssets: [
           "favicon.ico",
