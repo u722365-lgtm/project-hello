@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "sdk_version": "0.26.2",
+  "path": "/functions/v1/mcp",
+  "auth": {
+    "type": "none"
+  },
+  "mcp": {
+    "server": {
+      "name": "shadowtalk-ai",
+      "version": "0.1.0",
+      "title": "ShadowTalk-AI"
+    },
+    "tools": [
+      {
+        "name": "get_product_overview",
+        "title": "Get product overview",
+        "description": "Return an overview of ShadowTalk AI: what it is, who built it, the free tier, privacy posture and pricing plans.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "includePricing": {
+              "type": "boolean",
+              "description": "Include the full pricing plan breakdown. Defaults to true."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_features",
+        "title": "List features",
+        "description": "List ShadowTalk AI features with their category, in-app route and a short description. Optionally filter by keyword or category.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Free-text keyword to filter features by name or description."
+            },
+            "category": {
+              "type": "string",
+              "description": "Filter by category, e.g. chat, research, security, code, privacy, platform."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_changelog",
+        "title": "Get changelog",
+        "description": "Return recent ShadowTalk AI release notes: version, title, summary and the individual changes.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "description": "How many recent releases to return (1-20, default 5)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "answer_faq",
+        "title": "Answer FAQ",
+        "description": "Search ShadowTalk AI's published FAQ (pricing, accounts, privacy, offline use, supported platforms) and return matching answers.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "question": {
+              "type": "string",
+              "description": "The question to look up. Omit to return every FAQ entry."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
