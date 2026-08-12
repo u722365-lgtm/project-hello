@@ -48,7 +48,6 @@ import { useAgenticToolDispatch } from "@/hooks/useAgenticToolDispatch";
 import { detectShadowExecutionFromChat } from "@/lib/execution/inferFromChat";
 import { ChatAmbientBackground } from "@/components/chat/ChatAmbientBackground";
 import { ChatEmptyState } from "@/components/chat/ChatEmptyState";
-import { ChatbotTrustStrip } from "@/components/chat/ChatbotTrustStrip";
 import { ChatMainPanel } from "@/components/chat/ChatMainPanel";
 import { SETTINGS_SPRING } from "@/lib/settingsMotion";
 import { useChatSidebarCollapse } from "@/hooks/useChatSidebarCollapse";
@@ -2563,7 +2562,7 @@ const ChatbotPage = () => {
                   transition={SETTINGS_SPRING}
                   className="flex-1 flex flex-col justify-center min-h-0"
                 >
-                  <ChatbotTrustStrip />
+                  
                   <ChatEmptyState
                     userDisplayName={userDisplayName}
                     onSelectPrompt={handleQuickPrompt}

@@ -223,7 +223,7 @@ export function ChatShadowSidebar({
         </motion.div>
 
         {!isCollapsed && (
-          <div className="px-3 pb-2 border-b border-sidebar-border/30 shrink-0">
+          <div className="px-3 pb-2 shrink-0">
             <InstalledAgentsPanel compact />
           </div>
         )}
@@ -233,7 +233,7 @@ export function ChatShadowSidebar({
         {/* Footer */}
         <div
           className={cn(
-            "shrink-0 border-t border-sidebar-border/30 space-y-3",
+            "shrink-0 space-y-3",
             isCollapsed ? "px-2 py-3" : "px-4 py-4",
           )}
         >
