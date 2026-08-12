@@ -2563,7 +2563,7 @@ const ChatbotPage = () => {
                   transition={SETTINGS_SPRING}
                   className="flex-1 flex flex-col justify-center min-h-0"
                 >
-                  <ChatbotTrustStrip />
+                  
                   <ChatEmptyState
                     userDisplayName={userDisplayName}
                     onSelectPrompt={handleQuickPrompt}
