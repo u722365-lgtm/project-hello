@@ -34,20 +34,20 @@ function NavRow({
   const inner = (
     <motion.span
       className={cn(
-        "relative flex items-center rounded-xl text-[13px] font-medium transition-colors",
-        collapsed ? "justify-center h-11 w-11 mx-auto" : "gap-3 px-3 py-2.5 w-full",
+        "relative flex items-center rounded-full text-[13px] font-medium transition-colors duration-200",
+        !active && "hover:bg-sidebar-accent/40",
+        collapsed ? "justify-center h-11 w-11 mx-auto" : "gap-3 px-4 py-2.5 w-full",
         active ? "text-sidebar-foreground" : "text-muted-foreground hover:text-sidebar-foreground",
       )}
-      whileHover={active ? undefined : { x: collapsed ? 0 : 5, scale: collapsed ? 1.05 : 1 }}
-      whileTap={{ scale: 0.96 }}
+      whileHover={active ? undefined : { x: collapsed ? 0 : 3, scale: collapsed ? 1.04 : 1 }}
+      whileTap={{ scale: 0.97 }}
       transition={spring}
     >
       {active && (
         <motion.span
           layoutId="chat-sidebar-nav-active"
           className={cn(
-            "absolute inset-0 rounded-xl border border-primary/25 bg-primary/12",
-            "shadow-[inset_0_1px_0_hsl(var(--primary)/0.2),0_0_20px_hsl(var(--primary)/0.08)]",
+            "absolute inset-0 rounded-full bg-primary/12 ring-1 ring-inset ring-primary/20",
           )}
           transition={navSpring}
         />

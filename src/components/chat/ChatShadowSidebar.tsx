@@ -77,17 +77,17 @@ export function ChatShadowSidebar({
           settingsHapticTick();
           opts.onClick();
         }}
-        whileHover={{ x: isCollapsed ? 0 : 5, scale: isCollapsed ? 1.06 : 1 }}
-        whileTap={{ scale: 0.96 }}
+        whileHover={{ x: isCollapsed ? 0 : 3, scale: isCollapsed ? 1.04 : 1 }}
+        whileTap={{ scale: 0.97 }}
         transition={spring}
         className={cn(
-          "relative flex items-center rounded-xl text-[13px] font-medium transition-colors",
+          "relative flex items-center rounded-full text-[13px] font-medium transition-colors duration-200",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60",
           "focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-          isCollapsed ? "justify-center h-11 w-11 mx-auto" : "gap-3 w-full px-3 py-2.5",
+          isCollapsed ? "justify-center h-11 w-11 mx-auto" : "gap-3 w-full px-4 py-2.5",
           opts.primary
-            ? "bg-primary/15 border border-primary/30 text-sidebar-foreground hover:bg-primary/22"
-            : "text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/50",
+            ? "bg-primary/15 ring-1 ring-inset ring-primary/25 text-sidebar-foreground hover:bg-primary/22"
+            : "text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/40",
         )}
         aria-label={opts.label}
         title={isCollapsed ? undefined : opts.label}
@@ -114,13 +114,15 @@ export function ChatShadowSidebar({
         animate={{ width }}
         transition={SETTINGS_SPRING}
         className={cn(
-          "shrink-0 flex flex-col border-r border-sidebar-border/80 relative z-30 overflow-hidden",
-          "bg-gradient-to-b from-sidebar/98 via-sidebar/95 to-background/90 backdrop-blur-2xl",
-          mobileDrawer ? "flex h-full min-h-0" : "hidden md:flex h-full min-h-0",
+          "shrink-0 flex flex-col relative z-30 overflow-hidden",
+          // Gemini-style: fully transparent rail that lets the ambient chat
+          // backdrop show through. Mobile drawer keeps a light blur for legibility.
+          mobileDrawer
+            ? "flex h-full min-h-0 bg-sidebar/80 backdrop-blur-2xl"
+            : "hidden md:flex h-full min-h-0 bg-transparent",
         )}
         style={{ width }}
       >
-        <div className="absolute inset-y-0 right-0 w-px bg-gradient-to-b from-transparent via-primary/35 to-transparent pointer-events-none" />
 
         {/* Brand */}
         <div className={cn("relative shrink-0", isCollapsed ? "px-2 pt-5 pb-3" : "px-4 pt-5 pb-4")}>
@@ -134,11 +136,11 @@ export function ChatShadowSidebar({
             whileTap={{ scale: 0.98 }}
             transition={spring}
             className={cn(
-              "flex items-center text-left w-full rounded-xl hover:bg-sidebar-accent/30 transition-colors",
+              "flex items-center text-left w-full rounded-full hover:bg-sidebar-accent/30 transition-colors duration-200",
               isCollapsed ? "justify-center p-2" : "gap-3 p-2",
             )}
           >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-card/80 ring-1 ring-primary/25 shadow-[0_0_24px_hsl(var(--primary)/0.15)]">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
               <ShadowTalkLogo size={36} variant="icon" ambient={false} animated={!isCollapsed} />
             </div>
             {!isCollapsed && (
@@ -172,7 +174,7 @@ export function ChatShadowSidebar({
                   transition={spring}
                   className={cn(
                     "absolute flex h-7 w-7 items-center justify-center rounded-lg",
-                    "border border-border/50 bg-background/80 text-muted-foreground hover:text-primary",
+                    "bg-sidebar-accent/40 text-muted-foreground hover:text-primary hover:bg-sidebar-accent/70 transition-colors",
                     isCollapsed ? "right-1 top-4" : "right-3 top-5",
                   )}
                   aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
@@ -221,7 +223,7 @@ export function ChatShadowSidebar({
         </motion.div>
 
         {!isCollapsed && (
-          <div className="px-3 pb-2 border-b border-sidebar-border/50 shrink-0">
+          <div className="px-3 pb-2 border-b border-sidebar-border/30 shrink-0">
             <InstalledAgentsPanel compact />
           </div>
         )}
@@ -231,12 +233,12 @@ export function ChatShadowSidebar({
         {/* Footer */}
         <div
           className={cn(
-            "shrink-0 border-t border-sidebar-border/60 space-y-3",
+            "shrink-0 border-t border-sidebar-border/30 space-y-3",
             isCollapsed ? "px-2 py-3" : "px-4 py-4",
           )}
         >
           {!isCollapsed ? (
-            <div className="flex items-center justify-between rounded-xl bg-muted/20 px-3 py-2 border border-border/40">
+            <div className="flex items-center justify-between rounded-full bg-sidebar-accent/30 px-4 py-2">
               <span className="text-xs font-medium text-muted-foreground">Shadow Mode</span>
               <Switch
                 checked={shadowMode}
@@ -257,7 +259,7 @@ export function ChatShadowSidebar({
             whileTap={{ scale: 0.98 }}
             transition={spring}
             className={cn(
-              "flex w-full items-center rounded-xl hover:bg-sidebar-accent/50 transition-colors",
+              "flex w-full items-center rounded-full hover:bg-sidebar-accent/40 transition-colors duration-200",
               isCollapsed ? "justify-center p-2" : "gap-3 px-2 py-2",
             )}
           >
