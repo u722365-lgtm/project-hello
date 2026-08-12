@@ -114,13 +114,15 @@ export function ChatShadowSidebar({
         animate={{ width }}
         transition={SETTINGS_SPRING}
         className={cn(
-          "shrink-0 flex flex-col border-r border-sidebar-border/80 relative z-30 overflow-hidden",
-          "bg-gradient-to-b from-sidebar/98 via-sidebar/95 to-background/90 backdrop-blur-2xl",
-          mobileDrawer ? "flex h-full min-h-0" : "hidden md:flex h-full min-h-0",
+          "shrink-0 flex flex-col relative z-30 overflow-hidden",
+          // Gemini-style: fully transparent rail that lets the ambient chat
+          // backdrop show through. Mobile drawer keeps a light blur for legibility.
+          mobileDrawer
+            ? "flex h-full min-h-0 bg-sidebar/80 backdrop-blur-2xl"
+            : "hidden md:flex h-full min-h-0 bg-transparent",
         )}
         style={{ width }}
       >
-        <div className="absolute inset-y-0 right-0 w-px bg-gradient-to-b from-transparent via-primary/35 to-transparent pointer-events-none" />
 
         {/* Brand */}
         <div className={cn("relative shrink-0", isCollapsed ? "px-2 pt-5 pb-3" : "px-4 pt-5 pb-4")}>
