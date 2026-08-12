@@ -270,11 +270,11 @@ describe("feature wiring verification", () => {
     expect(readSrc("pages/ChatbotPage.tsx")).toContain("recordFunnelEvent");
     expect(readSrc("App.tsx")).toContain("GrowthBanners");
     expect(readSrc("hooks/useOfflineBootstrap.ts")).toContain("getSuccessfulSessionCount");
-    expect(readSrc("components/chat/ChatEmptyState.tsx")).toContain("Try ShadowTalk");
+    expect(readSrc("components/chat/ChatEmptyState.tsx")).toContain("what&apos;s on your mind");
   });
 
   it("marketing growth plan wired — trust strip, wedges, GEO", () => {
-    expect(readSrc("pages/ChatbotPage.tsx")).toContain("ChatbotTrustStrip");
+    // ChatbotTrustStrip removed from ChatbotPage empty state (HCI polish: workspace > marketing)
     expect(readSrc("components/chat/ChatbotTrustStrip.tsx")).toContain("What is ShadowTalk");
     expect(readSrc("lib/marketing/wedgePages.ts")).toContain("ai-strategy-consultant");
     expect(readSrc("lib/marketing/wedgePages.ts")).toContain("anonymous-ai");
