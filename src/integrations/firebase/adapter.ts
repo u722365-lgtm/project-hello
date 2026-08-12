@@ -342,12 +342,30 @@ class FirestoreQuery<T = any> implements PromiseLike<Result<any>> {
   lt(c: string, v: any) { return this.addFilter('lt', c, v); }
   lte(c: string, v: any) { return this.addFilter('lte', c, v); }
   in(c: string, v: any[]) { return this.addFilter('in', c, v); }
-  contains(c: string, v: any) { return this.addFilter('contains', c, v); }
+  contains(c: string, v: any) {
+    // Firestore array-contains only works for array fields; warn on likely string misuse
+    console.warn(`[ShadowTalk] Firestore adapter: .contains('${c}') maps to array-contains. ` +
+      `For string fields this will not match as expected.`);
+    return this.addFilter('contains', c, v);
+  }
   is(c: string, v: any) { return this.addFilter('eq', c, v); }
-  like(c: string, v: string) { return this.addFilter('eq', c, v.replace(/%/g, '')); }
+  like(c: string, v: string) {
+    // Firestore has no LIKE operator; we strip wildcards and fall back to exact match
+    if (v.includes('%') || v.includes('_')) {
+      console.warn(`[ShadowTalk] Firestore adapter: .like('${c}', '${v}') — ` +
+        `wildcards stripped, using exact match. Consider a dedicated search service.`);
+    }
+    return this.addFilter('eq', c, v.replace(/%/g, ''));
+  }
   ilike(c: string, v: string) { return this.like(c, v); }
-  not() { return this; }
-  or() { return this; }
+  not() {
+    console.warn('[ShadowTalk] Firestore adapter: .not() is not supported — filter ignored.');
+    return this;
+  }
+  or() {
+    console.warn('[ShadowTalk] Firestore adapter: .or() is not supported — filter ignored.');
+    return this;
+  }
   filter(c: string, op: string, v: any) { return this.addFilter(op, c, v); }
   match(obj: Record<string, any>) {
     Object.entries(obj).forEach(([k, v]) => this.addFilter('eq', k, v));
@@ -552,6 +570,81 @@ const channelStub: any = {
 };
 
 // ============================================================
+// Supabase RPC / Edge Function bridge
+// ============================================================
+
+/**
+ * When Supabase env vars are present alongside Firebase, we can still call
+ * Supabase RPC functions and edge functions over HTTP.  This keeps the 49+
+ * `backend.functions.invoke('firecrawl-scrape', ...)` call sites in the
+ * codebase working even when Firebase is the primary Firestore/Auth backend.
+ */
+
+function getSupabaseUrl(): string {
+  return (
+    (import.meta as any).env?.VITE_SUPABASE_URL ||
+    (import.meta as any).env?.VITE_API_BASE_URL ||
+    ''
+  ).replace(/\/$/, '');
+}
+
+function getSupabaseAnonKey(): string {
+  return (
+    (import.meta as any).env?.VITE_SUPABASE_PUBLISHABLE_KEY ||
+    (import.meta as any).env?.VITE_API_KEY ||
+    ''
+  );
+}
+
+function supabaseHeaders(accessToken?: string): Record<string, string> {
+  const h: Record<string, string> = { 'Content-Type': 'application/json' };
+  const anon = getSupabaseAnonKey();
+  if (accessToken) h['Authorization'] = `Bearer ${accessToken}`;
+  else if (anon) h['Authorization'] = `Bearer ${anon}`;
+  if (anon) h['apikey'] = anon;
+  return h;
+}
+
+/** Proxy an RPC call through the Supabase REST API (POST /rest/v1/rpc/{fn}). */
+async function supabaseRpc(fn: string, params?: Record<string, unknown>): Promise<{ data: any; error: any }> {
+  const base = getSupabaseUrl();
+  if (!base) return { data: null, error: { message: 'Supabase URL not configured — RPC unavailable.' } };
+  try {
+    const res = await fetch(`${base}/rest/v1/rpc/${fn}`, {
+      method: 'POST',
+      headers: supabaseHeaders(),
+      body: JSON.stringify(params ?? {}),
+    });
+    const data = await res.json();
+    if (!res.ok) return { data: null, error: { message: data?.message ?? res.statusText, status: res.status } };
+    return { data, error: null };
+  } catch (e: any) {
+    return { data: null, error: { message: e?.message ?? 'RPC fetch failed' } };
+  }
+}
+
+/** Proxy an edge-function call through the Supabase Functions URL (POST /functions/v1/{name}). */
+async function supabaseInvoke(name: string, opts?: { body?: any }): Promise<{ data: any; error: any }> {
+  const base = getSupabaseUrl();
+  if (!base) return { data: null, error: { message: 'Supabase URL not configured — edge functions unavailable.' } };
+  try {
+    const res = await fetch(`${base}/functions/v1/${name}`, {
+      method: 'POST',
+      headers: supabaseHeaders(),
+      body: opts?.body !== undefined ? JSON.stringify(opts.body) : undefined,
+    });
+    // Edge functions return JSON directly; some return { ok, data }, others return raw data
+    const text = await res.text();
+    let data: any;
+    try { data = JSON.parse(text); } catch { data = text; }
+    if (!res.ok) return { data: null, error: { message: data?.error ?? data?.message ?? res.statusText, status: res.status } };
+    return { data, error: null };
+  } catch (e: any) {
+    return { data: null, error: { message: e?.message ?? `Edge function "${name}" fetch failed` } };
+  }
+}
+
+// ============================================================
 // Client
 // ============================================================
 
@@ -559,15 +652,9 @@ export function createFirebaseBackend(): any {
   return {
     auth: firebaseAuth,
     from: (table: string) => new FirestoreQuery(table),
-    rpc: async (_fn: string, _params?: any) => ({
-      data: null,
-      error: { message: 'Database functions are not available on the Firebase backend.' },
-    }),
+    rpc: (fn: string, params?: any) => supabaseRpc(fn, params),
     functions: {
-      invoke: async (name: string, _opts?: any) => ({
-        data: null,
-        error: { message: `Cloud Function "${name}" is not deployed.` },
-      }),
+      invoke: (name: string, opts?: any) => supabaseInvoke(name, opts),
     },
     channel: () => channelStub,
     removeChannel: () => {},
