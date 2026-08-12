@@ -48,7 +48,6 @@ import { useAgenticToolDispatch } from "@/hooks/useAgenticToolDispatch";
 import { detectShadowExecutionFromChat } from "@/lib/execution/inferFromChat";
 import { ChatAmbientBackground } from "@/components/chat/ChatAmbientBackground";
 import { ChatEmptyState } from "@/components/chat/ChatEmptyState";
-import { ChatbotTrustStrip } from "@/components/chat/ChatbotTrustStrip";
 import { ChatMainPanel } from "@/components/chat/ChatMainPanel";
 import { SETTINGS_SPRING } from "@/lib/settingsMotion";
 import { useChatSidebarCollapse } from "@/hooks/useChatSidebarCollapse";
