@@ -10,17 +10,16 @@ interface ChatMainPanelProps {
 export function ChatMainPanel({ children, className }: ChatMainPanelProps) {
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.35 }}
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
       className={cn(
         "flex-1 flex flex-col min-w-0 min-h-0 h-full overflow-hidden relative",
-        "bg-background/35 backdrop-blur-md",
-        "border-l border-border/30",
+        // Transparent content column — the ambient chat backdrop is the surface.
+        "bg-transparent",
         className,
       )}
     >
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent pointer-events-none" />
       {children}
     </motion.div>
   );
