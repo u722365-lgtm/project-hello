@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { saveLocalUser } from "@/lib/persistentAuth";
 import { clearExplicitSignOut, consumeReturnPath, hasExplicitSignOut } from "@/lib/persistentAuth";
 import { backend, isConfigured } from "@/integrations/local/client";
-import { isFirebaseConfigured, firebaseOAuthSignIn } from "@/integrations/firebase";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
@@ -215,29 +215,25 @@ const AuthPage = () => {
   };
 
 
-  // Firebase OAuth handler
+  // Lovable Cloud OAuth handler
   const handleFirebaseOAuth = async (provider: 'google' | 'apple' | 'github' | 'twitter') => {
-    if (!isFirebaseConfigured) {
-      toast({ title: 'Not configured', description: 'Firebase is not set up. Add VITE_FIREBASE_* to .env', variant: 'destructive' });
-      return;
-    }
     setLoading(true);
     try {
-      const result = await firebaseOAuthSignIn(provider);
-      if (result.success && result.user) {
-        saveLocalUser(result.user.email || '', result.user.uid);
-        clearExplicitSignOut();
-        toast({ title: 'Success', description: `Signed in with ${provider}!` });
-        navigate(consumeReturnPath());
-      } else if (result.error !== 'Popup closed') {
-        toast({ title: `${provider} Sign-in Failed`, description: result.error, variant: 'destructive' });
-      }
+      const { error } = await backend.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/auth`,
+        },
+      });
+      if (error) throw error;
+      // Browser is redirected to the provider; session lands back on /auth.
     } catch (err: any) {
       toast({ title: 'Authentication Failed', description: err?.message || 'Unknown error', variant: 'destructive' });
-    } finally { setLoading(false); }
+      setLoading(false);
+    }
   };
 
-  const showFirebaseOAuth = isFirebaseConfigured;
+  const showFirebaseOAuth = true;
 
   const oauthButtons = [
     { id: 'google' as const, label: 'Google', icon: 'G' },
