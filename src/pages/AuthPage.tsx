@@ -179,11 +179,11 @@ const AuthPage = () => {
     setLoading(true);
     try {
       if (isOffline) {
-        toast({ title: "You're offline", description: "Firebase sign-in needs an internet connection.", variant: "destructive" });
+        toast({ title: "You're offline", description: "Sign-in needs an internet connection.", variant: "destructive" });
         return;
       }
 
-      // ---- Firebase Authentication (email + password) ----
+      // ---- Lovable Cloud auth (email + password) ----
       if (isLogin) {
         const { data, error } = await backend.auth.signInWithPassword({
           email: cleanEmail,
@@ -493,7 +493,7 @@ const AuthPage = () => {
                   </motion.div>
                 </motion.form>
 
-            {/* Firebase OAuth buttons */}
+            {/* Social OAuth buttons */}
             {showFirebaseOAuth && (
               <motion.div
                 className="mt-4"
