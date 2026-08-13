@@ -1,781 +1,2970 @@
-import { useState, useCallback, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef, lazy, Suspense, useCallback } from "react";
+import { Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Send,
-  Trash2,
-  Download,
-  Settings,
-  MessageSquarePlus,
-  History,
-  Plus,
-  ShieldCheck,
-  Zap,
-  Search,
-  PanelLeftClose,
-  PanelLeftOpen,
-  Menu,
-  X,
-} from "lucide-react";
-import { ChatMessages } from "@/components/chat/ChatMessages";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useAuth } from "@/components/AuthProvider";
+import { backend } from "@/integrations/local/client";
+import { useToast } from "@/hooks/use-toast";
+import { ChatMode } from "@/components/chat/ModeSelector";
+import { AIProvider } from "@/components/chat/ProviderSelector";
+import { ChatHeader } from "@/components/chat/ChatHeader";
+import { ChatToolbar } from "@/components/chat/ChatToolbar";
+import { EnterpriseWelcomeBanner } from "@/components/chat/EnterpriseWelcomeBanner";
+import { EnterpriseEmployeeGate } from "@/components/enterprise/EnterpriseEmployeeGate";
+import { EnterpriseOnboarding } from "@/components/enterprise/EnterpriseOnboarding";
+import { EnterpriseHelpFab } from "@/components/enterprise/EnterpriseHelpFab";
+import { EnterpriseInviteColleagues } from "@/components/enterprise/EnterpriseInviteColleagues";
+import { useEnterpriseExperience } from "@/hooks/useEnterpriseExperience";
+import { ChatIconRail } from "@/components/chat/ChatIconRail";
+import { ChatShadowSidebar } from "@/components/chat/ChatShadowSidebar";
 import { ChatInput } from "@/components/chat/ChatInput";
-import { ChatMainPanel } from "@/components/chat/ChatMainPanel";
+import { ChatMessages } from "@/components/chat/ChatMessages";
 import { ConversationSidebar } from "@/components/chat/ConversationSidebar";
+import { ImageGenerator } from "@/components/chat/ImageGenerator";
+import { MusicGenerator } from "@/components/chat/MusicGenerator";
+import { WordleGame } from "@/components/chat/WordleGame";
+import { GoogleIntegrationPanel } from "@/components/chat/GoogleIntegrationPanel";
+import { PerceptionDashboard } from "@/components/chat/PerceptionDashboard";
+import { UserContextPanel, type UserContext } from "@/components/chat/UserContextPanel";
+import { DeepResearchPanel } from "@/components/chat/DeepResearchPanel";
+import { CommandPalette } from "@/components/chat/CommandPalette";
+
+const ShadowTalkLive = lazy(() =>
+  import("@/components/chat/ShadowTalkLive").then((m) => ({ default: m.ShadowTalkLive })),
+);
+const ShadowBrowser = lazy(() =>
+  import("@/components/chat/ShadowBrowser").then((m) => ({ default: m.ShadowBrowser })),
+);
+import { useFeatureGating } from "@/hooks/useFeatureGating";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { useUsageTracking } from "@/hooks/useUsageTracking";
+import { useOfflineAuth } from "@/hooks/useOfflineAuth";
+import { useOfflineChatHistory } from "@/hooks/useOfflineChatHistory";
+import { useGeoLocation } from "@/hooks/useGeoLocation";
+import { useGuestUsage, GUEST_LIMITS } from "@/hooks/useGuestUsage";
+import { useDailyLimits } from "@/hooks/useDailyLimits";
+import { useToolOrchestrator } from "@/hooks/useToolOrchestrator";
+import { useAgenticToolDispatch } from "@/hooks/useAgenticToolDispatch";
+import { detectShadowExecutionFromChat } from "@/lib/execution/inferFromChat";
+import { ChatAmbientBackground } from "@/components/chat/ChatAmbientBackground";
+import { ChatEmptyState } from "@/components/chat/ChatEmptyState";
+import { ChatMainPanel } from "@/components/chat/ChatMainPanel";
+import { SETTINGS_SPRING } from "@/lib/settingsMotion";
 import { useChatSidebarCollapse } from "@/hooks/useChatSidebarCollapse";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { cn } from "@/lib/utils";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface Message {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  timestamp: number;
+import { useIosKeyboard } from "@/hooks/useIosKeyboard";
+import { ChatMobileNavDrawer } from "@/components/chat/ChatMobileNavDrawer";
+import { useShadowMemoryContext } from "@/contexts/ShadowMemoryContext";
+import { useIntelligenceHub } from "@/hooks/useIntelligenceHub";
+import { useAutoImproveContext } from "@/contexts/AutoImproveContext";
+import { useSEEFromChat } from "@/hooks/useSEEFromChat";
+import { SEEMissionPanel } from "@/components/chat/SEEMissionPanel";
+import { resolveAutonomousRoute } from "@/lib/autonomy/autonomousRouter";
+import { trackAgenticEvent } from "@/lib/agenticMetrics";
+import { upsertGoalsFromMessage, syncGoalToAiMemories } from "@/lib/autonomy/goalPersistence";
+import { selfHealedFetch } from "@/lib/selfHealing/selfHealedFetch";
+import { detectChatImageIntent } from "@/lib/chatImageIntent";
+import {
+  buildVisionUserMessage,
+  callChatImageAnalyze,
+  callChatImageEdit,
+} from "@/lib/chatImageApi";
+import { CognitiveLoopPanel } from "@/components/chat/CognitiveLoopPanel";
+import { useGemmaOffline } from "@/hooks/useGemmaOffline";
+import { useMarketplace } from "@/hooks/useMarketplace";
+import { resolveAgentRuntime } from "@/lib/marketplace/resolveAgentConfig";
+import { prependAgentSystemPrompt } from "@/lib/marketplace/applyAgentToChat";
+import { prependChatKnowledgeContext } from "@/lib/shadowTalkProductKnowledge";
+import {
+  ensureDefaultPersonalModel,
+  getActivePersonalModel,
+  getPersonalModelSampling,
+  learnPersonalExampleFromTurn,
+  prependPersonalModelToMessages,
+} from "@/lib/personalModel";
+import {
+  clearActiveMarketplaceAgent,
+  getActiveMarketplaceSession,
+  setActiveMarketplaceAgent,
+} from "@/lib/marketplace/activeAgentSession";
+import { MarketplaceAgentBanner } from "@/components/chat/MarketplaceAgentBanner";
+import type { MarketplaceAgent, MarketplaceAgentRuntime } from "@/lib/marketplace/types";
+import { runOfflineCompletion } from "@/lib/offline/runOfflineCompletion";
+import { prewarmFastestLocalPath, warmHardwareProfile } from "@/lib/hardwareIntelligence";
+import { runOllamaChat } from "@/lib/desktop/ollamaInference";
+import {
+  augmentMessagesWithLocalMemory,
+  indexSovereignMemory,
+} from "@/lib/desktop/sovereignMemoryRag";
+import { isSovereignModeEnabled, shouldPreferOllamaInference } from "@/lib/desktop/sovereignMode";
+import {
+  canUseCloudAI,
+  DEVICE_ONLY_BLOCKED_MESSAGE,
+  ensureAutoCloudUntilLocalReady,
+  shouldPersistChatToCloud,
+  setInterimCloudConsent,
+} from "@/lib/privacy/deviceOnlyPledge";
+import {
+  isLocalInferenceReady,
+  LOCAL_MODEL_READY_EVENT,
+} from "@/lib/privacy/localInferenceReady";
+import { bootstrapCachedLocalModel } from "@/lib/offline/bootstrapLocalModel";
+import { bootstrapSeamlessOfflineForLoggedInUser } from "@/lib/offline/seamlessOfflineBootstrap";
+import {
+  getShadowSpectreScope,
+  hasAcceptedShadowSpectreTerms,
+  routeShadowSpectreHead,
+  streamShadowSpectre,
+} from "@/lib/cyber/shadowspectre";
+import { ShadowSpectreScopeBar } from "@/components/cyber/ShadowSpectreScopeBar";
+import { ShadowSpectrePanel } from "@/components/cyber/ShadowSpectrePanel";
+import { ShadowSpectreTermsDialog } from "@/components/cyber/ShadowSpectreTermsDialog";
+import { runLocalChat, isAnyLocalModelReady } from "@/lib/offline/localChat";
+import type { RouterMessage } from "@/lib/offline/hybridRouter";
+import { decideRoute } from "@/lib/offline/hybridRouter";
+import { useCustomApiKeys } from "@/hooks/useCustomApiKeys";
+import { useUserSettings } from "@/hooks/useUserSettings";
+import { stringifyChatBody } from "@/lib/chatRequest";
+import { ByokProviderKeyDialog } from "@/components/chat/ByokProviderKeyDialog";
+import {
+  buildChatProviderPayload,
+  hasStoredKeyForProvider,
+  resolveActiveUiProvider,
+} from "@/lib/chatProviderBridge";
+import { loadCustomAiConfig, saveCustomAiConfig } from "@/lib/customApiKeys";
+import { turboComplete, resolveTurboKey } from "@/lib/turbo";
+import {
+  getGuestArchivedIds,
+  isConversationArchived,
+  setGuestArchivedIds,
+} from "@/lib/chatArchive";
+import { CHAT_COMMAND_MODAL_ACTIONS, CHAT_COMMAND_NAV_ROUTES } from "@/lib/chatCommandRoutes";
+import { consumePendingChatInsert } from "@/lib/pendingChatInsert";
+import { useChatSpeech } from "@/hooks/useChatSpeech";
+import { OfflineToolsPanel } from "@/components/chat/OfflineToolsPanel";
+import { BrowseActivityPanel, useAutoBrowse } from "@/components/chat/BrowseActivityPanel";
+import { MultiModelOrchestrator } from "@/components/chat/MultiModelOrchestrator";
+import { CreativeSynthesis } from "@/components/chat/CreativeSynthesis";
+import { VisualReasoning } from "@/components/chat/VisualReasoning";
+import { ImageDecoder } from "@/components/chat/ImageDecoder";
+import { DailyPlanner } from "@/components/chat/DailyPlanner";
+import { IntelligenceHub } from "@/components/chat/IntelligenceHub";
+import { KnowledgeVault } from "@/components/chat/KnowledgeVault";
+import { ChatUpgradeNudge } from "@/components/monetization/ChatUpgradeNudge";
+import { UpgradePrompt } from "@/components/monetization/UpgradePrompt";
+import { useSubscriptionNudge } from "@/hooks/useSubscriptionNudge";
+import { CHAT_LIMIT_TOAST } from "@/lib/conversionCopy";
+import { getDailyMessageCount, incrementDailyMessageCount } from "@/lib/dailyMessageCounter";
+import { openProjectInIde, saveIdePayload } from "@/lib/idePayloadStorage";
+import { detectAppBuilderIntent, generateAppProject } from "@/lib/appBuilder";
+import { useShadowTalkModel } from "@/hooks/useShadowTalkModel";
+import { SEOHead } from "@/components/SEOHead";
+import { PAGE_SEO, getFounderHomeStructuredData, getChatbotFAQSchema, getSpeakableSchema, getWebSiteWithSearchSchema } from "@/lib/seo";
+import { FounderCrawlStrip } from "@/components/founder/FounderCrawlStrip";
+import { UsageLimitBanner } from "@/components/monetization/UsageLimitBanner";
+import { PlanetaryActionModal } from "@/components/chat/PlanetaryActionModal";
+import { ScreenAgent } from "@/components/chat/ScreenAgent";
+import { VisionAgentModal } from "@/components/chat/VisionAgentModal";
+import { AgenticTaskRunner } from "@/components/chat/AgenticTaskRunner";
+import { AIAgentWorkflows } from "@/components/chat/AIAgentWorkflows";
+import { AnalyticsDashboard } from "@/components/chat/AnalyticsDashboard";
+import { GeminiKeyAnalytics } from "@/components/chat/GeminiKeyAnalytics";
+import { DataOrganizer } from "@/components/chat/DataOrganizer";
+import { UncensoredArena } from "@/components/chat/UncensoredArena";
+import { ShadowCowork } from "@/components/chat/ShadowCowork";
+import { SignInPrompt } from "@/components/chat/SignInPrompt";
+import { InterimCloudConsentDialog } from "@/components/chat/InterimCloudConsentDialog";
+import { AdBanner } from "@/components/chat/AdBanner";
+import { BRAND } from "@/lib/brand";
+import { ReferralNudgeBanner } from "@/components/growth/ReferralNudgeBanner";
+import { ShareResultDialog } from "@/components/growth/ShareResultDialog";
+import { ShareWinBanner } from "@/components/growth/ShareWinBanner";
+import { recordSuccessfulChatSession, getSuccessfulSessionCount } from "@/lib/growth/sessionMilestones";
+import { markHasChatted, completeQuickPrompt, hasChattedBefore } from "@/lib/growth/firstVisit";
+import { recordFunnelEvent, recordChatbotView } from "@/lib/growth/funnelEvents";
+import { isAnonymousAutonomousEnabled } from "@/lib/anonymousAutonomousMode";
+import {
+  buildChatShareSubtitle,
+  buildChatShareTitle,
+  isShareWorthyReply,
+  recordChatShareBannerShown,
+  shouldShowChatShareBanner,
+} from "@/lib/growth/selfMarketing";
+import { useUserReferralCode } from "@/hooks/useUserReferralCode";
+import { useChatSettings } from "@/hooks/useChatSettings";
+import { useE2EE } from "@/hooks/useE2EE";
+import { useChatPrivateMode } from "@/hooks/useChatPrivateMode";
+import { buildMemoryContextForUser } from "@/lib/memory/promptInjector";
+import {
+  getChatFetchHeaders,
+  getChatFunctionUrl,
+  isCloudConfigured,
+  DESKTOP_ENV_SETUP_HINT,
+  formatChatFetchError,
+} from "@/lib/cloudEnv";
+import { isShadowTalkDesktop } from "@/lib/desktopBridge";
+import { desktopChatStream } from "@/lib/desktopChatFetch";
+import { reflectOnConversation, shouldReflect, type MemoryReflection } from "@/lib/memory/reflectionEngine";
+import { getActiveMemories, maybeReflectAndPersist } from "@/lib/memory/agentMemories";
+import { buildMemoryContext } from "@/lib/memory/promptInjector";
+// Types
+interface Message { 
+  id: string; 
+  type: "user" | "ai"; 
+  content: string; 
+  timestamp: Date;
+  attachment?: { type: 'image' | 'file'; data: string; name: string; mimeType: string };
+  imageUrl?: string;
+  toolExecution?: { tool: string; status: string; result?: string; params?: Record<string, string> };
 }
-
-interface Conversation {
+type Conversation = {
   id: string;
   title: string;
   created_at: string;
   archived_at?: string | null;
+};
+type Personality = "friendly" | "sarcastic" | "professional" | "creative" | "meticulous" | "curious" | "diplomatic" | "witty" | "pragmatic" | "inquisitive" | "spicy";
+
+function parseSseContentLines(
+  lines: string[],
+  assistantContent: string,
+): string {
+  let content = assistantContent;
+  for (const line of lines) {
+    if (!line.startsWith("data: ") || line === "data: [DONE]") continue;
+    try {
+      const data = JSON.parse(line.slice(6));
+      const delta = data.choices?.[0]?.delta?.content;
+      if (delta) content += delta;
+    } catch {
+      /* ignore malformed SSE chunk */
+    }
+  }
+  return content;
 }
 
-// ─── Action Card Data ─────────────────────────────────────────────────────────
-
-const ACTION_CARDS = [
-  {
-    icon: ShieldCheck,
-    title: "Security Audit",
-    description: "Scan code for vulnerabilities",
-    color: "text-emerald-400",
-    border: "border-emerald-500/20",
-    bg: "bg-emerald-500/5 hover:bg-emerald-500/10",
-    prompt: "Run a security audit on this code and check for vulnerabilities, exposed secrets, and injection flaws.",
-  },
-  {
-    icon: Zap,
-    title: "Refactor Code",
-    description: "Optimize speed & structure",
-    color: "text-amber-400",
-    border: "border-amber-500/20",
-    bg: "bg-amber-500/5 hover:bg-amber-500/10",
-    prompt: "Refactor this code for better performance, cleaner structure, and modern best practices.",
-  },
-  {
-    icon: Search,
-    title: "Deep Research",
-    description: "Analyze architecture & dependencies",
-    color: "text-blue-400",
-    border: "border-blue-500/20",
-    bg: "bg-blue-500/5 hover:bg-blue-500/10",
-    prompt: "Analyze this architecture in depth — dependencies, tradeoffs, security posture, and scalability.",
-  },
-] as const;
-
-// ─── Component ────────────────────────────────────────────────────────────────
-
-export default function ChatbotPage() {
+const ChatbotPage = () => {
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
-
-  // Conversations state
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [searchParams] = useSearchParams();
+  const { user, userPlan, signOut, checkSubscription, isOffline, isAnonymous } = useAuth();
+  const guestUsage = useGuestUsage();
+  const dailyLimits = useDailyLimits();
+  const enterprise = useEnterpriseExperience();
+  const { toast } = useToast();
+  
+  // Hooks
+  const { checkAccess, isElite, isProOrHigher } = useFeatureGating();
+  const { requestPermission } = usePushNotifications();
+  const { trackChatMessage, trackConversationCreated } = useUsageTracking();
+  const { getOfflineSession } = useOfflineAuth();
+  const toolOrchestrator = useToolOrchestrator();
+  const { dispatchDetectionAsync, continueFromCritic, goToExecute } = useAgenticToolDispatch();
+  const {
+    captureChatSend,
+    capture: captureAutoImprove,
+    applyChatDefaultsOnce,
+    preferSeeRouting,
+    getChatDefaults,
+  } = useAutoImproveContext();
+  const { extractMemories, extractKnowledge, getMemoryContext } = useIntelligenceHub();
+  const {
+    chatMission,
+    activeMission,
+    isExecuting: isMissionExecuting,
+    pendingApproval,
+    launchMissionFromChat,
+    approveChatMissionStep,
+    rejectPendingStep,
+    cancelExecution,
+    dismissChatMission,
+  } = useSEEFromChat();
+  const gemmaOffline = useGemmaOffline();
+  const sovereignModel = useShadowTalkModel();
+  const { getAgentById, agents: marketplaceAgents, loading: marketplaceCatalogLoading } = useMarketplace();
+  const [activeMarketplaceAgent, setActiveMarketplaceAgentState] = useState<MarketplaceAgent | null>(null);
+  const marketplaceRuntimeRef = useRef<MarketplaceAgentRuntime | null>(null);
+  const { aiConfig, hasVerifiedKey, keys, switchToPlatformDefault, setDefault, refresh: refreshApiKeys } =
+    useCustomApiKeys();
+  
+  // State
   const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [dailyChats, setDailyChats] = useState(() => getDailyMessageCount());
+  const [nudgeDismissed, setNudgeDismissed] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const messageCount =
+    user && dailyLimits.isLoaded ? dailyLimits.usage.messages : dailyChats;
+  const nudge = useSubscriptionNudge(
+    messageCount,
+    conversations.filter((c) => !c.archived_at).length,
+  );
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
+  const [personality, setPersonality] = useState<Personality>("friendly");
+  const [chatMode, setChatMode] = useState<ChatMode>("general");
+  const [aiProvider, setAiProvider] = useState<AIProvider>('turbo');
+  const { preferences: chatPreferences, isLoading: chatPrefsLoading } = useChatSettings();
+  const hasOllamaDesktop = typeof window !== 'undefined' && (window as any).__TAURI__ && isAnyLocalModelReady();
+  const e2ee = useE2EE();
+  const chatPrivate = useChatPrivateMode(e2ee);
+  const appliedChatDefaults = useRef(false);
+  const [byokDialogOpen, setByokDialogOpen] = useState(false);
+  const [pendingByokProvider, setPendingByokProvider] = useState<AIProvider | null>(null);
+  const [showSidebar, setShowSidebar] = useState(false);
+  const [showMobileNav, setShowMobileNav] = useState(false);
+  const { collapsed: sidebarCollapsed, toggle: toggleSidebar, width: sidebarWidth } =
+    useChatSidebarCollapse();
+  const isMobile = useIsMobile();
+  const keyboardOffset = useIosKeyboard();
+  const inputDockStyle =
+    keyboardOffset > 0 ? { paddingBottom: keyboardOffset } : undefined;
+  const historyPanelLeft = isMobile ? 0 : sidebarWidth;
   const [isListening, setIsListening] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
-
-  // Panel toggles
-  const [showHistory, setShowHistory] = useState(false);
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const [showClearConfirm, setShowClearConfirm] = useState(false);
-
-  // Sidebar
-  const { collapsed, toggle: toggleSidebar } = useChatSidebarCollapse();
-
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  const currentConversation = conversations.find((c) => c.id === currentConversationId);
-
-  // ─── Helpers ──────────────────────────────────────────────────────────────
-
-  const generateId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-
-  const isArchived = useCallback((c: Conversation) => Boolean(c.archived_at), []);
-
-  // ─── Actions ──────────────────────────────────────────────────────────────
-
-  const createNewChat = useCallback(() => {
-    const id = generateId();
-    const newConv: Conversation = {
-      id,
-      title: "New chat",
-      created_at: new Date().toISOString(),
-    };
-    setConversations((prev) => [newConv, ...prev]);
-    setCurrentConversationId(id);
-    setMessages([]);
-    setShowHistory(false);
-    setShowMobileMenu(false);
-  }, []);
-
-  const selectConversation = useCallback(
-    (id: string) => {
-      setCurrentConversationId(id);
-      setShowHistory(false);
-      setShowMobileMenu(false);
-      // In a real app, load messages from storage here.
-      setMessages([]);
-    },
-    [],
+  const { isSpeaking, speakingMessageId, speakMessage } = useChatSpeech();
+  const [selectedFile, setSelectedFile] = useState<{ type: 'image' | 'file'; data: string; name: string; mimeType: string } | null>(null);
+  
+  // Modals
+  const [showImageGenerator, setShowImageGenerator] = useState(false);
+  const [showMusicGenerator, setShowMusicGenerator] = useState(false);
+  const [musicPrompt, setMusicPrompt] = useState("");
+  const [musicAutoGenerate, setMusicAutoGenerate] = useState(false);
+  const [showWordle, setShowWordle] = useState(false);
+  const [showGoogleIntegration, setShowGoogleIntegration] = useState(false);
+  const [showShadowSpectrePanel, setShowShadowSpectrePanel] = useState(false);
+  const [showShadowSpectreTerms, setShowShadowSpectreTerms] = useState(false);
+  const [shadowSpectreHead, setShadowSpectreHead] = useState<string>("general");
+  const [localModelReady, setLocalModelReady] = useState(() => isLocalInferenceReady());
+  const [showAnalytics, setShowAnalytics] = useState(false);
+  const [showDeepResearch, setShowDeepResearch] = useState(false);
+  const [showShadowTalkLive, setShowShadowTalkLive] = useState(false);
+  const [showShadowBrowser, setShowShadowBrowser] = useState(false);
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
+  const [showOfflineTools, setShowOfflineTools] = useState(false);
+  const [toolsMenuOpen, setToolsMenuOpen] = useState(false);
+  const [chatShareOffer, setChatShareOffer] = useState<{ title: string; subtitle?: string; prompt?: string; answer?: string } | null>(null);
+  const [chatShareDialogOpen, setChatShareDialogOpen] = useState(false);
+  const [chatShareCustomLink, setChatShareCustomLink] = useState<string | null>(null);
+  const [showCognitiveLoop, setShowCognitiveLoop] = useState(false);
+  const [cognitiveQuery, setCognitiveQuery] = useState("");
+  const [showMultiModel, setShowMultiModel] = useState(false);
+  const [showCreativeSynthesis, setShowCreativeSynthesis] = useState(false);
+  const [showVisualReasoning, setShowVisualReasoning] = useState(false);
+  const [showImageDecoder, setShowImageDecoder] = useState(false);
+  const [showDailyPlanner, setShowDailyPlanner] = useState(false);
+  const [showPlanetaryActions, setShowPlanetaryActions] = useState(false);
+  const [showScreenAgent, setShowScreenAgent] = useState(false);
+  const [showVisionAgent, setShowVisionAgent] = useState(false);
+  const [showIntelligenceHub, setShowIntelligenceHub] = useState(false);
+  const [showKnowledgeVault, setShowKnowledgeVault] = useState(false);
+  const [showAgenticRunner, setShowAgenticRunner] = useState(false);
+  const [showAgentWorkflows, setShowAgentWorkflows] = useState(false);
+  const [showGeminiAnalytics, setShowGeminiAnalytics] = useState(false);
+  const [showDataOrganizer, setShowDataOrganizer] = useState(false);
+  const [showUncensoredArena, setShowUncensoredArena] = useState(false);
+  const [showShadowCowork, setShowShadowCowork] = useState(false);
+  const [showSignInPrompt, setShowSignInPrompt] = useState(false);
+  const [signInPromptReason, setSignInPromptReason] = useState<"chats" | "images" | "deepResearch" | "general">("chats");
+  const [showInterimCloudConsent, setShowInterimCloudConsent] = useState(false);
+  const [showBrowseActivity, setShowBrowseActivity] = useState(false);
+  const { browseSession, startBrowseSession, closeBrowseSession } = useAutoBrowse();
+  const pushPermissionAskedRef = useRef(false);
+  const referralCode = useUserReferralCode();
+  const [guestArchivedIds, setGuestArchivedIdsState] = useState<Set<string>>(() =>
+    getGuestArchivedIds(),
   );
-
-  const deleteConversation = useCallback(
-    (id: string) => {
-      setConversations((prev) => prev.filter((c) => c.id !== id));
-      if (currentConversationId === id) {
-        setCurrentConversationId(null);
-        setMessages([]);
-      }
-    },
-    [currentConversationId],
-  );
-
-  const archiveConversation = useCallback(
-    (id: string) => {
-      setConversations((prev) =>
-        prev.map((c) => (c.id === id ? { ...c, archived_at: new Date().toISOString() } : c)),
-      );
-    },
-    [],
-  );
-
-  const unarchiveConversation = useCallback(
-    (id: string) => {
-      setConversations((prev) =>
-        prev.map((c) => (c.id === id ? { ...c, archived_at: null } : c)),
-      );
-    },
-    [],
-  );
-
-  const clearAllConversations = useCallback(() => {
-    setConversations([]);
-    setCurrentConversationId(null);
-    setMessages([]);
-  }, []);
-
-  const clearCurrentChat = useCallback(() => {
-    setMessages([]);
-    setShowClearConfirm(false);
-  }, []);
-
-  // ─── Send Message ─────────────────────────────────────────────────────────
-
-  const handleSend = useCallback(() => {
-    if (!message.trim() || isLoading) return;
-
-    let convId = currentConversationId;
-
-    // Auto-create conversation on first message
-    if (!convId) {
-      const id = generateId();
-      const title = message.trim().slice(0, 60) + (message.length > 60 ? "..." : "");
-      const newConv: Conversation = {
-        id,
-        title,
-        created_at: new Date().toISOString(),
-      };
-      setConversations((prev) => [newConv, ...prev]);
-      setCurrentConversationId(id);
-      convId = id;
-    }
-
-    // Update title if it's still default
-    setConversations((prev) =>
-      prev.map((c) =>
-        c.id === convId && c.title === "New chat"
-          ? { ...c, title: message.trim().slice(0, 60) }
-          : c,
-      ),
-    );
-
-    const userMsg: Message = {
-      id: generateId(),
-      role: "user",
-      content: message.trim(),
-      timestamp: Date.now(),
-    };
-
-    setMessages((prev) => [...prev, userMsg]);
-    setMessage("");
-    setIsLoading(true);
-
-    // Simulate assistant response (replace with real AI call)
-    setTimeout(() => {
-      const assistantMsg: Message = {
-        id: generateId(),
-        role: "assistant",
-        content:
-          "I'm ShadowTalk Core v2. Your message has been received. In production, this connects to the AI inference pipeline. For now, this is a UI scaffold for the refactored chat experience.",
-        timestamp: Date.now(),
-      };
-      setMessages((prev) => [...prev, assistantMsg]);
-      setIsLoading(false);
-    }, 1200);
-  }, [message, isLoading, currentConversationId]);
-
-  const handleActionCardClick = useCallback(
-    (prompt: string) => {
-      setMessage(prompt);
-    },
-    [],
-  );
-
-  // ─── Export Log ────────────────────────────────────────────────────────────
-
-  const handleExport = useCallback(() => {
-    if (messages.length === 0) return;
-    const text = messages
-      .map((m) => `[${m.role.toUpperCase()}]\n${m.content}\n`)
-      .join("\n---\n\n");
-    const blob = new Blob([text], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `shadowtalk-chat-${Date.now()}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }, [messages]);
-
-  // ─── Scroll to bottom on new messages ──────────────────────────────────────
+  const DEFAULT_USER_CONTEXT: UserContext = {
+    country: "",
+    city: "",
+    incomeRange: "",
+    employmentStatus: "",
+    familyStatus: "",
+    interests: [],
+    recentLifeEvents: [],
+  };
+  const {
+    value: savedUserContext,
+    save: saveUserContext,
+    isLoading: userContextLoading,
+  } = useUserSettings<UserContext>("user_context_profile", DEFAULT_USER_CONTEXT);
+  const [userContext, setUserContext] = useState<UserContext>(DEFAULT_USER_CONTEXT);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    if (!userContextLoading) setUserContext(savedUserContext);
+  }, [savedUserContext, userContextLoading]);
 
-  const hasMessages = messages.length > 0;
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // ─── Render ───────────────────────────────────────────────────────────────
+  useGeoLocation();
 
-  return (
-    <div className="h-screen w-screen flex flex-col bg-zinc-950 text-zinc-100 overflow-hidden">
-      {/* ─── Top Bar (48px Glass Bar) ─────────────────────────────────────── */}
-      <header className="h-12 shrink-0 flex items-center justify-between px-4 md:px-6 border-b border-zinc-800/60 bg-zinc-950/80 backdrop-blur-xl z-40">
-        {/* Left: Menu + Model Selector */}
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => setShowMobileMenu((v) => !v)}
-            className="md:hidden h-8 w-8 flex items-center justify-center rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60 transition-colors"
-            aria-label="Toggle menu"
-          >
-            <Menu className="h-4 w-4" />
-          </button>
+  useEffect(() => {
+    warmHardwareProfile();
+    prewarmFastestLocalPath();
+    ensureDefaultPersonalModel();
+    void bootstrapCachedLocalModel().then((ok) => {
+      if (ok) setLocalModelReady(true);
+    });
+  }, []);
 
-          <button
-            type="button"
-            onClick={toggleSidebar}
-            className="hidden md:flex h-8 w-8 items-center justify-center rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60 transition-colors"
-            aria-label="Toggle sidebar"
-          >
-            {collapsed ? (
-              <PanelLeftOpen className="h-4 w-4" />
-            ) : (
-              <PanelLeftClose className="h-4 w-4" />
-            )}
-          </button>
+  useEffect(() => {
+    const onReady = () => setLocalModelReady(true);
+    window.addEventListener(LOCAL_MODEL_READY_EVENT, onReady);
+    return () => window.removeEventListener(LOCAL_MODEL_READY_EVENT, onReady);
+  }, []);
 
-          {/* Model Selector Pill */}
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-zinc-800/60 bg-zinc-900/60">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.6)]" />
-            <span className="text-xs font-semibold tracking-tight text-zinc-200">
-              ShadowTalk Core v2
-            </span>
-          </div>
-        </div>
+  useEffect(() => {
+    recordChatbotView();
+  }, []);
 
-        {/* Right: Actions */}
-        <div className="flex items-center gap-1.5">
-          <button
-            type="button"
-            onClick={() => setShowClearConfirm(true)}
-            className="h-8 w-8 flex items-center justify-center rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60 transition-colors"
-            aria-label="Clear chat"
-            title="Clear chat"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </button>
-          <button
-            type="button"
-            onClick={handleExport}
-            className="h-8 w-8 flex items-center justify-center rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60 transition-colors"
-            aria-label="Export log"
-            title="Export log"
-          >
-            <Download className="h-3.5 w-3.5" />
-          </button>
-        </div>
-      </header>
+  useEffect(() => {
+    if (currentConversationId || user) return;
+    const guestConvId = `guest-${Date.now()}`;
+    setCurrentConversationId(guestConvId);
+    setConversations([
+      { id: guestConvId, title: "Guest Conversation", created_at: new Date().toISOString() },
+    ]);
+  }, [currentConversationId, user]);
 
-      {/* ─── Main Layout ───────────────────────────────────────────────────── */}
-      <div className="flex-1 flex min-h-0 relative">
-        {/* ─── Sidebar ────────────────────────────────────────────────────── */}
-        <AnimatePresence>
-          {!collapsed && !isMobile && (
-            <motion.aside
-              initial={{ width: 0, opacity: 0 }}
-              animate={{ width: 260, opacity: 1 }}
-              exit={{ width: 0, opacity: 0 }}
-              transition={{ duration: 0.2, ease: "easeInOut" }}
-              className="shrink-0 flex flex-col h-full border-r border-zinc-800/60 bg-zinc-950 overflow-hidden"
-            >
-              <SidebarContent
-                onNewChat={createNewChat}
-                onOpenHistory={() => setShowHistory(true)}
-                onOpenSettings={() => navigate("/settings")}
-                onNavigate={() => setShowMobileMenu(false)}
-              />
-            </motion.aside>
-          )}
-        </AnimatePresence>
+  useEffect(() => {
+    // Every visitor on the chat page kicks off the silent on-device model
+    // download. Cloud is used until the model is ready, then routing flips
+    // to local automatically (see tierAInstall → onLocalModelReady).
+    bootstrapSeamlessOfflineForLoggedInUser();
+  }, [user, isAnonymous]);
 
-        {/* ─── Mobile Menu Overlay ──────────────────────────────────────── */}
-        <AnimatePresence>
-          {showMobileMenu && isMobile && (
-            <>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-black/60 z-40"
-                onClick={() => setShowMobileMenu(false)}
-              />
-              <motion.aside
-                initial={{ x: "-100%" }}
-                animate={{ x: 0 }}
-                exit={{ x: "-100%" }}
-                transition={{ type: "spring", damping: 30, stiffness: 300 }}
-                className="fixed left-0 top-0 bottom-0 w-72 z-50 flex flex-col bg-zinc-950 border-r border-zinc-800/60"
-              >
-                <SidebarContent
-                  onNewChat={() => {
-                    createNewChat();
-                    setShowMobileMenu(false);
-                  }}
-                  onOpenHistory={() => {
-                    setShowMobileMenu(false);
-                    setShowHistory(true);
-                  }}
-                  onOpenSettings={() => {
-                    setShowMobileMenu(false);
-                    navigate("/settings");
-                  }}
-                  onNavigate={() => setShowMobileMenu(false)}
-                  mobile
-                />
-              </motion.aside>
-            </>
-          )}
-        </AnimatePresence>
+  useEffect(() => {
+    if (chatMode === "shadowspectre" && !hasAcceptedShadowSpectreTerms()) {
+      setShowShadowSpectreTerms(true);
+    }
+  }, [chatMode]);
 
-        {/* ─── Center Content ────────────────────────────────────────────── */}
-        <ChatMainPanel>
-          {hasMessages ? (
-            /* ─── Messages View ──────────────────────────────────────────── */
-            <div className="flex-1 flex flex-col min-h-0">
-              <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6">
-                <div className="max-w-3xl mx-auto space-y-4">
-                  {messages.map((msg) => (
-                    <motion.div
-                      key={msg.id}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.25 }}
-                      className={cn(
-                        "flex gap-3",
-                        msg.role === "user" && "justify-end",
-                      )}
-                    >
-                      {msg.role === "assistant" && (
-                        <div className="shrink-0 h-7 w-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mt-0.5">
-                          <span className="text-xs font-bold text-emerald-400">S</span>
-                        </div>
-                      )}
-                      <div
-                        className={cn(
-                          "max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed",
-                          msg.role === "user"
-                            ? "bg-zinc-800/80 text-zinc-100"
-                            : "bg-zinc-900/60 border border-zinc-800/40 text-zinc-300",
-                        )}
-                      >
-                        {msg.content}
-                      </div>
-                      {msg.role === "user" && (
-                        <div className="shrink-0 h-7 w-7 rounded-lg bg-zinc-800 flex items-center justify-center mt-0.5">
-                          <span className="text-xs font-bold text-zinc-400">Y</span>
-                        </div>
-                      )}
-                    </motion.div>
-                  ))}
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setShowCommandPalette((open) => !open);
+      }
+    };
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
+  }, []);
 
-                  {isLoading && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="flex gap-3"
-                    >
-                      <div className="shrink-0 h-7 w-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mt-0.5">
-                        <span className="text-xs font-bold text-emerald-400">S</span>
-                      </div>
-                      <div className="bg-zinc-900/60 border border-zinc-800/40 rounded-2xl px-4 py-3">
-                        <div className="flex gap-1.5">
-                          {[0, 1, 2].map((i) => (
-                            <motion.div
-                              key={i}
-                              animate={{ opacity: [0.3, 1, 0.3] }}
-                              transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2 }}
-                              className="h-2 w-2 rounded-full bg-zinc-500"
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                  <div ref={messagesEndRef} />
-                </div>
-              </div>
+  useEffect(() => {
+    if (keys.length === 0 && !aiConfig.useCustomKey && loadCustomAiConfig().usePlatformDefault) return;
+    setAiProvider(resolveActiveUiProvider(keys, aiConfig));
+  }, [keys, aiConfig.useCustomKey, aiConfig.preferredProvider]);
 
-              {/* ─── Input (messages view) ────────────────────────────────── */}
-              <div className="shrink-0 pb-6 pt-2 px-4">
-                <ChatInputDock
-                  message={message}
-                  onMessageChange={setMessage}
-                  onSend={handleSend}
-                  isLoading={isLoading}
-                  onToggleVoice={() => setIsListening((v) => !v)}
-                  isListening={isListening}
-                />
-              </div>
-            </div>
-          ) : (
-            /* ─── Empty State ─────────────────────────────────────────────── */
-            <div className="flex-1 flex flex-col items-center justify-center px-4 overflow-y-auto">
-              <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, ease: "easeOut" }}
-                className="w-full max-w-2xl mx-auto text-center"
-              >
-                {/* Logo */}
-                <div className="mb-6 flex justify-center">
-                  <div className="h-14 w-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                    <span className="text-2xl font-black text-emerald-400">S</span>
-                  </div>
-                </div>
-
-                {/* Heading */}
-                <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-zinc-100 mb-2">
-                  What can I help you build or audit today?
-                </h1>
-                <p className="text-sm text-zinc-500 mb-10">
-                  ShadowTalk Core v2 — Sovereign AI Assistant
-                </p>
-
-                {/* Action Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-10">
-                  {ACTION_CARDS.map((card) => {
-                    const Icon = card.icon;
-                    return (
-                      <motion.button
-                        key={card.title}
-                        type="button"
-                        whileHover={{ y: -2 }}
-                        whileTap={{ scale: 0.98 }}
-                        transition={{ duration: 0.15 }}
-                        onClick={() => handleActionCardClick(card.prompt)}
-                        className={cn(
-                          "text-left rounded-xl border p-4 transition-colors duration-200",
-                          card.border,
-                          card.bg,
-                        )}
-                      >
-                        <Icon className={cn("h-5 w-5 mb-2.5", card.color)} />
-                        <div className="text-sm font-semibold text-zinc-200 mb-0.5">
-                          {card.title}
-                        </div>
-                        <div className="text-xs text-zinc-500">{card.description}</div>
-                      </motion.button>
-                    );
-                  })}
-                </div>
-
-                {/* Input (empty state) */}
-                <ChatInputDock
-                  message={message}
-                  onMessageChange={setMessage}
-                  onSend={handleSend}
-                  isLoading={isLoading}
-                  onToggleVoice={() => setIsListening((v) => !v)}
-                  isListening={isListening}
-                />
-              </motion.div>
-            </div>
-          )}
-        </ChatMainPanel>
-      </div>
-
-      {/* ─── History Sidebar Overlay ──────────────────────────────────────── */}
-      <AnimatePresence>
-        {showHistory && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/60 z-40"
-              onClick={() => setShowHistory(false)}
-            />
-            <motion.div
-              initial={{ x: "-100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
-              transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="fixed left-0 top-0 bottom-0 z-50 w-[min(100vw,340px)]"
-            >
-              <ConversationSidebar
-                conversations={conversations}
-                currentConversationId={currentConversationId}
-                isArchived={isArchived}
-                onCreateNew={() => {
-                  createNewChat();
-                  setShowHistory(false);
-                }}
-                onSelect={(id) => {
-                  selectConversation(id);
-                  setShowHistory(false);
-                }}
-                onDelete={deleteConversation}
-                onArchive={archiveConversation}
-                onUnarchive={unarchiveConversation}
-                onClearAll={() => {
-                  clearAllConversations();
-                  setShowHistory(false);
-                }}
-                onClearCurrent={clearCurrentChat}
-                onOpenSettings={() => {
-                  setShowHistory(false);
-                  navigate("/settings");
-                }}
-                onClose={() => setShowHistory(false)}
-              />
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-
-      {/* ─── Clear Confirm Dialog ─────────────────────────────────────────── */}
-      <AnimatePresence>
-        {showClearConfirm && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center px-4"
-            onClick={() => setShowClearConfirm(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-sm bg-zinc-900 border border-zinc-800/60 rounded-2xl p-6"
-            >
-              <h3 className="text-sm font-semibold text-zinc-100 mb-1">Clear this chat?</h3>
-              <p className="text-xs text-zinc-500 mb-5">
-                This will remove all messages in the current conversation.
-              </p>
-              <div className="flex gap-2 justify-end">
-                <button
-                  type="button"
-                  onClick={() => setShowClearConfirm(false)}
-                  className="px-4 py-2 text-xs font-medium text-zinc-400 rounded-lg border border-zinc-800/60 hover:bg-zinc-800/40 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={clearCurrentChat}
-                  className="px-4 py-2 text-xs font-medium text-white bg-red-500/80 hover:bg-red-500 rounded-lg transition-colors"
-                >
-                  Clear
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+  const hasKeyForProvider = useCallback(
+    (p: AIProvider) => hasStoredKeyForProvider(p, keys),
+    [keys],
   );
-}
 
-// ─── Sidebar Content ─────────────────────────────────────────────────────────
+  const handleProviderChange = useCallback(
+    async (next: AIProvider) => {
+      if (next === "shadowtalk") {
+        setAiProvider("shadowtalk");
+        return;
+      }
 
-function SidebarContent({
-  onNewChat,
-  onOpenHistory,
-  onOpenSettings,
-  onNavigate,
-  mobile = false,
-}: {
-  onNewChat: () => void;
-  onOpenHistory: () => void;
-  onOpenSettings: () => void;
-  onNavigate: () => void;
-  mobile?: boolean;
-}) {
-  return (
-    <div className="flex flex-col h-full">
-      {/* Top Actions */}
-      <div className="shrink-0 p-3 space-y-1 border-b border-zinc-800/40">
-        <button
-          type="button"
-          onClick={onNewChat}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-200 bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/15 transition-colors"
-        >
-          <Plus className="h-4 w-4 text-emerald-400" />
-          New Chat
-        </button>
-        <button
-          type="button"
-          onClick={onOpenHistory}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40 transition-colors"
-        >
-          <History className="h-4 w-4" />
-          Chat History
-        </button>
-      </div>
+      if (next === "shadowtalk") {
+        await switchToPlatformDefault();
+        saveCustomAiConfig({ ...loadCustomAiConfig(), usePlatformDefault: true, apiKey: "" });
+        setAiProvider("shadowtalk");
+        return;
+      }
 
-      {/* Spacer */}
-      <div className="flex-1" />
+      if (!hasStoredKeyForProvider(next, keys)) {
+        setPendingByokProvider(next);
+        setByokDialogOpen(true);
+        return;
+      }
 
-      {/* Bottom: Settings */}
-      <div className="shrink-0 p-3 border-t border-zinc-800/40">
-        <button
-          type="button"
-          onClick={onOpenSettings}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40 transition-colors"
-        >
-          <Settings className="h-4 w-4" />
-          Settings
-        </button>
-        {mobile && (
-          <button
-            type="button"
-            onClick={onNavigate}
-            className="mt-1 w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40 transition-colors"
-          >
-            <X className="h-4 w-4" />
-            Close
-          </button>
-        )}
-      </div>
-    </div>
+      setAiProvider(next);
+      const serverId = next === "gemini" ? "google" : null;
+      if (serverId && keys.some((k) => k.provider === serverId && k.verified_at)) {
+        await setDefault(serverId);
+      }
+    },
+    [keys, setDefault, switchToPlatformDefault],
   );
-}
 
-// ─── Input Dock ──────────────────────────────────────────────────────────────
+  const handleByokSaved = useCallback(
+    async (saved: AIProvider) => {
+      setAiProvider(saved);
+      await refreshApiKeys();
+      setPendingByokProvider(null);
+    },
+    [refreshApiKeys],
+  );
 
-function ChatInputDock({
-  message,
-  onMessageChange,
-  onSend,
-  isLoading,
-  onToggleVoice,
-  isListening,
-}: {
-  message: string;
-  onMessageChange: (v: string) => void;
-  onSend: () => void;
-  isLoading: boolean;
-  onToggleVoice: () => void;
-  isListening: boolean;
-}) {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const canSend = Boolean(message.trim());
+  useEffect(() => {
+    if (chatPrefsLoading || appliedChatDefaults.current) return;
+    appliedChatDefaults.current = true;
+    setAiProvider(chatPreferences.defaultProvider);
+    setPersonality(chatPreferences.defaultPersonality as Personality);
+    setChatMode(chatPreferences.defaultMode);
+    applyChatDefaultsOnce((defaults) => {
+      if (defaults.mode) setChatMode(defaults.mode as ChatMode);
+      if (defaults.personality) setPersonality(defaults.personality as Personality);
+    });
+  }, [chatPrefsLoading, chatPreferences, applyChatDefaultsOnce]);
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      onSend();
+  const learnFromTurn = useCallback(
+    (userMsg: string, assistantReply: string | undefined, conversationId: string) => {
+      if (!assistantReply?.trim()) return;
+      if (user) {
+        void extractMemories(userMsg, assistantReply);
+        void extractKnowledge(userMsg, assistantReply, conversationId);
+      }
+      learnPersonalExampleFromTurn(userMsg, assistantReply);
+    },
+    [extractMemories, extractKnowledge, user],
+  );
+
+  useEffect(() => {
+    const prompt = searchParams.get("q");
+    if (prompt?.trim()) {
+      setMessage(prompt.trim());
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    const convId = searchParams.get("conversation");
+    if (convId) {
+      void loadConversation(convId);
+    }
+  }, [searchParams]);
+
+  const activateMarketplaceAgent = useCallback((agent: MarketplaceAgent) => {
+    const runtime = resolveAgentRuntime(agent);
+    if (!runtime) return;
+    setActiveMarketplaceAgent(agent);
+    setActiveMarketplaceAgentState(agent);
+    marketplaceRuntimeRef.current = runtime;
+    if (runtime.chatMode) setChatMode(runtime.chatMode);
+    if (runtime.personality) setPersonality(runtime.personality);
+    setCurrentConversationId(null);
+    setMessages([
+      {
+        id: "agent-welcome",
+        type: "ai",
+        content: runtime.welcomeMessage ?? `**${agent.name}** is now active. Ask anything in this specialty.`,
+        timestamp: new Date(),
+      },
+    ]);
+  }, []);
+
+  useEffect(() => {
+    const agentId = searchParams.get("agent") ?? getActiveMarketplaceSession()?.agentId;
+    if (!agentId) {
+      setActiveMarketplaceAgentState(null);
+      marketplaceRuntimeRef.current = null;
+      return;
+    }
+
+    const fromCatalog = getAgentById(agentId);
+    if (fromCatalog) {
+      activateMarketplaceAgent(fromCatalog);
+      return;
+    }
+
+    if (marketplaceCatalogLoading) return;
+
+    void backend
+      .from("marketplace_agents")
+      .select("*")
+      .eq("id", agentId)
+      .eq("is_active", true)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) activateMarketplaceAgent(data as MarketplaceAgent);
+      });
+  }, [searchParams, marketplaceAgents, marketplaceCatalogLoading, getAgentById, activateMarketplaceAgent]);
+
+  const clearMarketplaceAgentSession = useCallback(() => {
+    setActiveMarketplaceAgentState(null);
+    marketplaceRuntimeRef.current = null;
+    clearActiveMarketplaceAgent();
+  }, []);
+
+  useEffect(() => {
+    const offlineSession = getOfflineSession();
+    if (user || offlineSession) {
+      loadConversations();
+      checkSubscription();
+    }
+  }, [user]);
+
+  const conversationIsArchived = (conv: Conversation) =>
+    isConversationArchived(conv.id, conv.archived_at, guestArchivedIds);
+
+  const loadConversations = async () => {
+    if (!user) return;
+    const { data, error } = await backend
+      .from('conversations')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('updated_at', { ascending: false });
+    
+    if (data && !error) {
+      const rows = await Promise.all(
+        data.map(async (c) => ({
+          ...c,
+          title: await chatPrivate.resolveDisplayText(c.title || "Untitled"),
+          archived_at: (c as Conversation).archived_at ?? null,
+        })),
+      );
+      setConversations(rows);
+      const active = rows.filter(
+        (c) => !isConversationArchived(c.id, c.archived_at, guestArchivedIds),
+      );
+      if (active.length > 0 && !currentConversationId) {
+        loadConversation(active[0].id);
+      } else if (active.length === 0) {
+        setMessages([{ id: 'welcome', type: 'ai', content: getWelcomeMessage(), timestamp: new Date() }]);
+      }
     }
   };
 
-  return (
-    <div className="w-full max-w-2xl mx-auto">
-      <div
-        className={cn(
-          "relative flex items-end gap-2 rounded-2xl border px-4 py-3 transition-colors duration-200",
-          "border-zinc-800/80 bg-zinc-900/90",
-          "focus-within:border-emerald-500/50",
-        )}
-      >
-        <textarea
-          ref={textareaRef}
-          value={message}
-          onChange={(e) => onMessageChange(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Ask ShadowTalk anything..."
-          className="flex-1 min-h-[24px] max-h-[160px] resize-none bg-transparent text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none leading-relaxed"
-          rows={1}
-          disabled={isLoading}
-          aria-label="Chat message"
+  const loadConversation = async (conversationId: string) => {
+    setCurrentConversationId(conversationId);
+    const { data, error } = await backend
+      .from('messages')
+      .select('*')
+      .eq('conversation_id', conversationId)
+      .order('created_at', { ascending: true });
+    
+    if (data && !error) {
+      const loadedMessages: Message[] = await Promise.all(
+        data.map(async (m) => ({
+          id: m.id,
+          type: m.role === "user" ? "user" : "ai",
+          content: await chatPrivate.resolveDisplayText(m.content),
+          timestamp: new Date(m.created_at),
+        })),
+      );
+      setMessages(
+        loadedMessages.length === 0
+          ? [{ id: "welcome", type: "ai", content: getWelcomeMessage(), timestamp: new Date() }]
+          : loadedMessages,
+      );
+    }
+  };
+
+  const getWelcomeMessage = () => {
+    if (!hasChattedBefore() && getSuccessfulSessionCount() === 0) {
+      return "👋 Welcome to ShadowTalk! Tap a prompt below or type a message — I'll reply in seconds.";
+    }
+    return "👋 Welcome back! Your neural workspace is ready.";
+  };
+
+  const welcomeMessage = (): Message => ({
+    id: "welcome",
+    type: "ai",
+    content: getWelcomeMessage(),
+    timestamp: new Date(),
+  });
+
+  const isGuestConversationId = (id: string | null) =>
+    !!id && (id.startsWith("guest-") || !user);
+
+  const resetToNewChat = () => {
+    setCurrentConversationId(null);
+    setMessages([welcomeMessage()]);
+    setMessage("");
+    setSelectedFile(null);
+    clearMarketplaceAgentSession();
+  };
+
+  const handleNewChat = () => {
+    resetToNewChat();
+    setShowSidebar(false);
+    toast({ title: "New chat", description: "Started a fresh conversation." });
+  };
+
+  const handleClearCurrentChat = async () => {
+    const convId = currentConversationId;
+    if (!convId) {
+      resetToNewChat();
+      return;
+    }
+
+    if (isGuestConversationId(convId)) {
+      resetToNewChat();
+      setConversations((prev) => prev.filter((c) => c.id !== convId));
+      const guestConvId = `guest-${Date.now()}`;
+      setCurrentConversationId(guestConvId);
+      setConversations([{ id: guestConvId, title: "Guest Conversation", created_at: new Date().toISOString() }]);
+      toast({ title: "Chat cleared" });
+      return;
+    }
+
+    if (!user) return;
+
+    const { error: msgError } = await backend
+      .from("messages")
+      .delete()
+      .eq("conversation_id", convId)
+      .eq("user_id", user.id);
+
+    if (msgError) {
+      const { error: convError } = await backend
+        .from("conversations")
+        .delete()
+        .eq("id", convId)
+        .eq("user_id", user.id);
+      if (convError) {
+        toast({ title: "Could not clear chat", description: convError.message, variant: "destructive" });
+        return;
+      }
+      setConversations((prev) => prev.filter((c) => c.id !== convId));
+      resetToNewChat();
+    } else {
+      await backend
+        .from("conversations")
+        .update({ title: "New Chat", updated_at: new Date().toISOString() })
+        .eq("id", convId)
+        .eq("user_id", user.id);
+      setConversations((prev) =>
+        prev.map((c) => (c.id === convId ? { ...c, title: "New Chat" } : c)),
+      );
+      setMessages([welcomeMessage()]);
+    }
+
+    toast({ title: "Chat cleared", description: "Messages in this conversation were removed." });
+    setShowSidebar(false);
+  };
+
+  const handleDeleteConversation = async (conversationId: string) => {
+    if (isGuestConversationId(conversationId)) {
+      setConversations((prev) => prev.filter((c) => c.id !== conversationId));
+      if (currentConversationId === conversationId) resetToNewChat();
+      return;
+    }
+
+    if (!user) return;
+
+    const { error } = await backend
+      .from("conversations")
+      .delete()
+      .eq("id", conversationId)
+      .eq("user_id", user.id);
+
+    if (error) {
+      toast({ title: "Delete failed", description: error.message, variant: "destructive" });
+      return;
+    }
+
+    const wasActive = currentConversationId === conversationId;
+    setConversations((prev) => {
+      const next = prev.filter((c) => c.id !== conversationId);
+      if (wasActive) {
+        if (next.length > 0) {
+          void loadConversation(next[0].id);
+        } else {
+          resetToNewChat();
+        }
+      }
+      return next;
+    });
+    toast({ title: "Conversation deleted" });
+  };
+
+  const switchAfterArchive = (archivedId: string, guestArchiveSet = guestArchivedIds) => {
+    if (currentConversationId !== archivedId) return;
+    const active = conversations.filter(
+      (c) =>
+        c.id !== archivedId &&
+        !isConversationArchived(c.id, c.archived_at, guestArchiveSet),
+    );
+    if (active.length > 0) {
+      void loadConversation(active[0].id);
+    } else {
+      resetToNewChat();
+    }
+  };
+
+  const handleArchiveConversation = async (conversationId: string) => {
+    const archivedAt = new Date().toISOString();
+
+    if (isGuestConversationId(conversationId)) {
+      const next = new Set(guestArchivedIds);
+      next.add(conversationId);
+      setGuestArchivedIdsState(next);
+      setGuestArchivedIds(next);
+      setConversations((prev) =>
+        prev.map((c) => (c.id === conversationId ? { ...c, archived_at: archivedAt } : c)),
+      );
+      switchAfterArchive(conversationId, next);
+      toast({ title: "Chat archived", description: "Find it under Archived in history." });
+      return;
+    }
+
+    if (!user) return;
+
+    const { error } = await backend
+      .from("conversations")
+      .update({ archived_at: archivedAt } as never)
+      .eq("id", conversationId)
+      .eq("user_id", user.id);
+
+    if (error) {
+      toast({ title: "Could not archive", description: error.message, variant: "destructive" });
+      return;
+    }
+
+    setConversations((prev) =>
+      prev.map((c) => (c.id === conversationId ? { ...c, archived_at: archivedAt } : c)),
+    );
+    switchAfterArchive(conversationId);
+    toast({ title: "Chat archived", description: "Find it under Archived in history." });
+  };
+
+  const handleUnarchiveConversation = async (conversationId: string) => {
+    if (isGuestConversationId(conversationId)) {
+      const next = new Set(guestArchivedIds);
+      next.delete(conversationId);
+      setGuestArchivedIdsState(next);
+      setGuestArchivedIds(next);
+      setConversations((prev) =>
+        prev.map((c) => (c.id === conversationId ? { ...c, archived_at: null } : c)),
+      );
+      toast({ title: "Chat restored", description: "Moved back to your active chats." });
+      return;
+    }
+
+    if (!user) return;
+
+    const { error } = await backend
+      .from("conversations")
+      .update({ archived_at: null } as never)
+      .eq("id", conversationId)
+      .eq("user_id", user.id);
+
+    if (error) {
+      toast({ title: "Could not restore", description: error.message, variant: "destructive" });
+      return;
+    }
+
+    setConversations((prev) =>
+      prev.map((c) => (c.id === conversationId ? { ...c, archived_at: null } : c)),
+    );
+    toast({ title: "Chat restored", description: "Moved back to your active chats." });
+  };
+
+  const handleClearAllChats = async () => {
+    if (!user) {
+      const guestConvId = `guest-${Date.now()}`;
+      setConversations([{ id: guestConvId, title: "Guest Conversation", created_at: new Date().toISOString() }]);
+      setCurrentConversationId(guestConvId);
+      setMessages([
+        {
+          id: "welcome",
+          type: "ai",
+          content: "👋 Welcome to ShadowTalk AI! Your neural workspace is ready for guest access.",
+          timestamp: new Date(),
+        },
+      ]);
+      setShowSidebar(false);
+      toast({ title: "All chats cleared" });
+      return;
+    }
+
+    const { error } = await backend.from("conversations").delete().eq("user_id", user.id);
+
+    if (error) {
+      toast({ title: "Could not delete chats", description: error.message, variant: "destructive" });
+      return;
+    }
+
+    setConversations([]);
+    resetToNewChat();
+    setShowSidebar(false);
+    toast({ title: "All chats deleted", description: "Your conversation history was cleared." });
+  };
+
+  const ensureConversation = async (): Promise<string | null> => {
+    if (!user) return currentConversationId;
+    if (currentConversationId) return currentConversationId;
+
+  if (!user || isAnonymous) {
+    const localId = `local-${crypto.randomUUID()}`;
+    setCurrentConversationId(localId);
+    setConversations((prev) => [
+      { id: localId, title: "Private Chat", created_at: new Date().toISOString() },
+      ...prev,
+    ]);
+    return localId;
+  }
+
+    const titleToSave = chatPrivate.active
+      ? await chatPrivate.wrapForStorage("New Chat")
+      : "New Chat";
+    const { data, error } = await backend
+      .from('conversations')
+      .insert({ user_id: user.id, title: titleToSave })
+      .select()
+      .single();
+
+    if (error || !data) {
+      toast({ title: "Could not start chat", description: "Try again in a moment.", variant: "destructive" });
+      return null;
+    }
+
+    setCurrentConversationId(data.id);
+    const displayTitle = chatPrivate.active
+      ? "Private Chat"
+      : (await chatPrivate.resolveDisplayText(data.title || "New Chat")) || "New Chat";
+    setConversations((prev) => [
+      { id: data.id, title: displayTitle, created_at: data.created_at },
+      ...prev,
+    ]);
+    return data.id;
+  };
+
+  const resolveConversationId = async (): Promise<string | null> => {
+    const hasRealUser = user && !isAnonymous;
+    if (hasRealUser) {
+      const id = await ensureConversation();
+      if (!id) {
+        toast({
+          title: "Could not start chat",
+          description: "Check your connection and try again.",
+          variant: "destructive",
+        });
+        recordFunnelEvent("send_blocked", "ensure_conversation_failed");
+      }
+      return id;
+    }
+    if (currentConversationId) return currentConversationId;
+    const guestConvId = `guest-${Date.now()}`;
+    setCurrentConversationId(guestConvId);
+    setConversations((prev) => [
+      { id: guestConvId, title: "Guest Conversation", created_at: new Date().toISOString() },
+      ...prev,
+    ]);
+    return guestConvId;
+  };
+
+  const saveMessage = async (content: string, role: 'user' | 'assistant', conversationId: string) => {
+    if (!user || !conversationId || !shouldPersistChatToCloud()) return null;
+
+    const contentToSave = await chatPrivate.wrapForStorage(content);
+    const { data } = await backend
+      .from('messages')
+      .insert({ conversation_id: conversationId, user_id: user.id, content: contentToSave, role, personality })
+      .select().single();
+    
+    if (role === 'user' && messages.length <= 1) {
+      const titlePlain = content.trim().split(/\s+/).slice(0, 3).join(' ').slice(0, 25) || 'New Chat';
+      const title = await chatPrivate.wrapForStorage(titlePlain);
+      await backend.from('conversations').update({ title, updated_at: new Date().toISOString() }).eq('id', conversationId);
+      const displayTitle = chatPrivate.active
+        ? "Private Chat"
+        : titlePlain;
+      setConversations(prev => prev.map(c => c.id === conversationId ? { ...c, title: displayTitle } : c));
+    }
+    return data;
+  };
+
+  const handleEnableChatEncryption = async () => {
+    let conversationId = currentConversationId;
+    if (user && !conversationId) {
+      conversationId = await ensureConversation();
+    }
+    if (!conversationId && !user) {
+      const guestConvId = `guest-${Date.now()}`;
+      setCurrentConversationId(guestConvId);
+      setConversations((prev) => [
+        { id: guestConvId, title: "Private Chat", created_at: new Date().toISOString() },
+        ...prev,
+      ]);
+      conversationId = guestConvId;
+    }
+    if (!conversationId) return;
+
+    const ok = await chatPrivate.enablePrivateMode({
+      conversationId,
+      messages: messages.filter((m) => m.id !== "welcome"),
+      isGuest: isGuestConversationId(conversationId),
+    });
+    if (!ok) return;
+
+    setConversations((prev) =>
+      prev.map((c) =>
+        c.id === conversationId ? { ...c, title: "Private Chat" } : c,
+      ),
+    );
+    if (user && !isGuestConversationId(conversationId)) {
+      await loadConversation(conversationId);
+    }
+  };
+
+  type ChatCompletionMessage = {
+    role: string;
+    content: string | Array<{ type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }>;
+  };
+
+  const runChatCompletion = useCallback(
+    async (
+      chatMessages: ChatCompletionMessage[],
+      conversationId: string,
+      chatFlags?: {
+        webSearch?: boolean;
+        searchQuery?: string;
+        deepResearch?: boolean;
+        researchQuery?: string;
+      },
+    ): Promise<string | undefined> => {
+      abortControllerRef.current?.abort();
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+
+      let augmented = prependAgentSystemPrompt(chatMessages, marketplaceRuntimeRef.current);
+      augmented = prependChatKnowledgeContext(
+        augmented,
+        user?.email,
+        user?.user_metadata?.full_name as string | undefined,
+      );
+      const lastUserMsg = [...chatMessages].reverse().find((m) => m.role === "user");
+      const lastUser =
+        typeof lastUserMsg?.content === "string"
+          ? lastUserMsg.content.trim()
+          : Array.isArray(lastUserMsg?.content)
+            ? (lastUserMsg.content.find((p) => p.type === "text") as { text?: string } | undefined)?.text?.trim() ?? ""
+            : "";
+
+      augmented = prependPersonalModelToMessages(
+        augmented,
+        getActivePersonalModel(),
+        lastUser,
+      );
+
+      const userMemoryContext = await buildMemoryContextForUser(user);
+      if (userMemoryContext) {
+        augmented = [{ role: "system", content: userMemoryContext }, ...augmented];
+      }
+
+      if (aiProvider === "shadowtalk" && sovereignModel.enabled && lastUser) {
+        const learned = await sovereignModel.getLearnedSystemPrompt(lastUser);
+        if (learned) {
+          augmented = [{ role: "system", content: learned }, ...augmented];
+        }
+      }
+
+      const routerMessages: RouterMessage[] = augmented.map((m) => ({
+        role: m.role as RouterMessage["role"],
+        content: typeof m.content === "string"
+          ? m.content
+          : (m.content.find((p) => p.type === "text") as { text?: string } | undefined)?.text ?? "",
+      }));
+
+      if (chatMode === "shadowspectre") {
+        if (!user || isAnonymous) {
+          throw new Error("Sign in required to use ShadowSpectre.");
+        }
+        if (!hasAcceptedShadowSpectreTerms()) {
+          setShowShadowSpectreTerms(true);
+          throw new Error("Accept ShadowSpectre authorized-use terms to continue.");
+        }
+        if (!canUseCloudAI()) {
+          throw new Error(DEVICE_ONLY_BLOCKED_MESSAGE);
+        }
+
+        const head = routeShadowSpectreHead(lastUser);
+        setShadowSpectreHead(head);
+        const aiMessageId = crypto.randomUUID();
+        let assistantContent = "";
+        const streamToken = (token: string) => {
+          assistantContent += token;
+          setMessages((prev) => {
+            const exists = prev.find((m) => m.id === aiMessageId);
+            if (exists) {
+              return prev.map((m) =>
+                m.id === aiMessageId ? { ...m, content: assistantContent } : m,
+              );
+            }
+            return [
+              ...prev,
+              { id: aiMessageId, type: "ai", content: assistantContent, timestamp: new Date() },
+            ];
+          });
+        };
+
+        const spectre = await streamShadowSpectre({
+          messages: routerMessages,
+          head,
+          authorization: getShadowSpectreScope(),
+          onToken: streamToken,
+          signal: controller.signal,
+        });
+        setShadowSpectreHead(spectre.head);
+        if (lastUser) {
+          void indexSovereignMemory(lastUser, { category: "chat", source: "user" });
+        }
+        void indexSovereignMemory(spectre.content, { category: "chat", source: "assistant" });
+        if (user) {
+          void saveMessage(spectre.content, "assistant", conversationId);
+        }
+        return spectre.content;
+      }
+
+      const hasMultimodalImage = chatMessages.some((m) => Array.isArray(m.content));
+      if (user && !isAnonymous) {
+        ensureAutoCloudUntilLocalReady();
+      }
+
+      const route = decideRoute(routerMessages, navigator.onLine);
+      const useLocal =
+        !hasMultimodalImage &&
+        (route.target === "local" ||
+          route.backend === "ollama" ||
+          (aiProvider === "shadowtalk" && isAnyLocalModelReady()));
+      if (useLocal) {
+        if (!isAnyLocalModelReady() && route.backend !== "ollama") {
+          prewarmFastestLocalPath();
+        }
+
+        const localMessages = await augmentMessagesWithLocalMemory(routerMessages);
+        const lastUserText =
+          [...routerMessages].reverse().find((m) => m.role === "user")?.content ?? "";
+
+        const aiMessageId = crypto.randomUUID();
+        let assistantContent = "";
+
+        const streamToken = (token: string) => {
+          assistantContent += token;
+          setMessages((prev) => {
+            const exists = prev.find((m) => m.id === aiMessageId);
+            if (exists) {
+              return prev.map((m) =>
+                m.id === aiMessageId ? { ...m, content: assistantContent } : m,
+              );
+            }
+            return [
+              ...prev,
+              { id: aiMessageId, type: "ai", content: assistantContent, timestamp: new Date() },
+            ];
+          });
+        };
+
+        if (route.backend === "ollama") {
+          try {
+            const ollama = await runOllamaChat(localMessages, streamToken);
+            if (ollama.ok && (assistantContent || ollama.content)) {
+              const final = assistantContent || ollama.content;
+              if (lastUserText) {
+                void indexSovereignMemory(lastUserText, { category: "chat", source: "user" });
+              }
+              void indexSovereignMemory(final, { category: "chat", source: "assistant" });
+              if (user) {
+                void saveMessage(final, "assistant", conversationId);
+              }
+              void maybeReflectAndPersist({ user }, messages.map((m) => ({ role: m.type === "ai" ? "assistant" : "user", content: m.content })));
+              return final;
+            }
+            if (isSovereignModeEnabled() || !canUseCloudAI()) {
+              throw new Error(ollama.error ?? "Ollama chat failed on-device");
+            }
+            console.warn("[Chat] Ollama path failed, trying browser/cloud:", ollama.error);
+          } catch (e) {
+            if (isSovereignModeEnabled() || !canUseCloudAI()) {
+              throw e instanceof Error ? e : new Error("Ollama unavailable on-device");
+            }
+            console.warn("[Chat] Ollama path failed:", e);
+          }
+        }
+
+        const offline = await runOfflineCompletion({
+          messages: localMessages,
+          personality,
+          isOnline: navigator.onLine,
+          onToken: streamToken,
+        });
+
+        if (offline?.content) {
+          const useCloudInstead =
+            offline.source === "fallback" && canUseCloudAI() && navigator.onLine;
+          if (!useCloudInstead) {
+            if (!assistantContent) {
+              streamToken(offline.content);
+            }
+            if (lastUserText) {
+              void indexSovereignMemory(lastUserText, { category: "chat", source: "user" });
+            }
+            void indexSovereignMemory(offline.content, { category: "chat", source: "assistant" });
+            if (user) {
+              void saveMessage(offline.content, "assistant", conversationId);
+            }
+            return assistantContent || offline.content;
+          }
+        }
+
+        if (isAnyLocalModelReady()) {
+          try {
+            const { content } = await runLocalChat(localMessages, streamToken);
+            if (content) {
+              if (lastUserText) {
+                void indexSovereignMemory(lastUserText, { category: "chat", source: "user" });
+              }
+              void indexSovereignMemory(content, { category: "chat", source: "assistant" });
+            }
+            if (content && user) {
+              void saveMessage(content, "assistant", conversationId);
+            }
+            const reply = assistantContent || content;
+            if (reply) {
+              void maybeReflectAndPersist({ user }, messages.map((m) => ({ role: m.type === "ai" ? "assistant" : "user", content: m.content })));
+            }
+            return reply;
+          } catch (e) {
+            if (isSovereignModeEnabled() || !canUseCloudAI()) {
+              throw e instanceof Error ? e : new Error("Local chat failed on-device");
+            }
+            console.warn("[Chat] Local turbo path failed, using cloud:", e);
+          }
+        }
+
+        if (isSovereignModeEnabled() || !canUseCloudAI()) {
+          throw new Error(
+            canUseCloudAI()
+              ? "Sovereign mode is on but no local model responded. Install Ollama, pull a model in Settings → Offline AI, then retry."
+              : DEVICE_ONLY_BLOCKED_MESSAGE,
+          );
+        }
+      }
+
+      if (!canUseCloudAI()) {
+        throw new Error(DEVICE_ONLY_BLOCKED_MESSAGE);
+      }
+
+      // Ollama default provider — last chance before cloud for non-complex chat
+      if (!hasMultimodalImage && shouldPreferOllamaInference()) {
+        const aiMessageId = crypto.randomUUID();
+        let assistantContent = "";
+        const streamToken = (token: string) => {
+          assistantContent += token;
+          setMessages((prev) => {
+            const exists = prev.find((m) => m.id === aiMessageId);
+            if (exists) {
+              return prev.map((m) =>
+                m.id === aiMessageId ? { ...m, content: assistantContent } : m,
+              );
+            }
+            return [
+              ...prev,
+              { id: aiMessageId, type: "ai", content: assistantContent, timestamp: new Date() },
+            ];
+          });
+        };
+        try {
+          const ollama = await runOllamaChat(routerMessages, streamToken, controller.signal);
+          if (ollama.ok && (assistantContent || ollama.content)) {
+            const final = assistantContent || ollama.content;
+            const lastUserText =
+              [...routerMessages].reverse().find((m) => m.role === "user")?.content ?? "";
+            if (lastUserText) {
+              void indexSovereignMemory(lastUserText, { category: "chat", source: "user" });
+            }
+            void indexSovereignMemory(final, { category: "chat", source: "assistant" });
+            if (user) {
+              void saveMessage(final, "assistant", conversationId);
+            }
+            void maybeReflectAndPersist({ user }, messages.map((m) => ({ role: m.type === "ai" ? "assistant" : "user", content: m.content })));
+            return final;
+          }
+        } catch (e) {
+          console.warn("[Chat] Ollama default provider unavailable, using cloud:", e);
+        }
+      }
+
+      const chatUrl = getChatFunctionUrl();
+      if (!chatUrl || !isCloudConfigured()) {
+        throw new Error(
+          `Chat is not configured for this build. ${DESKTOP_ENV_SETUP_HINT}`,
+        );
+      }
+
+      const { data: { session } } = await backend.auth.getSession();
+      const learnedHint = getChatDefaults()?.systemHintAddon;
+      const memoryContext = getMemoryContext();
+      const businessMemory = [learnedHint, memoryContext].filter(Boolean).join("\n").trim();
+      const hasUserContext = Boolean(
+        userContext.country ||
+          userContext.city ||
+          userContext.incomeRange ||
+          userContext.employmentStatus ||
+          userContext.familyStatus ||
+          userContext.recentLifeEvents.length,
+      );
+
+      const requestBody = stringifyChatBody({
+        messages: augmented,
+        personality,
+        mode: chatMode,
+        ...buildChatProviderPayload(aiProvider, aiConfig, keys),
+        ...(businessMemory ? { businessMemory } : {}),
+        ...(hasUserContext
+          ? {
+              userContext: {
+                country: userContext.country || undefined,
+                city: userContext.city || undefined,
+                incomeRange: userContext.incomeRange || undefined,
+                employmentStatus: userContext.employmentStatus || undefined,
+                familyStatus: userContext.familyStatus || undefined,
+                recentLifeEvents: userContext.recentLifeEvents.length
+                  ? userContext.recentLifeEvents
+                  : undefined,
+              },
+            }
+          : {}),
+        ...(chatFlags?.webSearch
+          ? { webSearch: true, searchQuery: chatFlags.searchQuery }
+          : {}),
+        ...(chatFlags?.deepResearch
+          ? { deepResearch: true, researchQuery: chatFlags.researchQuery }
+          : {}),
+      });
+
+      const raiseChatHttpError = async (status: number, rawBody: string) => {
+        let detail = "Chat request failed";
+        let needsByok = false;
+        try {
+          const errJson = JSON.parse(rawBody);
+          detail = typeof errJson.error === "string" ? errJson.error : detail;
+          needsByok = errJson?.needsByok === true || errJson?.code === "PLATFORM_CREDITS_EXHAUSTED";
+        } catch {
+          detail = rawBody || detail;
+        }
+        if (status === 402 && needsByok) {
+          saveCustomAiConfig({ ...loadCustomAiConfig(), usePlatformDefault: false, provider: '' as const, apiKey: '' });
+          setAiProvider('shadowtalk');
+          toast({
+            title: 'Switching to local AI',
+            description: 'Platform credits are exhausted. Continuing on-device with Ollama/local ShadowTalk.',
+          });
+          const offline = await runOfflineCompletion({
+            messages: chatMessages.map((m) => ({ role: (m.role === 'assistant' ? 'assistant' : m.role === 'system' ? 'system' : 'user') as 'assistant' | 'system' | 'user', content: typeof m.content === 'string' ? m.content : '' })),
+            personality,
+            isOnline: navigator.onLine,
+            onToken: (token) => pushAssistant(token),
+          });
+          if (offline?.content.trim()) {
+            finalizeAssistant();
+            return assistantContent;
+          }
+        }
+        throw new Error(detail);
+      };
+
+      const aiMessageId = crypto.randomUUID();
+      let assistantContent = "";
+
+      // SPEED: coalesce setMessages calls to one per frame so streaming
+      // doesn't trigger a full React reconcile on every SSE chunk.
+      let pendingContent: string | null = null;
+      let rafId: number | null = null;
+      const flushAssistant = () => {
+        rafId = null;
+        if (pendingContent === null) return;
+        const content = pendingContent;
+        pendingContent = null;
+        setMessages((prev) => {
+          const exists = prev.find((m) => m.id === aiMessageId);
+          if (exists) {
+            return prev.map((m) =>
+              m.id === aiMessageId ? { ...m, content } : m,
+            );
+          }
+          return [
+            ...prev,
+            { id: aiMessageId, type: "ai", content, timestamp: new Date() },
+          ];
+        });
+      };
+      const pushAssistant = (content: string) => {
+        assistantContent = content;
+        pendingContent = content;
+        if (rafId === null) {
+          rafId = typeof requestAnimationFrame !== "undefined"
+            ? requestAnimationFrame(flushAssistant)
+            : (setTimeout(flushAssistant, 16) as unknown as number);
+        }
+      };
+      const finalizeAssistant = () => {
+        if (rafId !== null) {
+          if (typeof cancelAnimationFrame !== "undefined") cancelAnimationFrame(rafId);
+          else clearTimeout(rafId as unknown as number);
+          rafId = null;
+        }
+        if (pendingContent !== null) flushAssistant();
+      };
+
+      // ---- SHADOWTALK-TURBO FAST PATH ----
+      // Try direct Groq streaming first (bypasses edge function, ~5x faster TTFB).
+      // Falls through to standard path if no Groq key or if Turbo fails.
+      const turboKey = resolveTurboKey();
+      const turboUserText =
+        [...routerMessages].reverse().find((m) => m.role === "user")?.content ?? "";
+      if (
+        turboKey &&
+        !hasMultimodalImage &&
+        !chatFlags?.webSearch &&
+        !chatFlags?.deepResearch &&
+        typeof turboUserText === "string" &&
+        turboUserText.trim().length > 0
+      ) {
+        try {
+          const turboResult = await turboComplete(
+            `You are ShadowTalk AI. Be ${personality || 'friendly'} and helpful. Use markdown formatting. Current date: ${new Date().toISOString().split('T')[0]}.`,
+            turboUserText,
+            {
+              signal: controller.signal,
+              onDelta: (accumulated) => pushAssistant(accumulated),
+            },
+          );
+          if (turboResult.source !== 'fallback' && turboResult.content.trim()) {
+            finalizeAssistant();
+            return assistantContent;
+          }
+          // Turbo returned empty/fallback — fall through to standard path
+        } catch (turboErr) {
+          console.warn('[Chat] Turbo fast-path failed, using standard:', turboErr);
+        }
+      }
+
+      if (isShadowTalkDesktop()) {
+        let lineBuffer = "";
+        const end = await desktopChatStream(
+          chatUrl,
+          requestBody,
+          session?.access_token,
+          controller.signal,
+          (chunk) => {
+            lineBuffer += chunk;
+            const lines = lineBuffer.split("\n");
+            lineBuffer = lines.pop() ?? "";
+            const next = parseSseContentLines(lines, assistantContent);
+            if (next !== assistantContent) pushAssistant(next);
+          },
+        );
+        if (!end.ok) {
+          await raiseChatHttpError((end as unknown as { status?: number }).status ?? 500, (end as unknown as { body?: string }).body);
+        }
+      } else {
+        const resp = await selfHealedFetch(chatUrl, {
+          method: "POST",
+          headers: getChatFetchHeaders(session?.access_token),
+          signal: controller.signal,
+          body: requestBody,
+        });
+
+        if (!resp.ok) {
+          const cloudFailed = new Error((await resp.text().catch(() => "")) || "Cloud chat failed");
+          const localCandidates = runOfflineCompletion({
+            messages: chatMessages.map((m) => ({ role: (m.role === "assistant" ? "assistant" : m.role === "system" ? "system" : "user") as "assistant" | "system" | "user", content: typeof m.content === "string" ? m.content : "" })),
+            personality,
+            isOnline: navigator.onLine,
+            onToken: (token) => pushAssistant(token),
+          });
+          const local = await localCandidates;
+          if (local && local.content.trim()) {
+            finalizeAssistant();
+            return assistantContent;
+          }
+          await raiseChatHttpError(resp.status, cloudFailed.message);
+        }
+
+        const contentType = resp.headers.get("content-type") || "";
+        if (!contentType.includes("text/event-stream")) {
+          await raiseChatHttpError(resp.status, await resp.text().catch(() => ""));
+        }
+
+        const reader = resp.body?.getReader();
+        const decoder = new TextDecoder();
+        let lineBuffer = "";
+
+        while (reader) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          lineBuffer += decoder.decode(value, { stream: true });
+          const lines = lineBuffer.split("\n");
+          lineBuffer = lines.pop() ?? "";
+          const next = parseSseContentLines(lines, assistantContent);
+          if (next !== assistantContent) pushAssistant(next);
+        }
+      }
+
+      finalizeAssistant();
+      // SPEED: don't block UI on DB write — fire and forget.
+      if (assistantContent && user) {
+        void saveMessage(assistantContent, "assistant", conversationId).catch((e) =>
+          console.warn("[chat] saveMessage(assistant) failed", e),
+        );
+      }
+      if (assistantContent.trim().length > 0) {
+        recordSuccessfulChatSession();
+        recordFunnelEvent("first_reply");
+        markHasChatted();
+      }
+      return assistantContent || undefined;
+    },
+    [aiProvider, aiConfig, keys, chatMode, personality, user, gemmaOffline.chatLocal, sovereignModel, getChatDefaults, getMemoryContext],
+  );
+
+  const handleStopGeneration = () => {
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = null;
+    setIsLoading(false);
+    toast({ title: "Stopped", description: "Generation cancelled." });
+  };
+
+  const handleEditMessage = async (index: number, newContent: string) => {
+    const trimmed = newContent.trim();
+    if (!trimmed) return;
+    const target = messages[index];
+    if (!target || target.type !== "user") return;
+
+    setMessages((prev) =>
+      prev.map((m, i) => (i === index ? { ...m, content: trimmed } : m)),
+    );
+
+    if (user && currentConversationId && !isGuestConversationId(currentConversationId)) {
+      await backend
+        .from("messages")
+        .update({ content: trimmed })
+        .eq("id", target.id)
+        .eq("user_id", user.id);
+    }
+    toast({ title: "Message updated" });
+  };
+
+  const handleRegenerateMessage = async (index: number) => {
+    const target = messages[index];
+    if (!target || target.type !== "ai" || isLoading) return;
+
+    const prior = messages.slice(0, index);
+    const chatMessages = prior
+      .filter((m) => m.id !== "welcome")
+      .map((m) => ({
+        role: m.type === "user" ? "user" : "assistant",
+        content: m.content,
+      }));
+
+    if (chatMessages.length === 0) return;
+
+    const conversationId = await resolveConversationId();
+    if (!conversationId) return;
+
+    setMessages(prior);
+    setIsLoading(true);
+
+    try {
+      await runChatCompletion(chatMessages, conversationId);
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return;
+      const msg = err instanceof Error ? err.message : "Regeneration failed.";
+      toast({ title: "Regeneration failed", description: msg, variant: "destructive" });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSendMessage = async (overrideText?: string) => {
+    const msgContent = (overrideText ?? message).trim();
+    if ((!msgContent && !selectedFile) || isLoading) return;
+
+    const isGuestLike = !user || isAnonymous;
+    if (isGuestLike && !isAnonymousAutonomousEnabled()) {
+      if (guestUsage.isLoaded && !guestUsage.canPerform("chats")) {
+        toast({ title: "Guest chat limit", description: "Sign in later to lift limits; continuing now." });
+      }
+      if (guestUsage.isLoaded) {
+        guestUsage.trackGuestAction("chats");
+      }
+    }
+
+    if (!isProOrHigher && dailyLimits.isLoaded && !dailyLimits.canPerform("messages") && !isAnonymousAutonomousEnabled()) {
+      // Soft downgrade: keep chat flowing for anonymous users.
+    }
+
+    if (!isProOrHigher && nudge.shouldBlockSend && !isAnonymousAutonomousEnabled()) {
+      // Soft downgrade: do not interrupt sends for anonymous users.
+    }
+
+    recordFunnelEvent("first_send_attempt");
+    markHasChatted();
+
+    const conversationId = await resolveConversationId();
+    if (!conversationId) {
+      recordFunnelEvent("send_blocked", "no_conversation_id");
+      return;
+    }
+
+    const userMessage: Message = {
+      id: crypto.randomUUID(),
+      type: "user",
+      content: msgContent,
+      timestamp: new Date(),
+      attachment: selectedFile || undefined,
+    };
+    setMessages((prev) => [...prev, userMessage]);
+    if (!overrideText) {
+      setMessage("");
+    }
+    setSelectedFile(null);
+    setIsLoading(true);
+    // SPEED: persist user message in the background; don't block the AI call on a DB write.
+    if (user) void saveMessage(msgContent, "user", conversationId).catch((e) =>
+      console.warn("[chat] saveMessage(user) failed", e),
+    );
+
+    if (!isProOrHigher) {
+      if (user && dailyLimits.isLoaded) {
+        dailyLimits.trackUsage("messages");
+      } else {
+        setDailyChats(incrementDailyMessageCount());
+      }
+    }
+
+    const chatMessages: Array<{
+      role: string;
+      content: string | Array<{ type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }>;
+    }> = messages
+      .filter((m) => m.id !== "welcome")
+      .map((m) => ({
+        role: m.type === "user" ? "user" : "assistant",
+        content: m.content,
+      }));
+    chatMessages.push({ role: "user", content: msgContent });
+
+
+    void captureChatSend(msgContent, chatMode, personality, Boolean(userMessage.attachment));
+
+    if (user) {
+      for (const g of upsertGoalsFromMessage(msgContent)) {
+        void syncGoalToAiMemories(user.id, g);
+      }
+    }
+
+    const imageAttachment =
+      userMessage.attachment?.type === "image" ? userMessage.attachment : null;
+
+    if (imageAttachment) {
+      const imageIntent = detectChatImageIntent(msgContent);
+
+      if (imageIntent === "edit" || imageIntent === "analyze") {
+        const statusId = crypto.randomUUID();
+        const isEdit = imageIntent === "edit";
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: statusId,
+            type: "ai",
+            content: isEdit ? "✏️ Editing your image…" : "🔍 Analyzing your image…",
+            timestamp: new Date(),
+            toolExecution: {
+              tool: isEdit ? "image_edit" : "image_decoder",
+              status: "running",
+            },
+          },
+        ]);
+
+        try {
+          const result = isEdit
+            ? await callChatImageEdit(
+                imageAttachment.data,
+                msgContent.trim() || "Enhance this image",
+              )
+            : await callChatImageAnalyze(imageAttachment.data);
+
+          const reply =
+            result.content ||
+            (isEdit ? "Here is your edited image." : "Analysis complete.");
+
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === statusId
+                ? {
+                    ...m,
+                    content: reply,
+                    imageUrl: result.imageUrl,
+                    toolExecution: {
+                      tool: isEdit ? "image_edit" : "image_decoder",
+                      status: "complete",
+                      result: isEdit ? "Edited" : "Analyzed",
+                    },
+                  }
+                : m,
+            ),
+          );
+          if (user) void saveMessage(reply, "assistant", conversationId).catch(() => {});
+          learnFromTurn(msgContent || "[image]", reply, conversationId);
+        } catch (err) {
+          const errMsg = err instanceof Error ? err.message : "Image processing failed.";
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === statusId
+                ? {
+                    ...m,
+                    content: `Could not process the image: ${errMsg}`,
+                    toolExecution: {
+                      tool: isEdit ? "image_edit" : "image_decoder",
+                      status: "error",
+                    },
+                  }
+                : m,
+            ),
+          );
+          toast({ title: "Image failed", description: errMsg, variant: "destructive" });
+        } finally {
+          setIsLoading(false);
+        }
+        return;
+      }
+
+      chatMessages[chatMessages.length - 1] = buildVisionUserMessage(
+        msgContent,
+        imageAttachment.data,
+      );
+
+      try {
+        const assistantReply = await runChatCompletion(chatMessages, conversationId);
+        if (aiProvider === "shadowtalk" && sovereignModel.enabled) {
+          void sovereignModel.learnFromTurn(msgContent, assistantReply);
+        }
+        learnFromTurn(msgContent || "[image]", assistantReply ?? "", conversationId);
+      } catch (err) {
+        if (!(err instanceof DOMException && err.name === "AbortError")) {
+          const errMsg = formatChatFetchError(err);
+          toast({ title: "Message failed", description: errMsg, variant: "destructive" });
+        }
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+
+    const execHint = detectShadowExecutionFromChat(msgContent);
+    const route = resolveAutonomousRoute(msgContent, execHint, { preferSeeRouting });
+
+    if (route.launchInChat) {
+      try {
+        trackAgenticEvent("mission_start", { source: "chat_autonomous", goal: msgContent.slice(0, 120) });
+        void captureAutoImprove("see_launch", { goal: msgContent.slice(0, 80) });
+        const state = await launchMissionFromChat(msgContent);
+        if (state) {
+          const intro =
+            state.status === "completed" && state.result
+              ? `**Autonomous mission complete.**\n\n${state.result}`
+              : state.status === "paused"
+                ? `**Mission paused** — approve the next step in the panel below, or open full execution.`
+                : state.status === "failed"
+                  ? `**Mission could not finish.** Open Shadow Execution to adjust the plan or retry.`
+                  : `**Autonomous mission running** — multi-step plan in progress for: *${state.goal.slice(0, 100)}${state.goal.length > 100 ? "…" : ""}*`;
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: crypto.randomUUID(),
+              type: "ai",
+              content: intro,
+              timestamp: new Date(),
+              toolExecution: {
+                tool: "shadow_execution",
+                status: state.status === "completed" ? "complete" : "running",
+                params: { goal: msgContent, mode: execHint.deliverableType },
+                result: state.result ?? "In progress",
+              },
+            },
+          ]);
+          if (user) void saveMessage(intro, "assistant", conversationId).catch(() => {});
+          if (state.result) learnFromTurn(msgContent, state.result, conversationId);
+          trackAgenticEvent("mission_complete", { source: "chat_autonomous" });
+          setIsLoading(false);
+          return;
+        }
+      } catch (err) {
+        console.warn("[Autonomy] In-chat mission failed, falling back:", err);
+      }
+    }
+
+    if (route.redirectToExecute) {
+      goToExecute(msgContent, execHint.deliverableType);
+      const label =
+        execHint.deliverableType === "strategy_report"
+          ? "Strategy report"
+          : execHint.deliverableType === "research_brief"
+            ? "Research brief"
+            : "Shadow Execution";
+      const routeMsg = `**${label}** fits this request better than a single chat reply — opening the execution workspace with your goal pre-filled. I'll run a visible plan with live web research and a saved deliverable.`;
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: crypto.randomUUID(),
+          type: "ai",
+          content: routeMsg,
+          timestamp: new Date(),
+          toolExecution: {
+            tool: "shadow_execution",
+            status: "complete",
+            params: { goal: msgContent, mode: execHint.deliverableType },
+            result: label,
+          },
+        },
+      ]);
+      if (user) void saveMessage(routeMsg, "assistant", conversationId).catch(() => {});
+      setIsLoading(false);
+      return;
+    }
+
+    const toolDispatchUi = {
+      openDeepResearch: (q?: string) => {
+        setShowDeepResearch(true);
+        if (q) setMessage(q);
+      },
+      openImageGenerator: () => setShowImageGenerator(true),
+      openMusicGenerator: (prompt?: string) => {
+        setMusicPrompt(prompt ?? "");
+        setMusicAutoGenerate(Boolean(prompt));
+        setShowMusicGenerator(true);
+      },
+      openAgenticRunner: (g: string) => goToExecute(g, "general"),
+      openBrowser: () => setShowShadowBrowser(true),
+      openShadowLive: () => setShowShadowTalkLive(true),
+      openMissionControl: () => goToExecute(msgContent, "general"),
+      openShadowExecution: (g: string, mode?: import("@/lib/execution/types").DeliverableType) =>
+        goToExecute(g, mode),
+      setPendingMessage: (text: string) => setMessage(text),
+      appendAssistantMessage: (
+        content: string,
+        toolExecution?: {
+          tool: string;
+          status: "complete" | "confirm" | "running";
+          params?: Record<string, string>;
+          result?: string;
+        },
+      ) => {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: crypto.randomUUID(),
+            type: "ai",
+            content,
+            timestamp: new Date(),
+            toolExecution,
+          },
+        ]);
+        if (user) void saveMessage(content, "assistant", conversationId).catch(() => {});
+      },
+    };
+
+    const { outcome: toolOutcome, executedStep } = await dispatchDetectionAsync(
+      msgContent,
+      toolDispatchUi,
+    );
+
+    if (toolOutcome.handled && toolOutcome.cognitiveLoop) {
+      setCognitiveQuery(toolOutcome.query ?? msgContent);
+      setShowCognitiveLoop(true);
+      setIsLoading(false);
+      return;
+    }
+
+    if (toolOutcome.handled) {
+      const flags = toolOutcome.chatFlags;
+      if (flags?.webSearch || flags?.deepResearch) {
+        try {
+          if (flags.webSearch) {
+            void startBrowseSession(flags.searchQuery ?? msgContent).then(() =>
+              setShowBrowseActivity(true),
+            );
+          }
+          const assistantReply = await runChatCompletion(
+            chatMessages,
+            conversationId,
+            flags,
+          );
+          learnFromTurn(msgContent, assistantReply, conversationId);
+          if (user && !pushPermissionAskedRef.current && typeof Notification !== "undefined") {
+            pushPermissionAskedRef.current = true;
+            if (Notification.permission === "default") {
+              void requestPermission().catch(() => {});
+            }
+          }
+          if (assistantReply && isShareWorthyReply(assistantReply) && shouldShowChatShareBanner()) {
+            setChatShareOffer({
+              title: buildChatShareTitle(msgContent, assistantReply),
+              subtitle: buildChatShareSubtitle(msgContent),
+            });
+            recordChatShareBannerShown();
+          }
+
+          if (executedStep && assistantReply) {
+            const criticFollowUp = await continueFromCritic(
+              msgContent,
+              executedStep,
+              assistantReply,
+              toolDispatchUi,
+            );
+            if (criticFollowUp?.outcome.handled && criticFollowUp.outcome.cognitiveLoop) {
+              setCognitiveQuery(criticFollowUp.outcome.query ?? msgContent);
+              setShowCognitiveLoop(true);
+              setIsLoading(false);
+              return;
+            }
+            const followFlags =
+              criticFollowUp && !criticFollowUp.outcome.handled
+                ? criticFollowUp.outcome.chatFlags
+                : undefined;
+            if (followFlags?.webSearch || followFlags?.deepResearch) {
+              const followReply = await runChatCompletion(chatMessages, conversationId, followFlags);
+              learnFromTurn(msgContent, followReply, conversationId);
+            }
+          }
+        } catch (err) {
+          if (!(err instanceof DOMException && err.name === "AbortError")) {
+            const msg = formatChatFetchError(err);
+            toast({ title: "Message failed", description: msg, variant: "destructive" });
+          }
+        }
+      }
+      setIsLoading(false);
+      return;
+    }
+
+    const toolDetection = toolOrchestrator.detectTool(msgContent);
+    const appIntent =
+      detectAppBuilderIntent(msgContent) ??
+      (toolDetection.tool === "app_builder"
+        ? {
+            platform: (toolDetection.params?.platform === "mobile" ? "mobile" : "web") as
+              | "web"
+              | "mobile",
+            confidence: toolDetection.confidence,
+          }
+        : null);
+
+    if (appIntent && appIntent.confidence >= 50) {
+      const platform = appIntent.platform;
+      const statusId = crypto.randomUUID();
+      const platformLabel = platform === "mobile" ? "mobile" : "web";
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: statusId,
+          type: "ai",
+          content: `Building your **${platformLabel} app** in the Code IDE — generating HTML, CSS, and JavaScript…`,
+          timestamp: new Date(),
+          toolExecution: { tool: "app_builder", status: "running" },
+        },
+      ]);
+
+      try {
+        const { data: { session } } = await backend.auth.getSession();
+        const project = await generateAppProject({
+          prompt: msgContent,
+          platform,
+          accessToken: session?.access_token,
+          personality,
+          mode: "code",
+          providerPayload: buildChatProviderPayload(aiProvider, aiConfig, keys),
+        });
+
+        openProjectInIde(
+          {
+            title: project.title,
+            platform: project.platform,
+            files: project.files,
+          },
+          { openPreview: true },
+        );
+
+        const summary =
+          `**${project.title}** is ready in the Code IDE (${project.files.length} files).\n\n` +
+          `${project.description || `A ${platformLabel} app based on your request.`}\n\n` +
+          `Use **Preview** to run it live` +
+          (platform === "mobile" ? " — switch to the **Mobile** viewport (375px) for the best view." : ".") +
+          `\n\nAsk me to add features, new screens, or connect a backend anytime.`;
+
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === statusId
+              ? {
+                  ...m,
+                  content: summary,
+                  toolExecution: { tool: "app_builder", status: "complete", result: project.title },
+                }
+              : m,
+          ),
+        );
+        if (user) void saveMessage(summary, "assistant", conversationId);
+      } catch (err) {
+        const errMsg = err instanceof Error ? err.message : "App generation failed.";
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === statusId
+              ? {
+                  ...m,
+                  content: `Could not generate the app: ${errMsg}. Try again or open the IDE to start from a template.`,
+                  toolExecution: { tool: "app_builder", status: "error" },
+                }
+              : m,
+          ),
+        );
+        toast({ title: "App builder failed", description: errMsg, variant: "destructive" });
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+
+    try {
+      const assistantReply = await runChatCompletion(chatMessages, conversationId);
+      if (aiProvider === "shadowtalk" && sovereignModel.enabled) {
+        void sovereignModel.learnFromTurn(msgContent, assistantReply);
+      }
+      learnFromTurn(msgContent, assistantReply, conversationId);
+      if (assistantReply && isShareWorthyReply(assistantReply) && shouldShowChatShareBanner()) {
+        setChatShareOffer({
+          title: buildChatShareTitle(msgContent, assistantReply),
+          subtitle: buildChatShareSubtitle(msgContent),
+        });
+        recordChatShareBannerShown();
+      }
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return;
+      const msg = formatChatFetchError(err);
+      if (msg.includes("Device-only mode") || msg.includes("Stay device-only")) {
+        setShowInterimCloudConsent(true);
+      }
+      recordFunnelEvent("send_error", msg.slice(0, 80));
+      toast({ title: "Message failed", description: msg, variant: "destructive" });
+      setMessages((prev) => [
+        ...prev,
+        { id: crypto.randomUUID(), type: "ai", content: msg, timestamp: new Date() },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const isEmptyChat = messages.filter((m) => m.id !== "welcome").length === 0;
+  const hasActiveChat = messages.some((m) => m.id !== "welcome");
+  const userDisplayName = chatPrivate.anonymousUi
+    ? "Anonymous"
+    : user?.user_metadata?.full_name?.split(" ")[0] || user?.email?.split("@")[0] || "there";
+  const userInitials = chatPrivate.anonymousUi
+    ? "?"
+    : user?.email
+      ? user.email.charAt(0).toUpperCase()
+      : "G";
+
+  const handleConfirmTool = useCallback(
+    (messageId: string) => {
+      const msg = messages.find((m) => m.id === messageId);
+      const te = msg?.toolExecution;
+      if (!te?.params?.goal) return;
+      const mode = (te.params.mode as "general" | "strategy_report" | "research_brief" | "content_pack") || "general";
+      goToExecute(te.params.goal, mode);
+    },
+    [messages, goToExecute],
+  );
+
+  const openChatShare = useCallback(
+    (assistantContent: string, userPrompt?: string) => {
+      const lastUser =
+        userPrompt ??
+        [...messages].reverse().find((m) => m.type === "user" && m.id !== "welcome")?.content ??
+        "";
+      const title = buildChatShareTitle(lastUser, assistantContent);
+      setChatShareOffer({
+        title,
+        subtitle: buildChatShareSubtitle(lastUser),
+        prompt: lastUser,
+        answer: assistantContent,
+      });
+      setChatShareCustomLink(null);
+      setChatShareDialogOpen(true);
+
+      // Publish a public /s/:slug URL in the background so the dialog can
+      // upgrade the copy-link and social buttons to point to the shareable page.
+      void (async () => {
+        try {
+          const mod = await import("@/lib/growth/publishSharedAnswer");
+          const published = await mod.publishSharedAnswer({
+            prompt: lastUser || "AI conversation",
+            answer: assistantContent,
+            title,
+            source: "chat",
+          });
+          setChatShareCustomLink(published.url);
+        } catch {
+          // silent: dialog falls back to default share link
+        }
+      })();
+    },
+    [messages],
+  );
+
+
+  const handleExport = () => {
+    try {
+      const payload = {
+        exportedAt: new Date().toISOString(),
+        conversationId: currentConversationId,
+        personality,
+        mode: chatMode,
+        sharedVia: BRAND.fullName,
+        inviteUrl: "https://www.shadowtalk-ai.com/chatbot?utm_source=export&utm_medium=json&utm_campaign=chat_export",
+        messages: messages.map((m) => ({
+          role: m.type,
+          content: m.content,
+          timestamp: m.timestamp instanceof Date ? m.timestamp.toISOString() : String(m.timestamp),
+        })),
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `shadowtalk-history-${currentConversationId || "chat"}-${Date.now()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      toast({ title: "Exported", description: "Downloaded chat history JSON." });
+    } catch {
+      toast({ title: "Export failed", description: "Could not export chat history.", variant: "destructive" });
+    }
+  };
+
+  const insertAssistantToChat = useCallback(
+    (content: string) => {
+      setMessages((prev) => [
+        ...prev,
+        { id: crypto.randomUUID(), type: "ai", content, timestamp: new Date() },
+      ]);
+      if (user && currentConversationId) {
+        void saveMessage(content, "assistant", currentConversationId).catch(() => {});
+      }
+    },
+    [user, currentConversationId],
+  );
+
+  useEffect(() => {
+    const pending = consumePendingChatInsert();
+    if (!pending) return;
+    if (pending.startsWith("Execute this workspace")) {
+      setMessage(pending);
+      toast({ title: "Script loaded", description: "Review and send to run in chat." });
+    } else {
+      insertAssistantToChat(pending);
+      toast({ title: "Inserted into chat", description: "Content added from Research or Browser." });
+    }
+  }, [insertAssistantToChat, toast]);
+
+  const handleQuickPrompt = useCallback(
+    (prompt: string) => {
+      const text = completeQuickPrompt(prompt);
+      recordFunnelEvent("quick_prompt", text.slice(0, 48));
+      void handleSendMessage(text);
+    },
+    [handleSendMessage],
+  );
+
+  const handleCommandAction = (action: string) => {
+    setShowCommandPalette(false);
+
+    if (!CHAT_COMMAND_MODAL_ACTIONS.has(action)) {
+      const navPath = CHAT_COMMAND_NAV_ROUTES[action];
+      if (navPath) {
+        navigate(navPath);
+        return;
+      }
+    }
+
+    switch (action) {
+      case "new-chat":
+        handleNewChat();
+        return;
+      case "deep-research":
+        setShowDeepResearch(true);
+        return;
+      case "image":
+        setShowImageGenerator(true);
+        return;
+      case "music":
+        setMusicPrompt(message.trim());
+        setMusicAutoGenerate(false);
+        setShowMusicGenerator(true);
+        return;
+      case "google":
+        setShowGoogleIntegration(true);
+        return;
+      case "shadowspectre":
+        setChatMode("shadowspectre");
+        setShowShadowSpectrePanel(true);
+        return;
+      case "voice":
+        setShowShadowTalkLive(true);
+        return;
+      case "browser":
+        setShowShadowBrowser(true);
+        return;
+      case "missions":
+        navigate("/execute");
+        return;
+      case "agentic":
+        setShowAgenticRunner(true);
+        return;
+      case "agent-workflows":
+        setShowAgentWorkflows(true);
+        return;
+      case "analytics":
+        setShowAnalytics(true);
+        return;
+      case "gemini-analytics":
+        setShowGeminiAnalytics(true);
+        return;
+      case "organize":
+        setShowDataOrganizer(true);
+        return;
+      case "knowledge-vault":
+      case "knowledge-vault-modal":
+        setShowKnowledgeVault(true);
+        return;
+      case "uncensored-arena":
+        setShowUncensoredArena(true);
+        return;
+      case "shadow-cowork":
+        setShowShadowCowork(true);
+        return;
+      case "offline-tools":
+      case "offline":
+        setShowOfflineTools(true);
+        return;
+      case "multi-model":
+        setShowMultiModel(true);
+        return;
+      case "creative":
+        setShowCreativeSynthesis(true);
+        return;
+      case "vision":
+      case "camera":
+        setShowVisualReasoning(true);
+        return;
+      case "image-decoder":
+        setShowImageDecoder(true);
+        return;
+      case "planner":
+        setShowDailyPlanner(true);
+        return;
+      case "eco":
+        setShowPlanetaryActions(true);
+        return;
+      case "screen-agent":
+        setShowScreenAgent(true);
+        return;
+      case "vision-agent":
+        setShowVisionAgent(true);
+        return;
+      case "cognitive-loop":
+        setCognitiveQuery(message.trim() || "Analyze this decision from multiple expert perspectives.");
+        setShowCognitiveLoop(true);
+        return;
+      case "memory":
+      case "memory-panel":
+      case "intelligence-hub":
+        setShowIntelligenceHub(true);
+        return;
+      case "bunker": {
+        const enabled = localStorage.getItem("shadowtalk_bunker_mode") === "true";
+        localStorage.setItem("shadowtalk_bunker_mode", enabled ? "false" : "true");
+        window.dispatchEvent(
+          new CustomEvent("shadowtalk-bunker-changed", { detail: { enabled: !enabled } }),
+        );
+        toast({
+          title: !enabled ? "Bunker mode enabled" : "Bunker mode disabled",
+          description: !enabled
+            ? "Background model downloads can run when configured in Profile."
+            : "Background downloads paused.",
+        });
+        return;
+      }
+      case "wordle":
+        setShowWordle(true);
+        return;
+      case "branching":
+        handleNewChat();
+        toast({
+          title: "New conversation branch",
+          description: "Started a fresh thread — explore an alternate path from here.",
+        });
+        return;
+      default:
+        toast({
+          title: "Try the chat tools menu",
+          description: "Open Tools (⊞) in the header for more actions.",
+        });
+    }
+  };
+
+  const [promptSuggestion, setPromptSuggestion] = useState("");
+  const chatInputProps = {
+    message,
+    onMessageChange: setMessage,
+    onSend: () => void handleSendMessage(),
+    onKeyPress: (e: React.KeyboardEvent) => e.key === "Enter" && void handleSendMessage(),
+    isLoading,
+    isListening,
+    onToggleVoice: () => setShowShadowTalkLive(true),
+    onOpenImageGenerator: () => setShowImageGenerator(true),
+    onStopGeneration: handleStopGeneration,
+    selectedFile,
+    onFileSelect: setSelectedFile,
+    chatMode,
+    onModeChange: setChatMode,
+    personality,
+    layout: "composer" as const,
+    aiProvider,
+    onProviderChange: handleProviderChange,
+    hasKeyForProvider,
+    promptSuggestion,
+    onPromptAccept: setMessage,
+    onPromptClear: () => setPromptSuggestion(""),
+  };
+
+  if (enterprise.needsWorkEmailSignIn) {
+    return (
+      <div className="shadowtalk-chat-shell neural-bg flex flex-col" style={{ height: "var(--vvh, 100dvh)" }}>
+        <SEOHead meta={PAGE_SEO.chatbot} structuredData={[...getFounderHomeStructuredData(), getChatbotFAQSchema(), getSpeakableSchema(["h1", "[data-speakable]"]), getWebSiteWithSearchSchema()]} />
+        <ChatAmbientBackground />
+        <EnterpriseEmployeeGate
+          tenant={enterprise.tenant}
+          orgName={enterprise.displayOrgName ?? "Your organization"}
         />
-
-        <div className="flex items-center gap-1 shrink-0">
-          {/* Voice toggle */}
-          <button
-            type="button"
-            onClick={onToggleVoice}
-            className={cn(
-              "h-8 w-8 flex items-center justify-center rounded-lg transition-colors",
-              isListening
-                ? "bg-emerald-500/20 text-emerald-400"
-                : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/60",
-            )}
-            aria-label={isListening ? "Stop listening" : "Voice input"}
-          >
-            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-              <line x1="12" x2="12" y1="19" y2="22" />
-            </svg>
-          </button>
-
-          {/* Send */}
-          <button
-            type="button"
-            onClick={onSend}
-            disabled={!canSend || isLoading}
-            className={cn(
-              "h-8 w-8 flex items-center justify-center rounded-lg transition-all duration-200",
-              canSend && !isLoading
-                ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
-                : "bg-zinc-800/60 text-zinc-600",
-            )}
-            aria-label="Send message"
-          >
-            <Send className="h-3.5 w-3.5" />
-          </button>
-        </div>
       </div>
-      <p className="text-[10px] text-zinc-600 text-center mt-2 select-none">
-        Enter to send &middot; Shift+Enter for new line
-      </p>
+    );
+  }
+
+  return (
+    <div className="shadowtalk-chat-shell neural-bg settings-scroll-smooth flex h-full min-h-0 flex-col overflow-hidden">
+      <SEOHead meta={PAGE_SEO.chatbot} structuredData={[...getFounderHomeStructuredData(), getChatbotFAQSchema(), getSpeakableSchema(["h1", "[data-speakable]"]), getWebSiteWithSearchSchema()]} />
+      <ChatAmbientBackground />
+      <motion.div
+        className="shadowtalk-chat-main flex w-full min-h-0 flex-1 relative overflow-hidden"
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={SETTINGS_SPRING}
+      >
+        <ChatShadowSidebar
+          userInitials={userInitials}
+          userDisplayName={userDisplayName}
+          onNewChat={handleNewChat}
+          onOpenHistory={() => setShowSidebar(true)}
+          collapsed={sidebarCollapsed}
+          onToggleCollapse={toggleSidebar}
+        />
+        <ChatIconRail
+          userInitials={userInitials}
+          onNewChat={handleNewChat}
+          onOpenHistory={() => setShowSidebar(true)}
+          onOpenTools={() => setToolsMenuOpen(true)}
+          onOpenSettings={() => navigate("/settings")}
+          onOpenNav={() => setShowMobileNav(true)}
+        />
+        <ChatMobileNavDrawer
+          open={showMobileNav}
+          onClose={() => setShowMobileNav(false)}
+          userInitials={userInitials}
+          userDisplayName={userDisplayName}
+          onNewChat={handleNewChat}
+          onOpenHistory={() => setShowSidebar(true)}
+        />
+        <AnimatePresence>
+          {showSidebar && (
+            <>
+              <motion.button
+                type="button"
+                aria-label="Close history"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="fixed top-0 right-0 bottom-0 z-40 bg-background/75 backdrop-blur-md"
+                style={{ left: historyPanelLeft }}
+                onClick={() => setShowSidebar(false)}
+              />
+              <motion.div
+                initial={{ x: -320, opacity: 0.6 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: -320, opacity: 0 }}
+                transition={SETTINGS_SPRING}
+                className="fixed top-0 bottom-0 z-50 shadow-elevated"
+                style={{ left: historyPanelLeft }}
+              >
+                <ConversationSidebar
+                  conversations={conversations}
+                  currentConversationId={currentConversationId}
+                  isArchived={conversationIsArchived}
+                  onCreateNew={handleNewChat}
+                  onSelect={(id) => {
+                    loadConversation(id);
+                    setShowSidebar(false);
+                  }}
+                  onDelete={handleDeleteConversation}
+                  onArchive={handleArchiveConversation}
+                  onUnarchive={handleUnarchiveConversation}
+                  onClearAll={handleClearAllChats}
+                  onClearCurrent={handleClearCurrentChat}
+                  onOpenSettings={() => {
+                    setShowSidebar(false);
+                    navigate("/settings");
+                  }}
+                  onOpenWorkspace={() => {
+                    setShowSidebar(false);
+                    navigate("/workspace");
+                  }}
+                  onClose={() => setShowSidebar(false)}
+                />
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+        <ChatMainPanel>
+          <div className="sticky top-0 z-30 shrink-0 bg-background/85 backdrop-blur-md border-b border-border/30">
+            <ChatHeader
+              variant="minimal"
+              userPlan={userPlan}
+              personality={personality}
+              onPersonalityChange={setPersonality}
+              onToggleSidebar={() => setShowSidebar(!showSidebar)}
+              onExport={handleExport}
+              onManageSubscription={() => navigate("/billing")}
+              onSignOut={signOut}
+              onOpenAnalytics={() => setShowAnalytics(true)}
+              onOpenScriptAutomation={() => navigate("/workspace?tab=automate")}
+              onOpenStealthVault={() => navigate("/security?tab=vault")}
+              onOpenAgentWorkflows={() => setShowAgentWorkflows(true)}
+              onOpenModelFineTuning={() => navigate("/personal-llm")}
+              onOpenWhiteLabelBranding={() => navigate("/enterprise")}
+              onOpenGeminiAnalytics={() => setShowGeminiAnalytics(true)}
+              onOpenCanvas={() => navigate("/ide")}
+              onOpenDeepResearch={() => setShowDeepResearch(true)}
+              onOpenGoogleIntegration={() => setShowGoogleIntegration(true)}
+              onOpenAgenticRunner={() => setShowAgenticRunner(true)}
+              onOpenVisualReasoning={() => setShowVisualReasoning(true)}
+              onOpenCreativeSynthesis={() => setShowCreativeSynthesis(true)}
+              onOpenImageGenerator={() => setShowImageGenerator(true)}
+              onOpenMusicGenerator={() => {
+                setMusicPrompt(message.trim());
+                setMusicAutoGenerate(false);
+                setShowMusicGenerator(true);
+              }}
+              onOpenShadowTalkLive={() => setShowShadowTalkLive(true)}
+              onOpenBrowser={() => setShowShadowBrowser(true)}
+              aiProvider={aiProvider}
+              onProviderChange={handleProviderChange}
+              hasKeyForProvider={hasKeyForProvider}
+              maxChats="∞"
+              dailyChats={messageCount}
+              toolsMenuOpen={toolsMenuOpen}
+              onToolsMenuOpenChange={setToolsMenuOpen}
+            />
+            {chatMode === "shadowspectre" && (
+              <div className="px-3 pb-2">
+                <ShadowSpectreScopeBar activeHead={shadowSpectreHead} />
+              </div>
+            )}
+          </div>
+          <motion.p
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, ...SETTINGS_SPRING }}
+            className="shadowtalk-chat-top-label hidden md:block"
+          >
+            {BRAND.tagline}
+          </motion.p>
+          <EnterpriseWelcomeBanner email={user?.email} displayName={userDisplayName} />
+          {!isProOrHigher && dailyLimits.isLoaded && (
+            <div className="px-3 pt-2 max-w-3xl mx-auto w-full">
+              <UsageLimitBanner currentUsage={dailyLimits.usage.messages} action="messages" />
+            </div>
+          )}
+          <AdBanner />
+          {enterprise.showInviteColleagues && enterprise.tenant && (
+            <EnterpriseInviteColleagues tenant={enterprise.tenant} />
+          )}
+          <ChatToolbar
+            hasActiveChat={hasActiveChat}
+            conversationCount={conversations.length}
+            onNewChat={handleNewChat}
+            onOpenHistory={() => setShowSidebar(true)}
+            onClearChat={handleClearCurrentChat}
+            onDeleteAllChats={handleClearAllChats}
+            encryptionActive={chatPrivate.active}
+            encryptionBusy={chatPrivate.busy}
+            onEnableEncryption={handleEnableChatEncryption}
+            onDisableEncryption={chatPrivate.disablePrivateMode}
+          />
+          <div className="hidden md:flex items-center justify-between gap-3 px-4 md:px-6 py-2 border-b border-border/20">
+            {!userContextLoading && (
+              <UserContextPanel
+                context={userContext}
+                onContextChange={setUserContext}
+                onSave={() => void saveUserContext(userContext)}
+              />
+            )}
+            <PerceptionDashboard onProactiveSuggestion={(suggestion) => setMessage(suggestion)} />
+          </div>
+          {chatPrivate.active && (
+            <motion.div
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mx-4 md:mx-6 mb-2 flex items-center justify-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-[11px] font-medium text-emerald-600 dark:text-emerald-400"
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+              </span>
+              End-to-end encrypted · Anonymous session
+            </motion.div>
+          )}
+          {!enterprise.hideMonetization && (
+            <ChatUpgradeNudge
+              open={nudge.shouldShowBanner && !nudgeDismissed}
+              intensity={nudge.intensity}
+              headline={nudge.headline}
+              subline={nudge.subline}
+              used={nudge.used}
+              limit={nudge.limit}
+              recommendedPlan={nudge.recommendedPlan}
+              onDismiss={() => setNudgeDismissed(true)}
+            />
+          )}
+          {!enterprise.hideReferralNudges && <ReferralNudgeBanner />}
+          {!enterprise.hideMonetization && (
+            <UpgradePrompt
+              open={upgradeOpen}
+              onOpenChange={setUpgradeOpen}
+              limitReached={nudge.shouldBlockSend}
+              requiredPlan="premium"
+            />
+          )}
+          <div className={`flex-1 min-h-0 relative flex flex-col ${isEmptyChat ? "overflow-y-auto" : "overflow-hidden"}`}>
+            <AnimatePresence mode="wait">
+              {isEmptyChat ? (
+                <motion.div
+                  key="home"
+                  initial={{ opacity: 0, scale: 0.98, filter: isMobile ? "blur(0px)" : "blur(6px)" }}
+                  animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                  exit={{ opacity: 0, scale: 0.99, filter: isMobile ? "blur(0px)" : "blur(4px)" }}
+                  transition={SETTINGS_SPRING}
+                  className="flex-1 flex flex-col justify-center min-h-0"
+                >
+                  
+                  <ChatEmptyState
+                    userDisplayName={userDisplayName}
+                    onSelectPrompt={handleQuickPrompt}
+                    apiConnectedLabel={
+                      hasVerifiedKey && aiConfig.useCustomKey
+                        ? `${aiConfig.preferredProvider} API connected`
+                        : null
+                    }
+                    composerDockStyle={inputDockStyle}
+                  >
+                    <ChatInput {...chatInputProps} isEmptyState />
+                  </ChatEmptyState>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="thread"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 8 }}
+                  transition={SETTINGS_SPRING}
+                  className="h-full flex flex-col overflow-hidden"
+                >
+                  {activeMarketplaceAgent && marketplaceRuntimeRef.current && (
+                    <MarketplaceAgentBanner
+                      agentName={activeMarketplaceAgent.name}
+                      runtime={marketplaceRuntimeRef.current}
+                      onClear={clearMarketplaceAgentSession}
+                      onStarterSelect={(p) => setMessage(p)}
+                    />
+                  )}
+                  <ChatMessages
+                    messages={messages}
+                    isLoading={isLoading}
+                    showSuggestions={false}
+                    personality={personality}
+                    userPlan={userPlan}
+                    speakingMessageId={speakingMessageId}
+                    isSpeaking={isSpeaking}
+                    onSelectPrompt={handleQuickPrompt}
+                    onEdit={handleEditMessage}
+                    onRegenerate={handleRegenerateMessage}
+                    onTextToSpeech={speakMessage}
+                    onOpenCodeCanvas={(code, language) => {
+                      saveIdePayload({ code, language: language || "javascript" });
+                      navigate("/ide");
+                    }}
+                    onOpenIDE={(code, language) => {
+                      saveIdePayload({ code, language });
+                      navigate("/ide");
+                    }}
+                    onLaunchWebsite={(code) => {
+                      saveIdePayload({ code, language: "html", openPreview: true });
+                      navigate("/ide");
+                    }}
+                    onOpenInBrowser={(url) => {
+                      if (url) window.open(url, "_blank", "noopener,noreferrer");
+                      else setShowShadowBrowser(true);
+                    }}
+                    onShareReply={(content) => openChatShare(content)}
+                    enterpriseShare={enterprise.isEnterpriseUser}
+                    includeReferralInShare={enterprise.includeReferralInShare}
+                    onConfirmTool={handleConfirmTool}
+                    messagesEndRef={messagesEndRef}
+                    layout="gemini"
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+          {!isEmptyChat && (
+            <>
+              {enterprise.allowProductSharing && (
+                <ShareWinBanner
+                  visible={Boolean(chatShareOffer && !chatShareDialogOpen)}
+                  title={chatShareOffer?.title ?? ""}
+                  subtitle={chatShareOffer?.subtitle}
+                  referralCode={enterprise.includeReferralInShare ? referralCode : null}
+                  colleagueMode={enterprise.isEnterpriseUser}
+                  orgName={enterprise.tenant?.name ?? enterprise.displayOrgName ?? undefined}
+                  onOpenShareDialog={() => setChatShareDialogOpen(true)}
+                  onDismiss={() => setChatShareOffer(null)}
+                />
+              )}
+              {(chatMission.mission || activeMission || isMissionExecuting) && (
+                <div className="px-4 md:px-6 pb-2 max-w-4xl mx-auto w-full">
+                  <SEEMissionPanel
+                    mission={chatMission.mission || activeMission}
+                    isExecuting={isMissionExecuting}
+                    pendingApproval={pendingApproval}
+                    onApprove={() => void approveChatMissionStep()}
+                    onReject={() => void rejectPendingStep()}
+                    onCancel={() => void cancelExecution()}
+                    onOpenFullControl={() => navigate("/execute")}
+                    compact
+                  />
+                </div>
+              )}
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={SETTINGS_SPRING}
+                className="shadowtalk-chat-input-dock shrink-0"
+                style={inputDockStyle}
+              >
+                <div className="shadowtalk-chat-input-shell w-full">
+                  <ChatInput {...chatInputProps} />
+                </div>
+              </motion.div>
+            </>
+          )}
+          <ShareResultDialog
+            open={chatShareDialogOpen}
+            onOpenChange={(open) => {
+              setChatShareDialogOpen(open);
+              if (!open) {
+                setChatShareOffer(null);
+                setChatShareCustomLink(null);
+              }
+            }}
+            kind="chat"
+            title={chatShareOffer?.title ?? "Built with ShadowTalk AI"}
+            subtitle={chatShareOffer?.subtitle}
+            referralCode={enterprise.includeReferralInShare ? referralCode : null}
+            colleagueMode={enterprise.isEnterpriseUser}
+            orgName={enterprise.tenant?.name ?? enterprise.displayOrgName ?? undefined}
+            customLink={chatShareCustomLink ?? undefined}
+          />
+        </ChatMainPanel>
+      {showImageGenerator && <ImageGenerator onClose={() => setShowImageGenerator(false)} onImageGenerated={(url) => setMessages(prev => [...prev, { id: crypto.randomUUID(), type: 'ai', content: '🎨 Generated image', timestamp: new Date(), imageUrl: url }])} />}
+      <MusicGenerator
+        isOpen={showMusicGenerator}
+        onClose={() => {
+          setShowMusicGenerator(false);
+          setMusicAutoGenerate(false);
+        }}
+        initialPrompt={musicPrompt}
+        autoGenerate={musicAutoGenerate}
+        onInsertToChat={(content) => {
+          insertAssistantToChat(content);
+          setShowMusicGenerator(false);
+        }}
+      />
+      <WordleGame isOpen={showWordle} onClose={() => setShowWordle(false)} />
+      <GoogleIntegrationPanel
+        isOpen={showGoogleIntegration}
+        onClose={() => setShowGoogleIntegration(false)}
+        onImportContent={(content, source) => {
+          insertAssistantToChat(`**Imported from ${source}**\n\n${content}`);
+          setShowGoogleIntegration(false);
+        }}
+      />
+      {showDeepResearch && <DeepResearchPanel isOpen={showDeepResearch} onClose={() => setShowDeepResearch(false)} onInsertToChat={(c) => setMessages(prev => [...prev, { id: crypto.randomUUID(), type: 'ai', content: c, timestamp: new Date() }])} />}
+      {showCognitiveLoop && (
+        <CognitiveLoopPanel
+          isOpen={showCognitiveLoop}
+          onClose={() => setShowCognitiveLoop(false)}
+          initialQuery={cognitiveQuery}
+          onResult={(result) => {
+            setMessages((prev) => [
+              ...prev,
+              {
+                id: crypto.randomUUID(),
+                type: "ai",
+                content: result,
+                timestamp: new Date(),
+                toolExecution: {
+                  tool: "cognitive_loop",
+                  status: "complete",
+                  result: "Multi-agent synthesis",
+                },
+              },
+            ]);
+            if (user && currentConversationId) {
+              void saveMessage(result, "assistant", currentConversationId).catch(() => {});
+            }
+            learnFromTurn(cognitiveQuery, result, currentConversationId ?? "");
+            setShowCognitiveLoop(false);
+          }}
+        />
+      )}
+      {showOfflineTools && (
+        <OfflineToolsPanel
+          isOpen={showOfflineTools}
+          onClose={() => setShowOfflineTools(false)}
+          onInsertToChat={(text) => {
+            setMessage(text);
+            setShowOfflineTools(false);
+            toast({ title: "Inserted into chat", description: "Edit the prompt and send when ready." });
+          }}
+        />
+      )}
+      {showMultiModel && (
+        <MultiModelOrchestrator
+          isOpen={showMultiModel}
+          onClose={() => setShowMultiModel(false)}
+          onResult={(result) => {
+            insertAssistantToChat(result);
+            setShowMultiModel(false);
+          }}
+          initialPrompt={message}
+        />
+      )}
+      {showCreativeSynthesis && (
+        <CreativeSynthesis
+          isOpen={showCreativeSynthesis}
+          onClose={() => setShowCreativeSynthesis(false)}
+          onInsertToChat={(c) => {
+            insertAssistantToChat(c);
+            setShowCreativeSynthesis(false);
+          }}
+          initialPrompt={message}
+        />
+      )}
+      {showVisualReasoning && (
+        <VisualReasoning
+          isOpen={showVisualReasoning}
+          onClose={() => setShowVisualReasoning(false)}
+          onInsertToChat={(c) => {
+            insertAssistantToChat(c);
+            setShowVisualReasoning(false);
+          }}
+        />
+      )}
+      {showImageDecoder && (
+        <ImageDecoder
+          onClose={() => setShowImageDecoder(false)}
+          onDecoded={(analysis) => {
+            insertAssistantToChat(analysis);
+            setShowImageDecoder(false);
+          }}
+          initialImage={selectedFile?.type === "image" ? selectedFile.data : undefined}
+          autoAnalyze={Boolean(selectedFile?.type === "image")}
+        />
+      )}
+      {showDailyPlanner && (
+        <DailyPlanner
+          isOpen={showDailyPlanner}
+          onClose={() => setShowDailyPlanner(false)}
+          onPlanGenerated={(plan) => {
+            insertAssistantToChat(plan);
+            setShowDailyPlanner(false);
+          }}
+        />
+      )}
+      <PlanetaryActionModal
+        isOpen={showPlanetaryActions}
+        onClose={() => setShowPlanetaryActions(false)}
+      />
+      <ScreenAgent
+        isOpen={showScreenAgent}
+        onClose={() => setShowScreenAgent(false)}
+        onSendToChat={(text) => {
+          setMessage(text);
+          setShowScreenAgent(false);
+        }}
+      />
+      <VisionAgentModal
+        isOpen={showVisionAgent}
+        onClose={() => setShowVisionAgent(false)}
+        onMessage={(text, isProactive) => {
+          if (isProactive) {
+            insertAssistantToChat(text);
+          } else {
+            setMessage(text);
+          }
+        }}
+      />
+      {showIntelligenceHub && (
+        <IntelligenceHub isOpen={showIntelligenceHub} onClose={() => setShowIntelligenceHub(false)} />
+      )}
+      {showKnowledgeVault && (
+        <KnowledgeVault isOpen={showKnowledgeVault} onClose={() => setShowKnowledgeVault(false)} />
+      )}
+      {showBrowseActivity && browseSession && (
+        <BrowseActivityPanel
+          isOpen={showBrowseActivity}
+          onClose={() => {
+            setShowBrowseActivity(false);
+            closeBrowseSession();
+          }}
+          session={browseSession}
+          onResultReady={(result) => {
+            insertAssistantToChat(result);
+            setShowBrowseActivity(false);
+            closeBrowseSession();
+          }}
+        />
+      )}
+      <CommandPalette open={showCommandPalette} onOpenChange={setShowCommandPalette} onAction={handleCommandAction} />
+      {showShadowTalkLive && (
+        <Suspense fallback={null}>
+          <ShadowTalkLive
+            isOpen={showShadowTalkLive}
+            onClose={() => setShowShadowTalkLive(false)}
+            onInsertToChat={(content) => setMessage(content)}
+          />
+        </Suspense>
+      )}
+      {showShadowBrowser && (
+        <Suspense fallback={null}>
+          <ShadowBrowser
+            isOpen={showShadowBrowser}
+            onClose={() => setShowShadowBrowser(false)}
+            onInsertToChat={(content) => setMessage(content)}
+          />
+        </Suspense>
+      )}
+      <ByokProviderKeyDialog
+        open={byokDialogOpen}
+        onOpenChange={setByokDialogOpen}
+        provider={pendingByokProvider}
+        onSaved={handleByokSaved}
+      />
+      {enterprise.showOnboarding && enterprise.tenant && (
+        <EnterpriseOnboarding tenant={enterprise.tenant} />
+      )}
+      {enterprise.showHelpFab && enterprise.tenant && (
+        <EnterpriseHelpFab tenant={enterprise.tenant} />
+      )}
+      <ShadowSpectrePanel
+        open={showShadowSpectrePanel}
+        onClose={() => setShowShadowSpectrePanel(false)}
+      />
+      <ShadowSpectreTermsDialog
+        open={showShadowSpectreTerms}
+        onAccepted={() => setShowShadowSpectreTerms(false)}
+        onDecline={() => {
+          setShowShadowSpectreTerms(false);
+          if (chatMode === "shadowspectre") setChatMode("general");
+        }}
+      />
+      <AgenticTaskRunner
+        isOpen={showAgenticRunner}
+        onClose={() => setShowAgenticRunner(false)}
+        onTaskComplete={(result) => {
+          insertAssistantToChat(result);
+          setShowAgenticRunner(false);
+        }}
+      />
+      <AIAgentWorkflows
+        isOpen={showAgentWorkflows}
+        onClose={() => setShowAgentWorkflows(false)}
+        onResult={(result) => {
+          insertAssistantToChat(result);
+          setShowAgentWorkflows(false);
+        }}
+      />
+      {showAnalytics && (
+        <AnalyticsDashboard
+          onClose={() => setShowAnalytics(false)}
+          messageCount={messages.length}
+          conversationCount={conversations.length}
+        />
+      )}
+      {showGeminiAnalytics && (
+        <GeminiKeyAnalytics onClose={() => setShowGeminiAnalytics(false)} />
+      )}
+      <DataOrganizer
+        isOpen={showDataOrganizer}
+        onClose={() => setShowDataOrganizer(false)}
+        onOrganize={(input, output) => {
+          insertAssistantToChat(`**Organized data**\n\n${output}`);
+          setShowDataOrganizer(false);
+        }}
+      />
+      <UncensoredArena
+        open={showUncensoredArena}
+        onClose={() => setShowUncensoredArena(false)}
+      />
+      <ShadowCowork
+        isOpen={showShadowCowork}
+        onClose={() => setShowShadowCowork(false)}
+        onInsertToChat={(content) => {
+          setMessage(content);
+          setShowShadowCowork(false);
+        }}
+      />
+      <SignInPrompt
+        open={showSignInPrompt}
+        onOpenChange={setShowSignInPrompt}
+        reason={signInPromptReason}
+        usedCount={guestUsage.usage?.chats}
+        limitCount={GUEST_LIMITS.chats}
+      />
+      <InterimCloudConsentDialog
+        open={showInterimCloudConsent}
+        onOpenChange={setShowInterimCloudConsent}
+        isDownloading={!localModelReady}
+        onUseCloudUntilReady={() => {
+          setInterimCloudConsent(true);
+          setShowInterimCloudConsent(false);
+          toast({ title: "Cloud AI enabled", description: "Temporary until your on-device model is ready." });
+        }}
+        onGoToDownload={() => {
+          setShowInterimCloudConsent(false);
+          navigate("/settings?section=offline");
+        }}
+        onStayDeviceOnly={() => setShowInterimCloudConsent(false)}
+      />
+      </motion.div>
+      <FounderCrawlStrip />
     </div>
   );
-}
+};
+export default ChatbotPage;
