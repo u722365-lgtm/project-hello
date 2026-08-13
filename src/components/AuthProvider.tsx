@@ -103,16 +103,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (local?.user) {
         clearExplicitSignOut();
         saveLocalUser(local.user.email || '', local.user.id);
-        void syncProfileToFirestore(local.user.id, {
+        void syncProfile(local.user.id, {
           email: local.user.email || undefined,
           display_name: (local.user.user_metadata as any)?.display_name || undefined,
         });
-        void setOnlinePresence(local.user.id, {
-          uid: local.user.id,
-          email: local.user.email || undefined,
-          current_page: window.location.pathname,
-        });
         void checkSubscription();
+
       } else {
         setUserPlan('free');
         setSubscribed(false);
