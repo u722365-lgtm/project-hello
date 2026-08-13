@@ -1,458 +1,516 @@
-import { useState, useEffect, lazy, Suspense, createContext } from "react";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import FeedbackAutoPrompt from "@/components/FeedbackAutoPrompt";
-import MobileViewportFix from "@/components/MobileViewportFix";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
-import { AnimatePresence } from "framer-motion";
-import { PageTransition } from "@/components/PageTransition";
-import { PageLoader } from "@/components/PageLoader";
-import { SiteMotionProvider } from "@/components/motion/SiteMotionProvider";
-import SitePageShell from "@/components/motion/SitePageShell";
-import GlobalScrollReveal from "@/components/motion/GlobalScrollReveal";
-import { ThemeProvider } from "next-themes";
-import { AuthProvider } from "@/components/AuthProvider";
-import { SecurityProvider } from "@/components/SecurityProvider";
-import { ShadowMemoryProvider } from "@/contexts/ShadowMemoryContext";
-import { AutoImproveProvider } from "@/contexts/AutoImproveContext";
-import { ThemeTemplateProvider } from "@/contexts/ThemeTemplateContext";
-import { StealthKillSwitchProvider } from "@/contexts/StealthKillSwitchContext";
-import ErrorBoundary from "@/components/ErrorBoundary";
-import BootScreen from "@/components/BootScreen";
-import { shouldSkipBootScreen } from "@/lib/skipBootScreen";
-import { ensureDeviceOnlyPledgeDefaults } from "@/lib/privacy/deviceOnlyPledge";
+import { useState, useCallback, useRef, type DragEvent } from "react";
+import { scanCode, scanFiles, type ScanResult, type Vulnerability } from "./lib/security/ShadowScanEngine";
+import {
+  Shield,
+  ShieldAlert,
+  ShieldCheck,
+  AlertTriangle,
+  AlertCircle,
+  Info,
+  Copy,
+  Check,
+  Zap,
+  Upload,
+  FileCode,
+  XCircle,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  Bug,
+  Key,
+  Terminal,
+} from "lucide-react";
 
-ensureDeviceOnlyPledgeDefaults();
-import CommandPalette from "@/components/CommandPalette";
-import { BackToHomeButton } from "@/components/BackToHomeButton";
-import { useReferralCapture } from "./hooks/useReferralTracking";
-import PersistedAuthRedirect from "@/components/PersistedAuthRedirect";
-import WorkspacePathRemember from "@/components/WorkspacePathRemember";
-import { GrowthBanners } from "@/components/GrowthBanners";
-import { OAuthReturnHandler } from "@/components/OAuthReturnHandler";
-import { OAuthRedirectHandler } from "@/components/OAuthRedirectHandler";
+// ─── Severity Config ────────────────────────────────────────────────────────────
 
+const SEVERITY_CONFIG = {
+  critical: { color: "text-red-400", bg: "bg-red-500/15 border-red-500/30", badge: "bg-red-500 text-white", icon: XCircle, label: "CRITICAL" },
+  high: { color: "text-orange-400", bg: "bg-orange-500/15 border-orange-500/30", badge: "bg-orange-500 text-white", icon: AlertTriangle, label: "HIGH" },
+  medium: { color: "text-yellow-400", bg: "bg-yellow-500/15 border-yellow-500/30", badge: "bg-yellow-500 text-white", icon: AlertCircle, label: "MEDIUM" },
+  low: { color: "text-blue-400", bg: "bg-blue-500/15 border-blue-500/30", badge: "bg-blue-500 text-white", icon: Info, label: "LOW" },
+  info: { color: "text-zinc-400", bg: "bg-zinc-500/15 border-zinc-500/30", badge: "bg-zinc-500 text-white", icon: Info, label: "INFO" },
+} as const;
 
-export const CommandPaletteContext = createContext<{ open: () => void }>({ open: () => {} });
- // Critical path pages - loaded immediately
- import Index from "./pages/Index";
- import RootRoute from "@/components/RootRoute";
- import AuthPage from "./pages/AuthPage";
- import AuthDesignGalleryPage from "./pages/AuthDesignGalleryPage";
- import AuthDesignPreviewPage from "./pages/AuthDesignPreviewPage";
- const BackendFlowsPage = lazy(() => import("./pages/BackendFlowsPage"));
- const NotFound = lazy(() => import("./pages/NotFound"));
- const SharedAnswerPage = lazy(() => import("./pages/SharedAnswerPage"));
-const SharedMissionPage = lazy(() => import("./pages/SharedMissionPage"));
- import SessionsPage from "./pages/SessionsPage";
- import SelfHealingPage from "./pages/SelfHealingPage";
- import { SelfHealingProvider } from "./components/selfHealing/SelfHealingProvider";
-import { NotificationPermissionRequester } from "@/components/notifications/NotificationPermissionRequester";
-import { UpdateNotificationProvider } from "@/components/notifications/UpdateNotificationProvider";
-import { AutonomousAgentEngine } from "@/components/autonomy/AutonomousAgentEngine";
-import { MissionSchedulerEngine } from "@/components/autonomy/MissionSchedulerEngine";
-import { ScriptSchedulerEngine } from "@/components/autonomy/ScriptSchedulerEngine";
-import { GoalPursuitEngine } from "@/components/autonomy/GoalPursuitEngine";
-import { SelfHealingErrorBoundary } from "@/components/selfHealing/SelfHealingErrorBoundary";
-import { NetworkTransitionOverlay } from "@/components/chat/NetworkTransitionOverlay";
-import { PushIntelligencePanel } from "@/components/chat/PushIntelligencePanel";
-import GlobalMaintenanceNotice from "@/components/GlobalMaintenanceNotice";
- 
- // Lazy loaded pages - code splitting for better performance
- const PricingPage = lazy(() => import("./pages/PricingPage"));
- const ChatbotPage = lazy(() => import("./pages/ChatbotPage"));
- const AdminPage = lazy(() => import("./pages/AdminPage"));
- const DocsPage = lazy(() => import("./pages/DocsPage"));
- const ChangelogPage = lazy(() => import("./pages/ChangelogPage"));
- const ChatRoomsPage = lazy(() => import("./pages/ChatRoomsPage"));
- const CollaborativeRoom = lazy(() => import("./pages/CollaborativeRoom"));
- const ProfilePage = lazy(() => import("./pages/ProfilePage"));
- const SettingsPage = lazy(() => import("./pages/SettingsPage"));
- const APIPage = lazy(() => import("./pages/APIPage"));
- const EnterpriseSettingsPage = lazy(() => import("./pages/EnterpriseSettingsPage"));
- const LocalModelsPage = lazy(() => import("./pages/LocalModelsPage"));
- const PrivateAiHubPage = lazy(() => import("./pages/PrivateAiHubPage"));
- const AboutPage = lazy(() => import("./pages/AboutPage"));
-const TeamPage = lazy(() => import("./pages/TeamPage"));
-const AbdulRaufPage = lazy(() => import("./pages/AbdulRaufPage"));
-const MuhammadUmarPage = lazy(() => import("./pages/MuhammadUmarPage"));
-const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage"));
-const RolloutPlanPage = lazy(() => import("./pages/RolloutPlanPage"));
-const StockScenariosPage = lazy(() => import("./pages/StockScenariosPage"));
- const HelpCenterPage = lazy(() => import("./pages/HelpCenterPage"));
- const FAQPage = lazy(() => import("./pages/FAQPage"));
- const ContactPage = lazy(() => import("./pages/ContactPage"));
- const StatusPage = lazy(() => import("./pages/StatusPage"));
- const BlogPage = lazy(() => import("./pages/BlogPage"));
- const CareersPage = lazy(() => import("./pages/CareersPage"));
- const PressPage = lazy(() => import("./pages/PressPage"));
- const FactsPage = lazy(() => import("./pages/FactsPage"));
-const AnswersPage = lazy(() => import("./pages/AnswersPage"));
-const ZainAhmedPage = lazy(() => import("./pages/ZainAhmedPage"));
-const VsPage = lazy(() => import("./pages/VsPage"));
-const DiscoverPage = lazy(() => import("./pages/DiscoverPage"));
-const LearnTopicPage = lazy(() => import("./pages/LearnTopicPage"));
-const GoogleSeoHubPage = lazy(() => import("./pages/GoogleSeoHubPage"));
-const WedgeLandingPage = lazy(() => import("./pages/WedgeLandingPage"));
-const CaseStudiesPage = lazy(() => import("./pages/CaseStudiesPage"));
-const PartnershipsPage = lazy(() => import("./pages/PartnershipsPage"));
- const ComputerModePage = lazy(() => import("./pages/ComputerModePage"));
- const PrivacyPolicyPage = lazy(() => import("./pages/PrivacyPolicyPage"));
- const TermsOfServicePage = lazy(() => import("./pages/TermsOfServicePage"));
- const CookiePolicyPage = lazy(() => import("./pages/CookiePolicyPage"));
- const GDPRPage = lazy(() => import("./pages/GDPRPage"));
- const MonetizationPage = lazy(() => import("./pages/MonetizationPage"));
- const FounderAccessPage = lazy(() => import("./pages/FounderAccessPage"));
- const StrategyAgentPage = lazy(() => import("./pages/StrategyAgentPage"));
-  const IdePage = lazy(() => import("./pages/IdePage"));
-  const MarketplacePage = lazy(() => import("./pages/MarketplacePage"));
-  const DevelopersPage = lazy(() => import("./pages/DevelopersPage"));
-  const ContentForgePage = lazy(() => import("./pages/ContentForgePage"));
-  const VideoStudioPage = lazy(() => import("./pages/VideoStudioPage"));
-  const WorkspaceHubPage = lazy(() => import("./pages/WorkspaceHubPage"));
-  const ResearchHubPage = lazy(() => import("./pages/ResearchHubPage"));
-  const InsightsHubPage = lazy(() => import("./pages/InsightsHubPage"));
-  const MemoryPage = lazy(() => import("./pages/MemoryPage"));
-  const ShadowMemoryPage = lazy(() => import("./pages/ShadowMemoryPage"));
-  const BusinessMemoryPage = lazy(() => import("./pages/BusinessMemoryPage"));
-  const MemoryDashboard = lazy(() => import("@/components/memory/MemoryDashboard"));
-  const SecurityHubPage = lazy(() => import("./pages/SecurityHubPage"));
-   const MissionControlPage = lazy(() => import("./pages/MissionControlPage"));
- const ExecutePage = lazy(() => import("./pages/ExecutePage"));
-   const ReferralPage = lazy(() => import("./pages/ReferralPage"));
-const StrategyLabPage = lazy(() => import("./pages/StrategyLabPage"));
-const SovereignDataPage = lazy(() => import("./pages/SovereignDataPage"));
-const SovereignWalletPage = lazy(() => import("./pages/SovereignWalletPage"));
-const GhostAdsPage = lazy(() => import("./pages/GhostAdsPage"));
-const EnterpriseLicensePage = lazy(() => import("./pages/EnterpriseLicensePage"));
-const TransparencyPage = lazy(() => import("./pages/TransparencyPage"));
-const CommandCenterPage = lazy(() => import("./pages/CommandCenterPage"));
-const CompetitivePage = lazy(() => import("./pages/CompetitivePage"));
-const ComparisonDetailPage = lazy(() => import("./pages/ComparisonDetailPage"));
-const AgentArchitecturePage = lazy(() => import("./pages/AgentArchitecturePage"));
-const ComplianceDashboardPage = lazy(() => import("./pages/ComplianceDashboardPage"));
-const AutoImproveEngine = lazy(() => import("@/components/autoImprove/AutoImproveEngine"));
-const PersonalLLMPage = lazy(() => import("./pages/PersonalLLMPage"));
-const PromptsPage = lazy(() => import("./pages/PromptsPage"));
-const PrivacyCheckerPage = lazy(() => import("./pages/PromptPrivacyCheckerPage"));
-const TemplatesPage = lazy(() => import("./pages/TemplatesPage"));
-const DownloadsPage = lazy(() => import("./pages/DownloadsPage"));
-const WhatsAppContactsPage = lazy(() => import("./pages/WhatsAppContactsPage"));
-const PWABanner = lazy(() => import("./components/PWABanner"));
-const CookieConsent = lazy(() => import("./components/CookieConsent"));
-const CustomerSupportWidget = lazy(() => import("./components/CustomerSupportWidget"));
-const ShadowMemoryTracker = lazy(() => import("./components/ShadowMemoryTracker"));
-const JourneyTracker = lazy(() => import("./components/JourneyTracker").then(m => ({ default: m.JourneyTracker })));
-const VoiceCommandSystem = lazy(() => import("./components/VoiceCommandSystem"));
-const ShadowHealEngine = lazy(() =>
-  import("./components/shadowHeal/ShadowHealEngine").then((m) => ({ default: m.ShadowHealEngine })),
-);
-const ShadowScaleEngine = lazy(() =>
-  import("./components/shadowScale/ShadowScaleEngine").then((m) => ({ default: m.ShadowScaleEngine })),
-);
-const OfflineBootstrapBanner = lazy(() =>
-  import("./components/offline/OfflineBootstrapBanner").then((m) => ({ default: m.OfflineBootstrapBanner })),
-);
-const OnboardingFlow = lazy(() => import("./components/OnboardingFlow"));
-// ElevenLabs Agent ID is now configured via the backend secret ELEVENLABS_AGENT_ID
+// ─── App ───────────────────────────────────────────────────────────────────────
 
- // Configure React Query with production-ready settings
- const queryClient = new QueryClient({
-   defaultOptions: {
-     queries: {
-       staleTime: 1000 * 60 * 5, // 5 minutes
-       gcTime: 1000 * 60 * 30, // 30 minutes (formerly cacheTime)
-       retry: (failureCount, error: unknown) => {
-         // Don't retry on 4xx errors except 429
-         if (error && typeof error === 'object' && 'status' in error) {
-           const status = (error as { status: number }).status;
-           if (status >= 400 && status < 500 && status !== 429) {
-             return false;
-           }
-         }
-         return failureCount < 3;
-       },
-       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-     },
-     mutations: {
-       retry: false,
-     },
-   },
- });
- 
+function App() {
+  const [code, setCode] = useState("");
+  const [result, setResult] = useState<ScanResult | null>(null);
+  const [isScanning, setIsScanning] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [expandedVuln, setExpandedVuln] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-const AnimatedRoutes = () => {
-  const location = useLocation();
-  useReferralCapture();
-  return (
-    <Suspense fallback={<PageLoader />}>
-      <AnimatePresence mode="wait">
-        <Routes location={location} key={location.pathname}>
-          <Route path="/" element={<Navigate to="/home" replace />} />
-          <Route path="/home" element={<PageTransition><RootRoute /></PageTransition>} />
-          <Route path="/auth" element={<PageTransition><AuthPage /></PageTransition>} />
-          <Route path="/auth/designs" element={<PageTransition><AuthDesignGalleryPage /></PageTransition>} />
-          <Route path="/auth/preview/:designId" element={<PageTransition><AuthDesignPreviewPage /></PageTransition>} />
-          <Route path="/pricing" element={<PageTransition><PricingPage /></PageTransition>} />
-          {/* Chat workspace: no PageTransition — avoids opacity-0 flash and flex height collapse */}
-          <Route path="/chatbot" element={<Suspense fallback={<PageLoader />}><ChatbotPage /></Suspense>} />
-          <Route path="/s/:slug" element={<Suspense fallback={<PageLoader />}><SharedAnswerPage /></Suspense>} />
-          <Route path="/mission/:id" element={<PageTransition><SharedMissionPage /></PageTransition>} />
-          <Route path="/flows" element={<PageTransition><BackendFlowsPage /></PageTransition>} />
-          <Route path="/whatsapp" element={<PageTransition><WhatsAppContactsPage /></PageTransition>} />
-          <Route path="/admin" element={<PageTransition><AdminPage /></PageTransition>} />
-          <Route path="/docs" element={<PageTransition><DocsPage /></PageTransition>} />
-          <Route path="/changelog" element={<PageTransition><ChangelogPage /></PageTransition>} />
-          <Route path="/rooms" element={<PageTransition><ChatRoomsPage /></PageTransition>} />
-          <Route path="/rooms/:roomId" element={<PageTransition><CollaborativeRoom /></PageTransition>} />
-          <Route path="/profile" element={<PageTransition><ProfilePage /></PageTransition>} />
-          <Route path="/settings" element={<PageTransition><SettingsPage /></PageTransition>} />
-          <Route path="/api" element={<PageTransition><APIPage /></PageTransition>} />
-          <Route path="/insights" element={<PageTransition><InsightsHubPage /></PageTransition>} />
-          <Route path="/analytics" element={<Navigate to="/insights?tab=usage" replace />} />
-          <Route path="/data-insights" element={<Navigate to="/insights?tab=behavior" replace />} />
-          <Route path="/shadow-memory" element={<Navigate to="/insights?tab=activity" replace />} />
-          <Route path="/memory" element={<PageTransition><MemoryPage /></PageTransition>} />
-          <Route path="/enterprise" element={<PageTransition><EnterpriseSettingsPage /></PageTransition>} />
-          <Route path="/about" element={<PageTransition><AboutPage /></PageTransition>} />
-          <Route path="/team" element={<PageTransition><TeamPage /></PageTransition>} />
-          <Route path="/help" element={<PageTransition><HelpCenterPage /></PageTransition>} />
-          <Route path="/faq" element={<PageTransition><FAQPage /></PageTransition>} />
-          <Route path="/contact" element={<PageTransition><ContactPage /></PageTransition>} />
-          <Route path="/status" element={<PageTransition><StatusPage /></PageTransition>} />
-          <Route path="/blog" element={<PageTransition><BlogPage /></PageTransition>} />
-          <Route path="/careers" element={<PageTransition><CareersPage /></PageTransition>} />
-          <Route path="/press" element={<PageTransition><PressPage /></PageTransition>} />
-          <Route path="/facts" element={<PageTransition><FactsPage /></PageTransition>} />
-          <Route path="/answers" element={<PageTransition><AnswersPage /></PageTransition>} />
-          <Route path="/zain-ahmed-fahad-patel" element={<PageTransition><ZainAhmedPage /></PageTransition>} />
-          <Route path="/zain-ahmed" element={<Navigate to="/zain-ahmed-fahad-patel" replace />} />
-          <Route path="/founder" element={<Navigate to="/zain-ahmed-fahad-patel" replace />} />
-          <Route path="/discover" element={<PageTransition><DiscoverPage /></PageTransition>} />
-          <Route path="/google-seo" element={<PageTransition><GoogleSeoHubPage /></PageTransition>} />
-          <Route path="/learn/:slug" element={<PageTransition><LearnTopicPage /></PageTransition>} />
-          <Route path="/vs/:slug" element={<PageTransition><VsPage /></PageTransition>} />
-          <Route path="/ai-strategy-consultant" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
-          <Route path="/ai-business-planner" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
-          <Route path="/ai-marketing-planner" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
-          <Route path="/anonymous-ai" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
-          <Route path="/private-ai-no-training" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
-          <Route path="/no-login-ai-chat" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
-          <Route path="/multilingual-ai" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
-          <Route path="/best-ai-non-english" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
-          <Route path="/ai-translation-chat" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
-          <Route path="/support/20-languages" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
-          <Route path="/translator/ai-chat-translator" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
-          <Route path="/case-study-ai-strategy-psf" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
-          <Route path="/zain-ahmed-fahad-patel-founder" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
-          <Route path="/pricing/team-enterprise" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
-          <Route path="/pricing/co-marketing" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
-          <Route path="/partnerships/notion-integration" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
-          <Route path="/partnerships/slack-bot" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
-          <Route path="/partnerships/complementary-tools" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
-          <Route path="/docs/geos" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
-          <Route path="/resources/strategy-planner" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
-          <Route path="/resources/code-snippets" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
-          <Route path="/resources/meme-pack" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
-          <Route path="/resources/privacy-checklist" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
-          <Route path="/review-platforms/g2-listing" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
-          <Route path="/review-platforms/capterra-listing" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
-          <Route path="/review-platforms/producthunt-listing" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
-          <Route path="/review-platforms/review-ask-email" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
-          <Route path="/referral/activation-guide" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
-          <Route path="/referral/social-share-templates" element={<PageTransition><WedgeLandingPage /></PageTransition>} />
-          <Route path="/case-studies" element={<PageTransition><CaseStudiesPage /></PageTransition>} />
-          <Route path="/partnerships" element={<PageTransition><PartnershipsPage /></PageTransition>} />
-          <Route path="/computer" element={<PageTransition><ComputerModePage /></PageTransition>} />
-          <Route path="/privacy" element={<PageTransition><PrivacyPolicyPage /></PageTransition>} />
-          <Route path="/terms" element={<PageTransition><TermsOfServicePage /></PageTransition>} />
-          <Route path="/cookies" element={<PageTransition><CookiePolicyPage /></PageTransition>} />
-          <Route path="/gdpr" element={<PageTransition><GDPRPage /></PageTransition>} />
-          <Route path="/billing" element={<PageTransition><MonetizationPage /></PageTransition>} />
-          <Route path="/founder-access" element={<PageTransition><FounderAccessPage /></PageTransition>} />
-          <Route path="/lifetime-deal" element={<Navigate to="/pricing" replace />} />
-          <Route path="/execute" element={<PageTransition><ExecutePage /></PageTransition>} />
-          <Route path="/strategy" element={<PageTransition><StrategyAgentPage /></PageTransition>} />
-          <Route path="/workspace" element={<PageTransition><WorkspaceHubPage /></PageTransition>} />
-          <Route path="/business-memory" element={<Navigate to="/workspace?tab=explore" replace />} />
-          <Route path="/ide" element={<PageTransition><IdePage /></PageTransition>} />
-          <Route path="/marketplace" element={<PageTransition><MarketplacePage /></PageTransition>} />
-          <Route path="/developers" element={<PageTransition><DevelopersPage /></PageTransition>} />
-          <Route path="/prompts" element={<PageTransition><PromptsPage /></PageTransition>} />
-          <Route path="/prompts/privacy-checker" element={<PageTransition><PrivacyCheckerPage /></PageTransition>} />
-          <Route path="/security" element={<PageTransition><SecurityHubPage /></PageTransition>} />
-          <Route path="/vault" element={<Navigate to="/security?tab=vault" replace />} />
-          <Route path="/privacy-score" element={<Navigate to="/security?tab=score" replace />} />
-          <Route path="/security-audit" element={<Navigate to="/security?tab=audit" replace />} />
-          <Route path="/trust" element={<Navigate to="/security?tab=trust" replace />} />
-          <Route path="/cyber" element={<Navigate to="/security?tab=cyber" replace />} />
-          <Route path="/forge" element={<PageTransition><ContentForgePage /></PageTransition>} />
-          <Route path="/video-studio" element={<PageTransition><VideoStudioPage /></PageTransition>} />
-          <Route path="/presentations" element={<Navigate to="/forge?mode=slides" replace />} />
-          <Route path="/missioncontrol" element={<PageTransition><MissionControlPage /></PageTransition>} />
-          <Route path="/referral" element={<PageTransition><ReferralPage /></PageTransition>} />
-          <Route path="/research" element={<PageTransition><ResearchHubPage /></PageTransition>} />
-          <Route path="/knowledge" element={<Navigate to="/research?tab=knowledge" replace />} />
-          <Route path="/deep-research" element={<Navigate to="/research?tab=investigate" replace />} />
-          <Route path="/knowledge-graph" element={<Navigate to="/research?tab=knowledge" replace />} />
-          <Route path="/strategy-lab" element={<PageTransition><StrategyLabPage /></PageTransition>} />
-          <Route path="/sovereign-data" element={<PageTransition><SovereignDataPage /></PageTransition>} />
-          <Route path="/wallet" element={<PageTransition><SovereignWalletPage /></PageTransition>} />
-          <Route path="/ghost-ads" element={<PageTransition><GhostAdsPage /></PageTransition>} />
-          <Route path="/offline-license" element={<PageTransition><LocalModelsPage /></PageTransition>} />
-          <Route path="/enterprise-license" element={<Navigate to="/offline-license" replace />} />
-          <Route path="/transparency" element={<PageTransition><TransparencyPage /></PageTransition>} />
-          <Route path="/studio" element={<Navigate to="/forge?mode=studio" replace />} />
-          <Route path="/command-center" element={<PageTransition><CommandCenterPage /></PageTransition>} />
-          <Route path="/competitive" element={<PageTransition><CompetitivePage /></PageTransition>} />
-          <Route path="/compare/:slug" element={<PageTransition><ComparisonDetailPage /></PageTransition>} />
-          <Route path="/agents" element={<PageTransition><MarketplacePage /></PageTransition>} />
-          <Route path="/compliance" element={<PageTransition><ComplianceDashboardPage /></PageTransition>} />
-          <Route path="/personal-llm" element={<PageTransition><PersonalLLMPage /></PageTransition>} />
-          <Route path="/templates" element={<PageTransition><TemplatesPage /></PageTransition>} />
-          <Route path="/theme" element={<Navigate to="/templates?tab=custom" replace />} />
-          <Route path="/themes" element={<Navigate to="/templates" replace />} />
-          <Route path="/downloads" element={<PageTransition><DownloadsPage /></PageTransition>} />
-          <Route path="/download" element={<Navigate to="/downloads" replace />} />
-          <Route path="/sessions" element={<PageTransition><SessionsPage /></PageTransition>} />
-          <Route path="/self-healing" element={<PageTransition><SelfHealingPage /></PageTransition>} />
-          <Route path="/local-models" element={<PageTransition><LocalModelsPage /></PageTransition>} />
-          <Route path="/settings/local-models" element={<Navigate to="/local-models" replace />} />
-          <Route path="/abdul-rauf-ceo" element={<PageTransition><AbdulRaufPage /></PageTransition>} />
-          <Route path="/muhammad-umar-cfo" element={<PageTransition><MuhammadUmarPage /></PageTransition>} />
-          <Route path="/leaderboard" element={<PageTransition><LeaderboardPage /></PageTransition>} />
-          <Route path="/rollout-plan" element={<PageTransition><RolloutPlanPage /></PageTransition>} />
-          <Route path="/stock-scenarios" element={<PageTransition><StockScenariosPage /></PageTransition>} />
-          <Route path="/private-ai" element={<PageTransition><PrivateAiHubPage /></PageTransition>} />
-          <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
-        </Routes>
-      </AnimatePresence>
-    </Suspense>
-  );
-};
+  // ─── Scan Handler ──────────────────────────────────────────────────────────
 
-const App = () => {
-  const skipBoot = shouldSkipBootScreen();
-  const [showBootScreen, setShowBootScreen] = useState(() => !skipBoot);
-  const [hasBooted, setHasBooted] = useState(() => skipBoot);
-  const [cmdOpen, setCmdOpen] = useState(false);
-  const [deferredChrome, setDeferredChrome] = useState(false);
+  const handleScan = useCallback(() => {
+    if (!code.trim()) return;
+    setIsScanning(true);
+    // Use requestAnimationFrame so the UI updates before the synchronous scan
+    requestAnimationFrame(() => {
+      const scanResult = scanCode(code.trim(), uploadedFileName || "input");
+      setResult(scanResult);
+      setIsScanning(false);
+    });
+  }, [code, uploadedFileName]);
 
-  useEffect(() => {
-    import("@/lib/shadowMode").then(({ initShadowMode }) => initShadowMode());
-    import("@/lib/profilePreferences").then(({ initProfileUiPreferences }) => initProfileUiPreferences());
-    import("@/lib/themes/applyTheme").then(({ restoreStoredTheme }) => restoreStoredTheme());
+  // ─── File Upload ───────────────────────────────────────────────────────────
 
-    const hasSeenBoot = sessionStorage.getItem('shadowtalk-booted');
-    if (hasSeenBoot || shouldSkipBootScreen()) {
-      setShowBootScreen(false);
-      setHasBooted(true);
-    }
-
-    const enableChrome = () => setDeferredChrome(true);
-    if (typeof window.requestIdleCallback === "function") {
-      const chromeId = window.requestIdleCallback(enableChrome, { timeout: 4000 });
-      const cleanupChrome = () => window.cancelIdleCallback(chromeId);
-
-      const resumeOffline = () => {
-        void import('@/lib/offline/bootstrapLocalModel').then(({ bootstrapCachedLocalModel }) =>
-          bootstrapCachedLocalModel().catch((e) => console.warn('[Offline] bootstrap failed', e)),
-        );
-      };
-
-      const offlineId = window.requestIdleCallback(resumeOffline, { timeout: 12000 });
-      return () => {
-        cleanupChrome();
-        window.cancelIdleCallback(offlineId);
-      };
-    }
-
-    const t = window.setTimeout(enableChrome, 1500);
-    return () => window.clearTimeout(t);
+  const handleFileRead = useCallback((file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target?.result as string;
+      if (text) {
+        setCode(text);
+        setUploadedFileName(file.name);
+        setResult(null);
+      }
+    };
+    reader.readAsText(file);
   }, []);
 
-  const handleBootComplete = () => {
-    sessionStorage.setItem('shadowtalk-booted', 'true');
-    setShowBootScreen(false);
-    setHasBooted(true);
-  };
+  const handleDrop = useCallback((e: DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file && file.size <= 500_000) handleFileRead(file);
+  }, [handleFileRead]);
+
+  const handleDragOver = useCallback((e: DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback(() => setIsDragging(false), []);
+
+  const handleFileInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) handleFileRead(file);
+  }, [handleFileRead]);
+
+  // ─── Clipboard ─────────────────────────────────────────────────────────────
+
+  const handleCopyFix = useCallback(async (vuln: Vulnerability) => {
+    try {
+      await navigator.clipboard.writeText(vuln.codefix);
+      setCopiedId(vuln.id);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch {
+      // Fallback
+      const ta = document.createElement("textarea");
+      ta.value = vuln.codefix;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      setCopiedId(vuln.id);
+      setTimeout(() => setCopiedId(null), 2000);
+    }
+  }, []);
+
+  const handleCopyReport = useCallback(async () => {
+    if (!result) return;
+    const lines = result.vulnerabilities.map(v =>
+      `[${v.severity.toUpperCase()}] ${v.title}\n  Location: ${v.location}\n  Fix: ${v.remediation}`
+    );
+    const text = `ShadowScan Security Audit\nScore: ${result.riskScore}/100\n${result.summary}\n\n${lines.join("\n\n")}\n\nScanned with ShadowScan by ShadowTalk AI`;
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedId("report");
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch { /* ignore */ }
+  }, [result]);
+
+  // ─── Share on X ───────────────────────────────────────────────────────────
+
+  const handleShareX = useCallback(() => {
+    if (!result) return;
+    const crit = result.vulnerabilities.filter(v => v.severity === "critical").length;
+    const high = result.vulnerabilities.filter(v => v.severity === "high").length;
+    const text = crit > 0 || high > 0
+      ? `Just scanned my code with ShadowScan and found ${result.vulnerabilities.length} security issues (${crit} critical, ${high} high). Score: ${result.riskScore}/100.\n\nPaste your code and find secrets, SQL injection, XSS, and more in <2 seconds.`
+      : `My code passed ShadowScan with a score of ${result.riskScore}/100. Clean!`;
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, "_blank");
+  }, [result]);
+
+  // ─── Clear ─────────────────────────────────────────────────────────────────
+
+  const handleClear = useCallback(() => {
+    setCode("");
+    setResult(null);
+    setUploadedFileName(null);
+    setCopiedId(null);
+    setExpandedVuln(null);
+    textareaRef.current?.focus();
+  }, []);
+
+  // ─── Severity Counts ────────────────────────────────────────────────────────
+
+  const counts = result
+    ? {
+        critical: result.vulnerabilities.filter(v => v.severity === "critical").length,
+        high: result.vulnerabilities.filter(v => v.severity === "high").length,
+        medium: result.vulnerabilities.filter(v => v.severity === "medium").length,
+        low: result.vulnerabilities.filter(v => v.severity === "low").length,
+        info: result.vulnerabilities.filter(v => v.severity === "info").length,
+      }
+    : null;
+
+  const riskColor = result
+    ? result.riskScore >= 60 ? "text-red-400"
+    : result.riskScore >= 30 ? "text-orange-400"
+    : "text-emerald-400"
+    : "";
+
+  // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider attribute="class" defaultTheme="dark" forcedTheme="dark" enableSystem={false} storageKey="shadowtalk-ui-theme">
-          <TooltipProvider>
-            <AuthProvider>
-              <StealthKillSwitchProvider>
-              <SecurityProvider>
-              <SelfHealingProvider>
-              <ShadowMemoryProvider>
-              <AutoImproveProvider>
-              <ThemeTemplateProvider>
-              <CommandPaletteContext.Provider value={{ open: () => setCmdOpen(true) }}>
-              {showBootScreen && !hasBooted && (
-                <BootScreen onComplete={handleBootComplete} />
-              )}
-              <Toaster />
-              <Sonner />
-              <GlobalMaintenanceNotice />
-              <FeedbackAutoPrompt />
-               <BrowserRouter>
-                 <MobileViewportFix />
-                 <UpdateNotificationProvider />
-                 <NetworkTransitionOverlay />
-                 <PushIntelligencePanel />
-                 <SelfHealingErrorBoundary>
-                 <SiteMotionProvider>
-                   <SitePageShell>
-                     <GlobalScrollReveal />
-                     <PersistedAuthRedirect />
-                     <OAuthRedirectHandler />
-                     <OAuthReturnHandler />
-                     <WorkspacePathRemember />
-                      <NotificationPermissionRequester />
-                     <GrowthBanners />
-                     <AnimatedRoutes />
-                     <BackToHomeButton />
-                   </SitePageShell>
-                 </SiteMotionProvider>
-                 </SelfHealingErrorBoundary>
-                 <CommandPalette open={cmdOpen} onOpenChange={setCmdOpen} />
-                  {deferredChrome && (
-                    <Suspense fallback={null}>
-                      <OfflineBootstrapBanner />
-                      <OnboardingFlow />
-                      <ShadowMemoryTracker />
-                      <JourneyTracker />
-                      <AutoImproveEngine />
-                      <ShadowHealEngine />
-                      <ShadowScaleEngine />
-                      <AutonomousAgentEngine />
-                      <MissionSchedulerEngine />
-                      <ScriptSchedulerEngine />
-                      <GoalPursuitEngine />
-                      <VoiceCommandSystem />
-                      <PWABanner />
-                      <CookieConsent />
-                      <CustomerSupportWidget />
-                    </Suspense>
-                  )}
-               </BrowserRouter>
-              </CommandPaletteContext.Provider>
-              </ThemeTemplateProvider>
-              </AutoImproveProvider>
-              </ShadowMemoryProvider>
-              </SelfHealingProvider>
-              </SecurityProvider>
-              </StealthKillSwitchProvider>
-            </AuthProvider>
-          </TooltipProvider>
-        </ThemeProvider>
-      </QueryClientProvider>
-    </ErrorBoundary>
+    <div className="min-h-screen bg-[hsl(240,12%,3%)] text-[hsl(0,0%,96%)] font-sans antialiased">
+      {/* Background Grid */}
+      <div className="fixed inset-0 opacity-[0.03] pointer-events-none"
+        style={{
+          backgroundImage: `linear-gradient(hsl(195,100%,55%) 1px, transparent 1px), linear-gradient(90deg, hsl(195,100%,55%) 1px, transparent 1px)`,
+          backgroundSize: '60px 60px',
+        }}
+      />
+      <div className="fixed inset-0 pointer-events-none"
+        style={{ background: 'radial-gradient(ellipse 80% 50% at 50% 0%, hsl(195,100%,55% / 0.06), transparent 70%)' }}
+      />
+
+      <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        {/* ─── Header ─────────────────────────────────────────────────────── */}
+        <header className="mb-8 sm:mb-10">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2.5 rounded-xl bg-[hsl(195,100%,55% / 0.12)] border border-[hsl(195,100%,55% / 0.2)]">
+              <Shield className="w-6 h-6 text-[hsl(195,100%,55%)]" />
+            </div>
+            <div>
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
+                ShadowScan
+              </h1>
+              <p className="text-xs sm:text-sm text-[hsl(240,5%,58%)]">
+                by ShadowTalk AI
+              </p>
+            </div>
+          </div>
+          <p className="text-sm sm:text-base text-[hsl(240,5%,65%)] max-w-2xl leading-relaxed">
+            1-Click Security Audit for Vibe-Coded Apps. Paste your code or drop a file
+            — we detect <strong className="text-[hsl(0,0%,96%)]">exposed secrets, injection flaws, XSS, SSRF, weak crypto</strong>, and more.
+            100% client-side. Zero data leaves your browser.
+          </p>
+        </header>
+
+        {/* ─── Input Area ────────────────────────────────────────────────── */}
+        <section className="mb-6">
+          <div
+            className={`relative rounded-xl border transition-all duration-200 ${
+              isDragging
+                ? "border-[hsl(195,100%,55%)] bg-[hsl(195,100%,55% / 0.05)]"
+                : "border-[hsl(240,6%,14%)] bg-[hsl(240,10%,5%)]"
+            }`}
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+          >
+            {uploadedFileName && (
+              <div className="flex items-center gap-2 px-4 py-2 border-b border-[hsl(240,6%,14%)] text-xs text-[hsl(240,5%,58%)]">
+                <FileCode className="w-3.5 h-3.5 text-[hsl(195,100%,55%)]" />
+                <span className="font-mono">{uploadedFileName}</span>
+                <button onClick={() => { setUploadedFileName(null); setCode(""); setResult(null); }}
+                  className="ml-auto hover:text-[hsl(0,0%,96%)] transition-colors">
+                  <XCircle className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+
+            <textarea
+              ref={textareaRef}
+              value={code}
+              onChange={e => { setCode(e.target.value); setResult(null); }}
+              placeholder={`// Paste your code here...\n// Or drag & drop a file\n\n// Example — try this:\nconst supabase = createClient(\n  "https://your-project.supabase.co",\n  process.env.SUPABASE_SERVICE_ROLE_KEY  // DANGER!\n);\n\nconst apiKey = "sk-ant-api03-abc123secretkey";\n\nfetch("/api/user/" + params.id);\n`}
+              className="w-full min-h-[200px] sm:min-h-[240px] p-4 bg-transparent text-sm font-mono text-[hsl(0,0%,96%)] placeholder:text-[hsl(240,5%,40%)] resize-y focus:outline-none"
+              spellCheck={false}
+            />
+
+            {/* Drag Overlay */}
+            {isDragging && (
+              <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-[hsl(195,100%,55% / 0.08)] border-2 border-dashed border-[hsl(195,100%,55% / 0.4)]">
+                <div className="flex items-center gap-2 text-[hsl(195,100%,55%)] font-medium">
+                  <Upload className="w-5 h-5" />
+                  Drop file to scan
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Actions Row */}
+          <div className="flex flex-wrap items-center gap-3 mt-4">
+            <button
+              onClick={handleScan}
+              disabled={!code.trim() || isScanning}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{
+                background: code.trim() && !isScanning
+                  ? "linear-gradient(135deg, hsl(195,100%,45%), hsl(195,100%,55%))"
+                  : "hsl(240,6%,14%)",
+                boxShadow: code.trim() && !isScanning
+                  ? "0 4px 24px hsl(195,100%,55% / 0.4), 0 0 0 1px hsl(195,100%,55% / 0.2)"
+                  : "none",
+                color: code.trim() && !isScanning ? "hsl(240,12%,3%)" : "hsl(240,5%,58%)",
+              }}
+            >
+              <Zap className="w-4 h-4" />
+              {isScanning ? "Scanning..." : "Scan Code"}
+            </button>
+
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-[hsl(240,5%,65%)] border border-[hsl(240,6%,14%)] hover:border-[hsl(240,5%,30%)] hover:text-[hsl(0,0%,96%)] transition-all duration-200"
+            >
+              <Upload className="w-4 h-4" />
+              Upload File
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              className="hidden"
+              accept=".js,.jsx,.ts,.tsx,.py,.java,.go,.rb,.php,.sql,.html,.css,.json,.yaml,.yml,.env,.sh,.md"
+              onChange={handleFileInput}
+            />
+
+            {(code.trim() || result) && (
+              <button
+                onClick={handleClear}
+                className="ml-auto text-xs text-[hsl(240,5%,40%)] hover:text-[hsl(0,0%,96%)] transition-colors"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        </section>
+
+        {/* ─── Results ──────────────────────────────────────────────────── */}
+        {result && (
+          <section className="space-y-5 animate-in fade-in duration-300">
+            {/* Score + Summary Bar */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-xl bg-[hsl(240,10%,5%)] border border-[hsl(240,6%,14%)]">
+              <div className="flex items-center gap-3">
+                <div className={`text-3xl sm:text-4xl font-black tabular-nums ${riskColor}`}>
+                  {result.riskScore}
+                </div>
+                <div className="text-xs text-[hsl(240,5%,50%)] leading-tight">
+                  <div>/ 100</div>
+                  <div className="font-mono flex items-center gap-1 mt-0.5">
+                    <Clock className="w-3 h-3" />
+                    {result.scanTimeMs.toFixed(0)}ms
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex-1">
+                <p className="text-sm leading-relaxed">{result.summary}</p>
+              </div>
+            </div>
+
+            {/* Severity Badges */}
+            {counts && (
+              <div className="flex flex-wrap gap-2">
+                {Object.entries(counts).filter(([, c]) => c > 0).map(([sev, c]) => {
+                  const cfg = SEVERITY_CONFIG[sev as keyof typeof SEVERITY_CONFIG];
+                  return (
+                    <span key={sev} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border ${cfg.badge}`}>
+                      <cfg.icon className="w-3.5 h-3.5" />
+                      {c} {cfg.label}
+                    </span>
+                  );
+                })}
+                {result.vulnerabilities.length === 0 && (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    CLEAN
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* Vulnerability List */}
+            {result.vulnerabilities.length > 0 && (
+              <div className="space-y-2">
+                {result.vulnerabilities.map(vuln => {
+                  const cfg = SEVERITY_CONFIG[vuln.severity];
+                  const isExpanded = expandedVuln === vuln.id;
+                  const isCopied = copiedId === vuln.id;
+
+                  return (
+                    <div
+                      key={vuln.id}
+                      className={`rounded-lg border transition-all duration-200 ${cfg.bg}`}
+                    >
+                      {/* Summary Row */}
+                      <button
+                        onClick={() => setExpandedVuln(isExpanded ? null : vuln.id)}
+                        className="w-full flex items-start gap-3 p-3 sm:p-4 text-left"
+                      >
+                        <cfg.icon className={`w-5 h-5 mt-0.5 shrink-0 ${cfg.color}`} />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className={`text-xs font-bold uppercase tracking-wide ${cfg.color}`}>
+                              {cfg.label}
+                            </span>
+                            <span className="text-sm font-semibold text-[hsl(0,0%,96%)] truncate">
+                              {vuln.title}
+                            </span>
+                          </div>
+                          <p className="text-xs text-[hsl(240,5%,55%)] font-mono mt-0.5">
+                            {vuln.location}
+                            {vuln.cweId && (
+                              <span className="ml-2 text-[hsl(240,5%,40%)]">{vuln.cweId}</span>
+                            )}
+                          </p>
+                        </div>
+                        {isExpanded ? (
+                          <ChevronUp className="w-4 h-4 text-[hsl(240,5%,40%)] shrink-0" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4 text-[hsl(240,5%,40%)] shrink-0" />
+                        )}
+                      </button>
+
+                      {/* Expanded Details */}
+                      {isExpanded && (
+                        <div className="px-3 sm:px-4 pb-4 pt-0 space-y-3 border-t border-[hsl(240,6%,14%)] mt-0 ml-8">
+                          <p className="text-sm text-[hsl(240,5%,65%)] leading-relaxed pt-3">
+                            {vuln.description}
+                          </p>
+
+                          <div>
+                            <div className="text-xs font-bold uppercase tracking-wide text-[hsl(240,5%,50%)] mb-1.5">
+                              Remediation
+                            </div>
+                            <p className="text-sm text-[hsl(240,5%,70%)]">
+                              {vuln.remediation}
+                            </p>
+                          </div>
+
+                          <div>
+                            <div className="flex items-center justify-between mb-1.5">
+                              <div className="text-xs font-bold uppercase tracking-wide text-[hsl(240,5%,50%)]">
+                                Code Fix
+                              </div>
+                              <button
+                                onClick={() => handleCopyFix(vuln)}
+                                className="flex items-center gap-1.5 text-xs font-medium text-[hsl(195,100%,55%)] hover:text-[hsl(195,100%,65%)] transition-colors"
+                              >
+                                {isCopied ? (
+                                  <>
+                                    <Check className="w-3 h-3" />
+                                    Copied
+                                  </>
+                                ) : (
+                                  <>
+                                    <Copy className="w-3 h-3" />
+                                    Copy Fix
+                                  </>
+                                )}
+                              </button>
+                            </div>
+                            <pre className="text-xs font-mono bg-[hsl(240,12%,3%)] border border-[hsl(240,6%,14%)] rounded-lg p-3 overflow-x-auto text-[hsl(240,5%,65%)] whitespace-pre-wrap">
+                              {vuln.codefix}
+                            </pre>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Action Bar */}
+            <div className="flex flex-wrap gap-3 pt-2">
+              <button
+                onClick={handleShareX}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-[hsl(240,6%,14%)] text-[hsl(240,5%,65%)] hover:border-[hsl(240,5%,30%)] hover:text-[hsl(0,0%,96%)] transition-all"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                </svg>
+                Share on X
+              </button>
+
+              <button
+                onClick={handleCopyReport}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-[hsl(240,6%,14%)] text-[hsl(240,5%,65%)] hover:border-[hsl(240,5%,30%)] hover:text-[hsl(0,0%,96%)] transition-all"
+              >
+                {copiedId === "report" ? (
+                  <>
+                    <Check className="w-4 h-4" />
+                    Copied
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-4 h-4" />
+                    Copy Full Report
+                  </>
+                )}
+              </button>
+            </div>
+          </section>
+        )}
+
+        {/* ─── Empty State (no result yet) ──────────────────────────────── */}
+        {!result && !isScanning && (
+          <section className="text-center py-12 sm:py-16">
+            <div className="flex justify-center gap-8 mb-8 opacity-30">
+              <Key className="w-8 h-8" />
+              <Bug className="w-8 h-8" />
+              <Terminal className="w-8 h-8" />
+            </div>
+            <p className="text-sm text-[hsl(240,5%,40%)]">
+              Detects 23 secret patterns + 35 SAST patterns across 15 vulnerability categories
+            </p>
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-3 text-xs text-[hsl(240,5%,35%)]">
+              <span>AWS Keys</span>
+              <span>·</span>
+              <span>OpenAI / Anthropic</span>
+              <span>·</span>
+              <span>Supabase RLS</span>
+              <span>·</span>
+              <span>SQL Injection</span>
+              <span>·</span>
+              <span>XSS</span>
+              <span>·</span>
+              <span>SSRF</span>
+              <span>·</span>
+              <span>JWT Attacks</span>
+              <span>·</span>
+              <span>Prototype Pollution</span>
+              <span>·</span>
+              <span>Path Traversal</span>
+            </div>
+          </section>
+        )}
+
+        {/* ─── Footer ──────────────────────────────────────────────────── */}
+        <footer className="mt-16 pt-6 border-t border-[hsl(240,6%,14%)] text-center">
+          <p className="text-xs text-[hsl(240,5%,35%)]">
+            ShadowScan by{" "}
+            <a
+              href="https://shadowtalk.ai"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[hsl(195,100%,55%)] hover:underline"
+            >
+              ShadowTalk AI
+            </a>{" "}
+            — 100% client-side scanning. Your code never leaves your browser.
+          </p>
+        </footer>
+      </div>
+    </div>
   );
-};
+}
 
 export default App;
