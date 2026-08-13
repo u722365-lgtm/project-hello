@@ -2,7 +2,7 @@
  * Hybrid Cloud-Local Router (Option B from Shadowoffline blueprint)
  * --------------------------------------------------
  * Decides whether a chat completion runs on-device (Gemma via WebGPU) or in
- * the cloud (Lovable AI Gateway). Uses hardware intelligence for speed:
+ * the cloud (ShadowTalk AI Gateway). Uses hardware intelligence for speed:
  *   - Turbo GPU / fast CPU → prefer local when model is ready
  *   - Weak devices + online → cloud for fastest first token
  */

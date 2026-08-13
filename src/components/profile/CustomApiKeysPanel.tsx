@@ -32,7 +32,7 @@ export const CustomApiKeysPanel = () => {
   const [apiKey, setApiKey] = useState("");
   const [label, setLabel] = useState("");
 
-  const selectedMeta = { name: "ShadowTalk Pro (platform)", description: "Built-in Lovable cloud AI", keyPlaceholder: "", docsUrl: "" } as const;
+  const selectedMeta = { name: "ShadowTalk Pro (platform)", description: "Built-in ShadowTalk cloud AI", keyPlaceholder: "", docsUrl: "" } as const;
   const busy = isVerifying || isSaving;
 
   const handleConnect = async () => {

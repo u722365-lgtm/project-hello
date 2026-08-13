@@ -1,5 +1,5 @@
 /**
- * Profile sync against the Lovable Cloud backend (Supabase).
+ * Profile sync against the Supabase Cloud backend (Supabase).
  * Best-effort: never throws, never blocks auth hydration.
  */
 import { backend } from '@/integrations/local/client';

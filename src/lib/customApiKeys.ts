@@ -1,10 +1,10 @@
 /**
- * Lovable-only AI configuration stored locally on device.
+ * ShadowTalk Pro AI configuration stored locally on device.
  */
 
 export type CustomAiProviderId =
   | 'turbo'
-  | 'lovable'
+  | 'shadowtalk'
   | 'shadowtalk'
   | 'google'
   | 'openai'
@@ -36,7 +36,7 @@ export const AI_PROVIDER_OPTIONS: {
   docsUrl: string;
 }[] = [
   {
-    id: 'lovable',
+    id: 'shadowtalk',
     label: 'ShadowTalk Pro (platform)',
     description: 'Use built-in ShadowTalk cloud AI',
     keyPlaceholder: '',
@@ -47,7 +47,7 @@ export const AI_PROVIDER_OPTIONS: {
 ];
 
 export const DEFAULT_CUSTOM_AI_CONFIG: CustomAiKeysConfig = {
-  provider: 'lovable',
+  provider: 'shadowtalk',
   apiKey: '',
   model: '',
   usePlatformDefault: true,

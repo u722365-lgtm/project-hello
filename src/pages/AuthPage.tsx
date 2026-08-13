@@ -183,7 +183,7 @@ const AuthPage = () => {
         return;
       }
 
-      // ---- Lovable Cloud auth (email + password) ----
+      // ---- Supabase Cloud auth (email + password) ----
       if (isLogin) {
         const { data, error } = await backend.auth.signInWithPassword({
           email: cleanEmail,
@@ -215,7 +215,7 @@ const AuthPage = () => {
   };
 
 
-  // Lovable Cloud OAuth handler
+  // Supabase Cloud OAuth handler
   const handleFirebaseOAuth = async (provider: 'google' | 'apple' | 'github' | 'twitter') => {
     setLoading(true);
     try {

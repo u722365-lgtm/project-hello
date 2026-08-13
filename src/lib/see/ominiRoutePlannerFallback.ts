@@ -3,7 +3,7 @@
  *
  * This intentionally does NOT replace normal chat.
  * It is only used when:
- * - platform/Lovable completion fails for planning, and
+ * - platform/ShadowTalk completion fails for planning, and
  * - the caller opts in via env/config.
  *
  * Notes:

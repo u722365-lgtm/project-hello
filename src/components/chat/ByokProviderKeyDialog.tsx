@@ -60,7 +60,7 @@ export function ByokProviderKeyDialog({ open, onOpenChange, provider, onSaved }:
   const [testing, setTesting] = useState(false);
 
   const busy = testing || isVerifying || isSaving;
-  const byok = provider && provider !== "lovable" ? provider : null;
+  const byok = provider && provider !== "shadowtalk" ? provider : null;
   const meta = byok
     ? AI_PROVIDER_OPTIONS.find((p) => p.id === toCustomAiProviderId(byok))
     : undefined;

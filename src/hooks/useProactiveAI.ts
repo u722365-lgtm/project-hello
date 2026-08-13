@@ -60,7 +60,7 @@ interface BehaviorSignals {
 
 const STORAGE_KEY = 'shadowtalk-visitor-memory';
 const SESSION_KEY = 'shadowtalk-proactive-session';
-/** Off by default — prevents blank-screen overlays when edge/LOVABLE key is not configured. */
+/** Off by default — prevents blank-screen overlays when edge/API key is not configured. */
 function isProactiveAIEnabled(): boolean {
   return import.meta.env.VITE_ENABLE_PROACTIVE_AI === "1";
 }

@@ -64,7 +64,7 @@ export const ChatInput = ({
   onModeChange,
   personality,
   layout = "default",
-  aiProvider = "lovable",
+  aiProvider = "shadowtalk",
   onProviderChange,
   hasKeyForProvider,
   isEmptyState = false,

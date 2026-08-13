@@ -17,16 +17,25 @@ applyPerfProfile();
  // Environment validation
  const validateEnvironment = () => {
    const requiredVars = [
+     'VITE_SUPABASE_URL',
+     'VITE_SUPABASE_PUBLISHABLE_KEY',
+   ];
+
+   const legacyVars = [
      'VITE_API_BASE_URL',
      'VITE_API_KEY',
    ];
-   
+
    const missing = requiredVars.filter(
      (key) => !import.meta.env[key]
    );
-   
-   if (missing.length > 0 && import.meta.env.DEV) {
-     console.warn(`[ENV] Missing environment variables: ${missing.join(', ')}`);
+
+   const legacyMissing = legacyVars.filter(
+     (key) => !import.meta.env[key]
+   );
+
+   if (missing.length > 0 && legacyMissing.length > 0 && import.meta.env.DEV) {
+     console.warn(`[ENV] Missing environment variables: ${[...missing, ...legacyMissing].join(', ')}`);
    }
  };
  
@@ -65,8 +74,7 @@ applyOllamaDefaultProvider();
  // Defer non-critical initialization
  deferNonCritical(() => {
    // Register service worker for PWA
-  const isLovablePreview = window.location.hostname.endsWith("lovableproject.com");
-  if ("serviceWorker" in navigator && import.meta.env.PROD && !isLovablePreview) {
+  if ("serviceWorker" in navigator && import.meta.env.PROD) {
      navigator.serviceWorker.register('/sw.js').catch((err) => {
        console.warn('[SW] Registration failed:', err);
      });

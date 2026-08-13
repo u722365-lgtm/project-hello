@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
-export type AIModelProvider = 'lovable';
+export type AIModelProvider = 'shadowtalk';
 
 export type AIModelId =
   | 'gemini-flash'
@@ -34,7 +34,7 @@ interface ModelInfo {
 const MODELS: ModelInfo[] = [
   {
     id: 'gemini-flash',
-    provider: 'lovable',
+    provider: 'shadowtalk',
     label: 'Flash',
     description: 'Fast & efficient for most tasks',
     icon: <Sparkles className='h-4 w-4' />,
@@ -43,7 +43,7 @@ const MODELS: ModelInfo[] = [
   },
   {
     id: 'gemini-pro',
-    provider: 'lovable',
+    provider: 'shadowtalk',
     label: 'Pro',
     description: 'Best for complex reasoning',
     icon: <Sparkles className='h-4 w-4' />,
@@ -53,7 +53,7 @@ const MODELS: ModelInfo[] = [
   },
   {
     id: 'reasoning',
-    provider: 'lovable',
+    provider: 'shadowtalk',
     label: 'Deep Thinking',
     description: 'Extended reasoning with chain-of-thought',
     icon: <Bot className='h-4 w-4' />,
@@ -63,7 +63,7 @@ const MODELS: ModelInfo[] = [
   },
   {
     id: 'deep-research',
-    provider: 'lovable',
+    provider: 'shadowtalk',
     label: 'Deep Research',
     description: 'Multi-source research with citations',
     icon: <Search className='h-4 w-4' />,
@@ -100,7 +100,7 @@ export const ModelSwitcher = ({
           disabled={disabled}
         >
           <span>{currentModel.label}</span>
-          <span className='text-[11px] text-muted-foreground/70'>Lovable</span>
+          <span className='text-[11px] text-muted-foreground/70'>ShadowTalk</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align='start' className='w-64 p-1.5 bg-[#1e1f20]/95 backdrop-blur-2xl border border-border/10 rounded-2xl shadow-2xl'>
@@ -134,5 +134,5 @@ export const ModelSwitcher = ({
 };
 
 export const MODELS_BY_PROVIDER = {
-  lovable: MODELS.filter((m) => m.provider === 'lovable'),
+  shadowtalk: MODELS.filter((m) => m.provider === 'shadowtalk'),
 } as const;

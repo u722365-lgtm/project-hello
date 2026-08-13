@@ -118,7 +118,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const bootstrap = async () => {
       try {
-        // Lovable Cloud auth is the single source of truth.
+        // Supabase Cloud auth is the single source of truth.
         const { data: { session: cloudSession } } = await backend.auth.getSession();
         if (!mounted) return;
         hydrate(cloudSession);

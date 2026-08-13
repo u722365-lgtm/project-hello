@@ -1,17 +1,17 @@
-import { defineTool } from "@lovable.dev/mcp-js";
-import { z } from "zod";
+/**
+ * MCP Tool: get_product_overview
+ * Return an overview of ShadowTalk AI: what it is, pricing, privacy.
+ */
 import { PLANS, PRODUCT } from "../data";
+import type { McpTool } from "../index";
 
-export default defineTool({
+const tool: McpTool = {
   name: "get_product_overview",
   title: "Get product overview",
   description:
     "Return an overview of ShadowTalk AI: what it is, who built it, the free tier, privacy posture and pricing plans.",
   inputSchema: {
-    includePricing: z
-      .boolean()
-      .optional()
-      .describe("Include the full pricing plan breakdown. Defaults to true."),
+    includePricing: { type: "boolean", optional: true, description: "Include the full pricing plan breakdown. Defaults to true." },
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: ({ includePricing = true }) => {
@@ -40,4 +40,6 @@ export default defineTool({
       },
     };
   },
-});
+};
+
+export default tool;

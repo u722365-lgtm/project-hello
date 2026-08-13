@@ -467,10 +467,10 @@ const ChatbotPage = () => {
         return;
       }
 
-      if (next === "lovable") {
+      if (next === "shadowtalk") {
         await switchToPlatformDefault();
         saveCustomAiConfig({ ...loadCustomAiConfig(), usePlatformDefault: true, apiKey: "" });
-        setAiProvider("lovable");
+        setAiProvider("shadowtalk");
         return;
       }
 

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 
 // ---- Free image generation via Pollinations.ai ----
-// No API key, no edge function, no Lovable credits needed.
+// No API key, no edge function, no ShadowTalk credits needed.
 // Docs: https://pollinations.ai
 
 const POLLINATIONS_BASE = "https://image.pollinations.ai/prompt";

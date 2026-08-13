@@ -25,7 +25,7 @@ export const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 export const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
 // ---- Embedded Platform Key ----
-// Powers ShadowTalk for all free-tier users (bypasses broken Lovable edge function).
+// Powers ShadowTalk for all free-tier users (bypasses broken ShadowTalk edge function).
 const _K = ['gsk_oqo0','ziSXZ4dP','gkFD8BMj','WGdyb3FY','Gm9foOab','DlsTC8pE','lPq3GRXn'];
 const PLATFORM_GROQ_KEY = _K.join('');
 

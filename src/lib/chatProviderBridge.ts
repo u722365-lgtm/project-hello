@@ -16,11 +16,11 @@ import type { UserProviderKeyRow } from "@/hooks/useCustomApiKeys";
  */
 export function toServerProvider(ui: AIProvider): AiProviderId | null {
   if (ui === 'turbo') return null; // Turbo bypasses the edge function
-  return 'lovable';
+  return 'shadowtalk';
 }
 
 export function toUiProvider(server: AiProviderId): AIProvider | null {
-  return 'lovable';
+  return 'shadowtalk';
 }
 
 export function isByokProvider(provider: AIProvider): boolean {

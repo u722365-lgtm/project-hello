@@ -1,8 +1,8 @@
 /**
- * Centralized Lovable→Ollama runtime fallback client.
+ * Centralized ShadowTalk→Ollama runtime fallback client.
  *
  * This module provides a single place for ShadowTalk to switch to
- * local Ollama free models whenever the Lovable platform gateway fails,
+ * local Ollama free models whenever the ShadowTalk platform gateway fails,
  * returns 402/429/503, or the edge function signals `fallback=ollama`.
  *
  * It does NOT create a new `src/lib/ollama/` directory to avoid Windows
@@ -86,7 +86,7 @@ async function tryTauriOllamaClient(): Promise<OllamaLocalStatus | null> {
 }
 
 async function resolveStatus(invoke?: (cmd: string, args?: any) => Promise<any>): Promise<OllamaLocalStatus | null> {
-  // Try direct HTTP health endpoint first if falling back from browser/lovable flow
+  // Try direct HTTP health endpoint first if falling back from cloud flow
   try {
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), 1500);

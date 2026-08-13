@@ -23,7 +23,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const AI_PROVIDER_OPTIONS = [
   {
-    id: 'lovable',
+    id: 'shadowtalk',
     label: 'ShadowTalk Pro (platform)',
     description: 'Use built-in ShadowTalk cloud AI',
     keyPlaceholder: '',
@@ -40,7 +40,7 @@ type Props = {
 
 export function CustomApiKeysDialog({ open, onOpenChange }: Props) {
   const { toast } = useToast();
-  const [provider, setProvider] = useState('lovable');
+  const [provider, setProvider] = useState('shadowtalk');
   const [testing, setTesting] = useState(false);
 
   const selectedMeta = AI_PROVIDER_OPTIONS.find((p) => p.id === provider);
@@ -48,7 +48,7 @@ export function CustomApiKeysDialog({ open, onOpenChange }: Props) {
   const usePlatformDefault = () => {
     toast({
       title: 'Using ShadowTalk default',
-      description: 'Chat will route through the built-in Lovable platform gateway.',
+      description: 'Chat will route through the built-in ShadowTalk platform gateway.',
     });
     onOpenChange(false);
   };
@@ -62,7 +62,7 @@ export function CustomApiKeysDialog({ open, onOpenChange }: Props) {
             Connect your AI API key
           </DialogTitle>
           <DialogDescription className='text-left leading-relaxed'>
-            This build uses Lovable platform AI only. Use platform default or save a platform-specific key if available.
+            This build uses ShadowTalk platform AI only. Use platform default or save a platform-specific key if available.
           </DialogDescription>
         </DialogHeader>
 
@@ -70,7 +70,7 @@ export function CustomApiKeysDialog({ open, onOpenChange }: Props) {
           <div className='flex items-start gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-sm'>
             <Shield className='h-4 w-4 text-emerald-400 mt-0.5 shrink-0' />
             <p className='text-muted-foreground'>
-              Billing goes through your platform account. All chat, documents, research, and tools route through Lovable by default.
+              Billing goes through your platform account. All chat, documents, research, and tools route through ShadowTalk by default.
             </p>
           </div>
 
@@ -89,7 +89,7 @@ export function CustomApiKeysDialog({ open, onOpenChange }: Props) {
               </SelectContent>
             </Select>
             <p className='text-xs text-muted-foreground'>
-              {selectedMeta?.description ?? 'Use built-in Lovable platform gateway.'}
+              {selectedMeta?.description ?? 'Use built-in ShadowTalk platform gateway.'}
             </p>
           </div>
         </div>
