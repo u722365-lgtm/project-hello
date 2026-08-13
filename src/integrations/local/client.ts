@@ -2,8 +2,8 @@
  * ShadowTalk AI — Backend client
  *
  * Backend selection (first match wins):
- *   1. Firebase   — when VITE_FIREBASE_* env vars are present (Auth + Firestore + Storage)
- *   2. Legacy REST backend — when VITE_API_BASE_URL / VITE_API_KEY are present
+ *   1. Lovable Cloud (Supabase) — when VITE_SUPABASE_* env vars are present (Auth + Postgres + Storage + Realtime)
+ *   2. Firebase — legacy fallback for old deployments
  *   3. Local-only stub — everything becomes a safe no-op
  *
  * Every call site keeps using the same surface: `backend.from()`, `backend.auth.*`,
@@ -32,14 +32,14 @@ const isLegacyConfigured = Boolean(
   !SUPABASE_ANON_KEY.includes('your_anon_key')
 );
 
-/** True when any real backend (Firebase or legacy REST) is wired up. */
-const isConfigured = isFirebaseConfigured || isLegacyConfigured;
+/** True when any real backend (Supabase or Firebase) is wired up. */
+const isConfigured = isLegacyConfigured || isFirebaseConfigured;
 
-/** Which backend is actually serving requests. */
-export const backendKind: 'firebase' | 'legacy' | 'local' = isFirebaseConfigured
-  ? 'firebase'
-  : isLegacyConfigured
-    ? 'legacy'
+/** Which backend is actually serving requests. Supabase wins when configured. */
+export const backendKind: 'supabase' | 'firebase' | 'local' = isLegacyConfigured
+  ? 'supabase'
+  : isFirebaseConfigured
+    ? 'firebase'
     : 'local';
 
 // ============================================================
@@ -154,14 +154,6 @@ let _client: any = null;
 function getOrCreateClient(): any {
   if (_client) return _client;
 
-  if (isFirebaseConfigured) {
-    // Loaded lazily so projects without Firebase config never pay the bundle cost at init.
-    const { createFirebaseBackend } = requireFirebaseAdapter();
-    _client = createFirebaseBackend();
-    console.log('[ShadowTalk] Firebase backend initialized (Auth + Firestore + Storage).');
-    return _client;
-  }
-
   if (isLegacyConfigured) {
     _client = createClient(SUPABASE_URL!, SUPABASE_ANON_KEY!, {
       auth: {
@@ -173,12 +165,20 @@ function getOrCreateClient(): any {
       realtime: { params: { eventsPerSecond: 10 } },
       db: { schema: 'public' },
     });
-    console.log('[ShadowTalk] Legacy REST backend initialized.');
+    console.log('[ShadowTalk] Cloud backend initialized (Auth + Postgres + Storage).');
+    return _client;
+  }
+
+  if (isFirebaseConfigured) {
+    // Legacy fallback only — kept so older Firebase-only deployments keep working.
+    const { createFirebaseBackend } = requireFirebaseAdapter();
+    _client = createFirebaseBackend();
+    console.log('[ShadowTalk] Firebase backend initialized (legacy fallback).');
     return _client;
   }
 
   console.warn(
-    '[ShadowTalk] No backend configured. Set the VITE_FIREBASE_* variables in .env to connect Firebase. ' +
+    '[ShadowTalk] No backend configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in .env. ' +
     'Running in local-only mode — all backend operations are no-ops.'
   );
   _client = createStubClient();
