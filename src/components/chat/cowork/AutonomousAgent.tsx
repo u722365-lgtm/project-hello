@@ -60,28 +60,21 @@
    projectName: string;
  }
  
- // Firebase configuration template
- const FIREBASE_CONFIG_TEMPLATE = `// Firebase Configuration
- import { initializeApp } from 'firebase/app';
- import { getAuth } from 'firebase/auth';
- import { getFirestore } from 'firebase/firestore';
- import { getStorage } from 'firebase/storage';
- import { getFunctions } from 'firebase/functions';
- 
- const firebaseConfig = {
-   apiKey: process.env.VITE_FIREBASE_API_KEY,
-   authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN,
-   projectId: process.env.VITE_FIREBASE_PROJECT_ID,
-   storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET,
-   messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-   appId: process.env.VITE_FIREBASE_APP_ID
- };
- 
- export const app = initializeApp(firebaseConfig);
- export const auth = getAuth(app);
- export const db = getFirestore(app);
- export const storage = getStorage(app);
- export const functions = getFunctions(app);
+ // Supabase configuration template
+ const SUPABASE_CONFIG_TEMPLATE = `// Supabase Configuration
+ import { createClient } from '@supabase/supabase-js';
+
+ const supabaseUrl = process.env.VITE_SUPABASE_URL;
+ const supabaseAnonKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+   auth: {
+     autoRefreshToken: true,
+     persistSession: true,
+   },
+   realtime: { params: { eventsPerSecond: 10 } },
+   db: { schema: 'public' },
+ });
  `;
  
  // Project templates for different types
@@ -89,27 +82,27 @@
    saas: {
      name: "SaaS Application",
      description: "Full-stack SaaS with auth, dashboard, billing",
-     stack: ["React", "TypeScript", "Firebase", "Stripe", "Tailwind"]
+     stack: ["React", "TypeScript", "Supabase", "Stripe", "Tailwind"]
    },
    ecommerce: {
      name: "E-Commerce Platform",
      description: "Online store with products, cart, checkout",
-     stack: ["React", "TypeScript", "Firebase", "Stripe", "Tailwind"]
+     stack: ["React", "TypeScript", "Supabase", "Stripe", "Tailwind"]
    },
    dashboard: {
      name: "Admin Dashboard",
      description: "Analytics dashboard with charts and data tables",
-     stack: ["React", "TypeScript", "Firebase", "Recharts", "Tailwind"]
+     stack: ["React", "TypeScript", "Supabase", "Recharts", "Tailwind"]
    },
    blog: {
      name: "Blog Platform",
      description: "Content management with markdown support",
-     stack: ["React", "TypeScript", "Firebase", "MDX", "Tailwind"]
+     stack: ["React", "TypeScript", "Supabase", "MDX", "Tailwind"]
    },
    api: {
      name: "API Backend",
      description: "REST/GraphQL API with authentication",
-     stack: ["Node.js", "Express", "Firebase", "TypeScript"]
+     stack: ["Node.js", "Express", "Supabase", "TypeScript"]
    }
  };
  
@@ -131,7 +124,7 @@
      {
        id: "welcome",
        role: "system",
-       content: "👋 **Welcome to Shadow Agent** - Your autonomous coding assistant!\n\nI can help you:\n- 🏗️ Build complete websites, SaaS, and applications\n- 🔥 Set up Firebase backend with auth, database, storage\n- 🐛 Debug and fix issues in your code\n- 📦 Install dependencies and configure tooling\n- 🚀 Deploy production-ready applications\n\n**Just tell me what you want to build!**",
+       content: "👋 **Welcome to Shadow Agent** - Your autonomous coding assistant!\n\nI can help you:\n- 🏗️ Build complete websites, SaaS, and applications\n- 🔥 Set up Supabase backend with auth, database, storage\n- 🐛 Debug and fix issues in your code\n- 📦 Install dependencies and configure tooling\n- 🚀 Deploy production-ready applications\n\n**Just tell me what you want to build!**",
        timestamp: new Date()
      }
    ]);
@@ -256,7 +249,7 @@
  
  **Your Capabilities:**
  - Build full-stack applications using React, TypeScript, and modern web technologies
- - Set up Firebase backend (Authentication, Firestore, Storage, Functions)
+ - Set up Supabase backend (Authentication, Postgres, Storage, Edge Functions)
  - Create responsive UI with Tailwind CSS
  - Implement complete features: auth, dashboards, CRUD, payments, etc.
  - Debug and fix code issues
@@ -286,8 +279,8 @@
  }
  \`\`\`
  
- **Firebase Integration:**
- Always use Firebase for backend. Include proper error handling, loading states, and TypeScript types.
+ **Supabase Integration:**
+ Always use Supabase for backend. Include proper error handling, loading states, and TypeScript types.
  
  Be thorough and create complete, working code. Don't use placeholders - implement full functionality.`;
  
@@ -453,19 +446,19 @@
    
    // Quick actions
    const quickActions = [
-     { label: "Build SaaS", prompt: "Build a complete SaaS application with user authentication, dashboard, and subscription billing using Firebase" },
-     { label: "Add Auth", prompt: "Add Firebase authentication with email/password and Google sign-in to this project" },
-     { label: "Create API", prompt: "Create a REST API with CRUD operations using Firebase Cloud Functions" },
+     { label: "Build SaaS", prompt: "Build a complete SaaS application with user authentication, dashboard, and subscription billing using Supabase" },
+     { label: "Add Auth", prompt: "Add Supabase authentication with email/password and Google sign-in to this project" },
+     { label: "Create API", prompt: "Create a REST API with CRUD operations using Supabase Edge Functions" },
      { label: "Fix Bugs", prompt: "Analyze my code and fix any bugs or issues you find" },
      { label: "Add Database", prompt: "Set up Firestore database with proper collections and security rules" },
-     { label: "Deploy", prompt: "Help me deploy this application to Firebase Hosting" }
+     { label: "Deploy", prompt: "Help me deploy this application" }
    ];
    
    // Use template
    const applyTemplate = (templateKey: string) => {
      const template = PROJECT_TEMPLATES[templateKey];
      if (template) {
-       setInput(`Build a ${template.name}: ${template.description}. Use ${template.stack.join(", ")} as the tech stack. Set up Firebase as the backend and make it production-ready.`);
+       setInput(`Build a ${template.name}: ${template.description}. Use ${template.stack.join(", ")} as the tech stack. Set up Supabase as the backend and make it production-ready.`);
        setActiveTab("chat");
      }
    };
@@ -487,7 +480,7 @@
          <div className="flex items-center gap-1">
            <Badge variant="outline" className="gap-1 text-[10px]">
              <Flame className="h-3 w-3 text-orange-500" />
-             Firebase
+             Supabase
            </Badge>
            <Button
              variant="ghost"
@@ -739,14 +732,14 @@
                  </button>
                ))}
                
-               {/* Firebase Setup Card */}
+               {/* Supabase Setup Card */}
                <div className="p-4 bg-gradient-to-br from-orange-500/10 to-amber-500/10 rounded-lg border border-orange-500/20">
                  <div className="flex items-center gap-2 mb-2">
                    <Flame className="h-5 w-5 text-orange-500" />
-                   <span className="font-medium">Firebase Backend</span>
+                   <span className="font-medium">Supabase Backend</span>
                  </div>
                  <p className="text-xs text-muted-foreground mb-3">
-                   All projects use Firebase for authentication, database, storage, and hosting.
+                   All projects use Supabase for authentication, database, storage, and realtime.
                  </p>
                  <div className="grid grid-cols-2 gap-2 text-xs">
                    <div className="flex items-center gap-1.5">

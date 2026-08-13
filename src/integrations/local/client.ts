@@ -2,16 +2,14 @@
  * ShadowTalk AI — Backend client
  *
  * Backend selection (first match wins):
- *   1. Lovable Cloud (Supabase) — when VITE_SUPABASE_* env vars are present (Auth + Postgres + Storage + Realtime)
- *   2. Firebase — legacy fallback for old deployments
- *   3. Local-only stub — everything becomes a safe no-op
+ *   1. Supabase — when VITE_SUPABASE_* env vars are present (Auth + Postgres + Storage + Realtime)
+ *   2. Local-only stub — everything becomes a safe no-op
  *
  * Every call site keeps using the same surface: `backend.from()`, `backend.auth.*`,
- * `backend.storage.from()`.
+ * `backend.storage.from()`, `backend.rpc()`, `backend.functions.invoke()`.
  */
 
 import { createClient } from '@supabase/supabase-js';
-import { isFirebaseConfigured } from '../firebase/app';
 
 // ============================================================
 // Configuration
@@ -25,22 +23,18 @@ const SUPABASE_ANON_KEY =
   (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined) ||
   (import.meta.env.VITE_API_KEY as string | undefined);
 
-const isLegacyConfigured = Boolean(
+const isSupabaseConfigured = Boolean(
   SUPABASE_URL &&
   SUPABASE_ANON_KEY &&
   !SUPABASE_URL.includes('your-project') &&
   !SUPABASE_ANON_KEY.includes('your_anon_key')
 );
 
-/** True when any real backend (Supabase or Firebase) is wired up. */
-const isConfigured = isLegacyConfigured || isFirebaseConfigured;
+/** True when a real backend (Supabase) is wired up. */
+export const isConfigured = isSupabaseConfigured;
 
-/** Which backend is actually serving requests. Supabase wins when configured. */
-export const backendKind: 'supabase' | 'firebase' | 'local' = isLegacyConfigured
-  ? 'supabase'
-  : isFirebaseConfigured
-    ? 'firebase'
-    : 'local';
+/** Which backend is actually serving requests. */
+export const backendKind: 'supabase' | 'local' = isSupabaseConfigured ? 'supabase' : 'local';
 
 // ============================================================
 // Stub fallback (used when no backend is configured)
@@ -154,7 +148,7 @@ let _client: any = null;
 function getOrCreateClient(): any {
   if (_client) return _client;
 
-  if (isLegacyConfigured) {
+  if (isSupabaseConfigured) {
     _client = createClient(SUPABASE_URL!, SUPABASE_ANON_KEY!, {
       auth: {
         autoRefreshToken: true,
@@ -165,15 +159,7 @@ function getOrCreateClient(): any {
       realtime: { params: { eventsPerSecond: 10 } },
       db: { schema: 'public' },
     });
-    console.log('[ShadowTalk] Cloud backend initialized (Auth + Postgres + Storage).');
-    return _client;
-  }
-
-  if (isFirebaseConfigured) {
-    // Legacy fallback only — kept so older Firebase-only deployments keep working.
-    const { createFirebaseBackend } = requireFirebaseAdapter();
-    _client = createFirebaseBackend();
-    console.log('[ShadowTalk] Firebase backend initialized (legacy fallback).');
+    console.log('[ShadowTalk] Supabase backend initialized (Auth + Postgres + Storage + Realtime).');
     return _client;
   }
 
@@ -183,12 +169,6 @@ function getOrCreateClient(): any {
   );
   _client = createStubClient();
   return _client;
-}
-
-// Static import kept in a helper so the module graph stays synchronous for the proxy.
-import { createFirebaseBackend as _createFirebaseBackend } from '../firebase/adapter';
-function requireFirebaseAdapter() {
-  return { createFirebaseBackend: _createFirebaseBackend };
 }
 
 // ============================================================
@@ -205,5 +185,3 @@ export const backend: any = new Proxy({} as any, {
     return value;
   },
 });
-
-export { isConfigured, isFirebaseConfigured };
