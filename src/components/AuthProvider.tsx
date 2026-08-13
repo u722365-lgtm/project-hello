@@ -118,17 +118,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const bootstrap = async () => {
       try {
-        // Firebase Authentication is the single source of truth.
-        const { data: { session: fbSession } } = await backend.auth.getSession();
+        // Lovable Cloud auth is the single source of truth.
+        const { data: { session: cloudSession } } = await backend.auth.getSession();
         if (!mounted) return;
-        hydrate(fbSession);
+        hydrate(cloudSession);
 
         const { data } = backend.auth.onAuthStateChange((_event: string, next: any) => {
           hydrate(next);
         });
         if (mounted) authSubscription = data?.subscription ?? null;
       } catch (error) {
-        console.warn('[Auth] Firebase session bootstrap failed:', error);
+        console.warn('[Auth] session bootstrap failed:', error);
         if (mounted) {
           applySession(null);
           setUserPlan('free');
@@ -156,21 +156,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (typeof localStorage !== 'undefined') {
       localStorage.removeItem('shadowtalk-local-user');
     }
-    // Clear presence before dropping the Firebase session
-    const currentSession = session;
-    if (currentSession?.user?.id) {
-      goOfflinePresence(currentSession.user.id);
-    }
-    try {
-      await firebaseSignOut();
-    } catch (err) {
-      console.warn('[Auth] Firebase signOut error:', err);
-    }
     try {
       await backend.auth.signOut();
-    } catch {
-      /* adapter signOut is the same Firebase call — ignore duplicates */
+    } catch (err) {
+      console.warn('[Auth] signOut error:', err);
     }
+
     applySession(null);
     setUserPlan('free');
     setSubscribed(false);
