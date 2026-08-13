@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import type { User, Session } from '@/lib/backend-types';
 import { backend, isConfigured } from '@/integrations/local/client';
-import { isFirebaseConfigured, onFirebaseAuthChange, firebaseSignOut, setOnlinePresence, goOfflinePresence } from '@/integrations/firebase';
-import { syncProfileToFirestore } from '@/integrations/firebase/firestore';
+import { syncProfile } from '@/lib/authProfile';
+
 import {
   clearExplicitSignOut,
   hasExplicitSignOut,
