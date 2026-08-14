@@ -35,7 +35,7 @@ const pages: PageEntry[] = [
   { name: "Chatbot", href: "/chatbot", icon: MessageSquare, desc: "AI chat assistant", group: "Core" },
   { name: "Strategy Agent", href: "/strategy", icon: Brain, desc: "AI strategy advisor", group: "Core" },
   { name: "Shadow Workspace", href: "/workspace", icon: Sparkles, desc: "Memory, agents & automations", group: "Core" },
-  { name: "Shadow Execution", href: "/execute", icon: Target, desc: "Multi-step missions & deliverables", group: "Core" },
+  // { name: "Shadow Execution", href: "/execute", icon: Target, desc: "Multi-step missions & deliverables", group: "Core" },
   { name: "Marketplace", href: "/marketplace", icon: Store, desc: "Agent marketplace", group: "Core" },
   { name: "Code IDE", href: "/ide", icon: Code, desc: "Monaco editor & live preview", group: "Core" },
   { name: "Pricing", href: "/pricing", icon: Shield, desc: "Plans & pricing", group: "Core" },
