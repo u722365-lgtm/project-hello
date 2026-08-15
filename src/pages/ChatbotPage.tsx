@@ -467,12 +467,6 @@ const ChatbotPage = () => {
         return;
       }
 
-      if (next === "shadowtalk") {
-        await switchToPlatformDefault();
-        saveCustomAiConfig({ ...loadCustomAiConfig(), usePlatformDefault: true, apiKey: "" });
-        setAiProvider("shadowtalk");
-        return;
-      }
 
       if (!hasStoredKeyForProvider(next, keys)) {
         setPendingByokProvider(next);
