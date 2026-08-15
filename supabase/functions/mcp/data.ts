@@ -228,38 +228,3 @@ export const PRODUCT_CHANGELOG: ProductChangelogEntry[] = [
     ],
   },
 ];
-
-export function mergeChangelogWithCms(
-  cmsEntries: Array<{
-    id?: string;
-    version: string;
-    title: string;
-    description: string;
-    change_type: string;
-    tags?: string[] | null;
-    published_at?: string | null;
-  }>,
-): Array<ProductChangelogEntry & { id?: string }> {
-  const staticVersions = new Set(PRODUCT_CHANGELOG.map((e) => e.version));
-
-  const fromCms: Array<ProductChangelogEntry & { id?: string }> = cmsEntries
-    .filter((e) => !staticVersions.has(e.version))
-    .map((e) => ({
-      id: e.id,
-      version: e.version,
-      title: e.title,
-      summary: e.description,
-      publishedAt: e.published_at?.slice(0, 10) ?? new Date().toISOString().slice(0, 10),
-      tags: (e.tags as string[]) ?? [],
-      changes: [
-        {
-          type: (e.change_type as ChangelogChangeType) || "improvement",
-          text: e.description,
-        },
-      ],
-    }));
-
-  return [...PRODUCT_CHANGELOG, ...fromCms].sort(
-    (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
-  );
-}
