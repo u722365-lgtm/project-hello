@@ -3,7 +3,7 @@ import { buildFallbackProject } from "./fallbackProject";
 import { parseAppProjectResponse } from "./parseAppProject";
 import type { AppPlatform, AppProject } from "./types";
 
-const CHAT_URL = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`;
+const CHAT_URL = '';
 
 const SYSTEM_PROMPT = `You are an expert full-stack developer building complete runnable apps for ShadowTalk IDE.
 Respond with ONLY valid JSON (no markdown prose outside the JSON). Schema:

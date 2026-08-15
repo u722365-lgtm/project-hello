@@ -48,7 +48,7 @@ const SFX_PRESETS = [
   { label: "Success", prompt: "Achievement unlocked celebration jingle" },
 ];
 
-const API_URL = import.meta.env.VITE_API_BASE_URL;
+const API_URL = '';
 const API_KEY = import.meta.env.VITE_API_KEY;
 
 export function MusicGenerator({ isOpen, onClose, initialPrompt, autoGenerate, onInsertToChat }: MusicGeneratorProps) {
@@ -71,7 +71,7 @@ export function MusicGenerator({ isOpen, onClose, initialPrompt, autoGenerate, o
     setIsGenerating(true);
     
     try {
-      const response = await fetch(`${API_URL}/functions/v1/elevenlabs-audio`, {
+      const response = await fetch(`${API_URL}(removed-edge-function)-audio`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

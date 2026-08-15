@@ -121,7 +121,7 @@ export const MultiModalFusion = ({
 
     // Process item using real AI via vision-analyze or chat
     try {
-      const CHAT_URL = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`;
+      const CHAT_URL = '';
       
       let promptContent = `Analyze this ${item.type} input`;
       if (item.type === 'image' && item.data) {

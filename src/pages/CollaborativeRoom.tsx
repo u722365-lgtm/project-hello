@@ -37,7 +37,7 @@ interface Participant {
   joined_at: string;
 }
 
-const CHAT_URL = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`;
+const CHAT_URL = '';
 
 const CollaborativeRoom = () => {
   const { roomId } = useParams<{ roomId: string }>();

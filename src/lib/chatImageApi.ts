@@ -1,6 +1,6 @@
 /**
  * Non-streaming chat edge calls for image edit / analyze.
- * Uses existing /functions/v1/chat handlers (imageEdit, decodeImage).
+ * Uses existing (removed-edge-function) handlers (imageEdit, decodeImage).
  */
 
 import { backend } from "@/integrations/local/client";

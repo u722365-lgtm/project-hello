@@ -51,7 +51,7 @@ import { stringifyChatBody } from "@/lib/chatRequest";
  };
  
  const STORAGE_KEY = "shadowtalk_daily_plan";
- const CHAT_URL = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`;
+ const CHAT_URL = '';
  
  export const DailyPlanner = ({ isOpen, onClose, onPlanGenerated }: DailyPlannerProps) => {
    const { toast } = useToast();

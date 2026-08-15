@@ -645,7 +645,7 @@ export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl, emb
 
       const headers = await getAuthHeaders();
       const response = await fetchAIWithRetry(
-        `${import.meta.env.VITE_API_BASE_URL}/functions/v1/web-proxy`,
+        '',
         {
           method: "POST", headers,
           body: stringifyChatBody({ url, mode: "proxy" }),
@@ -961,7 +961,7 @@ export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl, emb
     try {
       const headers = await getAuthHeaders();
       const response = await fetchAIWithRetry(
-        `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`,
+        '',
         {
           method: "POST", headers,
           body: stringifyChatBody({
@@ -986,7 +986,7 @@ export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl, emb
       const aiMsgId = crypto.randomUUID();
       setBrowseTogetherMessages(prev => [...prev, { id: aiMsgId, role: "ai", content: "", timestamp: new Date(), type: "translation" }]);
       const response = await fetchAIWithRetry(
-        `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`,
+        '',
         {
           method: "POST", headers,
           body: stringifyChatBody({
@@ -1012,7 +1012,7 @@ export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl, emb
       const aiMsgId = crypto.randomUUID();
       setBrowseTogetherMessages(prev => [...prev, { id: aiMsgId, role: "ai", content: "", timestamp: new Date(), type: "extraction" }]);
       const response = await fetchAIWithRetry(
-        `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`,
+        '',
         {
           method: "POST", headers,
           body: stringifyChatBody({
@@ -1039,7 +1039,7 @@ export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl, emb
     try {
       const headers = await getAuthHeaders();
       const response = await fetchAIWithRetry(
-        `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`,
+        '',
         { method: "POST", headers, body: stringifyChatBody({ messages: [{ role: "user", content: searchQuery }], personality: "professional" }) }
       );
       await parseStreamingResponse(response, content => setAiSummary(content));
@@ -1075,7 +1075,7 @@ export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl, emb
     try {
       const headers = await getAuthHeaders();
       const response = await fetchAIWithRetry(
-        `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`,
+        '',
         {
           method: "POST", headers,
           body: stringifyChatBody({
@@ -1118,7 +1118,7 @@ export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl, emb
     try {
       const headers = await getAuthHeaders();
       const response = await fetchAIWithRetry(
-        `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`,
+        '',
         {
           method: "POST", headers,
           body: stringifyChatBody({

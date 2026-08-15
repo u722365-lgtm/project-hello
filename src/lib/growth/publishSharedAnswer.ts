@@ -1,6 +1,6 @@
 import { backend } from "@/integrations/local/client";
 
-const API_URL = import.meta.env.VITE_API_BASE_URL as string;
+const API_URL = '' as const;
 
 export interface PublishAnswerInput {
   prompt: string;
@@ -25,6 +25,6 @@ export async function publishSharedAnswer(input: PublishAnswerInput): Promise<Pu
   return {
     slug,
     url: `${base}/s/${slug}?utm_source=shared_answer&utm_medium=viral`,
-    ogImageUrl: `${API_URL}/functions/v1/og-answer?slug=${slug}`,
+    ogImageUrl: '',
   };
 }

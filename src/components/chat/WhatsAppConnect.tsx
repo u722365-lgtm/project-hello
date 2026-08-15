@@ -93,7 +93,7 @@ export const WhatsAppConnect = () => {
     const { data: { session } } = await backend.auth.getSession();
 
     const response = await fetch(
-      `${import.meta.env.VITE_API_BASE_URL}/functions/v1/whatsapp-webhook`,
+      '',
       {
         method: "POST",
         headers: {

@@ -99,7 +99,7 @@ export const WebHealthMonitor: React.FC = () => {
     // Check Edge Functions
     const edgeStart = performance.now();
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/functions/v1/`, {
+      const response = await fetch('', {
         method: 'OPTIONS'
       });
       const edgeLatency = Math.round(performance.now() - edgeStart);

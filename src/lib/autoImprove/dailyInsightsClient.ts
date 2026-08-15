@@ -28,7 +28,7 @@ export async function maybeFetchDailyInsights(userId: string): Promise<void> {
     .map((m) => String(m.content).slice(0, 80))
     .slice(0, 5);
 
-  const url = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/generate-insights`;
+  const url = '';
   const { data: sessionData } = await backend.auth.getSession();
   const token = sessionData.session?.access_token;
   if (!token) return;

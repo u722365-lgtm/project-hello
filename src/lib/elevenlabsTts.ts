@@ -19,7 +19,7 @@ export interface ElevenLabsTtsResult {
 export async function fetchElevenLabsSpeech(
   options: ElevenLabsTtsOptions
 ): Promise<ElevenLabsTtsResult> {
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+  const apiBaseUrl = '';
   const anonKey = import.meta.env.VITE_API_KEY;
 
   if (!apiBaseUrl || !anonKey) {
@@ -32,7 +32,7 @@ export async function fetchElevenLabsSpeech(
   }
 
   try {
-    const response = await fetch(`${apiBaseUrl}/functions/v1/elevenlabs-tts`, {
+    const response = await fetch(`${apiBaseUrl}(removed-edge-function)-tts`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

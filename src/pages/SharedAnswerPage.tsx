@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Sparkles, ArrowRight, Loader2, MessageSquare } from "lucide-react";
 
-const API_URL = import.meta.env.VITE_API_BASE_URL as string;
+const API_URL = '' as const;
 
 interface SharedAnswer {
   slug: string;
@@ -51,7 +51,7 @@ const SharedAnswerPage = () => {
     () => (typeof window !== "undefined" ? window.location.href : ""),
     [],
   );
-  const ogImage = `${API_URL}/functions/v1/og-answer?slug=${slug}`;
+  const ogImage = '';
   const title = data?.title || "Answer from ShadowTalk AI";
   const description = data?.prompt?.slice(0, 155) ?? "Free AI chatbot — no login required.";
 

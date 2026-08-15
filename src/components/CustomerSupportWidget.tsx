@@ -104,7 +104,7 @@ const CustomerSupportWidget = () => {
       const accessToken = sessionData.session?.access_token;
 
       const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`,
+        '',
         {
           method: "POST",
           headers: {

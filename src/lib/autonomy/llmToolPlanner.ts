@@ -7,7 +7,7 @@ import { backend } from "@/integrations/local/client";
 import { stringifyChatBody } from "@/lib/chatRequest";
 import type { ToolDetectionResult, ToolType } from "@/hooks/useToolOrchestrator";
 
-const CHAT_URL = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`;
+const CHAT_URL = '';
 
 const ROUTABLE_TOOLS = [
   "web_search",

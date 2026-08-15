@@ -473,7 +473,7 @@ const ShadowAgentPanel: React.FC<ShadowAgentPanelProps> = ({ onExecuteTask, isEx
       const industry = INDUSTRIES.find(i => i.id === selectedIndustry);
       const regionLabels = selectedRegions.map(r => REGIONS.find(reg => reg.id === r)?.label || r);
       
-      const resp = await fetch(`${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`, {
+      const resp = await fetch('', {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

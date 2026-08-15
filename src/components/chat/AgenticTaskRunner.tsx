@@ -42,7 +42,7 @@ interface AgenticTaskRunnerProps {
   autoStart?: boolean;
 }
 
-const CHAT_URL = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`;
+const CHAT_URL = '';
 
 const TASK_TEMPLATES = [
   { icon: Globe, label: "Research & Report", prompt: "Research [topic] and create a detailed report" },

@@ -241,7 +241,7 @@
      
      try {
        const response = await fetch(
-         `${import.meta.env.VITE_API_BASE_URL}/functions/v1/vision-analyze`,
+         '',
          {
            method: 'POST',
            headers: {

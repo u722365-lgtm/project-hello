@@ -51,7 +51,7 @@ import { stringifyChatBody } from "@/lib/chatRequest";
  // Premium models for synthesis
  const SYNTHESIS_MODEL = 'google/gemini-2.5-pro';
  
- const CHAT_URL = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`;
+ const CHAT_URL = '';
  
  export const useMultiModelConsensus = () => {
    const [state, setState] = useState<ConsensusState>({

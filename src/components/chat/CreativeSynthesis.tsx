@@ -59,7 +59,7 @@ interface CreativeSynthesisProps {
 // Constants
 // ──────────────────────────────────────────────
 
-const CHAT_URL = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`;
+const CHAT_URL = '';
 
 const OUTPUT_FORMATS: OutputFormat[] = [
   { id: "twitter_thread", label: "𝕏 Thread", icon: Twitter, category: "social", description: "Viral tweet thread with hooks" },

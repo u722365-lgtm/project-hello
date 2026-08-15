@@ -85,7 +85,7 @@ export const AIAgentWorkflows: React.FC<AIAgentWorkflowsProps> = ({ isOpen, onCl
     try {
       const { data: { session } } = await backend.auth.getSession();
 
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`, {
+      const response = await fetch('', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

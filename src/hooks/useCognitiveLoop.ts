@@ -109,7 +109,7 @@ const SPECIALIST_AGENTS: SpecialistAgent[] = [
   },
 ];
 
-const CHAT_URL = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`;
+const CHAT_URL = '';
 
 export const useCognitiveLoop = () => {
   const [state, setState] = useState<CognitiveState>({

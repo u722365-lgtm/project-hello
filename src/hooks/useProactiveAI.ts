@@ -66,9 +66,9 @@ function isProactiveAIEnabled(): boolean {
 }
 
 function getProactiveAIUrl(): string | null {
-  const base = import.meta.env.VITE_API_BASE_URL;
+  const base = '';
   if (!base) return null;
-  return `${base}/functions/v1/proactive-ai`;
+  return `${base}(removed-edge-function)-ai`;
 }
 
 // ─── AI Message Generator ──────────────────────────────

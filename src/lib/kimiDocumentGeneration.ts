@@ -153,7 +153,7 @@ export function extractDocumentTopic(message: string): string {
     .trim() || message;
 }
 
-export const CHAT_FUNCTION_URL = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`;
+export const CHAT_FUNCTION_URL = '';
 
 export interface StreamDocumentOptions {
   topic: string;

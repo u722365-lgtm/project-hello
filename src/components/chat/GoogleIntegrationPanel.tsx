@@ -118,7 +118,7 @@ export const GoogleIntegrationPanel: React.FC<GoogleIntegrationPanelProps> = ({
       const { data: { session } } = await backend.auth.getSession();
       if (!session) return;
 
-      const resp = await fetch(`${import.meta.env.VITE_API_BASE_URL}/functions/v1/google-api`, {
+      const resp = await fetch('', {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -152,7 +152,7 @@ export const GoogleIntegrationPanel: React.FC<GoogleIntegrationPanelProps> = ({
       const { data: { session } } = await backend.auth.getSession();
       if (!session) return;
 
-      const resp = await fetch(`${import.meta.env.VITE_API_BASE_URL}/functions/v1/google-api`, {
+      const resp = await fetch('', {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -17,7 +17,7 @@ async function callWhatsAppQr(action: string): Promise<WhatsAppQrStartResult> {
   if (!session) return { error: "Sign in required" };
 
   const response = await fetch(
-    `${import.meta.env.VITE_API_BASE_URL}/functions/v1/whatsapp-qr`,
+    '',
     {
       method: "POST",
       headers: {

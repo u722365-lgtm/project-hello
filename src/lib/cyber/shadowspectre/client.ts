@@ -1,7 +1,7 @@
 import { backend } from "@/integrations/local/client";
 import type { AuthorizationContext, ShadowSpectreHead, ShadowSpectreMessage } from "./types";
 
-export const SHADOWSPECTRE_URL = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/shadowspectre`;
+export const SHADOWSPECTRE_URL = '';
 
 export type StreamShadowSpectreOptions = {
   messages: ShadowSpectreMessage[];

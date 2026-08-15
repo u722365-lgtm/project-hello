@@ -5,7 +5,7 @@ import type { ChatMode } from "@/components/chat/ModeSelector";
 import { SHADOWTALK_SELF_KNOWLEDGE_BRIEF } from "@/lib/shadowTalkProductKnowledge";
 import { detectOllamaLocalStatus, chatWithOllama } from "@/lib/chatOllamaFallback";
 
-const CHAT_URL = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`;
+const CHAT_URL = '';
 
 export interface ChatToolRouterMessage {
   id: string;

@@ -303,13 +303,7 @@ const DocsPage = () => {
     }).includes(q);
   }, [q, activeTab]);
 
-  const apiEndpoints = [
-    { method: "POST", endpoint: "/functions/v1/chat", description: "Send a message and receive streaming AI response", example: `{\n  "messages": [{"role": "user", "content": "Hello!"}],\n  "personality": "friendly"\n}` },
-    { method: "POST", endpoint: "/functions/v1/cyber-ai-copilot", description: "Security-focused AI assistant with specialized modes", example: `{\n  "messages": [{"role": "user", "content": "Analyze CVE-2026-0217"}],\n  "mode": "exploit"\n}` },
-    { method: "POST", endpoint: "/functions/v1/website-security-scan", description: "Scan a website for security headers and vulnerabilities", example: `{\n  "url": "https://example.com",\n  "scanDepth": "standard"\n}` },
-    { method: "POST", endpoint: "/functions/v1/web-search", description: "AI-powered web search with summarization", example: `{\n  "query": "latest CVE vulnerabilities 2026"\n}` },
-    { method: "POST", endpoint: "/functions/v1/generate-blog", description: "Generate AI-written blog posts", example: null },
-  ];
+  const apiEndpoints: { method: string; endpoint: string; description: string; example: string | null }[] = [];
 
   const chatModes = [
     { name: "General", icon: MessageSquare, description: "All-purpose assistant for any topic.", color: "from-primary to-primary/60" },

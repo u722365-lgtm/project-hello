@@ -16,7 +16,7 @@ describe("autoRecover / self-heal closure", () => {
         fix1: { action: "retry", pattern: "chat edge 502" },
       }),
     );
-    const handler = findHandlerFor("chat edge 502 on /functions/v1/chat");
+    const handler = findHandlerFor("chat edge 502 on (removed-edge-function)");
     expect(handler?.action).toBe("retry");
   });
 

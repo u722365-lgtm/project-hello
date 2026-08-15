@@ -69,7 +69,7 @@ export const SSOProvider: React.FC<SSOProviderProps> = ({ workspaceId, onConfigu
         throw new Error("You must be signed in to configure SSO");
       }
 
-      const response = await fetch(`${getApiBaseUrl()}/functions/v1/sso-configure`, {
+      const response = await fetch(`''`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -119,7 +119,7 @@ export const SSOProvider: React.FC<SSOProviderProps> = ({ workspaceId, onConfigu
         throw new Error("You must be signed in to configure SSO");
       }
 
-      const response = await fetch(`${getApiBaseUrl()}/functions/v1/sso-configure`, {
+      const response = await fetch(`''`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -169,7 +169,7 @@ export const SSOProvider: React.FC<SSOProviderProps> = ({ workspaceId, onConfigu
         throw new Error("You must be signed in to configure SSO");
       }
 
-      const response = await fetch(`${getApiBaseUrl()}/functions/v1/sso-configure`, {
+      const response = await fetch(`''`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

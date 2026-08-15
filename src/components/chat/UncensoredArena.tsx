@@ -14,7 +14,7 @@ import { stringifyChatBody } from "@/lib/chatRequest";
 type Phase = "intro" | "disclaimer" | "arena";
 type Msg = { role: "user" | "assistant"; content: string };
 
-const CHAT_URL = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`;
+const CHAT_URL = '';
 
 const ARENA_PROMPTS = [
   { icon: Eye, label: "Recon a target with nmap + amass" },

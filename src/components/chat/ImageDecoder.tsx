@@ -5,7 +5,7 @@ import { stringifyChatBody } from "@/lib/chatRequest";
  import { useToast } from "@/hooks/use-toast";
  import { backend } from "@/integrations/local/client";
  
- const CHAT_URL = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`;
+ const CHAT_URL = '';
  
  interface ImageDecoderProps {
    onClose: () => void;

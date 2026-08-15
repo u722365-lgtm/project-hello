@@ -31,7 +31,7 @@ interface VisualReasoningProps {
   onInsertToChat: (content: string) => void;
 }
 
-const CHAT_URL = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`;
+const CHAT_URL = '';
 
 const ANALYSIS_MODES = [
   { id: "explain", label: "Explain", icon: Brain, desc: "Explain the logic within the image" },

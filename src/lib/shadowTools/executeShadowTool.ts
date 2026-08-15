@@ -5,7 +5,7 @@ import type { DeliverableType } from "@/lib/execution/types";
 import { chatAuthHeaders } from "./chatAuthHeaders";
 import type { ExecuteShadowToolContext, ShadowToolResult } from "./types";
 
-const CHAT_URL = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/chat`;
+const CHAT_URL = '';
 
 async function parseChatJsonResponse(resp: Response): Promise<Record<string, unknown>> {
   const text = await resp.text();

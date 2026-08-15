@@ -47,7 +47,7 @@ export function useAutonomousPlanner() {
 
       const needsCognitiveLoop = shouldUseCognitiveLoop(message);
 
-      // SPEED: the LLM planner is a full extra round-trip to /functions/v1/chat
+      // SPEED: the LLM planner is a full extra round-trip to (removed-edge-function)
       // that ran BEFORE every single message — adding ~1s to every reply, even
       // for "hi". Plain conversational turns can never route to a tool, so skip
       // the planner entirely unless the regex detector or the cognitive-loop

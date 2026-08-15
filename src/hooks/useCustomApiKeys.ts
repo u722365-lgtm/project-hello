@@ -27,7 +27,7 @@ async function invokeKeys<T>(action: string, body?: Record<string, unknown>): Pr
   const token = session.session?.access_token;
   if (!token) throw new Error("Sign in required");
 
-  const base = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/user-provider-keys`;
+  const base = '';
   const url = action === "list" ? `${base}?action=list` : `${base}?action=${action}`;
 
   const res = await fetch(url, {

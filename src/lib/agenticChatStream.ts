@@ -62,7 +62,7 @@ export function buildAgenticChatBody(
   return body;
 }
 
-/** Parse OpenAI-style SSE stream from /functions/v1/chat */
+/** Parse OpenAI-style SSE stream from (removed-edge-function) */
 export async function consumeChatSSE(
   resp: Response,
   onDelta: (accumulated: string) => void

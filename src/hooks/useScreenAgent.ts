@@ -126,7 +126,7 @@ export function useScreenAgent() {
     setState(s => ({ ...s, isAnalyzing: true, streamedResponse: '', error: null }));
 
     try {
-      const url = `${import.meta.env.VITE_API_BASE_URL}/functions/v1/screen-analyze`;
+      const url = '';
       const resp = await fetch(url, {
         method: 'POST',
         headers: {
