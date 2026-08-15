@@ -1,40 +1,12 @@
-import { canRunLocalAgentCompletion, streamLocalAgentCompletion } from "@/lib/desktop/localAgentCompletion";
 import { stringifyChatBody } from "@/lib/chatRequest";
-import { chat as ollamaChat, getStatus as getOllamaStatus } from "@/lib/ollama/unifiedClient";
-import { shouldPreferOllamaInference } from "@/lib/desktop/sovereignMode";
 
 const CHAT_URL = '';
-
-async function tryOllamaFallback(userContent: string, signal?: AbortSignal): Promise<string | null> {
-  try {
-    const status = await getOllamaStatus();
-    if (!status.reachable) return null;
-    const res = await ollamaChat(
-      [{ role: "user", content: userContent }],
-      { signal },
-    );
-    if (res.ok && res.content) return res.content;
-  } catch {
-    /* ollama not available — continue */
-  }
-  return null;
-}
 
 export async function streamChatCompletion(
   accessToken: string,
   userContent: string,
   options?: { model?: string; mode?: string; signal?: AbortSignal }
 ): Promise<string> {
-  if (canRunLocalAgentCompletion()) {
-    return streamLocalAgentCompletion(userContent, { signal: options?.signal });
-  }
-
-  // Ollama default provider — try before cloud (probes daemon directly).
-  if (shouldPreferOllamaInference()) {
-    const local = await tryOllamaFallback(userContent, options?.signal);
-    if (local !== null) return local;
-  }
-
   const response = await fetch(CHAT_URL, {
     method: "POST",
     headers: {
@@ -51,11 +23,6 @@ export async function streamChatCompletion(
   });
 
   if (!response.ok) {
-    // Cloud credits exhausted / rate limited — try local Ollama as last resort.
-    if (response.status === 402 || response.status === 429 || response.status === 503) {
-      const local = await tryOllamaFallback(userContent, options?.signal);
-      if (local !== null) return local;
-    }
     const errText = await response.text().catch(() => "");
     if (response.status === 429) throw new Error("Rate limit reached. Please wait a minute before retrying.");
     if (response.status === 402) throw new Error("AI credits exhausted for this workspace. Add credits to continue.");

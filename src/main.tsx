@@ -8,7 +8,6 @@ import { configureTransformersEnv, warmWebGPUProbe } from "./lib/webgpuRuntime";
 import { warmHardwareProfile, prewarmFastestLocalPath } from "./lib/hardwareIntelligence";
 import { installViteChunkRecovery, clearViteChunkRecoveryFlag } from "./lib/viteChunkRecovery";
 import { applyAnonymousAutonomousDefaults } from "./lib/anonymousAutonomousMode";
-import { applyOllamaDefaultProvider } from "./lib/ollama/defaultProvider";
 import { applyPerfProfile } from "./lib/perf/devicePerfTier";
 
 // Detect device perf tier ASAP so CSS degrades heavy effects on low-end hardware.
@@ -20,7 +19,6 @@ installViteChunkRecovery();
 initPerformanceMonitoring();
 
 applyAnonymousAutonomousDefaults();
-applyOllamaDefaultProvider();
  
 // Report errors to console in production
 if (import.meta.env.PROD) {
@@ -39,7 +37,6 @@ deferNonCritical(() => {
   warmWebGPUProbe();
   warmHardwareProfile();
   prewarmFastestLocalPath();
-  void import("./lib/desktop/warmSovereignDesktop").then((m) => m.warmSovereignDesktop());
 });
 
 // Defer non-critical initialization

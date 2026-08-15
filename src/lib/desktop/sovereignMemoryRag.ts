@@ -9,7 +9,7 @@ import {
   upsertLocalMemory,
   type MemoryCategory,
 } from "@/lib/desktop/localMemoryStore";
-import { isSovereignModeEnabled, shouldPreferOllamaInference } from "@/lib/desktop/sovereignMode";
+import { isSovereignModeEnabled } from "@/lib/desktop/sovereignMode";
 import type { RouterMessage } from "@/lib/offline/hybridRouter";
 
 const INDEX_ENABLED_KEY = "shadowtalk_sovereign_memory_index";
@@ -28,7 +28,7 @@ export function setSovereignMemoryEnabled(enabled: boolean): void {
 export function shouldUseLocalMemoryRag(): boolean {
   if (!isShadowTalkDesktop()) return false;
   if (!isSovereignMemoryEnabled()) return false;
-  return isSovereignModeEnabled() || shouldPreferOllamaInference();
+  return isSovereignModeEnabled();
 }
 
 export async function indexSovereignMemory(

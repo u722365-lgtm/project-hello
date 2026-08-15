@@ -7,7 +7,6 @@ vi.mock("@/lib/desktopBridge", () => ({
 
 vi.mock("@/lib/desktop/sovereignMode", () => ({
   isSovereignModeEnabled: vi.fn(() => true),
-  shouldPreferOllamaInference: vi.fn(() => true),
 }));
 
 vi.mock("@/lib/desktop/localMemoryStore", () => ({

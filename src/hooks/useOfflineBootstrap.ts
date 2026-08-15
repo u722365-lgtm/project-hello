@@ -1,7 +1,7 @@
 /**
  * Tier A bootstrap — install default SmolLM for all users (web + desktop).
  * Tier C: desktop may skip download when bundled model flag is set.
- * Tier D: desktop with Ollama skips Tier A — sovereign path handles offline chat.
+ * Desktop with on-device models may skip Tier A — sovereign path handles offline chat.
  */
 
 import { useCallback, useEffect, useState } from "react";

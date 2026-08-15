@@ -72,7 +72,6 @@ import GlobalMaintenanceNotice from "@/components/GlobalMaintenanceNotice";
  const SettingsPage = lazy(() => import("./pages/SettingsPage"));
  const APIPage = lazy(() => import("./pages/APIPage"));
  const EnterpriseSettingsPage = lazy(() => import("./pages/EnterpriseSettingsPage"));
- const LocalModelsPage = lazy(() => import("./pages/LocalModelsPage"));
  const PrivateAiHubPage = lazy(() => import("./pages/PrivateAiHubPage"));
  const AboutPage = lazy(() => import("./pages/AboutPage"));
 const TeamPage = lazy(() => import("./pages/TeamPage"));
@@ -301,7 +300,7 @@ const AnimatedRoutes = () => {
           <Route path="/sovereign-data" element={<PageTransition><SovereignDataPage /></PageTransition>} />
           <Route path="/wallet" element={<PageTransition><SovereignWalletPage /></PageTransition>} />
           <Route path="/ghost-ads" element={<PageTransition><GhostAdsPage /></PageTransition>} />
-          <Route path="/offline-license" element={<PageTransition><LocalModelsPage /></PageTransition>} />
+          <Route path="/offline-license" element={<Navigate to="/settings" replace />} />
           <Route path="/enterprise-license" element={<Navigate to="/offline-license" replace />} />
           <Route path="/transparency" element={<PageTransition><TransparencyPage /></PageTransition>} />
           <Route path="/studio" element={<Navigate to="/forge?mode=studio" replace />} />
@@ -318,8 +317,8 @@ const AnimatedRoutes = () => {
           <Route path="/download" element={<Navigate to="/downloads" replace />} />
           <Route path="/sessions" element={<PageTransition><SessionsPage /></PageTransition>} />
           <Route path="/self-healing" element={<PageTransition><SelfHealingPage /></PageTransition>} />
-          <Route path="/local-models" element={<PageTransition><LocalModelsPage /></PageTransition>} />
-          <Route path="/settings/local-models" element={<Navigate to="/local-models" replace />} />
+          <Route path="/local-models" element={<Navigate to="/settings" replace />} />
+          <Route path="/settings/local-models" element={<Navigate to="/settings" replace />} />
           <Route path="/abdul-rauf-ceo" element={<PageTransition><AbdulRaufPage /></PageTransition>} />
           <Route path="/muhammad-umar-cfo" element={<PageTransition><MuhammadUmarPage /></PageTransition>} />
           <Route path="/leaderboard" element={<PageTransition><LeaderboardPage /></PageTransition>} />

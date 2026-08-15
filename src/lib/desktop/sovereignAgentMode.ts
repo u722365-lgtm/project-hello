@@ -6,7 +6,6 @@ import { isAnonymousAutonomousEnabled } from "@/lib/anonymousAutonomousMode";
 import { isShadowTalkDesktop } from "@/lib/desktopBridge";
 import {
   getSovereignRoutingMode,
-  isOllamaInferenceReady,
   isSovereignModeEnabled,
 } from "@/lib/desktop/sovereignMode";
 import { isAnyLocalModelReady } from "@/lib/offline/localChat";
@@ -28,11 +27,11 @@ export function shouldUseLocalAgent(): boolean {
   if (!isSovereignAgentsEnabled()) return false;
   const mode = getSovereignRoutingMode();
   if (mode === "cloud-only") return false;
-  const localReady = isOllamaInferenceReady() || isAnyLocalModelReady();
+  const localReady = isAnyLocalModelReady();
   if (isAnonymousAutonomousEnabled() && localReady) return true;
   if (!isShadowTalkDesktop()) return localReady;
   if (mode === "sovereign") return localReady;
-  return isOllamaInferenceReady();
+  return false;
 }
 
 export function shouldUseLocalMissionStore(): boolean {
@@ -42,11 +41,10 @@ export function shouldUseLocalMissionStore(): boolean {
 
 /**
  * Forge pipelines (slides, documents, beast mode) only run locally on the
- * desktop build with a live Ollama runtime. In the browser they always use
- * the cloud so users never hit "Cannot reach Ollama at 127.0.0.1:11434".
+ * desktop build with a local model ready.
  */
 export function shouldUseLocalForge(): boolean {
   if (!isShadowTalkDesktop()) return false;
   if (getSovereignRoutingMode() === "cloud-only") return false;
-  return isOllamaInferenceReady() && shouldUseLocalAgent();
+  return isAnyLocalModelReady() && shouldUseLocalAgent();
 }

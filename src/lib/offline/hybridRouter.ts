@@ -9,9 +9,7 @@
 
 import {
   getSovereignRoutingMode,
-  isOllamaInferenceReady,
   isSovereignModeEnabled,
-  shouldPreferOllamaInference,
 } from "@/lib/desktop/sovereignMode";
 import { canUseCloudAI } from "@/lib/privacy/deviceOnlyPledge";
 import { isShadowTalkDesktop } from "@/lib/desktopBridge";
@@ -24,7 +22,7 @@ import {
 } from "@/lib/hardwareIntelligence";
 
 export type RoutingMode = "auto" | "local-only" | "cloud-only";
-export type LocalInferenceBackend = "ollama" | "browser" | "none";
+export type LocalInferenceBackend = "browser" | "none";
 
 export type RoutingDecision = {
   target: "local" | "cloud";
@@ -78,7 +76,6 @@ function hardwareWantsLocal(profile: HardwareProfile | null): boolean {
 }
 
 function pickLocalBackend(): LocalInferenceBackend {
-  if (shouldPreferOllamaInference() && isOllamaInferenceReady()) return "ollama";
   if (isAnyLocalModelReady()) return "browser";
   return "none";
 }
@@ -94,25 +91,21 @@ export function decideRoute(
   const mode = canUseCloudAI() ? getRoutingMode() : "local-only";
   const sovereignMode = isSovereignModeEnabled();
   const sovereignRouting = isShadowTalkDesktop() ? getSovereignRoutingMode() : null;
-  const ollamaReady = isOllamaInferenceReady();
   const browserLocalReady = isAnyLocalModelReady();
-  const anyLocalReady = ollamaReady || browserLocalReady;
+  const anyLocalReady = browserLocalReady;
   const localBackend = pickLocalBackend();
   const profile = getCachedHardwareProfile();
   const preferLocalHw = shouldPreferLocalInference(profile) && hardwareWantsLocal(profile);
 
-  // Sovereign desktop routing (Odysseus-style — Ollama first)
+  // Sovereign desktop routing — browser models first
   if (sovereignRouting === "sovereign") {
-    if (ollamaReady && !isComplex(messages)) {
-      return localDecision("Sovereign desktop — Ollama local LLM", "ollama");
-    }
     if (browserLocalReady) {
-      return localDecision("Sovereign desktop — browser model fallback", "browser");
+      return localDecision("Sovereign desktop — browser on-device model", "browser");
     }
     if (!isOnline) {
       return {
         target: "cloud",
-        reason: "Sovereign mode: install Ollama and pull a model for offline chat",
+        reason: "Sovereign mode: download a browser model in Settings → Offline AI for offline chat",
         backend: "none",
       };
     }
@@ -123,11 +116,10 @@ export function decideRoute(
   }
 
   if (!isOnline) {
-    if (ollamaReady) return localDecision("Offline — Ollama on-device AI", "ollama");
     if (browserLocalReady) return localDecision("Offline — browser on-device AI", "browser");
     return {
       target: "local",
-      reason: "Offline but no local model — install Ollama or download a browser model",
+      reason: "Offline but no local model — download a browser model in Settings → Offline AI",
       backend: "none",
     };
   }
@@ -137,9 +129,7 @@ export function decideRoute(
       return localDecision(
         isForceOfflineSessionActive()
           ? "Offline-only session — on-device AI"
-          : localBackend === "ollama"
-            ? "Local-only — Ollama"
-            : "Device-only pledge — on-device AI",
+          : "Device-only pledge — on-device AI",
         localBackend,
       );
     }
@@ -158,17 +148,7 @@ export function decideRoute(
     };
   }
 
-  // Auto: Ollama default provider when available (desktop + web with local Ollama)
-  if (ollamaReady && !isComplex(messages) && shouldPreferOllamaInference()) {
-    return localDecision(
-      isShadowTalkDesktop()
-        ? "Ollama default — sovereign desktop"
-        : "Ollama default — local AI provider",
-      "ollama",
-    );
-  }
-
-  // Browser on-device models when Ollama is not ready
+  // Auto: browser on-device models when available
   if (browserLocalReady && !isComplex(messages)) {
     if (preferLocalHw) {
       const hw = profile?.summary ?? "fast hardware";
@@ -183,9 +163,6 @@ export function decideRoute(
 
 
   if (profile?.path === "cloud" || profile?.tier === "cloud") {
-    if (sovereignMode && ollamaReady) {
-      return localDecision("Sovereign — keeping chat on-device despite weak browser GPU", "ollama");
-    }
     return {
       target: "cloud",
       reason: "Cloud turbo — fastest on this device for quality responses",
@@ -204,8 +181,6 @@ export function decideRoute(
     target: "cloud",
     reason: anyLocalReady
       ? "Cloud chosen (complex query or hardware profile)"
-      : isShadowTalkDesktop()
-        ? "Cloud (connect Ollama in Settings for sovereign desktop)"
-        : "Cloud (load a local model in Profile for GPU/CPU turbo)",
+      : "Cloud (load a local model in Profile for GPU/CPU turbo)",
   };
 }

@@ -12,12 +12,11 @@ vi.mock("@/lib/desktopBridge", () => ({
 
 vi.mock("@/lib/desktop/sovereignMode", () => ({
   getSovereignRoutingMode: vi.fn(() => "sovereign"),
-  isOllamaInferenceReady: vi.fn(() => true),
   isSovereignModeEnabled: vi.fn(() => true),
 }));
 
 vi.mock("@/lib/offline/localChat", () => ({
-  isAnyLocalModelReady: vi.fn(() => false),
+  isAnyLocalModelReady: vi.fn(() => true),
 }));
 
 describe("sovereignAgentMode", () => {
@@ -27,7 +26,7 @@ describe("sovereignAgentMode", () => {
     setSovereignAgentsEnabled(true);
   });
 
-  it("enables local agents on desktop when Ollama is ready", () => {
+  it("enables local agents on desktop when local model is ready", () => {
     expect(isSovereignAgentsEnabled()).toBe(true);
     expect(shouldUseLocalAgent()).toBe(true);
   });

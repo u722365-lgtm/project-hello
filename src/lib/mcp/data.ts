@@ -114,7 +114,7 @@ export const FEATURES: FeatureInfo[] = [
     name: "Local Models",
     category: "privacy",
     route: "/personal-llm",
-    description: "Ollama and in-browser models so normal chat stays on your device.",
+    description: "WebLLM and in-browser models so normal chat stays on your device.",
   },
   {
     name: "Marketplace",
@@ -149,7 +149,7 @@ export const FAQS: { question: string; answer: string }[] = [
   {
     question: "Can I run it offline?",
     answer:
-      "Yes. The desktop app bundles a local runtime (Ollama) and the browser app can download an in-browser model, so normal chat works without the cloud.",
+      "Yes. The browser app can download an in-browser model (WebLLM/WebGPU), so normal chat works without the cloud. The desktop app also supports local-first routing.",
   },
   {
     question: "Which platforms are supported?",

@@ -91,12 +91,11 @@ import { MarketplaceAgentBanner } from "@/components/chat/MarketplaceAgentBanner
 import type { MarketplaceAgent, MarketplaceAgentRuntime } from "@/lib/marketplace/types";
 import { runOfflineCompletion } from "@/lib/offline/runOfflineCompletion";
 import { prewarmFastestLocalPath, warmHardwareProfile } from "@/lib/hardwareIntelligence";
-import { runOllamaChat } from "@/lib/desktop/ollamaInference";
 import {
   augmentMessagesWithLocalMemory,
   indexSovereignMemory,
 } from "@/lib/desktop/sovereignMemoryRag";
-import { isSovereignModeEnabled, shouldPreferOllamaInference } from "@/lib/desktop/sovereignMode";
+import { isSovereignModeEnabled } from "@/lib/desktop/sovereignMode";
 import {
   canUseCloudAI,
   DEVICE_ONLY_BLOCKED_MESSAGE,
@@ -305,7 +304,7 @@ const ChatbotPage = () => {
   const [chatMode, setChatMode] = useState<ChatMode>("general");
   const [aiProvider, setAiProvider] = useState<AIProvider>('turbo');
   const { preferences: chatPreferences, isLoading: chatPrefsLoading } = useChatSettings();
-  const hasOllamaDesktop = typeof window !== 'undefined' && (window as any).__TAURI__ && isAnyLocalModelReady();
+  const hasLocalDesktop = typeof window !== 'undefined' && (window as any).__TAURI__ && isAnyLocalModelReady();
   const e2ee = useE2EE();
   const chatPrivate = useChatPrivateMode(e2ee);
   const appliedChatDefaults = useRef(false);
@@ -1113,10 +1112,9 @@ const ChatbotPage = () => {
       const useLocal =
         !hasMultimodalImage &&
         (route.target === "local" ||
-          route.backend === "ollama" ||
           (aiProvider === "shadowtalk" && isAnyLocalModelReady()));
       if (useLocal) {
-        if (!isAnyLocalModelReady() && route.backend !== "ollama") {
+        if (!isAnyLocalModelReady()) {
           prewarmFastestLocalPath();
         }
 
@@ -1143,32 +1141,6 @@ const ChatbotPage = () => {
           });
         };
 
-        if (route.backend === "ollama") {
-          try {
-            const ollama = await runOllamaChat(localMessages, streamToken);
-            if (ollama.ok && (assistantContent || ollama.content)) {
-              const final = assistantContent || ollama.content;
-              if (lastUserText) {
-                void indexSovereignMemory(lastUserText, { category: "chat", source: "user" });
-              }
-              void indexSovereignMemory(final, { category: "chat", source: "assistant" });
-              if (user) {
-                void saveMessage(final, "assistant", conversationId);
-              }
-              void maybeReflectAndPersist({ user }, messages.map((m) => ({ role: m.type === "ai" ? "assistant" : "user", content: m.content })));
-              return final;
-            }
-            if (isSovereignModeEnabled() || !canUseCloudAI()) {
-              throw new Error(ollama.error ?? "Ollama chat failed on-device");
-            }
-            console.warn("[Chat] Ollama path failed, trying browser/cloud:", ollama.error);
-          } catch (e) {
-            if (isSovereignModeEnabled() || !canUseCloudAI()) {
-              throw e instanceof Error ? e : new Error("Ollama unavailable on-device");
-            }
-            console.warn("[Chat] Ollama path failed:", e);
-          }
-        }
 
         const offline = await runOfflineCompletion({
           messages: localMessages,
@@ -1223,7 +1195,7 @@ const ChatbotPage = () => {
         if (isSovereignModeEnabled() || !canUseCloudAI()) {
           throw new Error(
             canUseCloudAI()
-              ? "Sovereign mode is on but no local model responded. Install Ollama, pull a model in Settings → Offline AI, then retry."
+              ? "Sovereign mode is on but no local model responded. Download a browser model in Settings → Offline AI, then retry."
               : DEVICE_ONLY_BLOCKED_MESSAGE,
           );
         }
@@ -1231,46 +1203,6 @@ const ChatbotPage = () => {
 
       if (!canUseCloudAI()) {
         throw new Error(DEVICE_ONLY_BLOCKED_MESSAGE);
-      }
-
-      // Ollama default provider — last chance before cloud for non-complex chat
-      if (!hasMultimodalImage && shouldPreferOllamaInference()) {
-        const aiMessageId = crypto.randomUUID();
-        let assistantContent = "";
-        const streamToken = (token: string) => {
-          assistantContent += token;
-          setMessages((prev) => {
-            const exists = prev.find((m) => m.id === aiMessageId);
-            if (exists) {
-              return prev.map((m) =>
-                m.id === aiMessageId ? { ...m, content: assistantContent } : m,
-              );
-            }
-            return [
-              ...prev,
-              { id: aiMessageId, type: "ai", content: assistantContent, timestamp: new Date() },
-            ];
-          });
-        };
-        try {
-          const ollama = await runOllamaChat(routerMessages, streamToken, controller.signal);
-          if (ollama.ok && (assistantContent || ollama.content)) {
-            const final = assistantContent || ollama.content;
-            const lastUserText =
-              [...routerMessages].reverse().find((m) => m.role === "user")?.content ?? "";
-            if (lastUserText) {
-              void indexSovereignMemory(lastUserText, { category: "chat", source: "user" });
-            }
-            void indexSovereignMemory(final, { category: "chat", source: "assistant" });
-            if (user) {
-              void saveMessage(final, "assistant", conversationId);
-            }
-            void maybeReflectAndPersist({ user }, messages.map((m) => ({ role: m.type === "ai" ? "assistant" : "user", content: m.content })));
-            return final;
-          }
-        } catch (e) {
-          console.warn("[Chat] Ollama default provider unavailable, using cloud:", e);
-        }
       }
 
       const chatUrl = getChatFunctionUrl();
@@ -1336,7 +1268,7 @@ const ChatbotPage = () => {
           setAiProvider('shadowtalk');
           toast({
             title: 'Switching to local AI',
-            description: 'Platform credits are exhausted. Continuing on-device with Ollama/local ShadowTalk.',
+            description: 'Platform credits are exhausted. Continuing on-device with local AI.',
           });
           const offline = await runOfflineCompletion({
             messages: chatMessages.map((m) => ({ role: (m.role === 'assistant' ? 'assistant' : m.role === 'system' ? 'system' : 'user') as 'assistant' | 'system' | 'user', content: typeof m.content === 'string' ? m.content : '' })),

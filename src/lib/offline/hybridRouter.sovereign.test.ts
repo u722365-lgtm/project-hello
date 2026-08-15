@@ -7,13 +7,11 @@ vi.mock("@/lib/desktopBridge", () => ({
 
 vi.mock("@/lib/desktop/sovereignMode", () => ({
   getSovereignRoutingMode: vi.fn(() => "sovereign"),
-  isOllamaInferenceReady: vi.fn(() => true),
   isSovereignModeEnabled: vi.fn(() => true),
-  shouldPreferOllamaInference: vi.fn(() => true),
 }));
 
-vi.mock("./localChat", () => ({
-  isAnyLocalModelReady: vi.fn(() => false),
+vi.mock("@/lib/offline/localChat", () => ({
+  isAnyLocalModelReady: vi.fn(() => true),
 }));
 
 describe("decideRoute sovereign desktop", () => {
@@ -21,10 +19,10 @@ describe("decideRoute sovereign desktop", () => {
     vi.clearAllMocks();
   });
 
-  it("routes to Ollama in sovereign mode when ready", () => {
+  it("routes to browser model in sovereign mode when local model is ready", () => {
     const route = decideRoute([{ role: "user", content: "Hello" }], true);
     expect(route.target).toBe("local");
-    expect(route.backend).toBe("ollama");
+    expect(route.backend).toBe("browser");
     expect(route.reason).toMatch(/sovereign/i);
   });
 });

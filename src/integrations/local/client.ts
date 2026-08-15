@@ -2,7 +2,7 @@
  * ShadowTalk AI — Backend client (local-only stub)
  *
  * All backend operations are safe no-ops.
- * The app runs fully on-device (Ollama / WebLLM / WebGPU / BYOK).
+ * The app runs fully on-device (WebLLM / WebGPU / BYOK).
  */
 
 // ============================================================
@@ -116,7 +116,7 @@ const _client = createStubClient();
 
 console.log(
   '[ShadowTalk] Running in local-only mode — all backend operations are no-ops. ' +
-  'Inference uses BYOK, WebLLM, or Ollama.'
+  'Inference uses BYOK or WebLLM.'
 );
 
 export const backend: any = new Proxy({} as any, {

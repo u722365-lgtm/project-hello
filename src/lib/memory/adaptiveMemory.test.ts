@@ -21,8 +21,8 @@ describe('adaptiveMemory', () => {
 
   it('builds a recall packet string', () => {
     const memory = new AdaptiveMemory({ maxFacts: 10, minConfidence: 0.25 });
-    memory.ingest('Build a ShadowTalk desktop app with Ollama fallback when credits end.');
-    const packet = buildRecallPacket(memory, 'Ollama');
+    memory.ingest('Build a ShadowTalk desktop app with local model fallback when credits end.');
+    const packet = buildRecallPacket(memory, 'local model');
     expect(packet).toContain('[Memory hints]');
   });
 

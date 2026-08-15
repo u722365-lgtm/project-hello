@@ -289,7 +289,7 @@ export const GOOGLE_TOPIC_PAGES: GoogleTopicPage[] = [
         heading: "How ShadowTalk protects your data",
         paragraphs: [
           "Your API keys are stored encrypted on your device (BYOK); the workspace never sits between you and your provider by default.",
-          "Enable the device-only pledge and offline models (WebLLM / Ollama) to keep conversations entirely local with zero network calls.",
+          "Enable the device-only pledge and offline models (WebLLM) to keep conversations entirely local with zero network calls.",
         ],
       },
       {

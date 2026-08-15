@@ -48,7 +48,7 @@ const pillars = [
   {
     icon: KeyRound,
     title: "Bring your own key",
-    body: "Prefer to route through your own OpenAI, Anthropic, Google, or Ollama endpoint? BYOK is a first-class option.",
+    body: "Prefer to route through your own OpenAI, Anthropic, or Google endpoint? BYOK is a first-class option.",
   },
 ];
 

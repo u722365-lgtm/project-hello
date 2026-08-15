@@ -13,7 +13,6 @@ export type AiProviderId =
   | 'groq'
   | 'gemini'
   | 'kimi'
-  | 'ollama'
   | '';
 
 /** Legacy alias used across chat components. */

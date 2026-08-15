@@ -13,7 +13,6 @@ export type CustomAiProviderId =
   | 'groq'
   | 'gemini'
   | 'kimi'
-  | 'ollama'
   | '';
 
 export type CustomAiKeysConfig = {

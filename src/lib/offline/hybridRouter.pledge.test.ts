@@ -14,7 +14,7 @@ describe("hybridRouter device-only pledge", () => {
   it("routes local when pledge is active without interim consent", () => {
     const route = decideRoute([{ role: "user", content: "hello" }], true);
     expect(route.target).toBe("local");
-    expect(route.reason.toLowerCase()).toMatch(/device-only|local|ollama|offline|load/);
+    expect(route.reason.toLowerCase()).toMatch(/device-only|local|offline|load/);
   });
 
   it("can route to cloud with interim consent while online", () => {

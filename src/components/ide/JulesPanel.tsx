@@ -59,7 +59,7 @@ export function JulesPanel({ files, activeFileName, onApplyChanges }: JulesPanel
         <div className="p-3 space-y-3">
           <p className="text-[11px] text-muted-foreground leading-relaxed">
             {pledged
-              ? "Your code never leaves this device. Inference runs in your browser or local Ollama — we cannot see your workspace."
+              ? "Your code never leaves this device. Inference runs in your browser or via BYOK — we cannot see your workspace."
               : "Running on-device. Cloud agents are disabled unless you opt in under Privacy settings."}
           </p>
 
