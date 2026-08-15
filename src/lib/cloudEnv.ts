@@ -1,63 +1,44 @@
-/** Build-time ShadowTalk backend config (Vite inlines VITE_* at compile time). */
+/** Build-time ShadowTalk backend config.
+ * Local-only mode — all functions return empty strings / false.
+ */
 
-/** Returns the Supabase project URL (supports both new and legacy env var names). */
+/** Always returns empty string in local-only mode. */
 export function getApiBaseUrl(): string {
-  const url =
-    (import.meta.env.VITE_SUPABASE_URL as string | undefined) ||
-    (import.meta.env.VITE_API_BASE_URL as string | undefined);
-  if (!url || url.includes("your-project")) {
-    return "";
-  }
-  return url.replace(/\/$/, "");
+  return "";
 }
 
-/** Returns the Supabase anon key (supports both new and legacy env var names). */
+/** Always returns empty string in local-only mode. */
 export function getApiKey(): string {
-  const key =
-    (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined) ||
-    (import.meta.env.VITE_API_KEY as string | undefined);
-  if (!key || key.includes("your_anon_key")) {
-    return "";
-  }
-  return key;
+  return "";
 }
 
+/** Always returns false — no cloud configured. */
 export function isCloudConfigured(): boolean {
-  return Boolean(getApiBaseUrl() && getApiKey());
+  return false;
 }
 
+/** Always returns empty string. */
 export function getChatFunctionUrl(): string {
-  const base = getApiBaseUrl();
-  if (!base) return "";
-  return `${base}/functions/v1/chat`;
+  return "";
 }
 
-export function getChatFetchHeaders(accessToken?: string | null): Record<string, string> {
-  const anon = getApiKey();
-  const token = accessToken || anon;
-  const headers: Record<string, string> = {
+/** Returns minimal headers (no auth). */
+export function getChatFetchHeaders(_accessToken?: string | null): Record<string, string> {
+  return {
     "Content-Type": "application/json",
   };
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
-  if (anon) {
-    headers.apikey = anon;
-  }
-  return headers;
 }
 
 export const DESKTOP_ENV_SETUP_HINT =
-  "Copy env.example to .env with your ShadowTalk backend URL and anon key, then rebuild: npm run desktop:make";
+  "ShadowTalk runs in local-only mode. Configure BYOK keys in Settings for cloud inference.";
 
-/** Browser/network failures often surface as this generic message in Electron. */
+/** Format a fetch error for display. */
 export function formatChatFetchError(err: unknown): string {
   const msg =
     err instanceof Error ? err.message : "Error connecting to chat service.";
   if (msg === "Failed to fetch" || msg.includes("NetworkError")) {
     return (
-      "Could not reach the chat service. Quit the app, reinstall the latest shadowtalk-setup.exe, " +
-      "then sign in from Settings. See DESKTOP.md."
+      "Could not reach the chat service. Check your internet connection and BYOK settings."
     );
   }
   return msg;

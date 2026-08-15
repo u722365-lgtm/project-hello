@@ -1,9 +1,7 @@
 /**
- * Remote auth — uses Supabase Auth when configured.
- * Falls back to local-only when Supabase is not available.
+ * Remote auth — local-only mode stub.
+ * All auth is handled via the local backend stub.
  */
-
-import { backend, isConfigured } from '@/integrations/local/client';
 
 export type AuthProvider = "google" | "apple";
 
@@ -19,24 +17,12 @@ export class MissingOAuthSecretError extends Error {
   }
 }
 
-export async function signInWithRemoteProvider(provider: AuthProvider, opts?: SignInOptions) {
-  if (!isConfigured) {
-    return { error: new Error('Supabase not configured. Please add VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY to .env') };
-  }
-  try {
-    const { data, error } = await backend.auth.signInWithOAuth({
-      provider,
-      redirectTo: opts?.redirect_uri || window.location.origin + '/auth',
-    });
-    if (error) return { error };
-    return { redirected: true, url: data.url };
-  } catch (err: any) {
-    return { error: err };
-  }
+export async function signInWithRemoteProvider(provider: AuthProvider, _opts?: SignInOptions) {
+  return { error: new Error(`${provider} OAuth is not available in local-only mode. Please sign in with email.`) };
 }
 
 export function isLocalFirst(): boolean {
-  return !isConfigured;
+  return true;
 }
 
 export async function signInWithLocalPreferredProvider() {

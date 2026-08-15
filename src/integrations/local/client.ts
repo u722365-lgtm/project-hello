@@ -1,43 +1,12 @@
 /**
- * ShadowTalk AI — Backend client
+ * ShadowTalk AI — Backend client (local-only stub)
  *
- * Backend selection (first match wins):
- *   1. Supabase — when VITE_SUPABASE_* env vars are present (Auth + Postgres + Storage + Realtime)
- *   2. Local-only stub — everything becomes a safe no-op
- *
- * Every call site keeps using the same surface: `backend.from()`, `backend.auth.*`,
- * `backend.storage.from()`, `backend.rpc()`, `backend.functions.invoke()`.
+ * All backend operations are safe no-ops.
+ * The app runs fully on-device (Ollama / WebLLM / WebGPU / BYOK).
  */
 
-import { createClient } from '@supabase/supabase-js';
-
 // ============================================================
-// Configuration
-// ============================================================
-
-const SUPABASE_URL =
-  (import.meta.env.VITE_SUPABASE_URL as string | undefined) ||
-  (import.meta.env.VITE_API_BASE_URL as string | undefined);
-
-const SUPABASE_ANON_KEY =
-  (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined) ||
-  (import.meta.env.VITE_API_KEY as string | undefined);
-
-const isSupabaseConfigured = Boolean(
-  SUPABASE_URL &&
-  SUPABASE_ANON_KEY &&
-  !SUPABASE_URL.includes('your-project') &&
-  !SUPABASE_ANON_KEY.includes('your_anon_key')
-);
-
-/** True when a real backend (Supabase) is wired up. */
-export const isConfigured = isSupabaseConfigured;
-
-/** Which backend is actually serving requests. */
-export const backendKind: 'supabase' | 'local' = isSupabaseConfigured ? 'supabase' : 'local';
-
-// ============================================================
-// Stub fallback (used when no backend is configured)
+// Stub fallback (local-only mode)
 // ============================================================
 
 function chainable<T = any>(result: T = {} as T): any {
@@ -140,48 +109,28 @@ function createStubClient(): any {
 }
 
 // ============================================================
-// Client factory
+// Export: lazy-initialized singleton (always local-only)
 // ============================================================
 
-let _client: any = null;
+const _client = createStubClient();
 
-function getOrCreateClient(): any {
-  if (_client) return _client;
-
-  if (isSupabaseConfigured) {
-    _client = createClient(SUPABASE_URL!, SUPABASE_ANON_KEY!, {
-      auth: {
-        autoRefreshToken: true,
-        persistSession: true,
-        detectSessionInUrl: true,
-        storageKey: 'shadowtalk-auth-token',
-      },
-      realtime: { params: { eventsPerSecond: 10 } },
-      db: { schema: 'public' },
-    });
-    console.log('[ShadowTalk] Supabase backend initialized (Auth + Postgres + Storage + Realtime).');
-    return _client;
-  }
-
-  console.warn(
-    '[ShadowTalk] No backend configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in .env. ' +
-    'Running in local-only mode — all backend operations are no-ops.'
-  );
-  _client = createStubClient();
-  return _client;
-}
-
-// ============================================================
-// Export: lazy-initialized singleton
-// ============================================================
+console.log(
+  '[ShadowTalk] Running in local-only mode — all backend operations are no-ops. ' +
+  'Inference uses BYOK, WebLLM, or Ollama.'
+);
 
 export const backend: any = new Proxy({} as any, {
   get(_, prop) {
-    const client = getOrCreateClient();
-    const value = (client as any)[prop as string];
+    const value = (_client as any)[prop as string];
     if (typeof value === 'function') {
-      return value.bind(client);
+      return value.bind(_client);
     }
     return value;
   },
 });
+
+/** Always false — no cloud backend configured. */
+export const isConfigured = false;
+
+/** Always 'local' — no cloud backend. */
+export const backendKind: 'local' = 'local';

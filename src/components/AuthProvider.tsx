@@ -37,23 +37,23 @@ export const useAuth = () => {
   return context;
 };
 
-/** Convert a Supabase AuthSession into our local Session type. */
-function toLocalSession(supabaseSession: any): Session | null {
-  if (!supabaseSession) return null;
+/** Convert a cloud auth session into our local Session type. */
+function toLocalSession(cloudSession: any): Session | null {
+  if (!cloudSession) return null;
   return {
-    access_token: supabaseSession.access_token,
-    refresh_token: supabaseSession.refresh_token,
-    token_type: supabaseSession.token_type,
-    expires_in: supabaseSession.expires_in,
-    expires_at: supabaseSession.expires_at,
+    access_token: cloudSession.access_token,
+    refresh_token: cloudSession.refresh_token,
+    token_type: cloudSession.token_type,
+    expires_in: cloudSession.expires_in,
+    expires_at: cloudSession.expires_at,
     user: {
-      id: supabaseSession.user?.id || '',
-      email: supabaseSession.user?.email || null,
-      is_anonymous: supabaseSession.user?.is_anonymous ?? false,
-      app_metadata: supabaseSession.user?.app_metadata || {},
-      user_metadata: supabaseSession.user?.user_metadata || {},
-      aud: supabaseSession.user?.aud || 'authenticated',
-      created_at: supabaseSession.user?.created_at || new Date().toISOString(),
+      id: cloudSession.user?.id || '',
+      email: cloudSession.user?.email || null,
+      is_anonymous: cloudSession.user?.is_anonymous ?? false,
+      app_metadata: cloudSession.user?.app_metadata || {},
+      user_metadata: cloudSession.user?.user_metadata || {},
+      aud: cloudSession.user?.aud || 'authenticated',
+      created_at: cloudSession.user?.created_at || new Date().toISOString(),
     },
   };
 }
@@ -118,7 +118,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const bootstrap = async () => {
       try {
-        // Supabase Cloud auth is the single source of truth.
+        // Cloud auth is the single source of truth.
         const { data: { session: cloudSession } } = await backend.auth.getSession();
         if (!mounted) return;
         hydrate(cloudSession);

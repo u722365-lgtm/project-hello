@@ -60,21 +60,10 @@
    projectName: string;
  }
  
- // Supabase configuration template
- const SUPABASE_CONFIG_TEMPLATE = `// Supabase Configuration
- import { createClient } from '@supabase/supabase-js';
-
- const supabaseUrl = process.env.VITE_SUPABASE_URL;
- const supabaseAnonKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
- export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-   auth: {
-     autoRefreshToken: true,
-     persistSession: true,
-   },
-   realtime: { params: { eventsPerSecond: 10 } },
-   db: { schema: 'public' },
- });
+ // Backend configuration template
+ const BACKEND_CONFIG_TEMPLATE = `// Backend Configuration
+ // ShadowTalk runs in local-only mode.
+ // Connect to your preferred API provider via BYOK keys in Settings.
  `;
  
  // Project templates for different types

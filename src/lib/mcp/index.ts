@@ -2,7 +2,6 @@
  * ShadowTalk AI — MCP Server Definition
  *
  * Self-contained MCP server for product information tools.
- * Previously used @lovable.dev/mcp-js — now decoupled.
  */
 
 import answerFaqTool from "./tools/answer-faq";
