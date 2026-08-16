@@ -87,10 +87,9 @@ export async function streamLocalAgentCompletion(
   prompt: string,
   options: LocalAgentCompletionOptions = {},
 ): Promise<string> {
-  // 1) WebLLM (browser, WebGPU)
-  if (isWebGPUSupported()) {
+  // 1) WebLLM (browser, WebGPU) — only when a model is already loaded on device
+  if (isWebGPUSupported() && isModelLoaded()) {
     try {
-      if (!isModelLoaded()) await loadWebLlmModel();
       const result = await webLlmChat([{ role: 'user', content: prompt }], {
         systemPrompt: options.systemPrompt,
         signal: options.signal,
