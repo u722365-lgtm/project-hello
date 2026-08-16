@@ -1,0 +1,59 @@
+/**
+ * ShadowTalk AI — Firebase app bootstrap (permanent backend).
+ *
+ * Values come from VITE_FIREBASE_* env vars when present, otherwise from the
+ * publishable web config below (safe to ship: Firebase web config is public and
+ * access is governed by firestore.rules / storage.rules).
+ */
+import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
+import { getAuth, type Auth } from 'firebase/auth';
+import { getFirestore, type Firestore } from 'firebase/firestore';
+import { getStorage, type FirebaseStorage } from 'firebase/storage';
+
+const env = (import.meta as any).env ?? {};
+
+const PROJECT_ID = env.VITE_FIREBASE_PROJECT_ID || 'shadowtalk-ai-c2b36';
+
+export const firebaseConfig = {
+  apiKey: env.VITE_FIREBASE_API_KEY || 'AIzaSyB4bkqV5WjL5apPD5pd7xfW1Z28IQSaJsk',
+  authDomain: env.VITE_FIREBASE_AUTH_DOMAIN || `${PROJECT_ID}.firebaseapp.com`,
+  projectId: PROJECT_ID,
+  storageBucket: env.VITE_FIREBASE_STORAGE_BUCKET || `${PROJECT_ID}.firebasestorage.app`,
+  messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID || undefined,
+  appId: env.VITE_FIREBASE_APP_ID || undefined,
+};
+
+/** Base URL for Cloud Functions (used by `backend.functions.invoke`). */
+export const functionsBaseUrl: string =
+  env.VITE_FIREBASE_FUNCTIONS_URL ||
+  `https://${env.VITE_FIREBASE_REGION || 'us-central1'}-${PROJECT_ID}.cloudfunctions.net`;
+
+let _app: FirebaseApp | null = null;
+let _auth: Auth | null = null;
+let _db: Firestore | null = null;
+let _storage: FirebaseStorage | null = null;
+
+export function fbApp(): FirebaseApp {
+  if (!_app) {
+    _app = getApps().length ? getApp() : initializeApp(firebaseConfig as any);
+  }
+  return _app;
+}
+
+export function fbAuth(): Auth {
+  if (!_auth) _auth = getAuth(fbApp());
+  return _auth;
+}
+
+export function fbDb(): Firestore {
+  if (!_db) _db = getFirestore(fbApp());
+  return _db;
+}
+
+export function fbStorage(): FirebaseStorage {
+  if (!_storage) _storage = getStorage(fbApp());
+  return _storage;
+}
+
+/** Firebase is always configured — it is the permanent backend. */
+export const isFirebaseConfigured = true;
