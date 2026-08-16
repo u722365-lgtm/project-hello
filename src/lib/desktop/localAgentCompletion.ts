@@ -4,7 +4,7 @@
  * Runs fully offline: prefers a loaded WebLLM model, falls back to a local
  * Ollama daemon when one is reachable. Never sends data to a cloud provider.
  */
-import { isModelLoaded, loadWebLlmModel, webLlmChat, isWebGPUSupported } from '@/lib/webllm/engine';
+import { isModelLoaded, webLlmChat, isWebGPUSupported } from '@/lib/webllm/engine';
 
 export interface LocalAgentCompletionOptions {
   systemPrompt?: string;

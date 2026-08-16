@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.73.0",
+    "@capacitor/core": "^8.5.0",
     "@composio/core": "^0.14.1",
     "@elevenlabs/react": "^0.13.0",
     "@ffmpeg/ffmpeg": "^0.12.15",

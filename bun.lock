@@ -6,6 +6,7 @@
       "name": "shadowtalk-ai",
       "dependencies": {
         "@anthropic-ai/sdk": "^0.73.0",
+        "@capacitor/core": "^8.5.0",
         "@composio/core": "^0.14.1",
         "@elevenlabs/react": "^0.13.0",
         "@ffmpeg/ffmpeg": "^0.12.15",
@@ -307,6 +308,8 @@
     "@babel/types": ["@babel/types@7.29.7", "", { "dependencies": { "@babel/helper-string-parser": "^7.29.7", "@babel/helper-validator-identifier": "^7.29.7" } }, "sha512-4zBIxpPzowiZpusoFkyGVwakdRJUyuH5PxQ/PrqghfdFWWasvnCdPfQXHrenDai+gyLARulZjZowCOj6fjT4pA=="],
 
     "@bufbuild/protobuf": ["@bufbuild/protobuf@1.10.1", "", {}, "sha512-wJ8ReQbHxsAfXhrf9ixl0aYbZorRuOWpBNzm8pL8ftmSxQx/wnJD5Eg861NwJU/czy2VXFIebCeZnZrI9rktIQ=="],
+
+    "@capacitor/core": ["@capacitor/core@8.5.0", "https://europe-west1-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@capacitor/core/-/core-8.5.0.tgz", { "dependencies": { "tslib": "^2.1.0" } }, "sha512-Ca4krtqH1hothjtBIwf2J2TW7IhYq1ujp8QeItTiJohNsqij8ja2DYYH3DU0l8RmxCWaBAFTGA2TgOgOMCSNsQ=="],
 
     "@composio/client": ["@composio/client@0.1.0-alpha.76", "", {}, "sha512-MXC5JGRVdiQ4EgLricy9o/mqBa1+1T7wHFZ6Q4ZJkrjzZqOMvxTgy21Zlb5J/1oGkB2bg9UDzpH8PkXCp/D4zA=="],
 
