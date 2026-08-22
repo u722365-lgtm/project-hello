@@ -39,7 +39,7 @@ interface ChatMessagesProps {
   includeReferralInShare?: boolean;
 }
 
-export const ChatMessages: React.FC<ChatMessagesProps> = ({
+export const ChatMessagesInner: React.FC<ChatMessagesProps> = ({
   messages,
   isLoading,
   showSuggestions,
@@ -94,13 +94,19 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
     }
   }, [showSuggestions]);
 
-  // Scroll inside the messages panel only — never grow the page,
-  // and only if the user is already near the bottom.
+  // Scroll to bottom on new messages, but use instant scroll while streaming
+  // to avoid triggering layout thrashing on every token.
   useEffect(() => {
     const el = scrollContainerRef.current;
     if (!el || showSuggestions) return;
     if (!stickToBottomRef.current) return;
-    el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    // Use instant scroll while loading (streaming) to avoid triggering
+    // heavy layout recalcs via smooth scroll on every token.
+    if (isLoading) {
+      el.scrollTop = el.scrollHeight;
+    } else {
+      el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+    }
   }, [messages, isLoading, showSuggestions]);
 
   return (
@@ -229,3 +235,5 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
     </div>
   );
 };
+
+export const ChatMessages = React.memo(ChatMessagesInner);

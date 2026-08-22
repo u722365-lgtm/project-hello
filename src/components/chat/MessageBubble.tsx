@@ -67,7 +67,7 @@ interface MessageBubbleProps {
   includeReferralInShare?: boolean;
 }
 
-export const MessageBubble: React.FC<MessageBubbleProps> = ({
+const MessageBubbleInner: React.FC<MessageBubbleProps> = ({
   message,
   index,
   isLoading,
@@ -491,3 +491,19 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
     </motion.div>
   );
 };
+
+/**
+ * Memoised wrapper — prevents all existing message bubbles from re-rendering
+ * on every streaming token. Only re-renders when this specific message changes.
+ */
+export const MessageBubble = React.memo(MessageBubbleInner, (prev, next) => {
+  // Only skip re-render if the message content, speaking state and loading state are identical
+  return (
+    prev.message.id === next.message.id &&
+    prev.message.content === next.message.content &&
+    prev.message.toolExecution?.status === next.message.toolExecution?.status &&
+    prev.isLoading === next.isLoading &&
+    prev.speakingMessageId === next.speakingMessageId &&
+    prev.isSpeaking === next.isSpeaking
+  );
+});
