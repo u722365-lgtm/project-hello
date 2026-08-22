@@ -36,14 +36,14 @@ export function ChatShadowSidebar({ userInitials, userDisplayName, onNewChat, on
 
   return (
     <TooltipProvider delayDuration={300}>
-      <motion.aside animate={{ width }} transition={SETTINGS_SPRING} className={cn("shrink-0 flex flex-col relative z-30 overflow-hidden", mobileDrawer ? "flex h-full min-h-0 bg-[#1c1c1c]" : "hidden md:flex h-full min-h-0 bg-[#1c1c1c]")} style={{ width }}>
+      <motion.aside animate={{ width }} transition={SETTINGS_SPRING} className={cn("shrink-0 flex flex-col relative z-30 overflow-hidden", mobileDrawer ? "flex h-full min-h-0 bg-[#07090f]" : "hidden md:flex h-full min-h-0 bg-[#07090f] border-r border-cyan-500/10")} style={{ width }}>
 
         {/* Top row */}
         <div className={cn("shrink-0 flex items-center", isCollapsed ? "flex-col gap-3 px-2 pt-4 pb-2" : "flex-row gap-2 px-3 pt-4 pb-2")}>
           {onToggleCollapse && !mobileDrawer ? (
             <Tooltip>
               <TooltipTrigger asChild>
-                <motion.button type="button" onClick={() => { settingsHapticTick(); onToggleCollapse(); }} whileHover={{ backgroundColor: "rgba(255,255,255,0.08)" }} whileTap={{ scale: 0.94 }} transition={spring} className="flex h-10 w-10 items-center justify-center rounded-full text-white/70 hover:text-white transition-colors shrink-0" aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}>
+                <motion.button type="button" onClick={() => { settingsHapticTick(); onToggleCollapse(); }} whileHover={{ backgroundColor: "rgba(6,182,212,0.10)" }} whileTap={{ scale: 0.94 }} transition={spring} className="flex h-10 w-10 items-center justify-center rounded-full text-cyan-400/60 hover:text-cyan-300 transition-colors shrink-0" aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}>
                   <Menu className="h-5 w-5" />
                 </motion.button>
               </TooltipTrigger>
@@ -55,7 +55,7 @@ export function ChatShadowSidebar({ userInitials, userDisplayName, onNewChat, on
             {!isCollapsed && (
               <motion.button type="button" onClick={() => { settingsHapticTick(); navigate("/chatbot"); onNavigate?.(); }} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} transition={spring} className="flex items-center gap-2.5 min-w-0">
                 <ShadowTalkLogo size={28} variant="icon" ambient={false} animated={false} />
-                <span className="text-[19px] font-normal text-white/90 tracking-tight whitespace-nowrap select-none">ShadowTalk</span>
+                <span className="text-[19px] font-semibold bg-gradient-to-r from-cyan-300 to-purple-300 bg-clip-text text-transparent whitespace-nowrap select-none tracking-tight">ShadowTalk</span>
               </motion.button>
             )}
           </AnimatePresence>
@@ -66,16 +66,16 @@ export function ChatShadowSidebar({ userInitials, userDisplayName, onNewChat, on
           {isCollapsed ? (
             <Tooltip>
               <TooltipTrigger asChild>
-                <motion.button type="button" onClick={() => { settingsHapticTick(); onNewChat(); }} whileHover={{ backgroundColor: "rgba(255,255,255,0.10)" }} whileTap={{ scale: 0.95 }} transition={spring} className="flex h-12 w-12 mx-auto items-center justify-center rounded-2xl text-white/80 hover:text-white transition-colors" aria-label="New chat">
+                <motion.button type="button" onClick={() => { settingsHapticTick(); onNewChat(); }} whileHover={{ boxShadow: "0 0 16px rgba(6,182,212,0.25)" }} whileTap={{ scale: 0.95 }} transition={spring} className="flex h-12 w-12 mx-auto items-center justify-center rounded-2xl bg-cyan-500/15 border border-cyan-500/25 text-cyan-300 hover:text-cyan-200 hover:bg-cyan-500/20 transition-colors" aria-label="New chat">
                   <SquarePen className="h-5 w-5" />
                 </motion.button>
               </TooltipTrigger>
               <TooltipContent side="right">New chat</TooltipContent>
             </Tooltip>
           ) : (
-            <motion.button type="button" onClick={() => { settingsHapticTick(); onNewChat(); }} whileHover={{ backgroundColor: "rgba(255,255,255,0.10)" }} whileTap={{ scale: 0.98 }} transition={spring} className="flex w-full items-center gap-3 rounded-full bg-white/[0.06] px-4 py-3 text-sm text-white/85 hover:text-white transition-colors">
+            <motion.button type="button" onClick={() => { settingsHapticTick(); onNewChat(); }} whileHover={{ boxShadow: "0 0 20px rgba(6,182,212,0.18)" }} whileTap={{ scale: 0.98 }} transition={spring} className="flex w-full items-center gap-3 rounded-full bg-gradient-to-r from-cyan-500/15 to-purple-500/10 border border-cyan-500/20 px-4 py-3 text-sm text-cyan-300/90 hover:text-cyan-200 hover:border-cyan-500/35 transition-all">
               <SquarePen className="h-4 w-4 shrink-0" />
-              <span className="flex-1 text-left font-normal">New chat</span>
+              <span className="flex-1 text-left font-medium">New chat</span>
             </motion.button>
           )}
         </div>
@@ -86,14 +86,14 @@ export function ChatShadowSidebar({ userInitials, userDisplayName, onNewChat, on
             {isCollapsed ? (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <motion.button type="button" onClick={() => { settingsHapticTick(); onOpenHistory(); }} whileHover={{ backgroundColor: "rgba(255,255,255,0.08)" }} whileTap={{ scale: 0.95 }} transition={spring} className="flex h-11 w-11 mx-auto items-center justify-center rounded-full text-white/60 hover:text-white transition-colors" aria-label="Chat history">
+                  <motion.button type="button" onClick={() => { settingsHapticTick(); onOpenHistory(); }} whileHover={{ backgroundColor: "rgba(6,182,212,0.10)" }} whileTap={{ scale: 0.95 }} transition={spring} className="flex h-11 w-11 mx-auto items-center justify-center rounded-full text-cyan-400/50 hover:text-cyan-300 transition-colors" aria-label="Chat history">
                     <History className="h-4 w-4" />
                   </motion.button>
                 </TooltipTrigger>
                 <TooltipContent side="right">Chat history</TooltipContent>
               </Tooltip>
             ) : (
-              <motion.button type="button" onClick={() => { settingsHapticTick(); onOpenHistory(); }} whileHover={{ backgroundColor: "rgba(255,255,255,0.07)" }} whileTap={{ scale: 0.98 }} transition={spring} className="flex w-full items-center gap-3 rounded-full px-4 py-2.5 text-[13px] font-normal text-white/65 hover:text-white/90 transition-colors">
+              <motion.button type="button" onClick={() => { settingsHapticTick(); onOpenHistory(); }} whileHover={{ backgroundColor: "rgba(6,182,212,0.08)" }} whileTap={{ scale: 0.98 }} transition={spring} className="flex w-full items-center gap-3 rounded-full px-4 py-2.5 text-[13px] font-normal text-slate-400 hover:text-cyan-300 transition-colors">
                 <History className="h-4 w-4 shrink-0" />
                 <span>Chat history</span>
               </motion.button>
@@ -108,21 +108,21 @@ export function ChatShadowSidebar({ userInitials, userDisplayName, onNewChat, on
         <ChatSidebarNavList collapsed={isCollapsed} onItemClick={onNavigate} />
 
         {/* Footer */}
-        <div className={cn("shrink-0 border-t border-white/5", isCollapsed ? "px-2 py-3" : "px-3 py-3")}>
+        <div className={cn("shrink-0 border-t border-cyan-500/10", isCollapsed ? "px-2 py-3" : "px-3 py-3")}>
           {isCollapsed ? (
             <Tooltip>
               <TooltipTrigger asChild>
-                <motion.button type="button" onClick={() => { settingsHapticTick(); navigate("/profile"); onNavigate?.(); }} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.96 }} transition={spring} className="flex h-9 w-9 mx-auto items-center justify-center rounded-full bg-primary text-[12px] font-semibold text-primary-foreground" aria-label="Profile">
+                <motion.button type="button" onClick={() => { settingsHapticTick(); navigate("/profile"); onNavigate?.(); }} whileHover={{ scale: 1.05, boxShadow: "0 0 12px rgba(6,182,212,0.35)" }} whileTap={{ scale: 0.96 }} transition={spring} className="flex h-9 w-9 mx-auto items-center justify-center rounded-full bg-gradient-to-br from-cyan-500 to-purple-600 text-[12px] font-bold text-white" aria-label="Profile">
                   {userInitials}
                 </motion.button>
               </TooltipTrigger>
               <TooltipContent side="right">Profile</TooltipContent>
             </Tooltip>
           ) : (
-            <motion.button type="button" onClick={() => { settingsHapticTick(); navigate("/profile"); onNavigate?.(); }} whileHover={{ backgroundColor: "rgba(255,255,255,0.07)" }} whileTap={{ scale: 0.98 }} transition={spring} className="flex w-full items-center gap-3 rounded-full px-2 py-2 transition-colors">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-[12px] font-semibold text-primary-foreground">{userInitials}</div>
-              <div className="min-w-0 flex-1 text-left"><p className="text-[13px] font-normal text-white/85 truncate">{userDisplayName}</p></div>
-              <ChevronRight className="h-4 w-4 text-white/30 shrink-0" />
+            <motion.button type="button" onClick={() => { settingsHapticTick(); navigate("/profile"); onNavigate?.(); }} whileHover={{ backgroundColor: "rgba(6,182,212,0.07)" }} whileTap={{ scale: 0.98 }} transition={spring} className="flex w-full items-center gap-3 rounded-full px-2 py-2 transition-colors">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-cyan-500 to-purple-600 text-[12px] font-bold text-white shadow-[0_0_12px_rgba(6,182,212,0.3)]">{userInitials}</div>
+              <div className="min-w-0 flex-1 text-left"><p className="text-[13px] font-normal text-slate-300 truncate">{userDisplayName}</p></div>
+              <ChevronRight className="h-4 w-4 text-cyan-500/30 shrink-0" />
             </motion.button>
           )}
         </div>

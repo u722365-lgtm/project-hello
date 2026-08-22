@@ -35,9 +35,9 @@ function NavRow({
     <motion.span
       className={cn(
         "relative flex items-center rounded-full text-[13px] font-normal transition-colors duration-200",
-        !active && "hover:bg-white/[0.08]",
+        !active && "hover:bg-cyan-500/[0.08]",
         collapsed ? "justify-center h-11 w-11 mx-auto" : "gap-3 px-4 py-2.5 w-full",
-        active ? "text-white" : "text-white/60 hover:text-white/90",
+        active ? "text-cyan-300" : "text-slate-400 hover:text-slate-200",
       )}
       whileHover={active ? undefined : { x: collapsed ? 0 : 2 }}
       whileTap={{ scale: 0.97 }}
@@ -46,11 +46,11 @@ function NavRow({
       {active && (
         <motion.span
           layoutId="chat-sidebar-nav-active"
-          className={cn("absolute inset-0 rounded-full bg-white/[0.12]")}
+          className={cn("absolute inset-0 rounded-full bg-cyan-500/[0.12] border border-cyan-500/20")}
           transition={navSpring}
         />
       )}
-      <Icon className={cn("relative z-10 h-4 w-4 shrink-0", active ? "text-white" : "text-white/60")} />
+      <Icon className={cn("relative z-10 h-4 w-4 shrink-0", active ? "text-cyan-400" : "text-slate-500")} />
       {!collapsed && (
         <>
           <span className="relative z-10 flex-1 truncate">{label}</span>
@@ -112,7 +112,7 @@ export function ChatSidebarNavList({ collapsed, onItemClick }: ChatSidebarNavLis
   const renderSection = (title: string, items: ChatSidebarNavItem[]) => (
     <div className={cn("space-y-0.5", collapsed && "space-y-1")}>
       {!collapsed && (
-        <p className="px-3 py-2 text-[10px] font-medium uppercase tracking-[0.18em] text-white/35">
+        <p className="px-3 py-2 text-[10px] font-medium uppercase tracking-[0.18em] text-cyan-500/40">
           {title}
         </p>
       )}
