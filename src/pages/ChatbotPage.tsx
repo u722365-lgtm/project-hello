@@ -2321,16 +2321,8 @@ const ChatbotPage = () => {
             onEnableEncryption={handleEnableChatEncryption}
             onDisableEncryption={chatPrivate.disablePrivateMode}
           />
-          <div className="hidden md:flex items-center justify-between gap-3 px-4 md:px-6 py-2 border-b border-border/20">
-            {!userContextLoading && (
-              <UserContextPanel
-                context={userContext}
-                onContextChange={setUserContext}
-                onSave={() => void saveUserContext(userContext)}
-              />
-            )}
-            <PerceptionDashboard onProactiveSuggestion={(suggestion) => setMessage(suggestion)} />
-          </div>
+
+
           {chatPrivate.active && (
             <motion.div
               initial={{ opacity: 0, y: -4 }}

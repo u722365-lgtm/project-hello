@@ -119,7 +119,7 @@ export function ChatShadowSidebar({
           // backdrop show through. Mobile drawer keeps a light blur for legibility.
           mobileDrawer
             ? "flex h-full min-h-0 bg-sidebar/80 backdrop-blur-2xl"
-            : "hidden md:flex h-full min-h-0 bg-transparent",
+            : "hidden md:flex h-full min-h-0 bg-sidebar/60 backdrop-blur-xl border-r border-sidebar-border/40",
         )}
         style={{ width }}
       >
