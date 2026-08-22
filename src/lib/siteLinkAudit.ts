@@ -2,7 +2,6 @@
 export const CRITICAL_NAV_LINKS = [
   "/home",
   "/chatbot",
-  "/execute",
   "/workspace",
   "/settings",
   "/profile",

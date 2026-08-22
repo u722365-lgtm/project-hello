@@ -2026,7 +2026,7 @@ const ChatbotPage = () => {
         setShowShadowBrowser(true);
         return;
       case "missions":
-        navigate("/execute");
+        navigate("/missioncontrol");
         return;
       case "agentic":
         setShowAgenticRunner(true);
@@ -2461,7 +2461,7 @@ const ChatbotPage = () => {
                     onApprove={() => void approveChatMissionStep()}
                     onReject={() => void rejectPendingStep()}
                     onCancel={() => void cancelExecution()}
-                    onOpenFullControl={() => navigate("/execute")}
+                    onOpenFullControl={() => navigate("/missioncontrol")}
                     compact
                   />
                 </div>

@@ -181,8 +181,6 @@ export const DOC_ROUTES: DocRouteLink[] = [
   { path: "/profile", label: "Profile", desc: "Avatar, billing, linked accounts, API keys shortcut", group: "Account" },
   { path: "/settings", label: "Settings", desc: "Chat defaults, offline AI, BYOK keys, personalization", group: "Account" },
   { path: "/missioncontrol", label: "Mission Control", desc: "Autonomous multi-step missions with approval gates", group: "Agentic" },
-  { path: "/execute", label: "Shadow Execution", desc: "S.E.E. mission runner and workflow executor", group: "Agentic" },
-  { path: "/strategy", label: "Strategy Agent", desc: "Business intelligence, market analysis, planning", group: "Agentic" },
   { path: "/research", label: "Research Hub", desc: "Deep research, knowledge graph, investigation tabs", group: "Research" },
   { path: "/marketplace", label: "Marketplace", desc: "Install specialist agents — legal, code, research, and more", group: "Agents" },
   { path: "/personal-llm", label: "Personal ShadowTalk Model", desc: "On-device learning from your chats; few-shot at inference", group: "Agents" },
@@ -391,7 +389,7 @@ export const DOC_MISSION_CONTROL: DocMissionStep[] = [
     step: 1,
     title: "Define a goal",
     description:
-      "Open /missioncontrol or /execute and describe the outcome — e.g. “Research competitors, draft a one-pager, and email me a summary.” Missions work best with clear success criteria.",
+      "Open /missioncontrol and describe the outcome — e.g. “Research competitors, draft a one-pager, and email me a summary.” Missions work best with clear success criteria.",
   },
   {
     step: 2,
@@ -549,7 +547,6 @@ export const DOC_DESKTOP: DocWorkspaceTopic[] = [
 export const DOC_GLOSSARY: DocGlossaryItem[] = [
   { term: "Sovereign routing", definition: "Default platform AI routing that picks the best available model for your plan without you managing API keys." },
   { term: "BYOK", definition: "Bring Your Own Key — use your Gemini or Kimi API credentials in chat." },
-  { term: "S.E.E.", definition: "Shadow Execution Engine — multi-step autonomous mission runner at /execute." },
   { term: "Mission Control", definition: "UI at /missioncontrol for planning, approving, and monitoring agent missions." },
   { term: "Personal ShadowTalk Model", definition: "On-device learning system that captures your style from chats and injects few-shot examples at inference." },
   { term: "Stealth Vault", definition: "Client-side encrypted storage for sensitive data; Elite plan." },

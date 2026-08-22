@@ -1,7 +1,5 @@
 import { backend } from "@/integrations/local/client";
 import type { ToolType } from "@/hooks/useToolOrchestrator";
-import { buildExecutePath, inferDeliverableType } from "@/lib/execution/inferFromChat";
-import type { DeliverableType } from "@/lib/execution/types";
 import { chatAuthHeaders } from "./chatAuthHeaders";
 import type { ExecuteShadowToolContext, ShadowToolResult } from "./types";
 
@@ -65,9 +63,7 @@ function formatSearchResults(results: Array<{ title?: string; link?: string; sni
 }
 
 const UI_ROUTES: Partial<Record<ToolType, { path: string; label: string }>> = {
-  shadow_execution: { path: "/execute", label: "Shadow Execution" },
-  mission_control: { path: "/execute", label: "Shadow Execution" },
-  strategy_agent: { path: "/execute?mode=strategy_report", label: "Shadow Execution" },
+  mission_control: { path: "/missioncontrol", label: "Mission Control" },
   workspace: { path: "/workspace", label: "AI Workspace" },
   ide: { path: "/ide", label: "Code IDE" },
   computer_mode: { path: "/computer", label: "Computer Mode" },
@@ -266,18 +262,12 @@ export async function executeShadowTool(
       };
     }
 
-    case "shadow_execution":
-    case "mission_control":
-    case "strategy_agent": {
-      const mode = tool === "strategy_agent"
-        ? "strategy_report"
-        : (p.mode as DeliverableType) || inferDeliverableType(message);
+    case "mission_control": {
       return {
         kind: "ui",
-        tool: "shadow_execution",
-        path: UI_ROUTES[tool]?.path ?? "/execute",
+        tool: "mission_control",
+        path: "/missioncontrol",
         state: {
-          mode,
           message,
           params: p,
         },

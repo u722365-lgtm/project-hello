@@ -18,7 +18,7 @@ export const CHAT_COMMAND_NAV_ROUTES: Record<string, string> = {
   "privacy-score": "/security?tab=score",
   theme: "/templates?tab=custom",
   templates: "/templates",
-  missions: "/execute",
+  missions: "/missioncontrol",
 };
 
 /** Open in-chat modals instead of navigating away */

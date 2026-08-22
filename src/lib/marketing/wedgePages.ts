@@ -34,13 +34,13 @@ export const WEDGE_PAGES: WedgePage[] = [
     h1: "AI Strategy Consultant — finish the playbook, not just the brainstorm",
     badge: "Wedge: Strategy Agent",
     snippet:
-      "ShadowTalk AI is an AI strategy consultant workspace: run CEO playbooks, marketing plans, and competitive analysis with Mission Control multi-step missions. Free start at shadowtalk-ai.com/strategy — Pro $5/month undercuts ChatGPT Plus.",
+      "ShadowTalk AI is an AI strategy consultant workspace: run CEO playbooks, marketing plans, and competitive analysis with Mission Control multi-step missions. Free start at shadowtalk-ai.com/chatbot — Pro $5/month undercuts ChatGPT Plus.",
     sections: [
       {
         heading: "What you get vs generic chat",
         paragraphs: [
           "ChatGPT answers strategy questions. ShadowTalk chains research, frameworks, and exportable outputs — SWOT, OKRs, channel plans, and investor one-pagers in one flow.",
-          "Open /strategy or /execute?mode=strategy_report for structured business intelligence with human approval gates before sensitive actions.",
+          "Open Mission Control (/missioncontrol) for structured business intelligence with human approval gates before sensitive actions.",
         ],
       },
       {
@@ -99,7 +99,7 @@ export const WEDGE_PAGES: WedgePage[] = [
     ],
     relatedLinks: [
       { label: "Strategy consultant", href: "/ai-strategy-consultant" },
-      { label: "Execute hub", href: "/execute" },
+      { label: "Mission Control", href: "/missioncontrol" },
       { label: "Pricing", href: "/pricing" },
       { label: "Case studies", href: "/case-studies" },
     ],

@@ -15,8 +15,6 @@ const ROUTABLE_TOOLS = [
   "image_generator",
   "document_generator",
   "presentation_builder",
-  "shadow_execution",
-  "strategy_agent",
   "calculator",
   "shadow_browser",
   "cognitive_loop",
@@ -136,7 +134,6 @@ Available tools: ${ROUTABLE_TOOLS.join(", ")}
 - image_generator: create images (params: prompt)
 - document_generator: long-form doc (params: topic)
 - presentation_builder: slides (params: topic)
-- shadow_execution / strategy_agent: multi-step missions with deliverables
 - calculator: math (params: expression)
 - shadow_browser: open research browser
 - cognitive_loop: hard problems needing multi-agent debate (legal+technical+business)
@@ -149,8 +146,7 @@ Return:
   "needsCognitiveLoop": false,
   "reasoning": "one sentence"
 }
-Use cognitive_loop for trade-offs, ethics, major decisions, or when user asks for multiple expert perspectives.
-Use shadow_execution for multi-step autonomous work. Max 3 steps.`;
+Use cognitive_loop for trade-offs, ethics, major decisions, or when user asks for multiple expert perspectives.`;
 
   const user = `User message:\n${message}${context?.recentGoals ? `\n\nActive goals:\n${context.recentGoals}` : ""}`;
   const raw = await callPlannerLlm(system, user, signal);

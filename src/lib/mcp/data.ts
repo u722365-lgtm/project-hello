@@ -64,7 +64,7 @@ export const FEATURES: FeatureInfo[] = [
   {
     name: "Mission Control",
     category: "automation",
-    route: "/execute",
+    route: "/missioncontrol",
     description:
       "Long-running autonomous missions with real web search, scraping and step-by-step execution logs.",
   },

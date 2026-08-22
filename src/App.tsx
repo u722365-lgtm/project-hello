@@ -118,8 +118,7 @@ const PartnershipsPage = lazy(() => import("./pages/PartnershipsPage"));
   const BusinessMemoryPage = lazy(() => import("./pages/BusinessMemoryPage"));
   const MemoryDashboard = lazy(() => import("@/components/memory/MemoryDashboard"));
   const SecurityHubPage = lazy(() => import("./pages/SecurityHubPage"));
-   // const MissionControlPage = lazy(() => import("./pages/MissionControlPage"));
- // const ExecutePage = lazy(() => import("./pages/ExecutePage"));
+  const MissionControlPage = lazy(() => import("./pages/MissionControlPage"));
    const ReferralPage = lazy(() => import("./pages/ReferralPage"));
 const StrategyLabPage = lazy(() => import("./pages/StrategyLabPage"));
 const SovereignDataPage = lazy(() => import("./pages/SovereignDataPage"));
@@ -270,8 +269,6 @@ const AnimatedRoutes = () => {
           <Route path="/billing" element={<PageTransition><MonetizationPage /></PageTransition>} />
           <Route path="/founder-access" element={<PageTransition><FounderAccessPage /></PageTransition>} />
           <Route path="/lifetime-deal" element={<Navigate to="/pricing" replace />} />
-          {/* <Route path="/execute" element={<PageTransition><ExecutePage /></PageTransition>} /> */}
-          {/* <Route path="/strategy" element={<PageTransition><StrategyAgentPage /></PageTransition>} /> */}
           <Route path="/workspace" element={<PageTransition><WorkspaceHubPage /></PageTransition>} />
           <Route path="/business-memory" element={<Navigate to="/workspace?tab=explore" replace />} />
           <Route path="/ide" element={<PageTransition><IdePage /></PageTransition>} />
@@ -288,7 +285,7 @@ const AnimatedRoutes = () => {
           <Route path="/forge" element={<PageTransition><ContentForgePage /></PageTransition>} />
           <Route path="/video-studio" element={<PageTransition><VideoStudioPage /></PageTransition>} />
           <Route path="/presentations" element={<Navigate to="/forge?mode=slides" replace />} />
-          {/* <Route path="/missioncontrol" element={<PageTransition><MissionControlPage /></PageTransition>} /> */}
+          <Route path="/missioncontrol" element={<PageTransition><MissionControlPage /></PageTransition>} />
           <Route path="/referral" element={<PageTransition><ReferralPage /></PageTransition>} />
           <Route path="/research" element={<PageTransition><ResearchHubPage /></PageTransition>} />
           <Route path="/knowledge" element={<Navigate to="/research?tab=knowledge" replace />} />

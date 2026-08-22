@@ -42,12 +42,7 @@ export const LANDING_PRODUCT_LINKS: LandingProductLink[] = [
     href: "/missioncontrol",
     icon: Target,
   },
-  {
-    label: "Strategy Agent",
-    description: "Planning & research",
-    href: "/strategy",
-    icon: Brain,
-  },
+
   {
     label: "Code IDE",
     description: "Build in the browser",

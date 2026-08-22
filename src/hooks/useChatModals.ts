@@ -399,7 +399,7 @@ export function useChatModals(params: UseChatModalsParams): UseChatModalsReturn 
           setShowShadowBrowser(true);
           return;
         case "missions":
-          navigate("/execute");
+          navigate("/missioncontrol");
           return;
         case "agentic":
           setShowAgenticRunner(true);

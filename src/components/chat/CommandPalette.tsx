@@ -495,18 +495,7 @@ export const CommandPalette = ({ open, onOpenChange, onAction }: CommandPaletteP
       keywords: ["screen", "share", "capture", "analyze", "screen agent"],
     },
     
-    // Shadow Execution (Strategy + Missions unified)
-    // {
-    //   id: "shadow-execution",
-    //   label: "Shadow Execution",
-    //   description: "Autonomous missions, strategy reports, and research",
-    //   icon: <Rocket className="h-4 w-4" />,
-    //   category: "AI Tools",
-    //   action: () => navigate("/execute"),
-    //   keywords: ["strategy", "mission", "see", "execution", "swot", "autonomous"],
-    //   badge: "Pro",
-    //   badgeVariant: "default" as const,
-    // },
+
     
     {
       id: "shadow-cowork",

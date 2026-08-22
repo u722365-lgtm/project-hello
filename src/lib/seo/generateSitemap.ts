@@ -44,7 +44,6 @@ export const SITEMAP_ENTRIES: SitemapEntry[] = [
   { path: "/home", priority: 0.85, changefreq: "weekly" },
   { path: "/chatbot", priority: 0.95, changefreq: "daily" },
   { path: "/pricing", priority: 0.8, changefreq: "monthly" },
-  { path: "/execute", priority: 0.88, changefreq: "weekly" },
   { path: "/missioncontrol", priority: 0.85, changefreq: "weekly" },
   { path: "/workspace", priority: 0.85, changefreq: "weekly" },
   { path: "/research", priority: 0.85, changefreq: "weekly" },

@@ -17,9 +17,9 @@ const MissionControlPage = () => {
       <Navigation />
       <MissionControl
         isOpen
-        onClose={() => navigate(goal ? `/execute?goal=${encodeURIComponent(goal)}` : "/execute")}
+        onClose={() => navigate("/chatbot")}
         initialGoal={goal}
-        onMissionComplete={() => navigate("/execute")}
+        onMissionComplete={() => navigate("/chatbot")}
       />
       <Footer />
     </div>

@@ -91,7 +91,7 @@ const Navigation = ({ landingAnimated = false }: NavigationProps) => {
 
   const primaryNavItems = [
     { name: t("nav.pricing"), href: "/pricing", icon: Shield, isLink: true },
-    // { name: "Shadow Execution", href: "/execute", icon: Rocket, isLink: true },
+
     { name: "Shadow Workspace", href: "/workspace", icon: Sparkles, isLink: true },
     { name: "Code IDE", href: "/ide", icon: Code, isLink: true },
   ];

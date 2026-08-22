@@ -139,10 +139,6 @@ const AgentArchitecturePage = () => {
             Local simulation demo — spawn parallel agents on this page. For real multi-step missions and installed marketplace agents, use the links below.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
-            <Button onClick={() => navigate("/execute")}>
-              <Play className="h-4 w-4 mr-2" />
-              Open Shadow Execution
-            </Button>
             <Button variant="outline" onClick={() => navigate("/workspace?tab=agents")}>
               <Bot className="h-4 w-4 mr-2" />
               Installed Agents

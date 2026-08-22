@@ -788,9 +788,9 @@ const DocsPage = () => {
 
             {/* Missions */}
             <TabsContent value="missions" className="space-y-8">
-              <DocSection title="Mission Control & S.E.E.">
+              <DocSection title="Mission Control">
                 <p className="text-muted-foreground mb-6">
-                  ShadowTalk runs multi-step autonomous work through Mission Control (/missioncontrol) and the Shadow Execution Engine (/execute).
+                  ShadowTalk runs multi-step autonomous work through Mission Control (/missioncontrol).
                   Sensitive tool calls pause for your approval before continuing.
                 </p>
                 <div className="grid gap-5 md:grid-cols-2">
@@ -812,9 +812,6 @@ const DocsPage = () => {
               <div className="flex flex-wrap gap-3">
                 <Button className="btn-glow rounded-xl" onClick={() => navigate("/missioncontrol")}>
                   <Rocket className="h-4 w-4 mr-2" /> Open Mission Control
-                </Button>
-                <Button variant="outline" className="rounded-xl" onClick={() => navigate("/execute")}>
-                  <Zap className="h-4 w-4 mr-2" /> Shadow Execution
                 </Button>
               </div>
             </TabsContent>

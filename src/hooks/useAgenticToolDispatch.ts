@@ -8,11 +8,6 @@ import {
   type PlannerPlan,
   type PlannerStep,
 } from "@/lib/autonomy/llmToolPlanner";
-import {
-  buildExecutePath,
-  inferDeliverableType,
-} from "@/lib/execution/inferFromChat";
-import type { DeliverableType } from "@/lib/execution/types";
 import { executeShadowTool } from "@/lib/shadowTools/executeShadowTool";
 
 export interface ToolDispatchUI {
@@ -23,7 +18,7 @@ export interface ToolDispatchUI {
   openBrowser: () => void;
   openShadowLive: () => void;
   openMissionControl: () => void;
-  openShadowExecution: (goal: string, mode?: DeliverableType) => void;
+  openShadowExecution?: (goal: string, mode?: string) => void;
   setPendingMessage: (text: string) => void;
   appendAssistantMessage: (content: string, toolExecution?: {
     tool: string;
@@ -56,23 +51,7 @@ export interface AsyncDispatchResult {
 
 const MIN_CONFIDENCE = 50;
 
-const EXECUTION_TOOLS = new Set(["shadow_execution", "mission_control", "strategy_agent"]);
-
-function resolveExecuteMode(
-  tool: string,
-  message: string,
-  params?: Record<string, string>,
-): DeliverableType {
-  const fromParams = params?.mode as DeliverableType | undefined;
-  if (
-    fromParams &&
-    ["general", "strategy_report", "research_brief", "content_pack"].includes(fromParams)
-  ) {
-    return fromParams;
-  }
-  if (tool === "strategy_agent") return "strategy_report";
-  return inferDeliverableType(message);
-}
+const EXECUTION_TOOLS = new Set(["mission_control"]);
 
 export function useAgenticToolDispatch() {
   const navigate = useNavigate();
@@ -80,9 +59,8 @@ export function useAgenticToolDispatch() {
   const { resolveDetection, runCritic } = useAutonomousPlanner();
 
   const goToExecute = useCallback(
-    (goal: string, mode?: DeliverableType) => {
-      const path = buildExecutePath(goal, mode ?? inferDeliverableType(goal));
-      navigate(path);
+    (goal: string) => {
+      navigate(`/missioncontrol?goal=${encodeURIComponent(goal)}`);
     },
     [navigate],
   );
@@ -96,26 +74,19 @@ export function useAgenticToolDispatch() {
       autoRoute: boolean,
     ): ToolDispatchOutcome => {
       const goal = params?.goal ?? params?.prompt ?? params?.topic ?? message;
-      const mode = resolveExecuteMode(tool, message, params);
-      const label =
-        mode === "strategy_report"
-          ? "Strategy report"
-          : mode === "research_brief"
-            ? "Research brief"
-            : "Shadow Execution";
 
       if (autoRoute) {
-        goToExecute(goal, mode);
+        goToExecute(goal);
         ui.appendAssistantMessage(
-          `Opening **${label}** — I'll plan steps, run live web research, and build your deliverable. Continue on the execution workspace.`,
-          { tool: "shadow_execution", status: "complete", params: { ...params, goal, mode } },
+          `Opening **Mission Control** — planning and executing autonomous workflow for your goal.`,
+          { tool: "mission_control", status: "complete", params: { ...params, goal } },
         );
         return { handled: true };
       }
 
       ui.appendAssistantMessage(
-        `This looks like a **${label}** job (multi-step tools + saved deliverable). Open Shadow Execution to run it, or say "run execute now" to auto-open.`,
-        { tool: "shadow_execution", status: "confirm", params: { ...params, goal, mode } },
+        `This looks like a **Mission Control** job. Open Mission Control to run it, or say "run mission now" to auto-open.`,
+        { tool: "mission_control", status: "confirm", params: { ...params, goal } },
       );
       return { handled: true };
     },

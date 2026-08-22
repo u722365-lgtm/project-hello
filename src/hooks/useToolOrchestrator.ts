@@ -44,11 +44,9 @@ export type ToolType =
   | 'knowledge_vault'
   | 'memory_panel'
   | 'mission_control'
-  | 'shadow_execution'
   | 'custom_instructions'
   | 'conversation_branching'
   | 'bunker_mode'
-  | 'strategy_agent'
   | 'cognitive_loop'
   | 'canvas_document'
   | 'referral'
@@ -624,23 +622,7 @@ const TOOL_PATTERNS: Array<{
     autoExecute: false,
   },
 
-  // Shadow Execution — unified autonomous workspace (/execute)
-  {
-    tool: 'shadow_execution',
-    patterns: [
-      /\bshadow\s+execution\b/i,
-      /\b(?:open|launch|run|start)\s+(?:\/)?execute\b/i,
-      /\bexecute\s+(?:tool|workspace|playbook)\b/i,
-      /\b(?:run|execute)\s+(?:the\s+)?playbook\b/i,
-      /\bautonomous\s+(?:execution|workspace|run)\b/i,
-      /\b(?:create|build|generate)\s+(?:a\s+)?(?:strategy\s+report|investor(?:-ready)?\s+report)\b/i,
-      /\b(?:full|complete)\s+(?:market\s+research|competitive\s+analysis)\s+(?:report|with\s+sources)\b/i,
-      /\b(?:plan|research|analyze)\s+.{20,120}\s+(?:with\s+)?(?:real\s+)?(?:tools|web\s+search|sources)\b/i,
-    ],
-    priority: 8,
-    autoExecute: true,
-    extractParams: (msg) => ({ goal: msg }),
-  },
+
 
   // Mission Control (S.E.E.) → routes to /execute
   {
@@ -695,22 +677,7 @@ const TOOL_PATTERNS: Array<{
     autoExecute: false,
   },
 
-  // Strategy Agent → routes to /execute?mode=strategy_report
-  {
-    tool: 'strategy_agent',
-    patterns: [
-      /\bstrategy\s+(?:agent|advisor|consultant)/i,
-      /\bbusiness\s+(?:strategy|plan|analysis)/i,
-      /\bswot\s+analysis/i,
-      /\b(open|launch|run)\s+(?:the\s+)?strategy/i,
-      /\bcompetitive\s+(?:analysis|intelligence)/i,
-      /\bmarket\s+expansion\s+analysis/i,
-      /\binvestor(?:-ready)?\s+(?:report|deck|update)/i,
-    ],
-    priority: 7,
-    autoExecute: true,
-    extractParams: (msg) => ({ goal: msg, mode: "strategy_report" }),
-  },
+
 
   // Cognitive Loop
   {
