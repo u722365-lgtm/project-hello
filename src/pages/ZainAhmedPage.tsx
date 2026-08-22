@@ -115,8 +115,8 @@ const ZainAhmedPage = () => {
                 <Link to="/chatbot" className="text-primary hover:underline">
                   ShadowTalk AI
                 </Link>
-                — a sovereign agentic AI workspace with encrypted chat, Mission Control missions,
-                30+ tools, voice mode, desktop app, and optional on-device offline models.
+                — a cloud-based agentic AI workspace with encrypted chat, Mission Control missions,
+                30+ tools, voice mode, desktop app, and optional on-device cloud models.
                 Founded February 2024, bootstrapped from Karachi.
               </p>
               <div className="flex flex-wrap gap-2 text-xs">

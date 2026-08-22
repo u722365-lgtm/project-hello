@@ -6,7 +6,7 @@ const StrategyLabPage = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
       <div className="container mx-auto px-4 pt-24 pb-16 max-w-5xl">
-        <p>Strategy Lab has been deprecated because offline functionality was removed.</p>
+        <p>Strategy Lab has been deprecated because functionality was removed.</p>
       </div>
       <Footer />
     </div>

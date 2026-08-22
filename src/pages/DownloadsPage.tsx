@@ -45,7 +45,7 @@ const DESKTOP_FEATURES = [
   {
     icon: HardDrive,
     title: "Local data folder",
-    description: "Vault exports, offline models, and caches live in a dedicated app data directory.",
+    description: "Vault exports models, and caches live in a dedicated app data directory.",
   },
   {
     icon: Bell,
@@ -59,7 +59,7 @@ const DESKTOP_FEATURES = [
   },
   {
     icon: Shield,
-    title: "Stronger offline path",
+    title: "Stronger path",
     description: "On-device models and WebGPU work best in the desktop shell with persistent storage.",
   },
   {

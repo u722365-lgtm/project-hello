@@ -100,7 +100,7 @@ const useIntegrityHash = () => {
 
   useEffect(() => {
     const computeHash = async () => {
-      const policyText = `ShadowTalk Privacy Architecture v2.0 — Client-side AES-256-GCM encryption, PBKDF2 key derivation, optional WebAuthn biometric binding, optional offline AI inference`;
+      const policyText = `ShadowTalk Privacy Architecture v2.0 — Client-side AES-256-GCM encryption, PBKDF2 key derivation, optional WebAuthn biometric binding, optional AI inference`;
       const encoder = new TextEncoder();
       const data = encoder.encode(policyText + new Date().toISOString().slice(0, 10));
       const hashBuffer = await crypto.subtle.digest("SHA-256", data);
@@ -221,8 +221,8 @@ const architectureGuarantees = [
   {
     icon: Database,
     title: "Optional Local-First Mode",
-    description: "AI models and knowledge graphs can run on your device when you opt in to offline mode",
-    proof: "IndexedDB for persistence. Web Workers for computation. Offline AI requires explicit user opt-in to download models.",
+    description: "AI models and knowledge graphs can run on your device when you opt in to mode",
+    proof: "IndexedDB for persistence. Web Workers for computation. AI requires explicit user opt-in to download models.",
   },
   {
     icon: Shield,
@@ -368,8 +368,8 @@ const TrustPage = ({ embedded = false }: { embedded?: boolean }) => {
               />
               <ProofCard
                 icon={Cpu}
-                title="Service Worker (Offline AI)"
-                description="Browser supports offline operation via service workers"
+                title="Service Worker (AI)"
+                description="Browser supports operation via service workers"
                 status={proofs.serviceWorker}
                 technical="'serviceWorker' in navigator → ✓ Can intercept network, serve cached AI models offline."
                 delay={0.2}

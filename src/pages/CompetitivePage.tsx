@@ -94,7 +94,7 @@ const CompetitivePage = () => {
         meta={{
           title: "ShadowTalk AI Comparisons & Alternatives",
           description:
-            "Structured comparison hub for ShadowTalk AI vs ChatGPT, Claude, and Perplexity. Evaluate privacy, missions, research, pricing, and offline capabilities.",
+            "Structured comparison hub for ShadowTalk AI vs ChatGPT, Claude, and Perplexity. Evaluate privacy, missions, research, pricing, and capabilities.",
           canonical: "https://www.shadowtalk-ai.com/competitive",
           keywords: [
             "ShadowTalk AI alternative",

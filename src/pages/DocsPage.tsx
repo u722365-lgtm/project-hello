@@ -164,7 +164,7 @@ const FeatureComparison = () => (
           { feature: "Mission Control (S.E.E.)", free: "3/mo", pro: "15/mo", premium: "30/mo", elite: "50/mo" },
           { feature: "Collaborative rooms", free: false, pro: true, premium: true, elite: true },
           { feature: "Chat export", free: false, pro: true, premium: true, elite: true },
-          { feature: "Offline / on-device AI", free: false, pro: false, premium: false, elite: true },
+          { feature: "/ on-device AI", free: false, pro: false, premium: false, elite: true },
           { feature: "Stealth Vault", free: false, pro: false, premium: false, elite: true },
           { feature: "API access", free: false, pro: false, premium: false, elite: true },
           { feature: "Priority support", free: false, pro: "<4h", premium: "<2h", elite: "24/7" },
@@ -628,7 +628,7 @@ const DocsPage = () => {
                 <Card className="card-glass">
                   <CardContent className="pt-6 space-y-3 text-sm text-muted-foreground">
                     <p><strong className="text-foreground">+ Attach</strong> — images or files before sending.</p>
-                    <p><strong className="text-foreground">Provider chip</strong> — Sovereign (platform) or your BYOK provider when keys are saved.</p>
+                    <p><strong className="text-foreground">Provider chip</strong> — (platform) or your BYOK provider when keys are saved.</p>
                     <p><strong className="text-foreground">Mic</strong> — voice input / ShadowTalk Live.</p>
                     <p><strong className="text-foreground">Send</strong> — gradient button inside the pill; Enter to send, Shift+Enter for new line.</p>
                     <p className="text-xs pt-2">Hardware speed routing is automatic — there is no Turbo toggle in the UI.</p>
@@ -943,7 +943,7 @@ const DocsPage = () => {
             <TabsContent value="pricing" className="space-y-8">
               <DocSection title="Plans & limits">
                 <p className="text-muted-foreground mb-6">
-                  Free unlocks all feature types with daily limits. Paid plans remove caps and add vault, offline, and API access.
+                  Free unlocks all feature types with daily limits. Paid plans remove caps and add vault, and API access.
                   Pakistan local payments: <button type="button" className="text-primary underline" onClick={() => navigate("/founder-access")}>/founder-access</button>.
                 </p>
                 <div className="grid gap-5 md:grid-cols-2">
@@ -1070,7 +1070,7 @@ const DocsPage = () => {
                 <div className="grid gap-5 md:grid-cols-2">
                   {[
                     { icon: Wifi, title: "Online Mode", color: "text-primary", items: ["Minimum 5 Mbps connection", "WebSocket support required", "Ports 443 (HTTPS) must be open", "Low latency recommended for voice"] },
-                    { icon: WifiOff, title: "Offline Mode (Elite)", color: "text-secondary", items: ["Full offline login with cached credentials", "In-browser AI (WebLLM) for responses", "Cached conversations available", "Auto-sync when back online", "PWA installation required"] },
+                    { icon: WifiOff, title: "Mode (Elite)", color: "text-secondary", items: ["Full login with cached credentials", "In-browser AI (WebLLM) for responses", "Cached conversations available", "Auto-sync when back online", "PWA installation required"] },
                   ].map((section, idx) => (
                     <motion.div key={idx} custom={idx} variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
                       <SpotlightCard className="h-full">

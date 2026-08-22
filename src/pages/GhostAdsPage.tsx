@@ -15,7 +15,7 @@ const GhostAdsPage = () => {
           <Ghost className="h-6 w-6 text-primary" />
           <div>
             <h1 className="text-2xl font-bold text-foreground">Ghost Ads Manager</h1>
-            <p className="text-sm text-muted-foreground">Contextual offline sponsor recommendations & impression tracking</p>
+            <p className="text-sm text-muted-foreground">Contextual sponsor recommendations & impression tracking</p>
           </div>
         </div>
         <GhostAdsManagerPanel />

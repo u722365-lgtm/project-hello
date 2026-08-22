@@ -17,7 +17,7 @@ const PrivacyPolicyPage = () => {
 • **Device Information**: We may collect device identifiers, browser type, and operating system information.
 • **Payment Information**: If you subscribe to a paid plan, our payment processor collects billing information.
 
-We do NOT collect or store the content of your conversations in offline mode, as all processing happens locally on your device.`
+We do NOT collect or store the content of your conversations in mode, as all processing happens locally on your device.`
     },
     {
       title: "2. How We Use Your Information",
@@ -41,7 +41,7 @@ We do NOT use your conversations to train our AI models. Your data remains priva
 • **Regular Audits**: We conduct regular security audits and penetration testing.
 • **SOC 2 Compliance**: We maintain SOC 2 Type II certification.
 
-For offline mode, all data remains on your device and is never transmitted to our servers.`
+For mode, all data remains on your device and is never transmitted to our servers.`
     },
     {
       title: "4. Data Sharing and Disclosure",

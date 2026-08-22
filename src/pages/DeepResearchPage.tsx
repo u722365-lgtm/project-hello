@@ -8,8 +8,8 @@ const DeepResearchPage = () => {
       <Navigation />
       <div className="container mx-auto px-4 pt-24 pb-16 max-w-3xl">
         <OfflineDisabledNotice
-          title="Offline Deep Research is paused"
-          description="The local research engine is being rebuilt. In the meantime, use the chatbot's research tool — it runs cloud-side and will hand off to the new offline engine once it ships."
+          title="Deep Research is paused"
+          description="The local research engine is being rebuilt. In the meantime, use the chatbot's research tool — it runs cloud-side and will hand off to the new engine once it ships."
         />
       </div>
       <Footer />

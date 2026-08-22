@@ -17,9 +17,9 @@ const PressPage = () => {
   const pressReleases = [
     {
       date: "January 15, 2026",
-      title: "ShadowTalk AI Launches Revolutionary Offline Mode",
+      title: "ShadowTalk AI Launches Revolutionary Mode",
       excerpt: "New feature allows users to run powerful AI models entirely on their devices without internet connection.",
-      mailSubject: "Press inquiry: Offline Mode launch",
+      mailSubject: "Press inquiry: Mode launch",
     },
     {
       date: "January 1, 2026",
@@ -38,7 +38,7 @@ const PressPage = () => {
   const mediaFeatures = [
     {
       outlet: "TechCrunch Pakistan",
-      title: "The Rise of Sovereign AI: ShadowTalk's Bold Bet",
+      title: "The Rise of AI: ShadowTalk's Bold Bet",
       date: "January 2026",
       url: "https://shadowtalk-ai.com/blog",
     },

@@ -226,7 +226,7 @@ const CeoDashboardPage = () => {
               {[
                 { title: 'Churn risk', value: 'Low', color: 'text-green-500' },
                 { title: 'Compliance exposure', value: 'Medium', color: 'text-amber-500' },
-                { title: 'Offline fallback', value: 'Enabled', color: 'text-primary' },
+                { title: 'fallback', value: 'Enabled', color: 'text-primary' },
                 { title: 'Incident trend', value: '-28%', color: 'text-green-500' },
                 { title: 'Security posture', value: 'Strong', color: 'text-primary' },
                 { title: 'Data residency', value: 'US/EU', color: 'text-primary' },

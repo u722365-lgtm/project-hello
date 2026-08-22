@@ -121,7 +121,7 @@ const CareersPage = () => {
           <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
             className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto"
           >
-            Join us in democratizing artificial intelligence and building sovereign technology solutions for everyone.
+            Join us in democratizing artificial intelligence and building technology solutions for everyone.
           </motion.p>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
             <Button size="lg" className="btn-glow" asChild>

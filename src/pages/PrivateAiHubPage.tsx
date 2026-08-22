@@ -27,7 +27,7 @@ const pillars = [
   },
   {
     icon: WifiOff,
-    title: "Runs offline on your device",
+    title: "Runs on your device",
     body: "A compact on-device model auto-installs in the background. Once cached, standard chat routes locally and never leaves your machine.",
   },
   {
@@ -89,7 +89,7 @@ export default function PrivateAiHubPage() {
           data-speakable
         >
           ShadowTalk AI is a free, anonymous alternative to ChatGPT. Chat runs on your
-          device once the offline model finishes downloading — nothing is stored on our
+          device once the model finishes downloading — nothing is stored on our
           servers, and your conversations are never used for training.
         </p>
         <div className="mt-10 flex flex-wrap items-center justify-center gap-3">

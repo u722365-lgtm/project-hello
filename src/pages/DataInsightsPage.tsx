@@ -15,7 +15,7 @@ const DataInsightsPage = () => {
           <BarChart3 className="h-6 w-6 text-primary" />
           <div>
             <h1 className="text-2xl font-bold text-foreground">Data Insights Collection</h1>
-            <p className="text-sm text-muted-foreground">Anonymized analytics queue with offline behavior reports</p>
+            <p className="text-sm text-muted-foreground">Anonymized analytics queue with behavior reports</p>
           </div>
         </div>
         <DataInsightsPanel />

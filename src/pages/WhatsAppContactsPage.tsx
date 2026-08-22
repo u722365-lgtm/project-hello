@@ -225,7 +225,7 @@ export default function WhatsAppContactsPage() {
               (data as { text?: string })?.text ??
               "";
       } else {
-        throw new Error("Offline inference is disabled. Please configure a cloud AI provider.");
+        throw new Error("inference is disabled. Please configure a cloud AI provider.");
       }
 
       if (txt) setDraftMsg(String(txt).trim());

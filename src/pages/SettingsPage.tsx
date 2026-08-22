@@ -41,7 +41,7 @@ const SECTIONS: readonly SettingsNavSection[] = [
   { id: "general", label: "General", icon: Settings, desc: "Theme, language, sounds" },
   { id: "personalization", label: "Personalization", icon: Sparkles, desc: "Instructions & tone" },
   { id: "chat", label: "Chat behavior", icon: MessageSquare, desc: "Sending, timestamps, routing" },
-  { id: "models", label: "Models & AI", icon: Bot, desc: "Provider, offline, sovereign" },
+  { id: "models", label: "Models & AI", icon: Bot, desc: "Provider, sovereign" },
   { id: "data", label: "Data controls", icon: Database, desc: "Learning & privacy" },
   { id: "connections", label: "Connections", icon: Link2, desc: "API keys & integrations" },
   { id: "account", label: "Account", icon: User, desc: "Profile, billing, security" },

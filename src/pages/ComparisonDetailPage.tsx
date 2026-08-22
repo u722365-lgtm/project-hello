@@ -42,7 +42,7 @@ const ComparisonDetailPage = () => {
       title: page.title,
       description: page.description,
       url: page.canonical,
-      about: ["AI comparison", "AI workspace", page.competitor, "agentic AI", "offline AI"],
+      about: ["AI comparison", "AI workspace", page.competitor, "agentic AI", "AI"],
     }),
     getBreadcrumbSchema([
       { name: "Home", url: "https://www.shadowtalk-ai.com/home" },

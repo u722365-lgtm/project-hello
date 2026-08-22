@@ -7,7 +7,7 @@ import SEOHead from "@/components/SEOHead";
 import { getComparisonBySlug } from "@/lib/viral/comparisonCorpus";
 
 const SITE_DEFINITION =
-  "ShadowTalk AI is a sovereign agentic AI workspace: encrypted chat, Mission Control missions, 30+ tools, voice, code IDE, desktop app, and optional offline models. Free start with no credit card. Pro from $5/month.";
+  "ShadowTalk AI is a cloud-based agentic AI workspace: encrypted chat, Mission Control missions, 30+ tools, voice, code IDE, desktop app. Free start with no credit card. Pro from $5/month.";
 
 const VsPage = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -87,7 +87,7 @@ const VsPage = () => {
           <p className="text-sm text-muted-foreground mb-8">
             Comparing <span className="font-medium">{page.competitor}</span> vs{" "}
             <span className="font-medium">ShadowTalk AI</span> on execution,
-            privacy, offline support, and tool breadth.
+            privacy support, and tool breadth.
           </p>
 
           <div className="rounded-xl border border-primary/30 bg-primary/5 p-6 mb-10">

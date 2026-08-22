@@ -22,7 +22,7 @@ const ceo = {
   image: ceoImage,
   tagline: "Leading ShadowTalk AI with vision, integrity, and an obsession for building products that respect the people who use them.",
   bio: [
-    "Abdul Rauf is the Chief Executive Officer of ShadowTalk AI. He leads company strategy, operations, and partnerships — steering ShadowTalk's mission to put sovereign, private intelligence into the hands of every user.",
+    "Abdul Rauf is the Chief Executive Officer of ShadowTalk AI. He leads company strategy, operations, and partnerships — steering ShadowTalk's mission to put private intelligence into the hands of every user.",
     "His focus is on turning bold engineering into a durable business: growing the team, forging enterprise partnerships, and making sure every decision reflects ShadowTalk's core values — Excellence, Innovation, and Integrity.",
   ],
   pillars: ["Vision", "Leadership", "Growth", "Impact"],
@@ -51,9 +51,9 @@ const founder = {
   role: "Founder & Chief Architect",
   location: "Karachi, Pakistan",
   image: founderImage,
-  tagline: "Building the world's most private, sovereign AI — one that belongs to the user, not the cloud.",
+  tagline: "Building the world's most private, AI — one that belongs to the user, not the cloud.",
   bio: [
-    "Zain Ahmed is the founder and sole architect of ShadowTalk AI. He designed and engineered the entire platform end-to-end — from the local-first cognitive engine and offline model runtime to the multi-agent orchestration layer, security suite, and sovereign OS design system.",
+    "Zain Ahmed is the founder and sole architect of ShadowTalk AI. He designed and engineered the entire platform end-to-end — from the local-first cognitive engine and model runtime to the multi-agent orchestration layer, security suite, and OS design system.",
     "His mission is simple but radical: give every person a genuinely private, genuinely intelligent AI that runs on their own device — no surveillance, no data harvesting, no lock-in. ShadowTalk is the answer to a decade of AI that treats users as the product.",
     "He works obsessively on the intersection of privacy engineering, on-device machine learning, and agentic autonomy. Every line of ShadowTalk is written with one question: does this respect the user?",
   ],
@@ -79,7 +79,7 @@ const TeamPage = () => {
   const seo = {
     title: "Team — ShadowTalk AI | CEO Abdul Rauf, Founder Zain Ahmed, CFO Muhammad Umar",
     description:
-      "Meet the ShadowTalk AI leadership team: CEO Abdul Rauf, Founder & Chief Architect Zain Ahmed, and CFO Muhammad Umar — building sovereign, private AI from Karachi, Pakistan.",
+      "Meet the ShadowTalk AI leadership team: CEO Abdul Rauf, Founder & Chief Architect Zain Ahmed, and CFO Muhammad Umar — building private AI from Karachi, Pakistan.",
     canonical,
   };
 
@@ -154,7 +154,7 @@ const TeamPage = () => {
       {
         "@type": "Question",
         name: "Who founded ShadowTalk AI?",
-        acceptedAnswer: { "@type": "Answer", text: "ShadowTalk AI was founded by Zain Ahmed, who serves as Founder and Chief Architect. He designed and engineered the entire platform end-to-end — from the local-first cognitive engine to the sovereign OS design system." },
+        acceptedAnswer: { "@type": "Answer", text: "ShadowTalk AI was founded by Zain Ahmed, who serves as Founder and Chief Architect. He designed and engineered the entire platform end-to-end — from the local-first cognitive engine to the OS design system." },
       },
       {
         "@type": "Question",
@@ -164,7 +164,7 @@ const TeamPage = () => {
       {
         "@type": "Question",
         name: "Where is the ShadowTalk AI team based?",
-        acceptedAnswer: { "@type": "Answer", text: "ShadowTalk AI's leadership team is based in Karachi, Pakistan, building sovereign, private AI for a global user base." },
+        acceptedAnswer: { "@type": "Answer", text: "ShadowTalk AI's leadership team is based in Karachi, Pakistan, building private AI for a global user base." },
       },
     ],
   };
@@ -210,7 +210,7 @@ const TeamPage = () => {
               The people behind ShadowTalk
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              A small, uncompromising team building sovereign AI for the rest of us.
+              A small, uncompromising team building AI for the rest of us.
             </p>
           </motion.header>
 

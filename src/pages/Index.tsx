@@ -42,7 +42,7 @@ const Index = () => {
       about: [
         "agentic AI workspace",
         "AI agents",
-        "offline AI",
+        "AI",
         "deep research",
         "AI comparison pages",
       ],

@@ -35,7 +35,7 @@ const CreativeStudioPage = ({ embedded = false }: { embedded?: boolean }) => {
             </Badge>
           </div>
           <p className="text-muted-foreground">
-            Edit images, generate visuals, and transform documents — powered by sovereign AI.
+            Edit images, generate visuals, and transform documents — powered by AI.
           </p>
         </motion.div>
       )}

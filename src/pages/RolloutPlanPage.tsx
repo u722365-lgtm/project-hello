@@ -27,7 +27,7 @@ type Phase = {
 const ROADMAP: Phase[] = [
   { name: 'Pilot onboarding', eta: 'This week', impact: '18 pilots', owner: 'Ava', status: 'on-track' },
   { name: 'Voice frontline', eta: 'Next week', impact: 'Engagement +24%', owner: 'Jay', status: 'on-track' },
-  { name: 'Offline fallback', eta: 'Week 4', impact: 'Reliability', owner: 'Mina', status: 'at-risk' },
+  { name: 'fallback', eta: 'Week 4', impact: 'Reliability', owner: 'Mina', status: 'at-risk' },
   { name: 'APAC launch', eta: 'Month 2', impact: 'Market expand', owner: 'Kai', status: 'on-track' },
   { name: 'BYOK/Compliance', eta: 'Month 2', impact: 'Deal enablement', owner: 'Sarah', status: 'done' },
   { name: 'Marketplace', eta: 'Month 3', impact: 'Discovery/revenue', owner: 'Ava', status: 'on-track' },
@@ -182,7 +182,7 @@ const RolloutPlanPage = () => {
               </CardHeader>
               <CardContent className='space-y-2 text-sm text-muted-foreground'>
                 {[
-                  'Keep offline fallback optional but review weekly.',
+                  'Keep fallback optional but review weekly.',
                   'Block any expansion milestone if security review is past due.',
                   'Weekly gating review by CEO on Wednesdays.',
                 ].map((item) => (

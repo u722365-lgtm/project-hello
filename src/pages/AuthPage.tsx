@@ -278,7 +278,7 @@ const AuthPage = () => {
                   <Lock className="h-5 w-5 text-primary" />
                 </motion.div>
                 <motion.div variants={authVariants.headerItem} className="flex items-center gap-2">
-                  {isOffline ? (
+                  {is? (
                     <Badge variant="secondary" className="gap-1 border-warning/20 bg-warning/10 text-[10px] text-warning">
                       <WifiOff className="h-3 w-3" /> Offline
                     </Badge>
@@ -315,7 +315,7 @@ const AuthPage = () => {
                     {enterpriseFlow
                       ? enterpriseTenant.signInHint
                       : isLogin
-                        ? "Sign in to your sovereign AI workspace"
+                        ? "Sign in to your AI workspace"
                         : "Set up your zero-knowledge account"}
                   </p>
                 </motion.div>
@@ -362,7 +362,7 @@ const AuthPage = () => {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="bg-muted/20 border-border/50 h-11 focus:border-primary/50 transition-shadow focus:shadow-[0_0_0_3px_hsl(var(--primary)/0.15)]"
-                      disabled={isOffline && !isLogin}
+                      disabled={is&& !isLogin}
                       maxLength={255}
                       autoComplete="email"
                     />
@@ -378,7 +378,7 @@ const AuthPage = () => {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         className="bg-muted/20 border-border/50 h-11 pr-10 focus:border-primary/50 transition-shadow focus:shadow-[0_0_0_3px_hsl(var(--primary)/0.15)]"
-                        disabled={isOffline && !isLogin}
+                        disabled={is&& !isLogin}
                         maxLength={128}
                         autoComplete={isLogin ? "current-password" : "new-password"}
                       />
@@ -480,12 +480,12 @@ const AuthPage = () => {
                   <AuthShimmerButton
                     type="submit"
                     reduced={reduced}
-                    disabled={loading || (isOffline && !isLogin) || (isOffline && isLogin && !hasOfflineCredentials)}
+                    disabled={loading || (is&& !isLogin) || (is&& isLogin && !hasOfflineCredentials)}
                   >
                     {loading ? (
                       <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Authenticating...</>
                     ) : (
-                      <><Shield className="h-4 w-4 mr-2" /> {isLogin ? (isOffline ? "Sign In Offline" : "Sign In Securely") : "Create Account"}</>
+                      <><Shield className="h-4 w-4 mr-2" /> {isLogin ? (is? "Sign In Offline" : "Sign In Securely") : "Create Account"}</>
                     )}
                   </AuthShimmerButton>
                   </motion.div>
@@ -531,7 +531,7 @@ const AuthPage = () => {
                 variant="link"
                 onClick={() => { setIsLogin(!isLogin); setRateLimitMsg(""); }}
                 className="text-primary text-sm"
-                disabled={isOffline && !isLogin}
+                disabled={is&& !isLogin}
               >
                 {isLogin ? "Don't have an account? Create one" : "Already have an account? Sign in"}
               </Button>
@@ -547,16 +547,16 @@ const AuthPage = () => {
                 { icon: <Shield className="h-3 w-3 text-success" />, label: "E2E Encrypted" },
                 { icon: <Fingerprint className="h-3 w-3 text-primary" />, label: "2FA Ready" },
                 {
-                  icon: isOffline ? (
+                  icon: is? (
                     <WifiOff className="h-3 w-3 text-warning" />
                   ) : (
                     <Zap className={cn("h-3 w-3", hasOfflineCredentials && "text-success")} />
                   ),
                   label: isOffline
-                    ? "Offline Mode"
+                    ? "Mode"
                     : hasOfflineCredentials
-                      ? "Offline Ready"
-                      : "Offline Not Set Up",
+                      ? "Ready"
+                      : "Not Set Up",
                   className: isOffline
                     ? "text-warning"
                     : hasOfflineCredentials

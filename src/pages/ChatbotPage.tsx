@@ -1167,21 +1167,7 @@ const ChatbotPage = () => {
         }
         if (status === 402 && needsByok) {
           saveCustomAiConfig({ ...loadCustomAiConfig(), usePlatformDefault: false, provider: '' as const, apiKey: '' });
-          setAiProvider('shadowtalk');
-          toast({
-            title: 'Switching to local AI',
-            description: 'Platform credits are exhausted. Continuing on-device with local AI.',
-          });
-          const offline = await runOfflineCompletion({
-            messages: chatMessages.map((m) => ({ role: (m.role === 'assistant' ? 'assistant' : m.role === 'system' ? 'system' : 'user') as 'assistant' | 'system' | 'user', content: typeof m.content === 'string' ? m.content : '' })),
-            personality,
-            isOnline: navigator.onLine,
-            onToken: (token) => pushAssistant(token),
-          });
-          if (offline?.content.trim()) {
-            finalizeAssistant();
-            return assistantContent;
-          }
+          throw new Error("Platform credits exhausted. Please configure your own API key in Settings → Models & AI.");
         }
         throw new Error(detail);
       };

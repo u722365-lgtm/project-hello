@@ -14,8 +14,8 @@ const SovereignWalletPage = () => {
           </Button>
           <Wallet className="h-6 w-6 text-primary" />
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Sovereign Wallet</h1>
-            <p className="text-sm text-muted-foreground">Offline credit system — use AI for free, pay only to sync</p>
+            <h1 className="text-2xl font-bold text-foreground">Wallet</h1>
+            <p className="text-sm text-muted-foreground">credit system — use AI for free, pay only to sync</p>
           </div>
         </div>
         <SovereignWalletPanel />

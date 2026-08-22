@@ -19,7 +19,7 @@ These Terms apply to all visitors, users, and others who access or use the Servi
       content: `ShadowTalk AI provides an AI-powered assistant platform that includes:
 
 • Chat-based AI assistance with multiple model options
-• Offline AI capabilities using local models
+• AI capabilities using local models
 • Code generation, translation, and creative writing features
 • API access for developers (on applicable plans)
 • Collaborative features and workspace management

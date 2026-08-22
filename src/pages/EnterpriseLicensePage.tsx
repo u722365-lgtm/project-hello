@@ -14,8 +14,8 @@ const EnterpriseLicensePage = () => {
           </Button>
           <Crown className="h-6 w-6 text-amber-400" />
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Enterprise Offline License</h1>
-            <p className="text-sm text-muted-foreground">Premium offline AI tiers for individuals, teams, and enterprises</p>
+            <h1 className="text-2xl font-bold text-foreground">Enterprise License</h1>
+            <p className="text-sm text-muted-foreground">Premium AI tiers for individuals, teams, and enterprises</p>
           </div>
         </div>
         <EnterpriseLicensePanel />

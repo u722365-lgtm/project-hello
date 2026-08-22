@@ -22,7 +22,7 @@ const AbdulRaufPage = () => {
           </Button>
         </div>
         <div className="space-y-6 text-muted-foreground">
-          <p>Abdul Rauf is the Chief Executive Officer of ShadowTalk AI. He leads product, growth, and operations for the company’s sovereign agentic AI workspace.</p>
+          <p>Abdul Rauf is the Chief Executive Officer of ShadowTalk AI. He leads product, growth, and operations for the company’s cloud-based agentic AI workspace.</p>
           <p>For verified leadership details, see <Link to="/facts" className="text-primary hover:underline">/facts</Link> or the public profile at <a href="https://www.shadowtalk-ai.com/abdul-rauf-ceo.html" className="text-primary hover:underline">abdul-rauf-ceo.html</a>.</p>
         </div>
       </main>

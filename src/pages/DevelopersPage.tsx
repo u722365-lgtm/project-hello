@@ -60,9 +60,9 @@ await agent.run({
 
 const sdkFeatures = [
   { icon: Cpu, title: "On-Device Inference", description: "Run 7B+ models locally via WebGPU. Zero cloud dependency." },
-  { icon: Shield, title: "Sovereign Privacy", description: PRIVACY_COPY.vault },
+  { icon: Shield, title: "Privacy", description: PRIVACY_COPY.vault },
   { icon: Zap, title: "Hybrid Mode", description: "Automatic fallback between local and cloud inference." },
-  { icon: Globe, title: "Edge-First", description: "Optimized for low-latency, offline-capable applications." },
+  { icon: Globe, title: "Edge-First", description: "Optimized for low-latency-capable applications." },
   { icon: Terminal, title: "Agent Framework", description: "Build autonomous agents with built-in tool orchestration." },
   { icon: Key, title: "API Keys & Billing", description: "Metered usage, rate limiting, and developer dashboard." },
 ];
@@ -85,7 +85,7 @@ const DevelopersPage = () => {
             The <span className="gradient-text">"Intel Inside"</span> for On-Device AI
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-            Embed ShadowTalk's local inference engine into your own apps. Privacy-first, offline-capable AI for every developer.
+            Embed ShadowTalk's local inference engine into your own apps. Privacy-first-capable AI for every developer.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Button size="lg" onClick={() => setShowApiMarketplace(true)}>
