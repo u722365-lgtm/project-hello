@@ -12,15 +12,15 @@ import { getStorage, type FirebaseStorage } from 'firebase/storage';
 
 const env = (import.meta as any).env ?? {};
 
-const PROJECT_ID = env.VITE_FIREBASE_PROJECT_ID || 'shadowtalk-ai-c2b36';
+const PROJECT_ID = env.VITE_FIREBASE_PROJECT_ID || 'shadowtalk-ai-7a513';
 
 export const firebaseConfig = {
-  apiKey: env.VITE_FIREBASE_API_KEY || 'AIzaSyB4bkqV5WjL5apPD5pd7xfW1Z28IQSaJsk',
+  apiKey: env.VITE_FIREBASE_API_KEY || 'AIzaSyAOKVUWGIVihDXqAsY_Cl_XXeojTZ9xFNQ',
   authDomain: env.VITE_FIREBASE_AUTH_DOMAIN || `${PROJECT_ID}.firebaseapp.com`,
   projectId: PROJECT_ID,
   storageBucket: env.VITE_FIREBASE_STORAGE_BUCKET || `${PROJECT_ID}.firebasestorage.app`,
-  messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID || undefined,
-  appId: env.VITE_FIREBASE_APP_ID || undefined,
+  messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID || '819076379544',
+  appId: env.VITE_FIREBASE_APP_ID || '1:819076379544:web:d164455df140a1255971ed',
 };
 
 /** Base URL for Cloud Functions (used by `backend.functions.invoke`). */
