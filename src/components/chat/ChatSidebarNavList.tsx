@@ -34,35 +34,26 @@ function NavRow({
   const inner = (
     <motion.span
       className={cn(
-        "relative flex items-center rounded-full text-[13px] font-medium transition-colors duration-200",
-        !active && "hover:bg-sidebar-accent/40",
+        "relative flex items-center rounded-full text-[13px] font-normal transition-colors duration-200",
+        !active && "hover:bg-white/[0.08]",
         collapsed ? "justify-center h-11 w-11 mx-auto" : "gap-3 px-4 py-2.5 w-full",
-        active ? "text-sidebar-foreground" : "text-muted-foreground hover:text-sidebar-foreground",
+        active ? "text-white" : "text-white/60 hover:text-white/90",
       )}
-      whileHover={active ? undefined : { x: collapsed ? 0 : 3, scale: collapsed ? 1.04 : 1 }}
+      whileHover={active ? undefined : { x: collapsed ? 0 : 2 }}
       whileTap={{ scale: 0.97 }}
       transition={spring}
     >
       {active && (
         <motion.span
           layoutId="chat-sidebar-nav-active"
-          className={cn(
-            "absolute inset-0 rounded-full bg-primary/12 ring-1 ring-inset ring-primary/20",
-          )}
+          className={cn("absolute inset-0 rounded-full bg-white/[0.12]")}
           transition={navSpring}
         />
       )}
-      <Icon className={cn("relative z-10 h-4 w-4 shrink-0", active && "text-primary")} />
+      <Icon className={cn("relative z-10 h-4 w-4 shrink-0", active ? "text-white" : "text-white/60")} />
       {!collapsed && (
         <>
           <span className="relative z-10 flex-1 truncate">{label}</span>
-          {active && (
-            <motion.span
-              layoutId="chat-sidebar-nav-dot"
-              className="relative z-10 h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_8px_hsl(var(--primary))]"
-              transition={navSpring}
-            />
-          )}
         </>
       )}
     </motion.span>
@@ -121,7 +112,7 @@ export function ChatSidebarNavList({ collapsed, onItemClick }: ChatSidebarNavLis
   const renderSection = (title: string, items: ChatSidebarNavItem[]) => (
     <div className={cn("space-y-0.5", collapsed && "space-y-1")}>
       {!collapsed && (
-        <p className="px-3 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/50">
+        <p className="px-3 py-2 text-[10px] font-medium uppercase tracking-[0.18em] text-white/35">
           {title}
         </p>
       )}
