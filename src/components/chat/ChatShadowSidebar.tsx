@@ -136,26 +136,40 @@ export function ChatShadowSidebar({
             whileTap={{ scale: 0.98 }}
             transition={spring}
             className={cn(
-              "flex items-center text-left w-full rounded-full hover:bg-sidebar-accent/30 transition-colors duration-200",
+              "flex items-center text-left w-full rounded-2xl hover:bg-sidebar-accent/20 transition-colors duration-200",
               isCollapsed ? "justify-center p-2" : "gap-3 p-2",
             )}
           >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
-              <ShadowTalkLogo size={36} variant="icon" ambient={false} animated={!isCollapsed} />
+            {/* Premium Logo Container */}
+            <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl overflow-hidden">
+              {/* Glowing background */}
+              <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/20 via-purple-500/20 to-blue-600/20" />
+              <div className="absolute inset-0 rounded-xl border border-white/10" />
+              <ShadowTalkLogo size={32} variant="icon" ambient={false} animated={!isCollapsed} />
+              {/* Live pulse indicator */}
+              <span className="absolute bottom-1 right-1 flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-60" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-cyan-400" />
+              </span>
             </div>
+
             {!isCollapsed && (
               <motion.div
                 initial={{ opacity: 0, x: -8 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={spring}
-                className="min-w-0"
+                className="min-w-0 flex-1"
               >
-                <p className="text-sm font-semibold text-sidebar-foreground tracking-tight truncate">
-                  ShadowTalk AI
+                {/* Logotype */}
+                <p className="text-[15px] font-bold tracking-tight text-white leading-none">
+                  ShadowTalk
                 </p>
-                <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-primary/75">
-                  Sovereign
-                </p>
+                {/* Status pill */}
+                <div className="mt-1.5 flex items-center gap-1.5">
+                  <span className="inline-flex items-center gap-1 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-cyan-400">
+                    AI Workspace
+                  </span>
+                </div>
               </motion.div>
             )}
           </motion.button>
