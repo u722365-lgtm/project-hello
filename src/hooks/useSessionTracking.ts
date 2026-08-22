@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { backend } from "@/integrations/local/client";
 import { useAuth } from "@/components/AuthProvider";
-import { isHeavyDownloadInProgress } from "@/lib/offline/forceOfflineSession";
+
 import { markExplicitSignOut } from "@/lib/persistentAuth";
 
 const SESSION_TOKEN_KEY = "shadowtalk_session_token";
@@ -109,7 +109,7 @@ export function useSessionTracking() {
 
     const heartbeat = setInterval(async () => {
       if (cancelled) return;
-      if (isHeavyDownloadInProgress()) return;
+
       try {
         const { data } = await backend
           .from("user_sessions")

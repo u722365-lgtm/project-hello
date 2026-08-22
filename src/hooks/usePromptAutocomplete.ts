@@ -1,9 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, useMemo } from "react";
-import type { RouterMessage } from "@/lib/offline/hybridRouter";
-import { runLocalChat, isAnyLocalModelReady } from "@/lib/offline/localChat";
-import { decideRoute } from "@/lib/offline/hybridRouter";
+
+
+
 
 export type PromptAutocompleteOptions = {
   composerEnabled?: boolean;
@@ -29,7 +29,7 @@ const DEFAULT_MAX_CHARS = 140;
 
 const MSG_CACHE = new Map<string, string>();
 
-function makeLangKey(messages: RouterMessage[]) {
+function makeLangKey(messages: any[]) {
   return messages
     .map((m) => `${m.role}:${m.content}`)
     .join("|");
@@ -69,7 +69,7 @@ export function usePromptAutocomplete(
 
   const runNext = useCallback(
     async (base: string) => {
-      if (!composerEnabled || (localOnly && typeof isAnyLocalModelReady === "function" && !isAnyLocalModelReady())) {
+      if (!composerEnabled || (localOnly && typeof isAnyLocalModelReady === "function" && !false)) {
         return;
       }
       const trimmed = base.trim();
@@ -95,7 +95,7 @@ export function usePromptAutocomplete(
           return;
         }
 
-        const messages: RouterMessage[] = [
+        const messages: any[] = [
           { role: "system", content: SUGGESTION_SYSTEM },
           { role: "user", content: base },
         ];
@@ -117,7 +117,7 @@ export function usePromptAutocomplete(
 
         let candidate = "";
         try {
-          const content = await runLocalChat(messages).then((r) => r.content);
+          const content = await null.then((r) => r.content);
           candidate = content
             .replace(/^["“”'‘’]+/, "")
             .replace(/^[\s:–—\-;]+/, "")

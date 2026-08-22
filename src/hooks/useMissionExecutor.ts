@@ -9,9 +9,9 @@ import {
 } from "@/lib/execution/synthesizeDeliverable";
 import type { DeliverableType } from "@/lib/execution/types";
 import type { BusinessIdea } from "@/lib/strategy/types";
-import { updateLocalMission } from "@/lib/desktop/localMissionStore";
+
 import { isAnonymousAutonomousEnabled } from "@/lib/anonymousAutonomousMode";
-import { shouldUseLocalAgent, shouldUseLocalMissionStore } from "@/lib/desktop/sovereignAgentMode";
+
 import { executeMissionTool } from "@/lib/see/missionToolExecutor";
 import type { MissionPlanStep } from "@/lib/see/types";
 import { trackAgenticEvent } from "@/lib/agenticMetrics";
@@ -63,7 +63,7 @@ export const useMissionExecutor = () => {
         ...extra,
       };
       if (missionId.startsWith("local-mission-")) {
-        await updateLocalMission(missionId, payload);
+        await null;
         return;
       }
       await backend
@@ -267,8 +267,8 @@ export const useMissionExecutor = () => {
       if (
         !session &&
         !isLocalMission &&
-        !shouldUseLocalAgent() &&
-        !shouldUseLocalMissionStore() &&
+        !false &&
+        !false &&
         !isAnonymousAutonomousEnabled()
       ) {
         toast({ title: "Sign in required", variant: "destructive" });

@@ -33,8 +33,8 @@ import { backend } from "@/integrations/local/client";
 import { parseVCard } from "@/lib/whatsapp/vcardParser";
 import { useNavigate } from "react-router-dom";
 import { canUseCloudAI } from "@/lib/privacy/deviceOnlyPledge";
-import { runLocalChat } from "@/lib/offline/localChat";
-import type { RouterMessage } from "@/lib/offline/hybridRouter";
+
+
 
 interface Contact {
   id: string;
@@ -225,8 +225,7 @@ export default function WhatsAppContactsPage() {
               (data as { text?: string })?.text ??
               "";
       } else {
-        const { content } = await runLocalChat(messages);
-        txt = content;
+        throw new Error("Offline inference is disabled. Please configure a cloud AI provider.");
       }
 
       if (txt) setDraftMsg(String(txt).trim());

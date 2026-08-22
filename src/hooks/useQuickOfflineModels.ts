@@ -12,7 +12,7 @@ import {
   getActiveQuickModelId,
   isForceOfflineSessionActive,
 } from "@/lib/offline/forceOfflineSession";
-import { setRoutingMode } from "@/lib/offline/hybridRouter";
+
 import { useToast } from "@/hooks/use-toast";
 
 export function useQuickOfflineModels() {
@@ -104,7 +104,7 @@ export function useQuickOfflineModels() {
       activateForceOfflineSession(model.id);
       setForceOffline(true);
       setActiveModelId(model.id);
-      setRoutingMode("local-only");
+
 
       toast({
         title: "Offline chat configured",

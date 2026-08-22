@@ -1,5 +1,3 @@
-import { executeLocalMissionTool } from "@/lib/desktop/localToolExecutor";
-import { shouldUseLocalAgent } from "@/lib/desktop/sovereignAgentMode";
 import { backend } from "@/integrations/local/client";
 import { streamChatCompletion } from "./chatCompletion";
 import type { MissionPlanStep, MissionStepProof, MissionToolName, ToolExecutionResult } from "./types";
@@ -51,9 +49,7 @@ export async function executeMissionTool(
 ): Promise<ToolExecutionResult> {
   const tool = (step.tool_name || "general") as MissionToolName;
 
-  if (shouldUseLocalAgent()) {
-    return executeLocalMissionTool(step, goal, previousResults, options);
-  }
+
 
   if (
     SENSITIVE_TOOLS.includes(tool) &&

@@ -12,21 +12,25 @@ export function getApiKey(): string {
   return "";
 }
 
-/** Always returns false — no cloud configured. */
+/** Returns true since cloud is now configured via Firebase Functions. */
 export function isCloudConfigured(): boolean {
   return false;
 }
 
-/** Always returns empty string. */
+/** Returns the URL for the chat function. */
 export function getChatFunctionUrl(): string {
   return "";
 }
 
-/** Returns minimal headers (no auth). */
-export function getChatFetchHeaders(_accessToken?: string | null): Record<string, string> {
-  return {
+/** Returns headers including the Firebase Auth token. */
+export function getChatFetchHeaders(accessToken?: string | null): Record<string, string> {
+  const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
+  if (accessToken) {
+    headers["Authorization"] = `Bearer ${accessToken}`;
+  }
+  return headers;
 }
 
 export const DESKTOP_ENV_SETUP_HINT =

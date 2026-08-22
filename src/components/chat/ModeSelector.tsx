@@ -34,7 +34,8 @@ export type ChatMode =
   | "email"
   | "proofread"
   | "uncensored"
-  | "shadowspectre";
+  | "shadowspectre"
+  | "hermes";
 
 interface ModeSelectorProps {
   mode: ChatMode;
@@ -227,6 +228,14 @@ Rules:
      color: "text-red-500",
      tier: "elite"
    },
+   {
+     value: "hermes",
+     label: "🧠 Hermes Agent",
+     icon: <Bot className="h-4 w-4" />,
+     prompt: "You are Hermes, an elite and highly capable autonomous AI agent. Your role is to assist with complex analytical tasks, precise coding, and strategic problem-solving. Maintain a direct, authoritative, and extremely competent persona. Prioritize accuracy, logic, and comprehensive solutions.",
+     color: "text-blue-500",
+     tier: "premium"
+   },
  ];
 
 export const getModePrompt = (mode: ChatMode): string => {
@@ -237,9 +246,9 @@ export const ModeSelector = ({ mode, onModeChange, disabled }: ModeSelectorProps
   const { canAccess, getUpgradeMessage, isPremiumOrHigher, isElite } = useFeatureGating();
   const { toast } = useToast();
   const currentMode = modes.find(m => m.value === mode) || modes[0];
-  const standardModes = modes.filter(m => !['ppag', 'hsca', 'uncensored', 'shadowspectre', 'research', 'math', 'camera', 'organize', 'academic'].includes(m.value));
+  const standardModes = modes.filter(m => !['ppag', 'hsca', 'uncensored', 'shadowspectre', 'research', 'math', 'camera', 'organize', 'academic', 'hermes'].includes(m.value));
   const specialModes = modes.filter(m => ['research', 'math', 'camera', 'organize', 'academic'].includes(m.value));
-   const advancedModes = modes.filter(m => ['ppag', 'hsca', 'uncensored', 'shadowspectre'].includes(m.value));
+  const advancedModes = modes.filter(m => ['ppag', 'hsca', 'uncensored', 'shadowspectre', 'hermes'].includes(m.value));
 
   const handleModeSelect = (selectedMode: ChatMode) => {
     const featureKey = modeFeatureMap[selectedMode];

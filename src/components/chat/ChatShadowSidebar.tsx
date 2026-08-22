@@ -237,17 +237,6 @@ export function ChatShadowSidebar({
             isCollapsed ? "px-2 py-3" : "px-4 py-4",
           )}
         >
-          {!isCollapsed ? (
-            <div className="flex items-center justify-between rounded-full bg-sidebar-accent/30 px-4 py-2">
-              <span className="text-xs font-medium text-muted-foreground">Shadow Mode</span>
-              <Switch
-                checked={shadowMode}
-                onCheckedChange={setShadowMode}
-                className="data-[state=checked]:bg-primary"
-              />
-            </div>
-          ) : null}
-
           <motion.button
             type="button"
             onClick={() => {

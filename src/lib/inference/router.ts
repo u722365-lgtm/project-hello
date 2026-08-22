@@ -77,7 +77,7 @@ async function detectMode(opts: InferenceRequest): Promise<InferenceMode> {
   // 3. Check if any BYOK key is stored for the model's natural provider
   if (opts.model) {
     const modelLower = opts.model.toLowerCase();
-    if (modelLower.includes('llama') || modelLower.includes('mixtral') || modelLower.includes('gemma')) {
+    if (modelLower.includes('llama') || modelLower.includes('mixtral') || modelLower.includes('gemma') || modelLower.includes('hermes')) {
       const key = await decryptKey('groq');
       if (key) return 'byok';
     }
@@ -228,7 +228,7 @@ async function detectByokProvider(model?: string): Promise<ByokProviderId | null
   }
 
   const m = model.toLowerCase();
-  if (m.includes('llama') || m.includes('mixtral')) {
+  if (m.includes('llama') || m.includes('mixtral') || m.includes('hermes')) {
     const key = await decryptKey('groq');
     if (key) return 'groq';
   }

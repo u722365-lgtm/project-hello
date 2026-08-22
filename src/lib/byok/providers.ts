@@ -133,6 +133,8 @@ export const BYOK_PROVIDERS: ByokProviderConfig[] = [
       { id: 'meta-llama/llama-3.3-70b-instruct:free', name: 'Llama 3.3 70B (Free)', description: 'Free via OpenRouter', contextWindow: 131072, maxOutput: 8192, isFree: true },
       { id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini', description: 'Via OpenRouter', contextWindow: 128000, maxOutput: 16384 },
       { id: 'anthropic/claude-sonnet-4', name: 'Claude Sonnet 4', description: 'Via OpenRouter', contextWindow: 200000, maxOutput: 16384 },
+      { id: 'nousresearch/hermes-3-llama-3.1-405b', name: 'Hermes 3 405B', description: 'Advanced open weights agent', contextWindow: 131072, maxOutput: 8192 },
+      { id: 'nousresearch/nous-hermes-2-mixtral-8x7b-dpo', name: 'Hermes 2 Mixtral', description: 'Fast Hermes agent', contextWindow: 32768, maxOutput: 8192 },
     ],
   },
   {

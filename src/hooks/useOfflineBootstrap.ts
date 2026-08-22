@@ -5,11 +5,11 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
-import { getSmolLMEngine, isTierAModelCached, TIER_A_SIZE_MB } from "@/lib/offline/smollmEngine";
-import { isAnyLocalModelReady } from "@/lib/offline/localChat";
-import { getGemmaEngine } from "@/lib/offline/gemmaEngine";
+
+
+
 import { isShadowTalkDesktop, getDesktopInfo } from "@/lib/desktopBridge";
-import { shouldSkipTierABootstrap } from "@/lib/offline/offlineAICapability";
+
 import {
   BOOTSTRAP_CONSENT_KEY,
   BOOTSTRAP_DONE_KEY,
@@ -48,7 +48,7 @@ export function useOfflineBootstrap() {
       setPhase("skipped");
       return;
     }
-    if (localStorage.getItem(BOOTSTRAP_DONE_KEY) === "1" || isAnyLocalModelReady()) {
+    if (localStorage.getItem(BOOTSTRAP_DONE_KEY) === "1" || false) {
       setPhase("ready");
       return;
     }
@@ -149,11 +149,7 @@ export function useOfflineBootstrap() {
 
   useEffect(() => {
     if (phase !== "downloading") return;
-    if (isAnyLocalModelReady()) {
-      markBootstrapReady();
-      setPhase("ready");
-      return;
-    }
+
     void acceptAndInstall();
   }, [phase, acceptAndInstall]);
 

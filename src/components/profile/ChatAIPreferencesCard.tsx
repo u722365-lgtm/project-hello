@@ -16,7 +16,7 @@ import {
   type AccelerationMode,
   ACCELERATION_CHANGE_EVENT,
 } from "@/lib/webgpuRuntime";
-import { getRoutingMode, setRoutingMode, type RoutingMode } from "@/lib/offline/hybridRouter";
+
 import { getShadowModeEnabled, setShadowModeEnabled } from "@/lib/shadowMode";
 import {
   getChatEnterToSend,
@@ -27,7 +27,7 @@ import {
 
 export function ChatAIPreferencesCard() {
   const [acceleration, setAcceleration] = useState<AccelerationMode>(() => getAccelerationPreference());
-  const [routing, setRouting] = useState<RoutingMode>(() => getRoutingMode());
+  const [routing, setRouting] = useState<RoutingMode>(() => "auto");
   const [shadowMode, setShadowMode] = useState(() => getShadowModeEnabled());
   const [enterToSend, setEnterToSend] = useState(() => getChatEnterToSend());
   const [showTimestamps, setShowTimestamps] = useState(() => getChatShowTimestamps());
@@ -96,7 +96,6 @@ export function ChatAIPreferencesCard() {
             onValueChange={(v) => {
               const mode = v as RoutingMode;
               setRouting(mode);
-              setRoutingMode(mode);
             }}
           >
             <SelectTrigger className="w-[120px] shrink-0 bg-muted/30">

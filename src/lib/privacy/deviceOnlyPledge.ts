@@ -4,7 +4,7 @@
  */
 
 import { isLocalInferenceReady } from "./localInferenceReady";
-import { isForceOfflineSessionActive } from "@/lib/offline/forceOfflineSession";
+
 
 const PLEDGE_KEY = "shadowtalk_device_only_pledge";
 const CLOUD_OPT_IN_KEY = "shadowtalk_cloud_opt_in_acknowledged";
@@ -99,11 +99,7 @@ export function setInterimCloudConsent(allowed: boolean): void {
  */
 export function onLocalModelReady(): void {
   localStorage.removeItem(INTERIM_CLOUD_KEY);
-  // Force-offline sessions always lock to local-only.
-  if (isForceOfflineSessionActive()) {
-    localStorage.setItem(ROUTING_PREF_KEY, "local-only");
-    return;
-  }
+
   // Default auto cut-over: if the user hasn't explicitly opted into cloud,
   // switch normal chat to local-only now that the model is ready.
   if (isDeviceOnlyPledgeActive() && !hasCloudOptIn()) {
@@ -132,7 +128,7 @@ export function needsInterimCloudChoice(): boolean {
 
 /** Cloud LLM / agent APIs (Jules, chat edge function, etc.) */
 export function canUseCloudAI(): boolean {
-  if (isForceOfflineSessionActive()) return false;
+
   if (!isDeviceOnlyPledgeActive() || hasCloudOptIn()) return true;
   if (hasInterimCloudConsent() && !isLocalInferenceReady()) return true;
   return false;

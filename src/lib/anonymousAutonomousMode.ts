@@ -5,7 +5,7 @@
 
 import type { User } from "@/lib/backend-types";
 import { isAutonomousModeEnabled } from "@/lib/autonomy/config";
-import { shouldUseLocalMissionStore as sovereignLocalMissions } from "@/lib/desktop/sovereignAgentMode";
+
 
 export const ANONYMOUS_AUTONOMOUS_KEY = "shadowtalk_anonymous_autonomous_v1";
 export const AUTO_APPROVE_MISSIONS_KEY = "shadowtalk_auto_approve_missions_v1";
@@ -69,7 +69,6 @@ export function isIdentityOptionalUser(user: User | null | undefined, isAnonymou
 }
 
 export function shouldUseAnonymousMissionStore(): boolean {
-  if (!isAnonymousAutonomousEnabled()) return sovereignLocalMissions();
   return true;
 }
 

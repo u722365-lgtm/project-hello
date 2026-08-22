@@ -1,6 +1,6 @@
-import { isAnyLocalModelReady } from "@/lib/offline/localChat";
-import { runOfflineCompletion } from "@/lib/offline/runOfflineCompletion";
-import type { RouterMessage } from "@/lib/offline/hybridRouter";
+
+
+
 
 export type MemoryReflection = {
   category: "preference" | "skill" | "context";
@@ -26,7 +26,7 @@ export async function reflectOnConversation(
     .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
     .join("\n") + REFLECTION_USER_SUFFIX;
 
-  const messages: RouterMessage[] = [
+  const messages: any[] = [
     { role: "system", content: REFLECTION_SYSTEM_PROMPT },
     { role: "user", content: prompt },
   ];

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ALL_WEBLLM_MODEL_IDS } from '@/lib/offline/webLlmModelCatalog';
+
 
 // =============================================================================
 // MODEL CACHE MANAGER - Unified cache verification for offline models

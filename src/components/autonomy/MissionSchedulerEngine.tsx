@@ -6,9 +6,9 @@ import { useMissionExecutor } from "@/hooks/useMissionExecutor";
 import type { Mission, MissionStep } from "@/hooks/useMissions";
 import { isAutonomousModeEnabled } from "@/lib/autonomy/config";
 import { trackAgenticEvent } from "@/lib/agenticMetrics";
-import { listDueLocalMissions } from "@/lib/desktop/localMissionStore";
+
 import { isAnonymousAutonomousEnabled } from "@/lib/anonymousAutonomousMode";
-import { shouldUseLocalMissionStore } from "@/lib/desktop/sovereignAgentMode";
+
 
 const POLL_MS = 60_000;
 const runningIds = new Set<string>();
@@ -33,25 +33,10 @@ export function MissionSchedulerEngine() {
 
   useEffect(() => {
     if (!isAutonomousModeEnabled()) return;
-    if (!user && !shouldUseLocalMissionStore() && !isAnonymousAutonomousEnabled()) return;
+    if (!user && !isAnonymousAutonomousEnabled()) return;
 
     const tick = async () => {
       try {
-        if (shouldUseLocalMissionStore()) {
-          const dueLocal = await listDueLocalMissions();
-          for (const mission of dueLocal.slice(0, 3)) {
-            if (runningIds.has(mission.id)) continue;
-            runningIds.add(mission.id);
-            trackAgenticEvent("mission_start", { source: "scheduler-local", goal: mission.title.slice(0, 80) });
-            toast({ title: "Local mission started", description: `"${mission.title}" is running on-device.` });
-            void executeRef.current(mission).then((result) => {
-              runningIds.delete(mission.id);
-              if (result) trackAgenticEvent("mission_complete", { source: "scheduler-local" });
-            });
-          }
-          if (dueLocal.length > 0) return;
-        }
-
         if (!user) return;
 
         const now = new Date().toISOString();

@@ -41,7 +41,6 @@ export async function callChatImageAnalyze(
 async function callChatImageMode(body: Record<string, unknown> & { signal?: AbortSignal }): Promise<ChatImageResult> {
   const { signal, ...payload } = body;
   const chatUrl = getChatFunctionUrl();
-  if (!chatUrl) throw new Error("Chat is not configured for this build.");
 
   const { data: { session } } = await backend.auth.getSession();
   const resp = await selfHealedFetch(chatUrl, {

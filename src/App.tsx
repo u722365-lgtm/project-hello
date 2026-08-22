@@ -151,9 +151,7 @@ const ShadowHealEngine = lazy(() =>
 const ShadowScaleEngine = lazy(() =>
   import("./components/shadowScale/ShadowScaleEngine").then((m) => ({ default: m.ShadowScaleEngine })),
 );
-const OfflineBootstrapBanner = lazy(() =>
-  import("./components/offline/OfflineBootstrapBanner").then((m) => ({ default: m.OfflineBootstrapBanner })),
-);
+
 const OnboardingFlow = lazy(() => import("./components/OnboardingFlow"));
 // ElevenLabs Agent ID is now configured via the backend secret ELEVENLABS_AGENT_ID
 
@@ -355,16 +353,8 @@ const App = () => {
       const chromeId = window.requestIdleCallback(enableChrome, { timeout: 4000 });
       const cleanupChrome = () => window.cancelIdleCallback(chromeId);
 
-      const resumeOffline = () => {
-        void import('@/lib/offline/bootstrapLocalModel').then(({ bootstrapCachedLocalModel }) =>
-          bootstrapCachedLocalModel().catch((e) => console.warn('[Offline] bootstrap failed', e)),
-        );
-      };
-
-      const offlineId = window.requestIdleCallback(resumeOffline, { timeout: 12000 });
       return () => {
         cleanupChrome();
-        window.cancelIdleCallback(offlineId);
       };
     }
 
@@ -421,7 +411,7 @@ const App = () => {
                  <CommandPalette open={cmdOpen} onOpenChange={setCmdOpen} />
                   {deferredChrome && (
                     <Suspense fallback={null}>
-                      <OfflineBootstrapBanner />
+
                       <OnboardingFlow />
                       <ShadowMemoryTracker />
                       <JourneyTracker />

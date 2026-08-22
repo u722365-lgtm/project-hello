@@ -19,10 +19,59 @@ export interface UserProviderKeyRow {
 
 const BYOK_EDGE_ENABLED = import.meta.env.VITE_ENABLE_BYOK_EDGE === "1";
 
+import { isCloudConfigured } from '@/lib/cloudEnv';
+import {
+  encryptAndStoreKey,
+  removeStoredKey,
+  listStoredKeyProviders,
+  getKeyMetadata,
+} from '@/lib/byok/crypto';
+
 async function invokeKeys<T>(action: string, body?: Record<string, unknown>): Promise<T> {
   if (!BYOK_EDGE_ENABLED) {
     throw new Error("BYOK key management is not enabled in this deployment");
   }
+
+  if (!isCloudConfigured()) {
+    if (action === "list") {
+      const stored = listStoredKeyProviders();
+      const keys = stored.map(p => {
+        const meta = getKeyMetadata(p);
+        const dateStr = meta?.savedAt || new Date().toISOString();
+        return {
+          provider: p as AiProviderId,
+          label: "Local Key",
+          key_prefix: '****',
+          verified_at: dateStr,
+          is_active: true,
+          is_default: true,
+          created_at: dateStr,
+          updated_at: dateStr,
+        } as UserProviderKeyRow;
+      });
+      return { keys, configured: { preferredProvider: keys[0]?.provider || null, useCustomKey: keys.length > 0 } } as unknown as T;
+    }
+    if (action === "verify") {
+      const key = body?.apiKey as string;
+      if (!key || key.length < 8) return { success: false, error: "API key is too short" } as unknown as T;
+      return { success: true, message: "Key looks valid (local mode)" } as unknown as T;
+    }
+    if (action === "save") {
+      const p = body?.provider as string;
+      const k = body?.apiKey as string;
+      await encryptAndStoreKey(p, k);
+      return { success: true, message: "Key saved locally", configured: { preferredProvider: p, useCustomKey: true } } as unknown as T;
+    }
+    if (action === "delete") {
+      const p = body?.provider as string;
+      removeStoredKey(p);
+      return { success: true } as unknown as T;
+    }
+    if (action === "set-default") {
+      return { success: true } as unknown as T;
+    }
+  }
+
   const { data: session } = await backend.auth.getSession();
   const token = session.session?.access_token;
   if (!token) throw new Error("Sign in required");

@@ -18,7 +18,7 @@ import { SettingsSectionHeader } from "@/components/settings/SettingsSectionHead
 import { SettingsStagger, SettingsStaggerItem } from "@/components/settings/SettingsStagger";
 import { CustomInstructionsProfileCard } from "@/components/profile/CustomInstructionsProfileCard";
 import { ChatAIPreferencesCard } from "@/components/profile/ChatAIPreferencesCard";
-import { OfflineAISettings } from "@/components/profile/OfflineAISettings";
+
 import { ShadowTalkModelPanel } from "@/components/profile/ShadowTalkModelPanel";
 import { AutoImproveInsights } from "@/components/autoImprove/AutoImproveInsights";
 import { PrivacyDataCard } from "@/components/profile/PrivacyDataCard";
@@ -152,7 +152,7 @@ export function SettingsSectionPanels({
         </SettingsStaggerItem>
         <SettingsStaggerItem>
           <AnimatedCard>
-            <OfflineAISettings />
+
           </AnimatedCard>
         </SettingsStaggerItem>
         <SettingsStaggerItem>

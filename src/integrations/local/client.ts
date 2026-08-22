@@ -30,4 +30,4 @@ export const backend: any = new Proxy({} as any, {
 export const isConfigured = true;
 
 /** Backend kind identifier. */
-export const backendKind: 'firebase' = 'firebase';
+export const backendKind = 'firebase' as const;

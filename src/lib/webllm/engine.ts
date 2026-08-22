@@ -80,6 +80,16 @@ export const WEBLLM_MODELS: WebLlmModel[] = [
     maxOutput: 2048,
     isCached: () => false,
   },
+  {
+    id: 'Hermes-2-Pro-Llama-3-8B-q4f16_1-MLC',
+    name: 'Hermes 2 Pro (Llama 3 8B)',
+    description: 'Nous Research agentic model — excellent for complex reasoning and tasks',
+    sizeGB: 4.5,
+    vramRequired: 5,
+    contextWindow: 8192,
+    maxOutput: 2048,
+    isCached: () => false,
+  },
 ];
 
 // ---- Engine State ----

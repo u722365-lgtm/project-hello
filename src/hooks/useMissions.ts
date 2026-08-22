@@ -2,12 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { backend } from '@/integrations/local/client';
 import { privateRealtimeChannel, userScopedRealtimeTopic } from '@/lib/realtimeChannel';
 import { useToast } from '@/hooks/use-toast';
-import {
-  createLocalMission,
-  listLocalMissions,
-  updateLocalMission,
-} from '@/lib/desktop/localMissionStore';
-import { shouldUseLocalMissionStore } from '@/lib/desktop/sovereignAgentMode';
+
+
 
 // One-time warning: if a background persistence write fails we surface a single
 // toast per session so the user knows the visible UI state may drift from what's
@@ -104,11 +100,7 @@ export const useMissions = () => {
   // Fetch all missions for current user
   const fetchMissions = useCallback(async () => {
     try {
-      if (shouldUseLocalMissionStore()) {
-        const local = await listLocalMissions();
-        setMissions(local);
-        return;
-      }
+
 
       const { data: { user } } = await backend.auth.getUser();
       if (!user) return;
@@ -184,12 +176,7 @@ export const useMissions = () => {
   ): Promise<Mission | null> => {
     setIsLoading(true);
     try {
-      if (shouldUseLocalMissionStore()) {
-        const newMission = await createLocalMission(title, goal, options);
-        setMissions((prev) => [newMission, ...prev]);
-        toast({ title: "Local mission created", description: `"${title}" queued on-device` });
-        return newMission;
-      }
+
 
       const { data: { user } } = await backend.auth.getUser();
       if (!user) {
@@ -250,7 +237,7 @@ export const useMissions = () => {
   ) => {
     try {
       if (missionId.startsWith("local-mission-")) {
-        await updateLocalMission(missionId, { status, ...updates });
+        await null;
         setMissions((prev) =>
           prev.map((m) =>
             m.id === missionId

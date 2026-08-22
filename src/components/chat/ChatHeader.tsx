@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/components/AuthProvider";
-import { BunkerModeToggle } from "./BunkerModeToggle";
+
 import {
   Select,
   SelectContent,
@@ -36,7 +36,7 @@ import {
   DropdownMenuSubContent,
   DropdownMenuPortal,
 } from "@/components/ui/dropdown-menu";
-import { ConnectionStatusIndicator } from "./ConnectionStatusIndicator";
+
 import type { AIProvider } from "@/lib/aiProviders";
 import { motion } from "framer-motion";
 
@@ -365,9 +365,9 @@ export const ChatHeader = ({
         
         <div className="hidden sm:block h-4 w-px bg-white/10 mx-1" />
         
-        <ConnectionStatusIndicator />
+
         <div className="hidden sm:block h-4 w-px bg-white/10 mx-1" />
-        <BunkerModeToggle />
+
       </div>
 
       {/* Right: Tools & User */}

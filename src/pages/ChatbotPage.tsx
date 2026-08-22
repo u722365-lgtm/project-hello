@@ -70,7 +70,7 @@ import {
   callChatImageEdit,
 } from "@/lib/chatImageApi";
 import { CognitiveLoopPanel } from "@/components/chat/CognitiveLoopPanel";
-import { useGemmaOffline } from "@/hooks/useGemmaOffline";
+
 import { useMarketplace } from "@/hooks/useMarketplace";
 import { resolveAgentRuntime } from "@/lib/marketplace/resolveAgentConfig";
 import { prependAgentSystemPrompt } from "@/lib/marketplace/applyAgentToChat";
@@ -89,13 +89,9 @@ import {
 } from "@/lib/marketplace/activeAgentSession";
 import { MarketplaceAgentBanner } from "@/components/chat/MarketplaceAgentBanner";
 import type { MarketplaceAgent, MarketplaceAgentRuntime } from "@/lib/marketplace/types";
-import { runOfflineCompletion } from "@/lib/offline/runOfflineCompletion";
+
 import { prewarmFastestLocalPath, warmHardwareProfile } from "@/lib/hardwareIntelligence";
-import {
-  augmentMessagesWithLocalMemory,
-  indexSovereignMemory,
-} from "@/lib/desktop/sovereignMemoryRag";
-import { isSovereignModeEnabled } from "@/lib/desktop/sovereignMode";
+
 import {
   canUseCloudAI,
   DEVICE_ONLY_BLOCKED_MESSAGE,
@@ -107,8 +103,8 @@ import {
   isLocalInferenceReady,
   LOCAL_MODEL_READY_EVENT,
 } from "@/lib/privacy/localInferenceReady";
-import { bootstrapCachedLocalModel } from "@/lib/offline/bootstrapLocalModel";
-import { bootstrapSeamlessOfflineForLoggedInUser } from "@/lib/offline/seamlessOfflineBootstrap";
+
+
 import {
   getShadowSpectreScope,
   hasAcceptedShadowSpectreTerms,
@@ -118,9 +114,8 @@ import {
 import { ShadowSpectreScopeBar } from "@/components/cyber/ShadowSpectreScopeBar";
 import { ShadowSpectrePanel } from "@/components/cyber/ShadowSpectrePanel";
 import { ShadowSpectreTermsDialog } from "@/components/cyber/ShadowSpectreTermsDialog";
-import { runLocalChat, isAnyLocalModelReady } from "@/lib/offline/localChat";
-import type { RouterMessage } from "@/lib/offline/hybridRouter";
-import { decideRoute } from "@/lib/offline/hybridRouter";
+
+
 import { useCustomApiKeys } from "@/hooks/useCustomApiKeys";
 import { useUserSettings } from "@/hooks/useUserSettings";
 import { stringifyChatBody } from "@/lib/chatRequest";
@@ -140,7 +135,7 @@ import {
 import { CHAT_COMMAND_MODAL_ACTIONS, CHAT_COMMAND_NAV_ROUTES } from "@/lib/chatCommandRoutes";
 import { consumePendingChatInsert } from "@/lib/pendingChatInsert";
 import { useChatSpeech } from "@/hooks/useChatSpeech";
-import { OfflineToolsPanel } from "@/components/chat/OfflineToolsPanel";
+
 import { BrowseActivityPanel, useAutoBrowse } from "@/components/chat/BrowseActivityPanel";
 import { MultiModelOrchestrator } from "@/components/chat/MultiModelOrchestrator";
 import { CreativeSynthesis } from "@/components/chat/CreativeSynthesis";
@@ -277,7 +272,7 @@ const ChatbotPage = () => {
     cancelExecution,
     dismissChatMission,
   } = useSEEFromChat();
-  const gemmaOffline = useGemmaOffline();
+
   const sovereignModel = useShadowTalkModel();
   const { getAgentById, agents: marketplaceAgents, loading: marketplaceCatalogLoading } = useMarketplace();
   const [activeMarketplaceAgent, setActiveMarketplaceAgentState] = useState<MarketplaceAgent | null>(null);
@@ -401,9 +396,7 @@ const ChatbotPage = () => {
     warmHardwareProfile();
     prewarmFastestLocalPath();
     ensureDefaultPersonalModel();
-    void bootstrapCachedLocalModel().then((ok) => {
-      if (ok) setLocalModelReady(true);
-    });
+
   }, []);
 
   useEffect(() => {
@@ -429,7 +422,7 @@ const ChatbotPage = () => {
     // Every visitor on the chat page kicks off the silent on-device model
     // download. Cloud is used until the model is ready, then routing flips
     // to local automatically (see tierAInstall → onLocalModelReady).
-    bootstrapSeamlessOfflineForLoggedInUser();
+
   }, [user, isAnonymous]);
 
   useEffect(() => {
@@ -1108,98 +1101,7 @@ const ChatbotPage = () => {
         ensureAutoCloudUntilLocalReady();
       }
 
-      const route = decideRoute(routerMessages, navigator.onLine);
-      const useLocal =
-        !hasMultimodalImage &&
-        (route.target === "local" ||
-          (aiProvider === "shadowtalk" && isAnyLocalModelReady()));
-      if (useLocal) {
-        if (!isAnyLocalModelReady()) {
-          prewarmFastestLocalPath();
-        }
 
-        const localMessages = await augmentMessagesWithLocalMemory(routerMessages);
-        const lastUserText =
-          [...routerMessages].reverse().find((m) => m.role === "user")?.content ?? "";
-
-        const aiMessageId = crypto.randomUUID();
-        let assistantContent = "";
-
-        const streamToken = (token: string) => {
-          assistantContent += token;
-          setMessages((prev) => {
-            const exists = prev.find((m) => m.id === aiMessageId);
-            if (exists) {
-              return prev.map((m) =>
-                m.id === aiMessageId ? { ...m, content: assistantContent } : m,
-              );
-            }
-            return [
-              ...prev,
-              { id: aiMessageId, type: "ai", content: assistantContent, timestamp: new Date() },
-            ];
-          });
-        };
-
-
-        const offline = await runOfflineCompletion({
-          messages: localMessages,
-          personality,
-          isOnline: navigator.onLine,
-          onToken: streamToken,
-        });
-
-        if (offline?.content) {
-          const useCloudInstead =
-            offline.source === "fallback" && canUseCloudAI() && navigator.onLine;
-          if (!useCloudInstead) {
-            if (!assistantContent) {
-              streamToken(offline.content);
-            }
-            if (lastUserText) {
-              void indexSovereignMemory(lastUserText, { category: "chat", source: "user" });
-            }
-            void indexSovereignMemory(offline.content, { category: "chat", source: "assistant" });
-            if (user) {
-              void saveMessage(offline.content, "assistant", conversationId);
-            }
-            return assistantContent || offline.content;
-          }
-        }
-
-        if (isAnyLocalModelReady()) {
-          try {
-            const { content } = await runLocalChat(localMessages, streamToken);
-            if (content) {
-              if (lastUserText) {
-                void indexSovereignMemory(lastUserText, { category: "chat", source: "user" });
-              }
-              void indexSovereignMemory(content, { category: "chat", source: "assistant" });
-            }
-            if (content && user) {
-              void saveMessage(content, "assistant", conversationId);
-            }
-            const reply = assistantContent || content;
-            if (reply) {
-              void maybeReflectAndPersist({ user }, messages.map((m) => ({ role: m.type === "ai" ? "assistant" : "user", content: m.content })));
-            }
-            return reply;
-          } catch (e) {
-            if (isSovereignModeEnabled() || !canUseCloudAI()) {
-              throw e instanceof Error ? e : new Error("Local chat failed on-device");
-            }
-            console.warn("[Chat] Local turbo path failed, using cloud:", e);
-          }
-        }
-
-        if (isSovereignModeEnabled() || !canUseCloudAI()) {
-          throw new Error(
-            canUseCloudAI()
-              ? "Sovereign mode is on but no local model responded. Download a browser model in Settings → Offline AI, then retry."
-              : DEVICE_ONLY_BLOCKED_MESSAGE,
-          );
-        }
-      }
 
       if (!canUseCloudAI()) {
         throw new Error(DEVICE_ONLY_BLOCKED_MESSAGE);
@@ -1436,7 +1338,7 @@ const ChatbotPage = () => {
       }
       return assistantContent || undefined;
     },
-    [aiProvider, aiConfig, keys, chatMode, personality, user, gemmaOffline.chatLocal, sovereignModel, getChatDefaults, getMemoryContext],
+    [aiProvider, aiConfig, keys, chatMode, personality, user, sovereignModel, getChatDefaults, getMemoryContext],
   );
 
   const handleStopGeneration = () => {
@@ -2666,17 +2568,6 @@ const ChatbotPage = () => {
             }
             learnFromTurn(cognitiveQuery, result, currentConversationId ?? "");
             setShowCognitiveLoop(false);
-          }}
-        />
-      )}
-      {showOfflineTools && (
-        <OfflineToolsPanel
-          isOpen={showOfflineTools}
-          onClose={() => setShowOfflineTools(false)}
-          onInsertToChat={(text) => {
-            setMessage(text);
-            setShowOfflineTools(false);
-            toast({ title: "Inserted into chat", description: "Edit the prompt and send when ready." });
           }}
         />
       )}
