@@ -1,6 +1,7 @@
 import { ReactNode, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Hexagon } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+import ChatbotLogo from '../ChatbotLogo';
 
 interface LandingNavigationProps {
   children?: ReactNode;
@@ -28,10 +29,8 @@ const LandingNavigation = ({ children }: LandingNavigationProps) => {
         
         {/* Logo Section */}
         <a href="/" className="flex items-center gap-3 group">
-          <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border border-white/10 shadow-inner">
-            <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/40 to-purple-500/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-md" />
-            <Hexagon className="relative z-10 h-5 w-5 text-cyan-300 group-hover:text-cyan-200 transition-colors" />
-            <span className="absolute z-20 font-bold text-white text-xs">S</span>
+          <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 border border-white/10 shadow-inner group-hover:scale-105 transition-transform duration-300">
+            <ChatbotLogo size={24} className="relative z-10" />
           </div>
           <span className="text-lg font-bold tracking-widest text-white uppercase hidden sm:block">
             ShadowTalk
