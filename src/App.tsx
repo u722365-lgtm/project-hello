@@ -47,15 +47,12 @@ export const CommandPaletteContext = createContext<{ open: () => void }>({ open:
  const SharedAnswerPage = lazy(() => import("./pages/SharedAnswerPage"));
 const SharedMissionPage = lazy(() => import("./pages/SharedMissionPage"));
  import SessionsPage from "./pages/SessionsPage";
- import SelfHealingPage from "./pages/SelfHealingPage";
- import { SelfHealingProvider } from "./components/selfHealing/SelfHealingProvider";
 import { NotificationPermissionRequester } from "@/components/notifications/NotificationPermissionRequester";
 import { UpdateNotificationProvider } from "@/components/notifications/UpdateNotificationProvider";
 import { AutonomousAgentEngine } from "@/components/autonomy/AutonomousAgentEngine";
 import { MissionSchedulerEngine } from "@/components/autonomy/MissionSchedulerEngine";
 import { ScriptSchedulerEngine } from "@/components/autonomy/ScriptSchedulerEngine";
 import { GoalPursuitEngine } from "@/components/autonomy/GoalPursuitEngine";
-import { SelfHealingErrorBoundary } from "@/components/selfHealing/SelfHealingErrorBoundary";
 import { NetworkTransitionOverlay } from "@/components/chat/NetworkTransitionOverlay";
 import { PushIntelligencePanel } from "@/components/chat/PushIntelligencePanel";
 import GlobalMaintenanceNotice from "@/components/GlobalMaintenanceNotice";
@@ -71,7 +68,6 @@ import GlobalMaintenanceNotice from "@/components/GlobalMaintenanceNotice";
  const ProfilePage = lazy(() => import("./pages/ProfilePage"));
  const SettingsPage = lazy(() => import("./pages/SettingsPage"));
  const APIPage = lazy(() => import("./pages/APIPage"));
- const EnterpriseSettingsPage = lazy(() => import("./pages/EnterpriseSettingsPage"));
  const PrivateAiHubPage = lazy(() => import("./pages/PrivateAiHubPage"));
  const AboutPage = lazy(() => import("./pages/AboutPage"));
 const TeamPage = lazy(() => import("./pages/TeamPage"));
@@ -122,13 +118,11 @@ const StrategyLabPage = lazy(() => import("./pages/StrategyLabPage"));
 const SovereignDataPage = lazy(() => import("./pages/SovereignDataPage"));
 const SovereignWalletPage = lazy(() => import("./pages/SovereignWalletPage"));
 const GhostAdsPage = lazy(() => import("./pages/GhostAdsPage"));
-const EnterpriseLicensePage = lazy(() => import("./pages/EnterpriseLicensePage"));
-const TransparencyPage = lazy(() => import("./pages/TransparencyPage"));
+const TransparentPage = lazy(() => import("./pages/TransparencyPage"));
 const CommandCenterPage = lazy(() => import("./pages/CommandCenterPage"));
 const CompetitivePage = lazy(() => import("./pages/CompetitivePage"));
 const ComparisonDetailPage = lazy(() => import("./pages/ComparisonDetailPage"));
 const AgentArchitecturePage = lazy(() => import("./pages/AgentArchitecturePage"));
-const ComplianceDashboardPage = lazy(() => import("./pages/ComplianceDashboardPage"));
 const AutoImproveEngine = lazy(() => import("@/components/autoImprove/AutoImproveEngine"));
 const PersonalLLMPage = lazy(() => import("./pages/PersonalLLMPage"));
 const PromptsPage = lazy(() => import("./pages/PromptsPage"));
@@ -142,9 +136,6 @@ const CustomerSupportWidget = lazy(() => import("./components/CustomerSupportWid
 const ShadowMemoryTracker = lazy(() => import("./components/ShadowMemoryTracker"));
 const JourneyTracker = lazy(() => import("./components/JourneyTracker").then(m => ({ default: m.JourneyTracker })));
 const VoiceCommandSystem = lazy(() => import("./components/VoiceCommandSystem"));
-const ShadowHealEngine = lazy(() =>
-  import("./components/shadowHeal/ShadowHealEngine").then((m) => ({ default: m.ShadowHealEngine })),
-);
 const ShadowScaleEngine = lazy(() =>
   import("./components/shadowScale/ShadowScaleEngine").then((m) => ({ default: m.ShadowScaleEngine })),
 );
@@ -209,7 +200,6 @@ const AnimatedRoutes = () => {
           <Route path="/data-insights" element={<Navigate to="/insights?tab=behavior" replace />} />
           <Route path="/shadow-memory" element={<Navigate to="/insights?tab=activity" replace />} />
           <Route path="/memory" element={<PageTransition><MemoryPage /></PageTransition>} />
-          <Route path="/enterprise" element={<PageTransition><EnterpriseSettingsPage /></PageTransition>} />
           <Route path="/about" element={<PageTransition><AboutPage /></PageTransition>} />
           <Route path="/team" element={<PageTransition><TeamPage /></PageTransition>} />
           <Route path="/help" element={<PageTransition><HelpCenterPage /></PageTransition>} />
@@ -290,12 +280,12 @@ const AnimatedRoutes = () => {
           <Route path="/sovereign-data" element={<PageTransition><SovereignDataPage /></PageTransition>} />
           <Route path="/wallet" element={<PageTransition><SovereignWalletPage /></PageTransition>} />
           <Route path="/ghost-ads" element={<PageTransition><GhostAdsPage /></PageTransition>} />
-          <Route path="/transparency" element={<PageTransition><TransparencyPage /></PageTransition>} />
+          <Route path="/transparency" element={<PageTransition><TransparentPage /></PageTransition>} />
           <Route path="/command-center" element={<PageTransition><CommandCenterPage /></PageTransition>} />
           <Route path="/competitive" element={<PageTransition><CompetitivePage /></PageTransition>} />
           <Route path="/compare/:slug" element={<PageTransition><ComparisonDetailPage /></PageTransition>} />
           <Route path="/agents" element={<PageTransition><MarketplacePage /></PageTransition>} />
-          <Route path="/compliance" element={<PageTransition><ComplianceDashboardPage /></PageTransition>} />
+
           <Route path="/personal-llm" element={<PageTransition><PersonalLLMPage /></PageTransition>} />
           <Route path="/templates" element={<PageTransition><TemplatesPage /></PageTransition>} />
           <Route path="/theme" element={<Navigate to="/templates?tab=custom" replace />} />
@@ -303,7 +293,6 @@ const AnimatedRoutes = () => {
           <Route path="/downloads" element={<PageTransition><DownloadsPage /></PageTransition>} />
           <Route path="/download" element={<Navigate to="/downloads" replace />} />
           <Route path="/sessions" element={<PageTransition><SessionsPage /></PageTransition>} />
-          <Route path="/self-healing" element={<PageTransition><SelfHealingPage /></PageTransition>} />
           <Route path="/abdul-rauf-ceo" element={<PageTransition><AbdulRaufPage /></PageTransition>} />
           <Route path="/muhammad-umar-cfo" element={<PageTransition><MuhammadUmarPage /></PageTransition>} />
           <Route path="/leaderboard" element={<PageTransition><LeaderboardPage /></PageTransition>} />
@@ -363,7 +352,6 @@ const App = () => {
             <AuthProvider>
               <StealthKillSwitchProvider>
               <SecurityProvider>
-              <SelfHealingProvider>
               <ShadowMemoryProvider>
               <AutoImproveProvider>
               <ThemeTemplateProvider>
@@ -380,7 +368,6 @@ const App = () => {
                  <UpdateNotificationProvider />
                  <NetworkTransitionOverlay />
                  <PushIntelligencePanel />
-                 <SelfHealingErrorBoundary>
                  <SiteMotionProvider>
                    <SitePageShell>
                      <GlobalScrollReveal />
@@ -394,7 +381,6 @@ const App = () => {
                      <BackToHomeButton />
                    </SitePageShell>
                  </SiteMotionProvider>
-                 </SelfHealingErrorBoundary>
                  <CommandPalette open={cmdOpen} onOpenChange={setCmdOpen} />
                   {deferredChrome && (
                     <Suspense fallback={null}>
@@ -403,7 +389,6 @@ const App = () => {
                       <ShadowMemoryTracker />
                       <JourneyTracker />
                       <AutoImproveEngine />
-                      <ShadowHealEngine />
                       <ShadowScaleEngine />
                       <AutonomousAgentEngine />
                       <MissionSchedulerEngine />
@@ -420,7 +405,6 @@ const App = () => {
               </ThemeTemplateProvider>
               </AutoImproveProvider>
               </ShadowMemoryProvider>
-              </SelfHealingProvider>
               </SecurityProvider>
               </StealthKillSwitchProvider>
             </AuthProvider>

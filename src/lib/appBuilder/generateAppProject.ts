@@ -1,9 +1,8 @@
-import { stringifyChatBody } from "@/lib/chatRequest";
+import { turboComplete } from "@/lib/turbo/turboEngine";
 import { buildFallbackProject } from "./fallbackProject";
 import { parseAppProjectResponse } from "./parseAppProject";
 import type { AppPlatform, AppProject } from "./types";
 
-const CHAT_URL = '';
 
 const SYSTEM_PROMPT = `You are an expert full-stack developer building complete runnable apps for ShadowTalk IDE.
 Respond with ONLY valid JSON (no markdown prose outside the JSON). Schema:
@@ -35,42 +34,6 @@ export interface GenerateAppProjectOptions {
   providerPayload?: Record<string, unknown>;
 }
 
-async function readNonStreamBody(resp: Response): Promise<string> {
-  const contentType = resp.headers.get("content-type") || "";
-  if (contentType.includes("text/event-stream")) {
-    const reader = resp.body?.getReader();
-    const decoder = new TextDecoder();
-    let full = "";
-    while (reader) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      for (const line of decoder.decode(value).split("\n")) {
-        if (line.startsWith("data: ") && line !== "data: [DONE]") {
-          try {
-            const data = JSON.parse(line.slice(6));
-            const delta = data.choices?.[0]?.delta?.content ?? data.choices?.[0]?.message?.content;
-            if (delta) full += delta;
-          } catch {
-            /* ignore */
-          }
-        }
-      }
-    }
-    return full;
-  }
-  try {
-    const json = (await resp.json()) as {
-      choices?: Array<{ message?: { content?: string } }>;
-      content?: string;
-      error?: string;
-    };
-    if (json.error) throw new Error(json.error);
-    return json.choices?.[0]?.message?.content ?? json.content ?? "";
-  } catch {
-    return await resp.text();
-  }
-}
-
 export async function generateAppProject(options: GenerateAppProjectOptions): Promise<AppProject> {
   const { prompt, platform, accessToken, personality = "professional", mode = "code" } = options;
 
@@ -82,28 +45,12 @@ Generate a complete ${platform === "mobile" ? "mobile-first web app (PWA-style)"
   const token = accessToken || import.meta.env.VITE_API_KEY;
 
   try {
-    const resp = await fetch(CHAT_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: stringifyChatBody({
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: userContent },
-        ],
-        personality,
-        mode,
-        ...(options.providerPayload || {}),
-      }),
-    });
+    const resp = await turboComplete(
+      SYSTEM_PROMPT,
+      userContent
+    );
 
-    if (!resp.ok) {
-      throw new Error(`Chat API ${resp.status}`);
-    }
-
-    const raw = await readNonStreamBody(resp);
+    const raw = resp.content || "";
     const parsed = parseAppProjectResponse(raw, platform);
     if (parsed && parsed.files.length >= 2) {
       return { ...parsed, platform: parsed.platform || platform };

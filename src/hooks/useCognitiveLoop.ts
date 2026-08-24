@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import { backend } from '@/integrations/local/client';
-import { stringifyChatBody } from "@/lib/chatRequest";
+import { turboComplete } from "@/lib/turbo/turboEngine";
 
 // =============================================================================
 // COGNITIVE LOOP ARCHITECTURE - Beyond 2026 Industry Standard
@@ -109,7 +109,6 @@ const SPECIALIST_AGENTS: SpecialistAgent[] = [
   },
 ];
 
-const CHAT_URL = '';
 
 export const useCognitiveLoop = () => {
   const [state, setState] = useState<CognitiveState>({
@@ -135,11 +134,6 @@ export const useCognitiveLoop = () => {
     const startTime = Date.now();
 
     try {
-      const { data: { session } } = await backend.auth.getSession();
-      if (!session?.access_token) {
-        throw new Error('AUTH_REQUIRED');
-      }
-
       // Build debate-aware prompt
       let prompt = userQuery;
       if (otherResponses && otherResponses.length > 0) {
@@ -151,54 +145,13 @@ ${otherResponses.map(r => `**${r.agentName}**: ${r.response.slice(0, 500)}...`).
 Now provide your perspective as the ${agent.name}. If you disagree with any points, explicitly state why. If you agree, build upon their insights.`;
       }
 
-      const response = await fetch(CHAT_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: stringifyChatBody({
-          messages: [
-            { role: 'system', content: `${agent.systemPrompt}\n\nContext:\n${context}` },
-            { role: 'user', content: prompt },
-          ],
-          model: 'google/gemini-2.5-flash',
-          stream: false,
-        }),
-        signal: abortRef.current?.signal,
-      });
+      const response = await turboComplete(
+        `${agent.systemPrompt}\n\nContext:\n${context}`,
+        prompt,
+        { model: 'google/gemini-2.5-flash' }
+      );
 
-      if (!response.ok) {
-        const status = response.status;
-        console.warn(`[Cognitive] Agent ${agent.name} failed:`, status);
-        if (status === 429) throw new Error('RATE_LIMIT');
-        if (status === 402) throw new Error('CREDITS_EXHAUSTED');
-        if (status === 401 || status === 403) throw new Error('AUTH_REQUIRED');
-        return null;
-      }
-
-      // Parse streaming response
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
-      let fullResponse = '';
-
-      if (reader) {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          const chunk = decoder.decode(value, { stream: true });
-
-          for (const line of chunk.split('\n')) {
-            if (line.startsWith('data: ') && line !== 'data: [DONE]') {
-              try {
-                const data = JSON.parse(line.slice(6));
-                const content = data.choices?.[0]?.delta?.content || data.choices?.[0]?.message?.content;
-                if (content) fullResponse += content;
-              } catch {}
-            }
-          }
-        }
-      }
+      let fullResponse = response.content;
 
       // Extract confidence from response (look for self-assessment)
       const confidenceMatch = fullResponse.match(/confidence[:\s]+(\d+)/i);
@@ -268,11 +221,6 @@ Now provide your perspective as the ${agent.name}. If you disagree with any poin
     responses: AgentResponse[]
   ): Promise<string> => {
     try {
-      const { data: { session } } = await backend.auth.getSession();
-      if (!session?.access_token) {
-        return responses.map(r => `**${r.agentName}**: ${r.response}`).join('\n\n');
-      }
-
       const synthesisPrompt = `You are the Chief Synthesizer. Multiple specialist agents have analyzed this query:
 
 **Original Query**: ${query}
@@ -293,46 +241,13 @@ ${r.disagreements?.length ? `\n**Disagreements**: ${r.disagreements.join('; ')}`
 
 Provide the BEST possible answer by combining their expertise.`;
 
-      const response = await fetch(CHAT_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: stringifyChatBody({
-          messages: [{ role: 'user', content: synthesisPrompt }],
-          model: 'google/gemini-2.5-pro', // Use strongest model for synthesis
-          stream: false,
-        }),
-        signal: abortRef.current?.signal,
-      });
+      const response = await turboComplete(
+        "You are an expert synthesizer.",
+        synthesisPrompt,
+        { model: 'google/gemini-2.5-pro' }
+      );
 
-      if (!response.ok) {
-        // Fallback: combine responses manually
-        return responses.map(r => `**${r.agentName}**: ${r.response}`).join('\n\n');
-      }
-
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
-      let fullResponse = '';
-
-      if (reader) {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          const chunk = decoder.decode(value, { stream: true });
-
-          for (const line of chunk.split('\n')) {
-            if (line.startsWith('data: ') && line !== 'data: [DONE]') {
-              try {
-                const data = JSON.parse(line.slice(6));
-                const content = data.choices?.[0]?.delta?.content || data.choices?.[0]?.message?.content;
-                if (content) fullResponse += content;
-              } catch {}
-            }
-          }
-        }
-      }
+      let fullResponse = response.content;
 
       return fullResponse.trim();
     } catch (e) {

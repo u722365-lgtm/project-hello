@@ -6,7 +6,6 @@
 import { backend } from "@/integrations/local/client";
 import { stringifyChatBody } from "@/lib/chatRequest";
 import { getChatFetchHeaders, getChatFunctionUrl } from "@/lib/cloudEnv";
-import { selfHealedFetch } from "@/lib/selfHealing/selfHealedFetch";
 
 export interface ChatImageResult {
   content: string;
@@ -43,7 +42,7 @@ async function callChatImageMode(body: Record<string, unknown> & { signal?: Abor
   const chatUrl = getChatFunctionUrl();
 
   const { data: { session } } = await backend.auth.getSession();
-  const resp = await selfHealedFetch(chatUrl, {
+  const resp = await fetch(chatUrl, {
     method: "POST",
     headers: getChatFetchHeaders(session?.access_token),
     body: stringifyChatBody({

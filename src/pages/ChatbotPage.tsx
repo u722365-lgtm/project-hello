@@ -10,16 +10,9 @@ import { AIProvider } from "@/components/chat/ProviderSelector";
 import { ChatHeader } from "@/components/chat/ChatHeader";
 import { ChatToolbar } from "@/components/chat/ChatToolbar";
 import { EnterpriseWelcomeBanner } from "@/components/chat/EnterpriseWelcomeBanner";
-import { EnterpriseEmployeeGate } from "@/components/enterprise/EnterpriseEmployeeGate";
-import { EnterpriseOnboarding } from "@/components/enterprise/EnterpriseOnboarding";
-import { EnterpriseHelpFab } from "@/components/enterprise/EnterpriseHelpFab";
-import { EnterpriseInviteColleagues } from "@/components/enterprise/EnterpriseInviteColleagues";
-import { useEnterpriseExperience } from "@/hooks/useEnterpriseExperience";
-import { ChatIconRail } from "@/components/chat/ChatIconRail";
 import { ChatShadowSidebar } from "@/components/chat/ChatShadowSidebar";
 import { ChatInput } from "@/components/chat/ChatInput";
 import { ChatMessages } from "@/components/chat/ChatMessages";
-import { ConversationSidebar } from "@/components/chat/ConversationSidebar";
 import { ImageGenerator } from "@/components/chat/ImageGenerator";
 import { MusicGenerator } from "@/components/chat/MusicGenerator";
 import { WordleGame } from "@/components/chat/WordleGame";
@@ -55,12 +48,9 @@ import { ChatMobileNavDrawer } from "@/components/chat/ChatMobileNavDrawer";
 import { useShadowMemoryContext } from "@/contexts/ShadowMemoryContext";
 import { useIntelligenceHub } from "@/hooks/useIntelligenceHub";
 import { useAutoImproveContext } from "@/contexts/AutoImproveContext";
-import { useSEEFromChat } from "@/hooks/useSEEFromChat";
-import { SEEMissionPanel } from "@/components/chat/SEEMissionPanel";
 import { resolveAutonomousRoute } from "@/lib/autonomy/autonomousRouter";
 import { trackAgenticEvent } from "@/lib/agenticMetrics";
 import { upsertGoalsFromMessage, syncGoalToAiMemories } from "@/lib/autonomy/goalPersistence";
-import { selfHealedFetch } from "@/lib/selfHealing/selfHealedFetch";
 import { detectChatImageIntent } from "@/lib/chatImageIntent";
 import {
   buildVisionUserMessage,
@@ -241,7 +231,6 @@ const ChatbotPage = () => {
   const { user, userPlan, signOut, checkSubscription, isOffline, isAnonymous } = useAuth();
   const guestUsage = useGuestUsage();
   const dailyLimits = useDailyLimits();
-  const enterprise = useEnterpriseExperience();
   const { toast } = useToast();
   
   // Hooks
@@ -259,19 +248,31 @@ const ChatbotPage = () => {
     getChatDefaults,
   } = useAutoImproveContext();
   const { extractMemories, extractKnowledge, getMemoryContext } = useIntelligenceHub();
-  const {
-    chatMission,
-    activeMission,
-    isExecuting: isMissionExecuting,
-    pendingApproval,
-    launchMissionFromChat,
-    approveChatMissionStep,
-    rejectPendingStep,
-    cancelExecution,
-    dismissChatMission,
-  } = useSEEFromChat();
 
   const sovereignModel = useShadowTalkModel();
+  
+  // Mocks for removed enterprise and self-healing features
+  const enterprise = {
+    isEnterpriseUser: false,
+    hideMonetization: false,
+    hideReferralNudges: false,
+    includeReferralInShare: false,
+    allowProductSharing: true,
+    needsWorkEmailSignIn: false,
+    tenant: null,
+    displayOrgName: null,
+    showInviteColleagues: false,
+    showOnboarding: false,
+    showHelpFab: false
+  };
+
+  const chatMission = { mission: null };
+  const activeMission = null;
+  const isMissionExecuting = false;
+  const pendingApproval = false;
+  const approveChatMissionStep = async () => {};
+  const rejectPendingStep = async () => {};
+  const cancelExecution = async () => {};
   const { getAgentById, agents: marketplaceAgents, loading: marketplaceCatalogLoading } = useMarketplace();
   const [activeMarketplaceAgent, setActiveMarketplaceAgentState] = useState<MarketplaceAgent | null>(null);
   const marketplaceRuntimeRef = useRef<MarketplaceAgentRuntime | null>(null);
@@ -297,7 +298,8 @@ const ChatbotPage = () => {
   const [chatMode, setChatMode] = useState<ChatMode>("general");
   const [aiProvider, setAiProvider] = useState<AIProvider>('turbo');
   const { preferences: chatPreferences, isLoading: chatPrefsLoading } = useChatSettings();
-  const hasLocalDesktop = typeof window !== 'undefined' && (window as any).__TAURI__ && isAnyLocalModelReady();
+  const [localModelReady, setLocalModelReady] = useState(() => isLocalInferenceReady());
+  const hasLocalDesktop = typeof window !== 'undefined' && (window as any).__TAURI__ && localModelReady;
   const e2ee = useE2EE();
   const chatPrivate = useChatPrivateMode(e2ee);
   const appliedChatDefaults = useRef(false);
@@ -326,7 +328,6 @@ const ChatbotPage = () => {
   const [showShadowSpectrePanel, setShowShadowSpectrePanel] = useState(false);
   const [showShadowSpectreTerms, setShowShadowSpectreTerms] = useState(false);
   const [shadowSpectreHead, setShadowSpectreHead] = useState<string>("general");
-  const [localModelReady, setLocalModelReady] = useState(() => isLocalInferenceReady());
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [showDeepResearch, setShowDeepResearch] = useState(false);
   const [showShadowTalkLive, setShowShadowTalkLive] = useState(false);
@@ -1035,8 +1036,8 @@ const ChatbotPage = () => {
         }
       }
 
-      const routerMessages: RouterMessage[] = augmented.map((m) => ({
-        role: m.role as RouterMessage["role"],
+      const routerMessages = augmented.map((m) => ({
+        role: m.role as "user" | "assistant" | "system",
         content: typeof m.content === "string"
           ? m.content
           : (m.content.find((p) => p.type === "text") as { text?: string } | undefined)?.text ?? "",
@@ -1082,10 +1083,7 @@ const ChatbotPage = () => {
           signal: controller.signal,
         });
         setShadowSpectreHead(spectre.head);
-        if (lastUser) {
-          void indexSovereignMemory(lastUser, { category: "chat", source: "user" });
-        }
-        void indexSovereignMemory(spectre.content, { category: "chat", source: "assistant" });
+        // Removed sovereign memory indexing
         if (user) {
           void saveMessage(spectre.content, "assistant", conversationId);
         }
@@ -1263,7 +1261,7 @@ const ChatbotPage = () => {
           await raiseChatHttpError((end as unknown as { status?: number }).status ?? 500, (end as unknown as { body?: string }).body);
         }
       } else {
-        const resp = await selfHealedFetch(chatUrl, {
+        const resp = await fetch(chatUrl, {
           method: "POST",
           headers: getChatFetchHeaders(session?.access_token),
           signal: controller.signal,
@@ -1547,49 +1545,8 @@ const ChatbotPage = () => {
 
     const execHint = detectShadowExecutionFromChat(msgContent);
     const route = resolveAutonomousRoute(msgContent, execHint, { preferSeeRouting });
-
-    if (route.launchInChat) {
-      try {
-        trackAgenticEvent("mission_start", { source: "chat_autonomous", goal: msgContent.slice(0, 120) });
-        void captureAutoImprove("see_launch", { goal: msgContent.slice(0, 80) });
-        const state = await launchMissionFromChat(msgContent);
-        if (state) {
-          const intro =
-            state.status === "completed" && state.result
-              ? `**Autonomous mission complete.**\n\n${state.result}`
-              : state.status === "paused"
-                ? `**Mission paused** — approve the next step in the panel below, or open full execution.`
-                : state.status === "failed"
-                  ? `**Mission could not finish.** Open Shadow Execution to adjust the plan or retry.`
-                  : `**Autonomous mission running** — multi-step plan in progress for: *${state.goal.slice(0, 100)}${state.goal.length > 100 ? "…" : ""}*`;
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: crypto.randomUUID(),
-              type: "ai",
-              content: intro,
-              timestamp: new Date(),
-              toolExecution: {
-                tool: "shadow_execution",
-                status: state.status === "completed" ? "complete" : "running",
-                params: { goal: msgContent, mode: execHint.deliverableType },
-                result: state.result ?? "In progress",
-              },
-            },
-          ]);
-          if (user) void saveMessage(intro, "assistant", conversationId).catch(() => {});
-          if (state.result) learnFromTurn(msgContent, state.result, conversationId);
-          trackAgenticEvent("mission_complete", { source: "chat_autonomous" });
-          setIsLoading(false);
-          return;
-        }
-      } catch (err) {
-        console.warn("[Autonomy] In-chat mission failed, falling back:", err);
-      }
-    }
-
     if (route.redirectToExecute) {
-      goToExecute(msgContent, execHint.deliverableType);
+      goToExecute(msgContent);
       const label =
         execHint.deliverableType === "strategy_report"
           ? "Strategy report"
@@ -1628,12 +1585,12 @@ const ChatbotPage = () => {
         setMusicAutoGenerate(Boolean(prompt));
         setShowMusicGenerator(true);
       },
-      openAgenticRunner: (g: string) => goToExecute(g, "general"),
+      openAgenticRunner: (g: string) => goToExecute(g),
       openBrowser: () => setShowShadowBrowser(true),
       openShadowLive: () => setShowShadowTalkLive(true),
-      openMissionControl: () => goToExecute(msgContent, "general"),
+      openMissionControl: () => goToExecute(msgContent),
       openShadowExecution: (g: string, mode?: import("@/lib/execution/types").DeliverableType) =>
-        goToExecute(g, mode),
+        goToExecute(g),
       setPendingMessage: (text: string) => setMessage(text),
       appendAssistantMessage: (
         content: string,
@@ -1865,7 +1822,7 @@ const ChatbotPage = () => {
       const te = msg?.toolExecution;
       if (!te?.params?.goal) return;
       const mode = (te.params.mode as "general" | "strategy_report" | "research_brief" | "content_pack") || "general";
-      goToExecute(te.params.goal, mode);
+      goToExecute(te.params.goal);
     },
     [messages, goToExecute],
   );
@@ -1907,33 +1864,25 @@ const ChatbotPage = () => {
   );
 
 
-  const handleExport = () => {
+  const handleExport = async () => {
     try {
-      const payload = {
-        exportedAt: new Date().toISOString(),
-        conversationId: currentConversationId,
-        personality,
-        mode: chatMode,
-        sharedVia: BRAND.fullName,
-        inviteUrl: "https://www.shadowtalk-ai.com/chatbot?utm_source=export&utm_medium=json&utm_campaign=chat_export",
-        messages: messages.map((m) => ({
-          role: m.type,
-          content: m.content,
-          timestamp: m.timestamp instanceof Date ? m.timestamp.toISOString() : String(m.timestamp),
-        })),
-      };
-      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `shadowtalk-history-${currentConversationId || "chat"}-${Date.now()}.json`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-      toast({ title: "Exported", description: "Downloaded chat history JSON." });
-    } catch {
-      toast({ title: "Export failed", description: "Could not export chat history.", variant: "destructive" });
+      const { exportChatToPdf } = await import("@/lib/exportToPdf");
+      const pdfMessages = messages.map(m => ({
+        role: m.type === "user" ? "user" : "assistant",
+        content: m.content,
+        timestamp: m.timestamp instanceof Date ? m.timestamp : new Date(m.timestamp)
+      }));
+      await exportChatToPdf(pdfMessages, currentConversationId ? `Conversation ${currentConversationId.slice(0, 6)}` : "ShadowTalk Chat");
+      toast({
+        title: "Export Successful",
+        description: "Your chat log has been saved as a PDF.",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Export Failed",
+        description: error.message || "An error occurred while generating the PDF.",
+      });
     }
   };
 
@@ -2133,18 +2082,7 @@ const ChatbotPage = () => {
     onPromptClear: () => setPromptSuggestion(""),
   };
 
-  if (enterprise.needsWorkEmailSignIn) {
-    return (
-      <div className="shadowtalk-chat-shell neural-bg flex flex-col" style={{ height: "var(--vvh, 100dvh)" }}>
-        <SEOHead meta={PAGE_SEO.chatbot} structuredData={[...getFounderHomeStructuredData(), getChatbotFAQSchema(), getSpeakableSchema(["h1", "[data-speakable]"]), getWebSiteWithSearchSchema()]} />
-        <ChatAmbientBackground />
-        <EnterpriseEmployeeGate
-          tenant={enterprise.tenant}
-          orgName={enterprise.displayOrgName ?? "Your organization"}
-        />
-      </div>
-    );
-  }
+
 
   return (
     <div className="shadowtalk-chat-shell neural-bg settings-scroll-smooth flex h-full min-h-0 flex-col overflow-hidden">
@@ -2160,17 +2098,18 @@ const ChatbotPage = () => {
           userInitials={userInitials}
           userDisplayName={userDisplayName}
           onNewChat={handleNewChat}
-          onOpenHistory={() => setShowSidebar(true)}
           collapsed={sidebarCollapsed}
           onToggleCollapse={toggleSidebar}
-        />
-        <ChatIconRail
-          userInitials={userInitials}
-          onNewChat={handleNewChat}
-          onOpenHistory={() => setShowSidebar(true)}
-          onOpenTools={() => setToolsMenuOpen(true)}
+          conversations={conversations}
+          currentConversationId={currentConversationId}
+          isArchived={conversationIsArchived}
+          onSelect={(id) => {
+            void loadConversation(id);
+          }}
+          onDelete={handleDeleteConversation}
+          onArchive={handleArchiveConversation}
+          onUnarchive={handleUnarchiveConversation}
           onOpenSettings={() => navigate("/settings")}
-          onOpenNav={() => setShowMobileNav(true)}
         />
         <ChatMobileNavDrawer
           open={showMobileNav}
@@ -2178,58 +2117,17 @@ const ChatbotPage = () => {
           userInitials={userInitials}
           userDisplayName={userDisplayName}
           onNewChat={handleNewChat}
-          onOpenHistory={() => setShowSidebar(true)}
+          conversations={conversations}
+          currentConversationId={currentConversationId}
+          isArchived={conversationIsArchived}
+          onSelect={(id) => {
+            void loadConversation(id);
+          }}
+          onDelete={handleDeleteConversation}
+          onArchive={handleArchiveConversation}
+          onUnarchive={handleUnarchiveConversation}
+          onOpenSettings={() => navigate("/settings")}
         />
-        <AnimatePresence>
-          {showSidebar && (
-            <>
-              <motion.button
-                type="button"
-                aria-label="Close history"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="fixed top-0 right-0 bottom-0 z-40 bg-background/75 backdrop-blur-md"
-                style={{ left: historyPanelLeft }}
-                onClick={() => setShowSidebar(false)}
-              />
-              <motion.div
-                initial={{ x: -320, opacity: 0.6 }}
-                animate={{ x: 0, opacity: 1 }}
-                exit={{ x: -320, opacity: 0 }}
-                transition={SETTINGS_SPRING}
-                className="fixed top-0 bottom-0 z-50 shadow-elevated"
-                style={{ left: historyPanelLeft }}
-              >
-                <ConversationSidebar
-                  conversations={conversations}
-                  currentConversationId={currentConversationId}
-                  isArchived={conversationIsArchived}
-                  onCreateNew={handleNewChat}
-                  onSelect={(id) => {
-                    loadConversation(id);
-                    setShowSidebar(false);
-                  }}
-                  onDelete={handleDeleteConversation}
-                  onArchive={handleArchiveConversation}
-                  onUnarchive={handleUnarchiveConversation}
-                  onClearAll={handleClearAllChats}
-                  onClearCurrent={handleClearCurrentChat}
-                  onOpenSettings={() => {
-                    setShowSidebar(false);
-                    navigate("/settings");
-                  }}
-                  onOpenWorkspace={() => {
-                    setShowSidebar(false);
-                    navigate("/workspace");
-                  }}
-                  onClose={() => setShowSidebar(false)}
-                />
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
         <ChatMainPanel>
           <div className="sticky top-0 z-30 shrink-0 bg-background/85 backdrop-blur-md border-b border-border/30">
             <ChatHeader
@@ -2237,7 +2135,10 @@ const ChatbotPage = () => {
               userPlan={userPlan}
               personality={personality}
               onPersonalityChange={setPersonality}
-              onToggleSidebar={() => setShowSidebar(!showSidebar)}
+              onToggleSidebar={() => {
+                if (isMobile) setShowMobileNav(!showMobileNav);
+                else toggleSidebar();
+              }}
               onExport={handleExport}
               onManageSubscription={() => navigate("/billing")}
               onSignOut={signOut}
@@ -2291,14 +2192,15 @@ const ChatbotPage = () => {
             </div>
           )}
           <AdBanner />
-          {enterprise.showInviteColleagues && enterprise.tenant && (
-            <EnterpriseInviteColleagues tenant={enterprise.tenant} />
-          )}
+
           <ChatToolbar
             hasActiveChat={hasActiveChat}
             conversationCount={conversations.length}
             onNewChat={handleNewChat}
-            onOpenHistory={() => setShowSidebar(true)}
+            onOpenHistory={() => {
+              if (isMobile) setShowMobileNav(true);
+              else if (sidebarCollapsed) toggleSidebar();
+            }}
             onClearChat={handleClearCurrentChat}
             onDeleteAllChats={handleClearAllChats}
             encryptionActive={chatPrivate.active}
@@ -2437,20 +2339,7 @@ const ChatbotPage = () => {
                   onDismiss={() => setChatShareOffer(null)}
                 />
               )}
-              {(chatMission.mission || activeMission || isMissionExecuting) && (
-                <div className="px-4 md:px-6 pb-2 max-w-4xl mx-auto w-full">
-                  <SEEMissionPanel
-                    mission={chatMission.mission || activeMission}
-                    isExecuting={isMissionExecuting}
-                    pendingApproval={pendingApproval}
-                    onApprove={() => void approveChatMissionStep()}
-                    onReject={() => void rejectPendingStep()}
-                    onCancel={() => void cancelExecution()}
-                    onOpenFullControl={() => navigate("/missioncontrol")}
-                    compact
-                  />
-                </div>
-              )}
+
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -2656,12 +2545,7 @@ const ChatbotPage = () => {
         provider={pendingByokProvider}
         onSaved={handleByokSaved}
       />
-      {enterprise.showOnboarding && enterprise.tenant && (
-        <EnterpriseOnboarding tenant={enterprise.tenant} />
-      )}
-      {enterprise.showHelpFab && enterprise.tenant && (
-        <EnterpriseHelpFab tenant={enterprise.tenant} />
-      )}
+
       <ShadowSpectrePanel
         open={showShadowSpectrePanel}
         onClose={() => setShowShadowSpectrePanel(false)}

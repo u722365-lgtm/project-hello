@@ -4,10 +4,10 @@
  */
 
 import { backend } from "@/integrations/local/client";
+import { turboComplete } from "@/lib/turbo/turboEngine";
 import { stringifyChatBody } from "@/lib/chatRequest";
 import type { ToolDetectionResult, ToolType } from "@/hooks/useToolOrchestrator";
 
-const CHAT_URL = '';
 
 const ROUTABLE_TOOLS = [
   "web_search",
@@ -81,43 +81,12 @@ function parsePlannerJson(raw: string): PlannerPlan | null {
 }
 
 async function callPlannerLlm(system: string, user: string, signal?: AbortSignal): Promise<string> {
-  const { data: { session } } = await backend.auth.getSession();
-  const resp = await fetch(CHAT_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_API_KEY}`,
-    },
-    body: stringifyChatBody({
-      messages: [
-        { role: "system", content: system },
-        { role: "user", content: user },
-      ],
-      personality: "professional",
-      mode: "general",
-      stream: false,
-    }),
-    signal,
-  });
-  if (!resp.ok) return "";
-
-  const reader = resp.body?.getReader();
-  const decoder = new TextDecoder();
-  let out = "";
-  if (!reader) return "";
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    for (const line of decoder.decode(value, { stream: true }).split("\n")) {
-      if (!line.startsWith("data: ") || line === "data: [DONE]") continue;
-      try {
-        const data = JSON.parse(line.slice(6));
-        const chunk = data.choices?.[0]?.delta?.content || data.choices?.[0]?.message?.content;
-        if (chunk) out += chunk;
-      } catch { /* partial */ }
-    }
-  }
-  return out.trim();
+  const resp = await turboComplete(
+    system,
+    user,
+    { abortSignal: signal }
+  );
+  return resp.content || "";
 }
 
 /** Phase 1: Plan which tool(s) to invoke */

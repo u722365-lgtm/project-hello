@@ -15,6 +15,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { turboComplete } from "@/lib/turbo/turboEngine";
 import { stringifyChatBody } from "@/lib/chatRequest";
 
 interface Source {
@@ -42,7 +43,7 @@ interface DeepResearchPanelProps {
   embedded?: boolean;
 }
 
-const CHAT_URL = '';
+
 
 export const DeepResearchPanel = ({ isOpen, onClose, onInsertToChat, initialQuery, autoResearch, embedded }: DeepResearchPanelProps) => {
   const [query, setQuery] = useState(initialQuery || "");
@@ -123,58 +124,12 @@ export const DeepResearchPanel = ({ isOpen, onClose, onInsertToChat, initialQuer
 
       const { data: { session } } = await backend.auth.getSession();
       
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
-      
-      const resp = await fetch(CHAT_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_API_KEY}`
-        },
-        body: stringifyChatBody({
-          deepResearch: true,
-          researchQuery: query,
-          searchMode: searchMode
-        }),
-        signal: controller.signal
-      });
+      const resp = await turboComplete(
+        `You are a Deep Research AI assistant. Your goal is to synthesize the following query comprehensively. Mode: ${searchMode}`,
+        query
+      );
 
-      clearTimeout(timeoutId);
-
-      if (!resp.ok) {
-        if (resp.status === 429) {
-          throw new Error("Rate limit exceeded. Please wait a moment and try again.");
-        }
-        if (resp.status >= 500 && retryCount < MAX_RETRIES) {
-          setRetryCount(prev => prev + 1);
-          setStage(`Server error. Retrying... (${retryCount + 1}/${MAX_RETRIES})`);
-          await new Promise(r => setTimeout(r, 2000));
-          return handleResearch(true);
-        }
-        throw new Error(`Research failed with status ${resp.status}`);
-      }
-
-      const reader = resp.body?.getReader();
-      const decoder = new TextDecoder();
-      let fullContent = "";
-
-      while (reader) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const chunk = decoder.decode(value, { stream: true });
-        
-        const lines = chunk.split('\n');
-        for (const line of lines) {
-          if (line.startsWith('data: ') && line !== 'data: [DONE]') {
-            try {
-              const data = JSON.parse(line.slice(6));
-              const content = data.choices?.[0]?.delta?.content;
-              if (content) fullContent += content;
-            } catch {}
-          }
-        }
-      }
+      const fullContent = resp.content;
 
       if (!fullContent.trim()) {
         throw new Error("No results found. Try rephrasing your query.");

@@ -1,4 +1,4 @@
-import { stringifyChatBody } from "@/lib/chatRequest";
+import { turboComplete } from "@/lib/turbo/turboEngine";
  import { useState, useEffect } from "react";
  import { 
    Calendar, Clock, Plus, Trash2, Check, AlertCircle,
@@ -128,55 +128,12 @@ import { stringifyChatBody } from "@/lib/chatRequest";
      setIsGenerating(true);
  
      try {
-       const { data: { session } } = await backend.auth.getSession();
-       
-       const response = await fetch(CHAT_URL, {
-         method: "POST",
-         headers: {
-           "Content-Type": "application/json",
-           Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_API_KEY}`
-         },
-         body: stringifyChatBody({
-           messages: [{ 
-             role: "user", 
-             content: `Create a daily schedule for: ${aiPrompt}
+       const response = await turboComplete(
+         "You are a professional daily planner.",
+         `Create a daily schedule for: ${aiPrompt}\n\nReturn ONLY a JSON array of tasks with this exact format (no other text):\n[{"time":"09:00","title":"Task name","duration":30,"category":"work","priority":"medium"}]\n\nCategories: work, personal, health, break\nPriorities: high, medium, low\nUse 24-hour format for time. Duration in minutes.\nInclude realistic breaks and transitions.`
+       );
  
- Return ONLY a JSON array of tasks with this exact format (no other text):
- [{"time":"09:00","title":"Task name","duration":30,"category":"work","priority":"medium"}]
- 
- Categories: work, personal, health, break
- Priorities: high, medium, low
- Use 24-hour format for time. Duration in minutes.
- Include realistic breaks and transitions.`
-           }],
-           personality: "professional",
-           mode: "general"
-         })
-       });
- 
-       if (!response.ok) throw new Error("Generation failed");
- 
-       const reader = response.body?.getReader();
-       const decoder = new TextDecoder();
-       let content = "";
- 
-       while (reader) {
-         const { done, value } = await reader.read();
-         if (done) break;
-         
-         const chunk = decoder.decode(value, { stream: true });
-         const lines = chunk.split('\n');
-         
-         for (const line of lines) {
-           if (line.startsWith('data: ') && line !== 'data: [DONE]') {
-             try {
-               const data = JSON.parse(line.slice(6));
-               const text = data.choices?.[0]?.delta?.content;
-               if (text) content += text;
-             } catch {}
-           }
-         }
-       }
+       let content = response.content || "";
  
        // Parse JSON from response
        const jsonMatch = content.match(/\[[\s\S]*\]/);

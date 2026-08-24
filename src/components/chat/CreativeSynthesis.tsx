@@ -59,7 +59,7 @@ interface CreativeSynthesisProps {
 // Constants
 // ──────────────────────────────────────────────
 
-const CHAT_URL = '';
+import { turboComplete } from "@/lib/turbo/turboEngine";
 
 const OUTPUT_FORMATS: OutputFormat[] = [
   { id: "twitter_thread", label: "𝕏 Thread", icon: Twitter, category: "social", description: "Viral tweet thread with hooks" },
@@ -174,39 +174,12 @@ export const CreativeSynthesis = ({ isOpen, onClose, onInsertToChat, initialProm
 
   const generateSingle = async (formatId: OutputFormatId, session: any): Promise<GeneratedOutput> => {
     const prompt = buildPrompt(formatId, input, activeMode);
-    const resp = await fetch(CHAT_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_API_KEY}`,
-      },
-      body: stringifyChatBody({
-        messages: [{ role: "user", content: prompt }],
-        personality: "professional",
-        mode: "general",
-      }),
-    });
+    const resp = await turboComplete(
+      "You are a professional content writer and marketer.",
+      prompt
+    );
 
-    if (!resp.ok) throw new Error(`Failed for ${formatId}`);
-
-    const reader = resp.body?.getReader();
-    const decoder = new TextDecoder();
-    let content = "";
-
-    while (reader) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      const chunk = decoder.decode(value, { stream: true });
-      for (const line of chunk.split("\n")) {
-        if (line.startsWith("data: ") && line !== "data: [DONE]") {
-          try {
-            const data = JSON.parse(line.slice(6));
-            const c = data.choices?.[0]?.delta?.content;
-            if (c) content += c;
-          } catch {}
-        }
-      }
-    }
+    const content = resp.content;
 
     return { formatId, content, isGenerating: false, wordCount: content.split(/\s+/).length };
   };

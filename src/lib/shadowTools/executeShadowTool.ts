@@ -2,58 +2,8 @@ import { backend } from "@/integrations/local/client";
 import type { ToolType } from "@/hooks/useToolOrchestrator";
 import { chatAuthHeaders } from "./chatAuthHeaders";
 import type { ExecuteShadowToolContext, ShadowToolResult } from "./types";
-
-const CHAT_URL = '';
-
-async function parseChatJsonResponse(resp: Response): Promise<Record<string, unknown>> {
-  const text = await resp.text();
-  try {
-    return JSON.parse(text) as Record<string, unknown>;
-  } catch {
-    return { content: text };
-  }
-}
-
-async function streamChatToText(body: Record<string, unknown>, accessToken?: string): Promise<string> {
-  const resp = await fetch(CHAT_URL, {
-    method: "POST",
-    headers: chatAuthHeaders({ accessToken }),
-    body: JSON.stringify(body),
-  });
-  if (!resp.ok) {
-    const err = await resp.text().catch(() => "");
-    throw new Error(err || `Request failed (${resp.status})`);
-  }
-
-  const contentType = resp.headers.get("content-type") || "";
-  if (contentType.includes("application/json")) {
-    const data = await parseChatJsonResponse(resp);
-    if (typeof data.content === "string") return data.content;
-    if (typeof data.imageUrl === "string") return String(data.content || "Image generated.");
-    return JSON.stringify(data, null, 2).slice(0, 12000);
-  }
-
-  const reader = resp.body?.getReader();
-  if (!reader) return "";
-  const decoder = new TextDecoder();
-  let full = "";
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    for (const line of decoder.decode(value, { stream: true }).split("\n")) {
-      if (line.startsWith("data: ") && line !== "data: [DONE]") {
-        try {
-          const data = JSON.parse(line.slice(6));
-          const c = data.choices?.[0]?.delta?.content || data.choices?.[0]?.message?.content;
-          if (c) full += c;
-        } catch {
-          /* ignore */
-        }
-      }
-    }
-  }
-  return full;
-}
+import { turboComplete } from "@/lib/turbo/turboEngine";
+import { buildExecutePath } from "@/lib/execution/inferFromChat";
 
 function formatSearchResults(results: Array<{ title?: string; link?: string; snippet?: string }>): string {
   if (!results.length) return "No search results returned.";
@@ -89,7 +39,7 @@ export async function executeShadowTool(
 
   switch (tool) {
     case "web_search": {
-      const query = p.query || message;
+      const query = (p.query as string) || message;
       const { data, error } = await backend.functions.invoke("web-search", {
         body: { query, numResults: 6 },
       });
@@ -107,16 +57,17 @@ export async function executeShadowTool(
     }
 
     case "deep_research": {
-      const query = p.query || message;
-      const report = await streamChatToText(
-        { deepResearch: true, researchQuery: query, searchMode: "web" },
-        ctx.accessToken
+      const query = (p.query as string) || message;
+      const reportResp = await turboComplete(
+        "You are a Deep Research AI assistant. Your goal is to synthesize the following query comprehensively. Mode: web",
+        query
       );
+      const report = reportResp.content;
       return { kind: "inline", tool, content: report || "Research returned no content." };
     }
 
     case "image_generator": {
-      const imgPrompt = p.prompt || message;
+      const imgPrompt = (p.prompt as string) || message;
       const encoded = encodeURIComponent(`${imgPrompt}, high quality, detailed, 4k`);
       const seed = Math.floor(Math.random() * 999999);
       const imageUrl = `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=1024&seed=${seed}&nologo=true&model=flux`;
@@ -131,16 +82,17 @@ export async function executeShadowTool(
     case "image_decoder":
     case "visual_reasoning": {
       if (ctx.attachment?.type === "image" && ctx.attachment.data) {
-        const analysis = await streamChatToText(
-          {
-            decodeImage: true,
-            imageToAnalyze: ctx.attachment.data,
-            messages: [{ role: "user", content: message || "Analyze this image in detail." }],
-            personality: ctx.personality,
-          },
-          ctx.accessToken
+        const analysisResp = await turboComplete(
+          "You are an expert visual reasoning assistant.",
+          message || "Analyze this image in detail."
         );
-        return { kind: "inline", tool, content: analysis };
+        const analysis = analysisResp.content;
+        return {
+          kind: "inline",
+          tool,
+          content: analysis || "Analysis complete.",
+          imageUrl: `data:${ctx.attachment.mimeType};base64,${ctx.attachment.data}`,
+        };
       }
       return {
         kind: "ui",

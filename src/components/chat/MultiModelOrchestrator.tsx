@@ -13,6 +13,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { backend } from "@/integrations/local/client";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
+import { turboComplete } from "@/lib/turbo/turboEngine";
 import { stringifyChatBody } from "@/lib/chatRequest";
 
 interface OrchestrationStep {
@@ -72,7 +73,7 @@ const MODEL_INFO: Record<string, { name: string; speed: string; quality: string;
   "gpt-5": { name: "GPT-5", speed: "Medium", quality: "Highest", cost: "$$$" },
 };
 
-const CHAT_URL = '';
+
 
 export const MultiModelOrchestrator = ({ 
   isOpen, 
@@ -170,41 +171,13 @@ export const MultiModelOrchestrator = ({
           contextPrompt = `Analyze this thoroughly and provide your best answer:\n${prompt}`;
         }
         
-        const resp = await fetch(CHAT_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_API_KEY}`
-          },
-          body: stringifyChatBody({
-            messages: [{ role: "user", content: contextPrompt }],
-            model: `google/${step.model}`,
-            mode: "general"
-          })
-        });
+        const resp = await turboComplete(
+          "You are an AI expert participating in a multi-model orchestration workflow.",
+          contextPrompt,
+          { model: step.model }
+        );
 
-        if (!resp.ok) throw new Error(`Model ${step.model} failed`);
-
-        // Parse streaming response
-        const reader = resp.body?.getReader();
-        const decoder = new TextDecoder();
-        let stepOutput = "";
-
-        while (reader) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          const chunk = decoder.decode(value, { stream: true });
-          
-          for (const line of chunk.split('\n')) {
-            if (line.startsWith('data: ') && line !== 'data: [DONE]') {
-              try {
-                const data = JSON.parse(line.slice(6));
-                const content = data.choices?.[0]?.delta?.content;
-                if (content) stepOutput += content;
-              } catch {}
-            }
-          }
-        }
+        const stepOutput = resp.content;
 
         const latency = Date.now() - startTime;
         accumulatedResult = stepOutput;

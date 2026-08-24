@@ -1,12 +1,11 @@
-import { stringifyChatBody } from "@/lib/chatRequest";
+import { turboComplete } from "@/lib/turbo/turboEngine";
  import { useState, useEffect, useRef } from "react";
  import { Scan, Loader2, Download, X, Image as ImageIcon, FileText, Sparkles } from "lucide-react";
  import { Button } from "@/components/ui/button";
  import { useToast } from "@/hooks/use-toast";
  import { backend } from "@/integrations/local/client";
  
- const CHAT_URL = '';
- 
+  
  interface ImageDecoderProps {
    onClose: () => void;
    onDecoded: (analysis: string, enhancedImage?: string) => void;
@@ -63,47 +62,21 @@ import { stringifyChatBody } from "@/lib/chatRequest";
        const { data: { session } } = await backend.auth.getSession();
  
        // Step 1: Analyze the image professionally
-       const analysisResp = await fetch(CHAT_URL, {
-         method: "POST",
-         headers: {
-           "Content-Type": "application/json",
-           Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_API_KEY}`,
-         },
-         body: stringifyChatBody({
-           decodeImage: true,
-           imageToAnalyze: imageData,
-           messages: [],
-         }),
-       });
+       const analysisResp = await turboComplete(
+         "You are an expert visual reasoning assistant. Analyze the provided image.",
+         "Please describe this image in detail."
+       );
  
-       if (!analysisResp.ok) {
-         throw new Error("Image analysis failed");
-       }
- 
-       const analysisData = await analysisResp.json();
-       const analysisText = analysisData.analysis || analysisData.content || "";
+       const analysisText = analysisResp.content || "";
        setAnalysis(analysisText);
  
        // Step 2: Generate enhanced/decoded version of the image
-       const enhanceResp = await fetch(CHAT_URL, {
-         method: "POST",
-         headers: {
-           "Content-Type": "application/json",
-           Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_API_KEY}`,
-         },
-         body: stringifyChatBody({
-           generateImage: true,
-           imagePrompt: `Based on this analysis, recreate this image with enhanced clarity, higher quality, and photorealistic detail: ${analysisText.substring(0, 500)}`,
-           messages: [],
-         }),
-       });
- 
-       if (enhanceResp.ok) {
-         const enhanceData = await enhanceResp.json();
-         if (enhanceData.imageUrl) {
-           setEnhancedImage(enhanceData.imageUrl);
-         }
-       }
+       const imgPrompt = `Based on this analysis, recreate this image with enhanced clarity, higher quality, and photorealistic detail: ${analysisText.substring(0, 500)}`;
+       const encoded = encodeURIComponent(`${imgPrompt}, high quality, detailed, 4k`);
+       const seed = Math.floor(Math.random() * 999999);
+       const newImageUrl = `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=1024&seed=${seed}&nologo=true&model=flux`;
+       
+       setEnhancedImage(newImageUrl);
  
        onDecoded(analysisText, enhancedImage);
        toast({ title: "Image decoded successfully!" });

@@ -14,8 +14,7 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { backend } from "@/integrations/local/client";
 import { motion, AnimatePresence } from "framer-motion";
-import { stringifyChatBody } from "@/lib/chatRequest";
-import { consumeChatSSE } from "@/lib/agenticChatStream";
+import { turboComplete } from "@/lib/turbo/turboEngine";
 
 interface TaskStep {
   id: string;
@@ -42,7 +41,7 @@ interface AgenticTaskRunnerProps {
   autoStart?: boolean;
 }
 
-const CHAT_URL = '';
+
 
 const TASK_TEMPLATES = [
   { icon: Globe, label: "Research & Report", prompt: "Research [topic] and create a detailed report" },
@@ -91,49 +90,12 @@ export const AgenticTaskRunner = ({ isOpen, onClose, onTaskComplete, initialGoal
       // Step 1: Plan the task - use standard chat to generate a plan
       addLog("Generating task steps...");
       
-      const planResp = await fetch(CHAT_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_API_KEY}`
-        },
-        body: stringifyChatBody({
-          messages: [{ 
-            role: "user", 
-            content: `Break down this task into 4-6 numbered steps. Only list the steps, nothing else:\n\n${goal}` 
-          }],
-          personality: "professional",
-          mode: "general"
-        })
-      });
+      const planResp = await turboComplete(
+        "You are a professional task planner.",
+        `Break down this task into 4-6 numbered steps. Only list the steps, nothing else:\n\n${goal}`
+      );
 
-      if (!planResp.ok) {
-        const errText = await planResp.text();
-        console.error("Planning failed:", errText);
-        throw new Error("Planning failed");
-      }
-
-      // Parse streaming response for plan
-      const reader = planResp.body?.getReader();
-      const decoder = new TextDecoder();
-      let planContent = "";
-
-      while (reader) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const chunk = decoder.decode(value, { stream: true });
-        
-        const lines = chunk.split('\n');
-        for (const line of lines) {
-          if (line.startsWith('data: ') && line !== 'data: [DONE]') {
-            try {
-              const data = JSON.parse(line.slice(6));
-              const content = data.choices?.[0]?.delta?.content;
-              if (content) planContent += content;
-            } catch {}
-          }
-        }
-      }
+      const planContent = planResp.content;
 
       // Parse steps from plan
       const stepMatches = planContent.match(/\d+\.\s+[^\n]+/g) || [];
@@ -170,20 +132,11 @@ export const AgenticTaskRunner = ({ isOpen, onClose, onTaskComplete, initialGoal
         // Execute step via AI
         const startMs = Date.now();
         try {
-          const stepResp = await fetch(CHAT_URL, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_API_KEY}`
-            },
-            body: stringifyChatBody({
-              messages: [{ role: "user", content: `Execute this step for the goal "${goal}": ${step.action}. Provide a concise result.` }],
-              personality: "professional",
-              mode: "general"
-            })
-          });
-          const stepData = await stepResp.json();
-          const stepResult = typeof stepData === 'string' ? stepData : (stepData?.response || stepData?.text || `Completed: ${step.action}`);
+          const stepResp = await turboComplete(
+            "You are an expert agent executing a specific step in a broader goal.",
+            `Execute this step for the goal "${goal}": ${step.action}. Provide a concise result.`
+          );
+          const stepResult = stepResp.content || `Completed: ${step.action}`;
           const duration = Date.now() - startMs;
 
           setCurrentTask(prev => {
@@ -212,22 +165,12 @@ export const AgenticTaskRunner = ({ isOpen, onClose, onTaskComplete, initialGoal
       // Step 3: Generate final result
       addLog("Generating final output...");
 
-      const resultResp = await fetch(CHAT_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_API_KEY}`
-        },
-        body: stringifyChatBody({
-          messages: [{ role: "user", content: goal }],
-          personality: "professional",
-          mode: "general"
-        })
-      });
+      const resultResp = await turboComplete(
+        "You are a professional assistant summarizing the execution of a multi-step task.",
+        goal
+      );
 
-      if (!resultResp.ok) throw new Error("Result generation failed");
-
-      const resultContent = await consumeChatSSE(resultResp, () => {});
+      const resultContent = resultResp.content;
 
       setCurrentTask(prev => prev ? { ...prev, status: "completed", endTime: new Date() } : null);
       addLog("Task completed successfully!");

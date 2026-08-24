@@ -9,12 +9,10 @@ import ReactMarkdown from "react-markdown";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { getModePrompt } from "@/components/chat/ModeSelector";
-import { stringifyChatBody } from "@/lib/chatRequest";
+import { turboComplete } from "@/lib/turbo/turboEngine";
 
 type Phase = "intro" | "disclaimer" | "arena";
 type Msg = { role: "user" | "assistant"; content: string };
-
-const CHAT_URL = '';
 
 const ARENA_PROMPTS = [
   { icon: Eye, label: "Recon a target with nmap + amass" },
@@ -60,52 +58,17 @@ export function UncensoredArena({ open, onClose }: Props) {
 
     let assistant = "";
     try {
-      const resp = await fetch(CHAT_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          apikey: import.meta.env.VITE_API_KEY,
-          Authorization: `Bearer ${import.meta.env.VITE_API_KEY}`,
-        },
-        body: stringifyChatBody({
-          messages: next,
-          personality: "friendly",
-          mode: "uncensored",
-          modePrompt: getModePrompt("uncensored"),
-        }),
+      const resp = await turboComplete(
+        getModePrompt("uncensored"),
+        text
+      );
+
+      assistant = resp.content;
+      setMessages(m => {
+        const mm = [...m];
+        mm[mm.length - 1] = { role: "assistant", content: assistant };
+        return mm;
       });
-      if (!resp.ok || !resp.body) {
-        if (resp.status === 429) toast.error("Rate limited — wait a moment");
-        else if (resp.status === 402) toast.error("AI credits exhausted");
-        else toast.error("Arena connection failed");
-        setStreaming(false);
-        return;
-      }
-      const reader = resp.body.getReader();
-      const decoder = new TextDecoder();
-      let buf = "";
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buf += decoder.decode(value, { stream: true });
-        let idx;
-        while ((idx = buf.indexOf("\n")) !== -1) {
-          let line = buf.slice(0, idx);
-          buf = buf.slice(idx + 1);
-          if (line.endsWith("\r")) line = line.slice(0, -1);
-          if (!line.startsWith("data: ")) continue;
-          const j = line.slice(6).trim();
-          if (j === "[DONE]") break;
-          try {
-            const p = JSON.parse(j);
-            const delta = p.choices?.[0]?.delta?.content;
-            if (delta) {
-              assistant += delta;
-              setMessages([...next, { role: "assistant", content: assistant }]);
-            }
-          } catch { /* partial */ }
-        }
-      }
       if (!assistant) {
         setMessages([...next, { role: "assistant", content: "_No response. Try again._" }]);
       }

@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-import { stringifyChatBody } from "@/lib/chatRequest";
+import { turboComplete } from "@/lib/turbo/turboEngine";
 import {
   Tooltip,
   TooltipContent,
@@ -121,8 +121,6 @@ export const MultiModalFusion = ({
 
     // Process item using real AI via vision-analyze or chat
     try {
-      const CHAT_URL = '';
-      
       let promptContent = `Analyze this ${item.type} input`;
       if (item.type === 'image' && item.data) {
         promptContent = `Analyze this image. The image data is provided as base64.`;
@@ -134,21 +132,12 @@ export const MultiModalFusion = ({
         promptContent = `Analyze this file: "${item.name}" (type: ${item.type})`;
       }
 
-      const resp = await fetch(CHAT_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_API_KEY}`
-        },
-        body: stringifyChatBody({
-          messages: [{ role: "user", content: promptContent }],
-          personality: "professional",
-          mode: "general"
-        })
-      });
+      const resp = await turboComplete(
+        "You are a multimodal analysis assistant.",
+        promptContent
+      );
 
-      const data = await resp.json();
-      const aiResult = typeof data === 'string' ? data : (data?.response || data?.text || 'Analysis complete');
+      const aiResult = resp.content || 'Analysis complete';
 
       setItems(prev => prev.map(i => {
         if (i.id !== item.id) return i;

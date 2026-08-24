@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { stringifyChatBody } from "@/lib/chatRequest";
+import { turboComplete } from "@/lib/turbo/turboEngine";
 
 interface GeminiLiveModeProps {
   isOpen: boolean;
@@ -231,27 +231,11 @@ export const GeminiLiveMode = ({ isOpen, onClose, onInsertToChat }: GeminiLiveMo
     
     // Call real AI backend
     try {
-      const CHAT_URL = '';
-      const resp = await fetch(CHAT_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_API_KEY}`
-        },
-        body: stringifyChatBody({
-          messages: [
-            ...transcript.filter(t => t.role === "user" || t.role === "ai").slice(-6).map(t => ({
-              role: t.role === "ai" ? "assistant" : "user",
-              content: t.text
-            })),
-            { role: "user", content: text }
-          ],
-          personality: "professional",
-          mode: "general"
-        })
-      });
-      const data = await resp.json();
-      const aiResponse = typeof data === 'string' ? data : (data?.response || data?.text || "I understand. Can you tell me more?");
+      const resp = await turboComplete(
+        "You are Gemini Live Mode. Have a natural, short, engaging conversation.",
+        text
+      );
+      const aiResponse = resp.content || "I understand. Can you tell me more?";
       addAIResponse(aiResponse);
     } catch {
       addAIResponse("I'm having trouble connecting right now. Could you repeat that?");

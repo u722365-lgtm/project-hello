@@ -1,6 +1,6 @@
-import { stringifyChatBody } from "@/lib/chatRequest";
- import { useState, useCallback, useRef } from 'react';
- import { backend } from '@/integrations/local/client';
+import { useState, useCallback, useRef } from 'react';
+import { backend } from '@/integrations/local/client';
+import { turboComplete } from "@/lib/turbo/turboEngine";
  
  // =============================================================================
  // MULTI-MODEL CONSENSUS ENGINE - Beat Grok with Superior Reasoning
@@ -51,7 +51,7 @@ import { stringifyChatBody } from "@/lib/chatRequest";
  // Premium models for synthesis
  const SYNTHESIS_MODEL = 'google/gemini-2.5-pro';
  
- const CHAT_URL = '';
+
  
  export const useMultiModelConsensus = () => {
    const [state, setState] = useState<ConsensusState>({
@@ -75,50 +75,13 @@ import { stringifyChatBody } from "@/lib/chatRequest";
      try {
        const { data: { session } } = await backend.auth.getSession();
        
-       const response = await fetch(CHAT_URL, {
-         method: 'POST',
-         headers: {
-           'Content-Type': 'application/json',
-           Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_API_KEY}`,
-         },
-         body: stringifyChatBody({
-           messages: [
-             { role: 'system', content: systemPrompt },
-             { role: 'user', content: prompt },
-           ],
-           model: model.id,
-           stream: false,
-         }),
-         signal: abortRef.current?.signal,
-       });
- 
-       if (!response.ok) {
-         console.warn(`[Consensus] Model ${model.name} failed:`, response.status);
-         return null;
-       }
- 
-       // Parse response (non-streaming)
-       const reader = response.body?.getReader();
-       const decoder = new TextDecoder();
-       let fullResponse = '';
- 
-       if (reader) {
-         while (true) {
-           const { done, value } = await reader.read();
-           if (done) break;
-           const chunk = decoder.decode(value, { stream: true });
-           
-           for (const line of chunk.split('\n')) {
-             if (line.startsWith('data: ') && line !== 'data: [DONE]') {
-               try {
-                 const data = JSON.parse(line.slice(6));
-                 const content = data.choices?.[0]?.delta?.content || data.choices?.[0]?.message?.content;
-                 if (content) fullResponse += content;
-               } catch {}
-             }
-           }
-         }
-       }
+       const response = await turboComplete(
+         systemPrompt,
+         prompt,
+         { model: model.id }
+       );
+
+       let fullResponse = response.content;
  
        return {
          modelId: model.id,

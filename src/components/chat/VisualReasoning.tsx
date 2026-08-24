@@ -16,7 +16,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { stringifyChatBody } from "@/lib/chatRequest";
+import { turboComplete } from "@/lib/turbo/turboEngine";
 
 interface AnalysisResult {
   type: "text" | "code" | "table" | "math" | "diagram";
@@ -31,7 +31,7 @@ interface VisualReasoningProps {
   onInsertToChat: (content: string) => void;
 }
 
-const CHAT_URL = '';
+
 
 const ANALYSIS_MODES = [
   { id: "explain", label: "Explain", icon: Brain, desc: "Explain the logic within the image" },
@@ -103,50 +103,12 @@ export const VisualReasoning = ({ isOpen, onClose, onInsertToChat }: VisualReaso
 
       const prompt = customPrompt.trim() || modePrompts[analysisMode];
 
-      const resp = await fetch(CHAT_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_API_KEY}`
-        },
-        body: stringifyChatBody({
-          messages: [
-            {
-              role: "user",
-              content: [
-                { type: "text", text: prompt },
-                { type: "image_url", image_url: { url: image } }
-              ]
-            }
-          ],
-          personality: "meticulous",
-          mode: analysisMode === "code" ? "code" : "general"
-        })
-      });
+      const resp = await turboComplete(
+        "You are an expert visual reasoning assistant.",
+        prompt
+      );
 
-      if (!resp.ok) throw new Error("Analysis failed");
-
-      // Parse streaming response
-      const reader = resp.body?.getReader();
-      const decoder = new TextDecoder();
-      let content = "";
-
-      while (reader) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const chunk = decoder.decode(value, { stream: true });
-        
-        const lines = chunk.split('\n');
-        for (const line of lines) {
-          if (line.startsWith('data: ') && line !== 'data: [DONE]') {
-            try {
-              const data = JSON.parse(line.slice(6));
-              const c = data.choices?.[0]?.delta?.content;
-              if (c) content += c;
-            } catch {}
-          }
-        }
-      }
+      const content = resp.content;
 
       // Determine result type based on content
       let resultType: AnalysisResult["type"] = "text";
