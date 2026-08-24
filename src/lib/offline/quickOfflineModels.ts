@@ -15,7 +15,9 @@ export interface QuickOfflineModel {
 export interface QuickDownloadProgress {
   modelId: string;
   progress: number;
+  percent: number;
   text: string;
+  message: string;
 }
 
 export const QUICK_OFFLINE_MODELS: QuickOfflineModel[] = [
@@ -79,7 +81,7 @@ class QuickOfflineEngine {
     };
 
     const ok = await ensureLocalModel(modelId, (p) =>
-      report({ modelId, progress: p.progress, text: p.text }),
+      report({ modelId, progress: p.progress, percent: p.progress, text: p.text, message: p.text }),
     );
 
     report(null);
