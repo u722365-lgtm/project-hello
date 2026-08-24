@@ -108,8 +108,6 @@ const PartnershipsPage = lazy(() => import("./pages/PartnershipsPage"));
   const IdePage = lazy(() => import("./pages/IdePage"));
   const MarketplacePage = lazy(() => import("./pages/MarketplacePage"));
   const DevelopersPage = lazy(() => import("./pages/DevelopersPage"));
-  const ContentForgePage = lazy(() => import("./pages/ContentForgePage"));
-  const VideoStudioPage = lazy(() => import("./pages/VideoStudioPage"));
   const WorkspaceHubPage = lazy(() => import("./pages/WorkspaceHubPage"));
   const ResearchHubPage = lazy(() => import("./pages/ResearchHubPage"));
   const InsightsHubPage = lazy(() => import("./pages/InsightsHubPage"));
@@ -282,9 +280,6 @@ const AnimatedRoutes = () => {
           <Route path="/security-audit" element={<Navigate to="/security?tab=audit" replace />} />
           <Route path="/trust" element={<Navigate to="/security?tab=trust" replace />} />
           <Route path="/cyber" element={<Navigate to="/security?tab=cyber" replace />} />
-          <Route path="/forge" element={<PageTransition><ContentForgePage /></PageTransition>} />
-          <Route path="/video-studio" element={<PageTransition><VideoStudioPage /></PageTransition>} />
-          <Route path="/presentations" element={<Navigate to="/forge?mode=slides" replace />} />
           <Route path="/missioncontrol" element={<PageTransition><MissionControlPage /></PageTransition>} />
           <Route path="/referral" element={<PageTransition><ReferralPage /></PageTransition>} />
           <Route path="/research" element={<PageTransition><ResearchHubPage /></PageTransition>} />
@@ -295,10 +290,7 @@ const AnimatedRoutes = () => {
           <Route path="/sovereign-data" element={<PageTransition><SovereignDataPage /></PageTransition>} />
           <Route path="/wallet" element={<PageTransition><SovereignWalletPage /></PageTransition>} />
           <Route path="/ghost-ads" element={<PageTransition><GhostAdsPage /></PageTransition>} />
-          <Route path="/offline-license" element={<Navigate to="/settings" replace />} />
-          <Route path="/enterprise-license" element={<Navigate to="/offline-license" replace />} />
           <Route path="/transparency" element={<PageTransition><TransparencyPage /></PageTransition>} />
-          <Route path="/studio" element={<Navigate to="/forge?mode=studio" replace />} />
           <Route path="/command-center" element={<PageTransition><CommandCenterPage /></PageTransition>} />
           <Route path="/competitive" element={<PageTransition><CompetitivePage /></PageTransition>} />
           <Route path="/compare/:slug" element={<PageTransition><ComparisonDetailPage /></PageTransition>} />
@@ -312,8 +304,6 @@ const AnimatedRoutes = () => {
           <Route path="/download" element={<Navigate to="/downloads" replace />} />
           <Route path="/sessions" element={<PageTransition><SessionsPage /></PageTransition>} />
           <Route path="/self-healing" element={<PageTransition><SelfHealingPage /></PageTransition>} />
-          <Route path="/local-models" element={<Navigate to="/settings" replace />} />
-          <Route path="/settings/local-models" element={<Navigate to="/settings" replace />} />
           <Route path="/abdul-rauf-ceo" element={<PageTransition><AbdulRaufPage /></PageTransition>} />
           <Route path="/muhammad-umar-cfo" element={<PageTransition><MuhammadUmarPage /></PageTransition>} />
           <Route path="/leaderboard" element={<PageTransition><LeaderboardPage /></PageTransition>} />

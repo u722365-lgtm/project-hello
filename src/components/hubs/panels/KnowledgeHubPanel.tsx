@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Search, Database, BookOpen, Sparkles, FileText } from "lucide-react";
-import OfflineAnalyticsPanel from "@/components/chat/OfflineAnalyticsPanel";
 import {
   searchKnowledgeBase,
   getKBStats,
@@ -94,7 +93,9 @@ export function KnowledgeHubPanel() {
           </ScrollArea>
         </TabsContent>
         <TabsContent value="analytics" className="mt-0">
-          <OfflineAnalyticsPanel />
+          <div className="py-8 text-center text-sm text-muted-foreground">
+            Local session analytics are currently unavailable.
+          </div>
         </TabsContent>
       </Tabs>
     </div>

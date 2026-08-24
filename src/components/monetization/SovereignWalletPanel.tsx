@@ -4,8 +4,24 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { useOfflineCredits, FEATURE_COSTS } from '@/hooks/useOfflineCredits';
 import { useShadowCredits, CREDIT_PACKAGES } from '@/hooks/useShadowCredits';
+
+const FEATURE_COSTS = {
+  chat: 0,
+  vision: 0,
+  deep_research: 0,
+  code_generation: 0,
+};
+
+const useOfflineCredits = () => {
+  return {
+    balance: 0,
+    pendingSyncCredits: 0,
+    totalConsumed: 0,
+    getTransactionHistory: async (_limit?: number) => [],
+    syncCredits: async () => 0,
+  };
+};
 import { Wallet, Coins, ArrowUpRight, ArrowDownRight, RefreshCw, Zap, Shield, Cloud, Wifi, WifiOff } from 'lucide-react';
 import { toast } from 'sonner';
 

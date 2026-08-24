@@ -38,8 +38,6 @@ const ShadowBrowser = lazy(() =>
 import { useFeatureGating } from "@/hooks/useFeatureGating";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { useUsageTracking } from "@/hooks/useUsageTracking";
-import { useOfflineAuth } from "@/hooks/useOfflineAuth";
-import { useOfflineChatHistory } from "@/hooks/useOfflineChatHistory";
 import { useGeoLocation } from "@/hooks/useGeoLocation";
 import { useGuestUsage, GUEST_LIMITS } from "@/hooks/useGuestUsage";
 import { useDailyLimits } from "@/hooks/useDailyLimits";
@@ -250,7 +248,7 @@ const ChatbotPage = () => {
   const { checkAccess, isElite, isProOrHigher } = useFeatureGating();
   const { requestPermission } = usePushNotifications();
   const { trackChatMessage, trackConversationCreated } = useUsageTracking();
-  const { getOfflineSession } = useOfflineAuth();
+  const getOfflineSession = () => null;
   const toolOrchestrator = useToolOrchestrator();
   const { dispatchDetectionAsync, continueFromCritic, goToExecute } = useAgenticToolDispatch();
   const {
@@ -334,7 +332,6 @@ const ChatbotPage = () => {
   const [showShadowTalkLive, setShowShadowTalkLive] = useState(false);
   const [showShadowBrowser, setShowShadowBrowser] = useState(false);
   const [showCommandPalette, setShowCommandPalette] = useState(false);
-  const [showOfflineTools, setShowOfflineTools] = useState(false);
   const [toolsMenuOpen, setToolsMenuOpen] = useState(false);
   const [chatShareOffer, setChatShareOffer] = useState<{ title: string; subtitle?: string; prompt?: string; answer?: string } | null>(null);
   const [chatShareDialogOpen, setChatShareDialogOpen] = useState(false);
@@ -575,8 +572,7 @@ const ChatbotPage = () => {
   }, []);
 
   useEffect(() => {
-    const offlineSession = getOfflineSession();
-    if (user || offlineSession) {
+    if (user) {
       loadConversations();
       checkSubscription();
     }
@@ -1276,17 +1272,6 @@ const ChatbotPage = () => {
 
         if (!resp.ok) {
           const cloudFailed = new Error((await resp.text().catch(() => "")) || "Cloud chat failed");
-          const localCandidates = runOfflineCompletion({
-            messages: chatMessages.map((m) => ({ role: (m.role === "assistant" ? "assistant" : m.role === "system" ? "system" : "user") as "assistant" | "system" | "user", content: typeof m.content === "string" ? m.content : "" })),
-            personality,
-            isOnline: navigator.onLine,
-            onToken: (token) => pushAssistant(token),
-          });
-          const local = await localCandidates;
-          if (local && local.content.trim()) {
-            finalizeAssistant();
-            return assistantContent;
-          }
           await raiseChatHttpError(resp.status, cloudFailed.message);
         }
 
@@ -2055,7 +2040,7 @@ const ChatbotPage = () => {
         return;
       case "offline-tools":
       case "offline":
-        setShowOfflineTools(true);
+        navigate("/settings");
         return;
       case "multi-model":
         setShowMultiModel(true);
@@ -2753,7 +2738,7 @@ const ChatbotPage = () => {
         }}
         onGoToDownload={() => {
           setShowInterimCloudConsent(false);
-          navigate("/settings?section=offline");
+          navigate("/settings");
         }}
         onStayDeviceOnly={() => setShowInterimCloudConsent(false)}
       />

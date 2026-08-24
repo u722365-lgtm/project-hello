@@ -100,8 +100,6 @@ const Navigation = ({ landingAnimated = false }: NavigationProps) => {
     { name: "Chatbot", href: "/chatbot", icon: MessageSquare, isLink: true },
     { name: "UI Templates", href: "/templates", icon: LayoutGrid, isLink: true },
     { name: "Marketplace", href: "/marketplace", icon: Store, isLink: true },
-    { name: "Content Forge", href: "/forge", icon: Presentation, isLink: true },
-    { name: "Video Studio", href: "/video-studio", icon: Clapperboard, isLink: true },
     { name: "Developers", href: "/developers", icon: Terminal, isLink: true },
     { name: "Download app", href: "/downloads", icon: Download, isLink: true },
     { name: "Security Center", href: "/security", icon: ShieldCheck, isLink: true },

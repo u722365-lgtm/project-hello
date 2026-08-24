@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { Eye, EyeOff, WifiOff, Wifi, Loader2, Shield, Zap, Lock, CheckCircle2, XCircle, AlertTriangle, Fingerprint } from "lucide-react";
-import { useOfflineAuth } from "@/hooks/useOfflineAuth";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { motion, AnimatePresence } from "framer-motion";
@@ -93,7 +92,11 @@ const AuthPage = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [rateLimitMsg, setRateLimitMsg] = useState("");
 
-  const { isOffline, hasOfflineCredentials, saveCredentialsForOffline, verifyOfflineCredentials, getOfflineSession } = useOfflineAuth();
+  const isOffline = false;
+  const hasOfflineCredentials = false;
+  const saveCredentialsForOffline = () => {};
+  const verifyOfflineCredentials = () => {};
+  const getOfflineSession = () => null;
   // OAuth removed — local-only auth
   const { checkLimit } = useRateLimiter(5, 60000);
   const authMotion = useAuthMotion();

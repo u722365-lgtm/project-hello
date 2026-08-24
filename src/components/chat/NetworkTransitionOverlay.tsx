@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Wifi, WifiOff, CloudUpload, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useOfflineSync } from '@/hooks/useOfflineSync';
 
 export const NetworkTransitionOverlay: React.FC = () => {
   const [visible, setVisible] = useState(false);
   const [transitioning, setTransitioning] = useState<'online' | 'offline' | null>(null);
   const [syncing, setSyncing] = useState(false);
   const [syncDone, setSyncDone] = useState(false);
-  const { pendingCount, syncPendingMessages } = useOfflineSync();
+  const pendingCount = 0;
+  const syncPendingMessages = async () => {};
 
   const dismiss = useCallback(() => {
     setVisible(false);
