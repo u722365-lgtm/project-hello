@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.chat = void 0;
+exports.drive = exports.audio = exports.chat = void 0;
 const https_1 = require("firebase-functions/v2/https");
 const admin = __importStar(require("firebase-admin"));
 const cors = require("cors");
@@ -91,9 +91,11 @@ const openrouterProvider = {
     name: "OpenRouter",
     enabled: () => !!process.env.OPENROUTER_API_KEY,
     resolveModel: (m) => {
+        if (!m)
+            return "google/gemini-2.0-flash-exp:free";
         if (m.includes("/"))
             return m;
-        return `google/${m}` || "google/gemini-2.0-flash-exp:free";
+        return `google/${m}`;
     },
     getUrl: () => "https://openrouter.ai/api/v1/chat/completions",
     getKey: () => process.env.OPENROUTER_API_KEY,
@@ -322,6 +324,70 @@ exports.chat = (0, https_1.onRequest)((req, res) => {
         catch (err) {
             console.error("Chat function error:", err);
             return res.status(500).json({ error: "Internal server error" });
+        }
+    });
+});
+// ============================================================
+// Audio Generation Mock
+// ============================================================
+exports.audio = (0, https_1.onRequest)((req, res) => {
+    corsHandler(req, res, async () => {
+        if (req.method === "OPTIONS")
+            return;
+        try {
+            const authHeader = req.headers.authorization || "";
+            const tokenMatch = authHeader.match(/^Bearer (.*)$/);
+            if (!tokenMatch)
+                return res.status(401).json({ error: "Unauthorized" });
+            await admin.auth().verifyIdToken(tokenMatch[1]);
+            const { prompt, duration, type } = req.body || {};
+            // Mock delay to simulate generation
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            const audioUrl = "https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg";
+            return res.json({ audioUrl, prompt, type, duration });
+        }
+        catch (err) {
+            console.error("Audio generation error:", err);
+            return res.status(500).json({ error: "Audio generation failed" });
+        }
+    });
+});
+// ============================================================
+// Google Drive Mock
+// ============================================================
+exports.drive = (0, https_1.onRequest)((req, res) => {
+    corsHandler(req, res, async () => {
+        if (req.method === "OPTIONS")
+            return;
+        try {
+            const authHeader = req.headers.authorization || "";
+            const tokenMatch = authHeader.match(/^Bearer (.*)$/);
+            if (!tokenMatch)
+                return res.status(401).json({ error: "Unauthorized" });
+            await admin.auth().verifyIdToken(tokenMatch[1]);
+            const { action, params } = req.body || {};
+            if (action === "drive.list") {
+                return res.json({
+                    data: [
+                        { id: "mock-1", name: "Q3 Strategy Presentation.pptx", mimeType: "presentation", modifiedTime: new Date().toISOString() },
+                        { id: "mock-2", name: "Financial Projections 2024.xlsx", mimeType: "spreadsheet", modifiedTime: new Date(Date.now() - 86400000).toISOString() },
+                        { id: "mock-3", name: "Product Requirements Doc.docx", mimeType: "document", modifiedTime: new Date(Date.now() - 7 * 86400000).toISOString() },
+                    ]
+                });
+            }
+            if (action === "drive.get") {
+                const fileId = params?.fileId;
+                return res.json({
+                    data: {
+                        content: `# Mock File\n\n[Imported mock content from Google Drive for file ID: ${fileId}]`
+                    }
+                });
+            }
+            return res.status(400).json({ error: "Unknown action" });
+        }
+        catch (err) {
+            console.error("Drive action error:", err);
+            return res.status(500).json({ error: "Drive action failed" });
         }
     });
 });

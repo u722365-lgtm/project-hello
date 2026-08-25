@@ -61,7 +61,7 @@ const CollaborativeRoom = () => {
   const chatContainerRef = useRef<HTMLDivElement>(null);
   
   // Real-time presence
-  const { onlineUsers: presenceUsers } = useRealtimePresence({ channelName: `room-presence-${roomId}` });
+  const { onlineUsers: presenceUsers, otherUsers, updateCursor } = useRealtimePresence({ channelName: `room-presence-${roomId}` });
   
   // Convert participants to mention-compatible format
   const mentionUsers = participants.map(p => ({
@@ -82,12 +82,16 @@ const CollaborativeRoom = () => {
     // Subscribe to new messages
     const messagesChannel = privateRealtimeChannel(`room-messages-${roomId}`)
       .on('postgres_changes', {
-        event: 'INSERT',
+        event: '*',
         schema: 'public',
         table: 'room_messages',
         filter: `room_id=eq.${roomId}`
       }, (payload) => {
-        setMessages(prev => [...prev, payload.new as RoomMessage]);
+        if (payload.eventType === 'INSERT') {
+          setMessages(prev => [...prev, payload.new as RoomMessage]);
+        } else if (payload.eventType === 'UPDATE') {
+          setMessages(prev => prev.map(msg => msg.id === payload.new.id ? payload.new as RoomMessage : msg));
+        }
       })
       .subscribe();
 
@@ -283,23 +287,41 @@ const CollaborativeRoom = () => {
       chatMessages.push({ role: 'user', content: userMessage });
       const lastUserMsg = userMessage;
 
+      // 1. Insert empty AI message
+      const { data: aiMsgData } = await backend
+        .from('room_messages')
+        .insert({
+          room_id: roomId,
+          user_id: user.id, // AI runs on behalf of user
+          display_name: 'ShadowTalk AI',
+          content: '...',
+          role: 'assistant'
+        })
+        .single();
+      
+      const aiMsgId = aiMsgData?.id;
+      let lastUpdateTime = 0;
+
       const result = await turboComplete(
         "You are ShadowTalk AI in a collaborative room. Be friendly and helpful. Use markdown formatting.",
         lastUserMsg,
+        undefined,
+        (chunk, fullContent) => {
+           // Throttled update to Firestore
+           const now = Date.now();
+           if (now - lastUpdateTime > 200 && aiMsgId) {
+              lastUpdateTime = now;
+              // Fire and forget
+              backend.from('room_messages').update({ content: fullContent }).eq('id', aiMsgId);
+           }
+        }
       );
 
       const assistantContent = result.content;
 
-      if (assistantContent) {
-        await backend
-          .from('room_messages')
-          .insert({
-            room_id: roomId,
-            user_id: user.id,
-            display_name: 'ShadowTalk AI',
-            content: assistantContent,
-            role: 'assistant'
-          });
+      // Final update to ensure complete message is saved
+      if (assistantContent && aiMsgId) {
+        await backend.from('room_messages').update({ content: assistantContent }).eq('id', aiMsgId);
       }
     } catch (error) {
       console.error("Error:", error);
@@ -429,9 +451,10 @@ const CollaborativeRoom = () => {
       {/* Live Cursors Overlay */}
       {activeTab === 'chat' && (
         <LiveCursors 
-          channelName={`room-cursors-${roomId}`}
           containerRef={chatContainerRef}
           enabled={showLiveCursors}
+          otherUsers={otherUsers}
+          updateCursor={updateCursor}
         />
       )}
 

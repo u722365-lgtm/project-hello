@@ -1,66 +1,15 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { backend } from "@/integrations/local/client";
-import { privateRealtimeChannel } from "@/lib/realtimeChannel";
-import { useAuth } from "@/components/AuthProvider";
-
-interface CursorPosition {
-  x: number;
-  y: number;
-  userId: string;
-  userName: string;
-  color: string;
-  lastUpdated: number;
-}
+import type { UserPresence } from "@/hooks/useRealtimePresence";
 
 interface LiveCursorsProps {
-  channelName: string;
   containerRef: React.RefObject<HTMLElement>;
   enabled?: boolean;
+  otherUsers: UserPresence[];
+  updateCursor: (position: { x: number; y: number }) => void;
 }
 
-const CURSOR_COLORS = [
-  "#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", 
-  "#FFEAA7", "#DDA0DD", "#98D8C8", "#F7DC6F"
-];
-
-const getUserColor = (userId: string) => {
-  const index = userId.charCodeAt(0) % CURSOR_COLORS.length;
-  return CURSOR_COLORS[index];
-};
-
-export const LiveCursors = ({ channelName, containerRef, enabled = true }: LiveCursorsProps) => {
-  const { user } = useAuth();
-  const [cursors, setCursors] = useState<Map<string, CursorPosition>>(new Map());
-  const channelRef = useRef<ReturnType<typeof backend.channel> | null>(null);
-  const throttleRef = useRef<number>(0);
-  
-  const userName = user?.email?.split('@')[0] || 'Anonymous';
-  const userColor = user ? getUserColor(user.id) : CURSOR_COLORS[0];
-
-  // Broadcast cursor position
-  const broadcastCursor = useCallback((x: number, y: number) => {
-    if (!channelRef.current || !user || !enabled) return;
-    
-    // Throttle to 30fps
-    const now = Date.now();
-    if (now - throttleRef.current < 33) return;
-    throttleRef.current = now;
-    
-    channelRef.current.send({
-      type: 'broadcast',
-      event: 'cursor',
-      payload: {
-        x,
-        y,
-        userId: user.id,
-        userName,
-        color: userColor,
-        lastUpdated: now,
-      },
-    });
-  }, [user, userName, userColor, enabled]);
-
+export const LiveCursors = ({ containerRef, enabled = true, otherUsers, updateCursor }: LiveCursorsProps) => {
   // Track mouse movement
   useEffect(() => {
     if (!containerRef.current || !enabled) return;
@@ -71,65 +20,35 @@ export const LiveCursors = ({ channelName, containerRef, enabled = true }: LiveC
       const rect = container.getBoundingClientRect();
       const x = ((e.clientX - rect.left) / rect.width) * 100;
       const y = ((e.clientY - rect.top) / rect.height) * 100;
-      broadcastCursor(x, y);
+      updateCursor({ x, y });
     };
 
     container.addEventListener('mousemove', handleMouseMove);
     return () => container.removeEventListener('mousemove', handleMouseMove);
-  }, [containerRef, broadcastCursor, enabled]);
-
-  // Subscribe to cursor updates
-  useEffect(() => {
-    if (!user || !enabled) return;
-    
-    const channel = privateRealtimeChannel(`cursors-${channelName}`)
-      .on('broadcast', { event: 'cursor' }, ({ payload }) => {
-        if (payload.userId === user.id) return;
-        
-        setCursors(prev => {
-          const updated = new Map(prev);
-          updated.set(payload.userId, payload as CursorPosition);
-          return updated;
-        });
-      })
-      .subscribe();
-    
-    channelRef.current = channel;
-    
-    // Clean up stale cursors every 2 seconds
-    const cleanupInterval = setInterval(() => {
-      const now = Date.now();
-      setCursors(prev => {
-        const updated = new Map(prev);
-        prev.forEach((cursor, id) => {
-          if (now - cursor.lastUpdated > 5000) {
-            updated.delete(id);
-          }
-        });
-        return updated;
-      });
-    }, 2000);
-    
-    return () => {
-      backend.removeChannel(channel);
-      clearInterval(cleanupInterval);
-    };
-  }, [user, channelName, enabled]);
+  }, [containerRef, updateCursor, enabled]);
 
   if (!enabled) return null;
+
+  // Filter users who have a cursor position and are active recently (within 5 seconds)
+  const now = Date.now();
+  const activeCursors = otherUsers.filter(u => {
+    if (!u.cursor) return false;
+    const lastActive = new Date(u.lastActive).getTime();
+    return now - lastActive < 5000;
+  });
 
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden z-50">
       <AnimatePresence>
-        {Array.from(cursors.values()).map(cursor => (
+        {activeCursors.map(user => (
           <motion.div
-            key={cursor.userId}
+            key={user.id}
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ 
               opacity: 1, 
               scale: 1,
-              x: `${cursor.x}%`,
-              y: `${cursor.y}%`,
+              x: `${user.cursor!.x}%`,
+              y: `${user.cursor!.y}%`,
             }}
             exit={{ opacity: 0, scale: 0 }}
             transition={{ type: "spring", damping: 30, stiffness: 500 }}
@@ -137,7 +56,7 @@ export const LiveCursors = ({ channelName, containerRef, enabled = true }: LiveC
             style={{ 
               left: 0, 
               top: 0,
-              transform: `translate(${cursor.x}%, ${cursor.y}%)`,
+              transform: `translate(${user.cursor!.x}%, ${user.cursor!.y}%)`,
             }}
           >
             {/* Cursor Arrow */}
@@ -150,7 +69,7 @@ export const LiveCursors = ({ channelName, containerRef, enabled = true }: LiveC
             >
               <path
                 d="M5 3L19 12L12 13L8 21L5 3Z"
-                fill={cursor.color}
+                fill={user.avatarColor}
                 stroke="white"
                 strokeWidth="1.5"
               />
@@ -161,9 +80,9 @@ export const LiveCursors = ({ channelName, containerRef, enabled = true }: LiveC
               initial={{ opacity: 0, y: -5 }}
               animate={{ opacity: 1, y: 0 }}
               className="absolute left-5 top-5 px-2 py-0.5 rounded-full text-[10px] font-medium text-white whitespace-nowrap"
-              style={{ backgroundColor: cursor.color }}
+              style={{ backgroundColor: user.avatarColor }}
             >
-              {cursor.userName}
+              {user.displayName}
             </motion.div>
           </motion.div>
         ))}

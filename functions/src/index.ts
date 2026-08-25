@@ -350,3 +350,73 @@ export const chat = onRequest((req, res) => {
     }
   });
 });
+
+// ============================================================
+// Audio Generation Mock
+// ============================================================
+export const audio = onRequest((req, res) => {
+  corsHandler(req, res, async () => {
+    if (req.method === "OPTIONS") return;
+
+    try {
+      const authHeader = req.headers.authorization || "";
+      const tokenMatch = authHeader.match(/^Bearer (.*)$/);
+      if (!tokenMatch) return res.status(401).json({ error: "Unauthorized" });
+      await admin.auth().verifyIdToken(tokenMatch[1]);
+
+      const { prompt, duration, type } = req.body || {};
+
+      // Mock delay to simulate generation
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      const audioUrl = "https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg";
+
+      return res.json({ audioUrl, prompt, type, duration });
+    } catch (err: any) {
+      console.error("Audio generation error:", err);
+      return res.status(500).json({ error: "Audio generation failed" });
+    }
+  });
+});
+
+// ============================================================
+// Google Drive Mock
+// ============================================================
+export const drive = onRequest((req, res) => {
+  corsHandler(req, res, async () => {
+    if (req.method === "OPTIONS") return;
+
+    try {
+      const authHeader = req.headers.authorization || "";
+      const tokenMatch = authHeader.match(/^Bearer (.*)$/);
+      if (!tokenMatch) return res.status(401).json({ error: "Unauthorized" });
+      await admin.auth().verifyIdToken(tokenMatch[1]);
+
+      const { action, params } = req.body || {};
+
+      if (action === "drive.list") {
+        return res.json({
+          data: [
+            { id: "mock-1", name: "Q3 Strategy Presentation.pptx", mimeType: "presentation", modifiedTime: new Date().toISOString() },
+            { id: "mock-2", name: "Financial Projections 2024.xlsx", mimeType: "spreadsheet", modifiedTime: new Date(Date.now() - 86400000).toISOString() },
+            { id: "mock-3", name: "Product Requirements Doc.docx", mimeType: "document", modifiedTime: new Date(Date.now() - 7 * 86400000).toISOString() },
+          ]
+        });
+      }
+
+      if (action === "drive.get") {
+        const fileId = params?.fileId;
+        return res.json({
+          data: {
+            content: `# Mock File\n\n[Imported mock content from Google Drive for file ID: ${fileId}]`
+          }
+        });
+      }
+
+      return res.status(400).json({ error: "Unknown action" });
+    } catch (err: any) {
+      console.error("Drive action error:", err);
+      return res.status(500).json({ error: "Drive action failed" });
+    }
+  });
+});

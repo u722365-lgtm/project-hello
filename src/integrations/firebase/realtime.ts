@@ -13,6 +13,9 @@ import {
   query,
   serverTimestamp,
   where,
+  setDoc,
+  deleteDoc,
+  doc,
 } from 'firebase/firestore';
 import { fbDb } from './app';
 
@@ -24,6 +27,7 @@ class FirebaseChannel {
   private broadcastListeners: { event: string; cb: Handler }[] = [];
   private presenceState: Record<string, any[]> = {};
   private presenceCbs: Handler[] = [];
+  private localUid: string | null = null;
   state = 'closed';
 
   constructor(private name: string) {}
@@ -110,6 +114,28 @@ class FirebaseChannel {
       this.unsubs.push(unsub);
     }
 
+    if (this.presenceCbs.length) {
+      const unsub = onSnapshot(
+        query(
+          collection(fbDb(), 'room_presences'),
+          where('channel', '==', this.name)
+        ),
+        (snap) => {
+          const state: Record<string, any[]> = {};
+          snap.docs.forEach((doc) => {
+            const data = doc.data();
+            if (data.payload && data.uid) {
+              state[data.uid] = [data.payload];
+            }
+          });
+          this.presenceState = state;
+          this.presenceCbs.forEach((cb) => cb({ event: 'sync' }));
+        },
+        (err) => console.warn('[realtime] presence error:', err?.message)
+      );
+      this.unsubs.push(unsub);
+    }
+
     cb?.('SUBSCRIBED');
     return this;
   }
@@ -129,14 +155,41 @@ class FirebaseChannel {
     }
   }
 
-  async track(payload: any) {
-    this.presenceState = { local: [payload] };
-    this.presenceCbs.forEach((cb) => cb({ event: 'sync' }));
-    return 'ok';
+  private getUid(payload: any) {
+    return payload?.id || payload?.user_id || 'anonymous';
   }
+
+  async track(payload: any) {
+    try {
+      this.localUid = this.getUid(payload);
+      await setDoc(doc(fbDb(), 'room_presences', `${this.name}_${this.localUid}`), {
+        channel: this.name,
+        uid: this.localUid,
+        payload: payload,
+        updated_at: serverTimestamp(),
+      });
+      // Optimistic update
+      this.presenceState[this.localUid] = [payload];
+      this.presenceCbs.forEach((cb) => cb({ event: 'sync' }));
+      return 'ok';
+    } catch (err) {
+      console.warn('[realtime] track failed:', err);
+      return 'error';
+    }
+  }
+
   async untrack() {
-    this.presenceState = {};
-    return 'ok';
+    try {
+      if (this.localUid) {
+        await deleteDoc(doc(fbDb(), 'room_presences', `${this.name}_${this.localUid}`));
+        delete this.presenceState[this.localUid];
+        this.localUid = null;
+      }
+      return 'ok';
+    } catch (err) {
+      console.warn('[realtime] untrack failed:', err);
+      return 'error';
+    }
   }
   presenceStateFn() {
     return this.presenceState;

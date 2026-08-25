@@ -29,7 +29,7 @@ const generateAvatarColor = (str: string): string => {
   return `hsl(${hue}, 70%, 50%)`;
 };
 
-export const useRealtimePresence = ({ channelName, throttleMs = 50 }: UseRealtimePresenceOptions) => {
+export const useRealtimePresence = ({ channelName, throttleMs = 150 }: UseRealtimePresenceOptions) => {
   const { user } = useAuth();
   const [onlineUsers, setOnlineUsers] = useState<UserPresence[]>([]);
   const [isConnected, setIsConnected] = useState(false);

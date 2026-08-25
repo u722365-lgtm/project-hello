@@ -3,14 +3,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, Mail, FileText, FolderOpen, Calendar, Search,
   Link2, Unlink, RefreshCw, Download, Upload, Check,
-  AlertCircle, Loader2, ExternalLink, Lock
+  AlertCircle, ExternalLink, Lock
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Loader2, Plus, File, HardDrive } from "lucide-react";
+import { backend } from "@/integrations/local/client";
+import { getFirebaseFunctionUrl } from "@/lib/cloudEnv";
 import { useToast } from '@/hooks/use-toast';
-import { backend } from '@/integrations/local/client';
 import { useAuth } from '@/components/AuthProvider';
 import { connectIntegration } from '@/lib/integrationOAuth';
 
@@ -115,15 +117,30 @@ export const GoogleIntegrationPanel: React.FC<GoogleIntegrationPanelProps> = ({
     setIsLoadingFiles(true);
     
     try {
-      // Mocked Drive integration
-      setTimeout(() => {
-        setFiles([
-          { id: "mock-1", name: "Q3 Strategy Presentation.pptx", type: "presentation", modified: "Today" },
-          { id: "mock-2", name: "Financial Projections 2024.xlsx", type: "spreadsheet", modified: "Yesterday" },
-          { id: "mock-3", name: "Product Requirements Doc.docx", type: "document", modified: "Last week" },
-        ]);
-        setIsLoadingFiles(false);
-      }, 500);
+      const { data: { session } } = await backend.auth.getSession();
+      if (!session) return;
+
+      const resp = await fetch(getFirebaseFunctionUrl("drive"), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({ action: "drive.list", params: { maxResults: 20 } })
+      });
+
+      const result = await resp.json();
+      
+      if (result.data) {
+        setFiles(result.data.map((f: any) => ({
+          id: f.id,
+          name: f.name,
+          type: f.mimeType?.includes('spreadsheet') ? 'spreadsheet' 
+              : f.mimeType?.includes('presentation') ? 'presentation' 
+              : 'document',
+          modified: f.modifiedTime ? new Date(f.modifiedTime).toLocaleDateString() : 'Unknown',
+        })));
+      }
     } catch (error) {
       console.error('Failed to load Drive files:', error);
       toast({ title: 'Failed to load files', variant: 'destructive' });
@@ -133,13 +150,24 @@ export const GoogleIntegrationPanel: React.FC<GoogleIntegrationPanelProps> = ({
 
   const handleImportFile = async (file: { id: string; name: string }) => {
     try {
-      // Mock importing content
-      setTimeout(() => {
-        const content = `# ${file.name}\n\n[Imported mock content from Google Drive]`;
-        onImportContent?.(content, `Google Drive: ${file.name}`);
-        toast({ title: 'File Imported', description: `${file.name} has been imported to your chat.` });
-        onClose();
-      }, 500);
+      const { data: { session } } = await backend.auth.getSession();
+      if (!session) return;
+
+      const resp = await fetch(getFirebaseFunctionUrl("drive"), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({ action: "drive.get", params: { fileId: file.id } })
+      });
+
+      const result = await resp.json();
+      const content = result.data?.content || `# ${file.name}\n\nContent could not be extracted.`;
+      onImportContent?.(content, `Google Drive: ${file.name}`);
+      
+      toast({ title: 'File Imported', description: `${file.name} has been imported to your chat.` });
+      onClose();
     } catch {
       toast({ title: 'Import Failed', variant: 'destructive' });
     }

@@ -8,6 +8,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
+import { getFirebaseFunctionUrl } from "@/lib/cloudEnv";
+import { backend } from "@/integrations/local/client";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -71,10 +73,28 @@ export function MusicGenerator({ isOpen, onClose, initialPrompt, autoGenerate, o
     setIsGenerating(true);
     
     try {
-      // Mock music generation since local backend lacks audio generation
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const { data: { session } } = await backend.auth.getSession();
       
-      const audioUrl = "https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg";
+      const response = await fetch(getFirebaseFunctionUrl("audio"), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: session ? `Bearer ${session.access_token}` : "",
+        },
+        body: JSON.stringify({
+          prompt: finalPrompt,
+          duration: type === "music" ? duration : Math.min(duration, 22),
+          type,
+        }),
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({ error: "Generation failed" }));
+        throw new Error(err.error || `Failed: ${response.status}`);
+      }
+
+      const result = await response.json();
+      const audioUrl = result.audioUrl;
       
       const track: GeneratedTrack = {
         id: crypto.randomUUID(),

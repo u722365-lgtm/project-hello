@@ -673,7 +673,7 @@ const VoiceCommandSystem: React.FC = () => {
       <motion.button
         onClick={toggleVoice}
         className={cn(
-          "hidden md:flex fixed bottom-8 left-8 z-50 items-center justify-center w-14 h-14 rounded-full shadow-lg transition-all duration-300",
+          "hidden md:flex fixed bottom-8 right-8 z-50 items-center justify-center w-14 h-14 rounded-full shadow-lg transition-all duration-300",
           isActive
             ? "bg-destructive text-destructive-foreground shadow-destructive/30"
             : "bg-primary text-primary-foreground shadow-primary/30 hover:shadow-xl hover:shadow-primary/40"
@@ -716,7 +716,7 @@ const VoiceCommandSystem: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-24 left-8 z-50 w-80 max-w-[calc(100vw-4rem)]"
+            className="fixed bottom-24 right-8 z-50 w-80 max-w-[calc(100vw-4rem)] origin-bottom-right"
           >
             <div className="bg-card/95 backdrop-blur-xl border border-border/60 rounded-2xl shadow-2xl overflow-hidden">
               {/* Header */}

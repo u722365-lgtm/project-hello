@@ -22,6 +22,14 @@ export function getChatFunctionUrl(): string {
   return "";
 }
 
+/** Returns the URL for a specific Firebase Cloud Function. */
+export function getFirebaseFunctionUrl(functionName: string): string {
+  if (import.meta.env.DEV) {
+    return `http://127.0.0.1:5001/shadowtalk-ai-7a513/us-central1/${functionName}`;
+  }
+  return `https://us-central1-shadowtalk-ai-7a513.cloudfunctions.net/${functionName}`;
+}
+
 /** Returns headers including the Firebase Auth token. */
 export function getChatFetchHeaders(accessToken?: string | null): Record<string, string> {
   const headers: Record<string, string> = {

@@ -160,7 +160,7 @@ export function ChatShadowSidebar({
           </Tooltip>
         </div>
 
-        {/* Recents / History List */}
+        {/* Recents / History List & Navigation */}
         <ScrollArea className="flex-1 px-2">
           <AnimatePresence>
             {!isCollapsed && (
@@ -172,6 +172,11 @@ export function ChatShadowSidebar({
               >
                 <div className="px-2 pb-1 shrink-0 mb-4">
                   <InstalledAgentsPanel compact />
+                </div>
+                
+                {/* Main Sidebar Navigation */}
+                <div className="mb-6">
+                  <ChatSidebarNavList collapsed={isCollapsed} onItemClick={onNavigate} />
                 </div>
 
                 {activeConversations.length > 0 && (
@@ -243,8 +248,6 @@ export function ChatShadowSidebar({
 
         {/* Bottom Nav / Settings */}
         <div className="shrink-0 p-3 flex flex-col gap-1 mt-auto border-t border-cyan-500/10 bg-[#07090f]">
-          <ChatSidebarNavList collapsed={isCollapsed} onItemClick={onNavigate} />
-          
           {/* Settings */}
           <Tooltip>
             <TooltipTrigger asChild>
