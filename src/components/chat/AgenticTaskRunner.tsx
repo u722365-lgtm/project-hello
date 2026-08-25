@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { 
   Bot, Play, Pause, Square, CheckCircle2, XCircle, 
-  Clock, Loader2, ChevronRight, Settings, Zap,
-  Globe, Mail, Calendar, FileText, ShoppingCart, CalendarDays,
-  Plane, Database, Code, MessageSquare
+  Clock, Loader2, Settings, Zap, Globe, Mail, 
+  Calendar, FileText, ShoppingCart, CalendarDays,
+  Plane, Database, Code, MessageSquare, History
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,25 +13,9 @@ import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { backend } from "@/integrations/local/client";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { turboComplete } from "@/lib/turbo/turboEngine";
-
-interface TaskStep {
-  id: string;
-  action: string;
-  status: "pending" | "running" | "completed" | "failed" | "skipped";
-  result?: string;
-  duration?: number;
-}
-
-interface AgentTask {
-  id: string;
-  goal: string;
-  status: "idle" | "planning" | "executing" | "paused" | "completed" | "failed";
-  steps: TaskStep[];
-  startTime?: Date;
-  endTime?: Date;
-}
+import { useAgentTasks, TaskStep, AgentTask } from "@/hooks/useAgentTasks";
 
 interface AgenticTaskRunnerProps {
   isOpen: boolean;
@@ -40,8 +24,6 @@ interface AgenticTaskRunnerProps {
   initialGoal?: string;
   autoStart?: boolean;
 }
-
-
 
 const TASK_TEMPLATES = [
   { icon: Globe, label: "Research & Report", prompt: "Research [topic] and create a detailed report" },
@@ -58,46 +40,39 @@ const TASK_TEMPLATES = [
 export const AgenticTaskRunner = ({ isOpen, onClose, onTaskComplete, initialGoal, autoStart }: AgenticTaskRunnerProps) => {
   const { toast } = useToast();
   const [goal, setGoal] = useState(initialGoal || "");
-  const [currentTask, setCurrentTask] = useState<AgentTask | null>(null);
   const [autoApprove, setAutoApprove] = useState(false);
   const [showLogs, setShowLogs] = useState(true);
-  const [logs, setLogs] = useState<string[]>([]);
   const [hasAutoStarted, setHasAutoStarted] = useState(false);
-
-  const addLog = (message: string) => {
-    setLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${message}`]);
-  };
+  const [deviceId] = useState(() => crypto.randomUUID());
+  
+  const { tasks, createTask, updateTask, addLog: addDbLog } = useAgentTasks(deviceId);
+  
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const currentTask = tasks.find(t => t.id === selectedTaskId) || null;
+  const isExecutingRef = useRef(false);
 
   const startTask = async () => {
     if (!goal.trim()) return;
 
-    const newTask: AgentTask = {
-      id: crypto.randomUUID(),
-      goal,
-      status: "planning",
-      steps: [],
-      startTime: new Date()
-    };
+    const newTask = await createTask(goal);
+    if (!newTask) {
+      toast({ title: 'Error', description: 'Failed to start task.', variant: 'destructive' });
+      return;
+    }
 
-    setCurrentTask(newTask);
-    setLogs([]);
-    addLog(`Starting task: ${goal}`);
-    addLog("Analyzing goal and creating execution plan...");
+    setSelectedTaskId(newTask.id);
+    isExecutingRef.current = true;
+    
+    addDbLog(newTask.id, "Analyzing goal and creating execution plan...");
 
     try {
-      const { data: { session } } = await backend.auth.getSession();
-      
-      // Step 1: Plan the task - use standard chat to generate a plan
-      addLog("Generating task steps...");
-      
+      addDbLog(newTask.id, "Generating task steps...");
       const planResp = await turboComplete(
         "You are a professional task planner.",
         `Break down this task into 4-6 numbered steps. Only list the steps, nothing else:\n\n${goal}`
       );
 
       const planContent = planResp.content;
-
-      // Parse steps from plan
       const stepMatches = planContent.match(/\d+\.\s+[^\n]+/g) || [];
       const plannedSteps: TaskStep[] = stepMatches.map((s, i) => ({
         id: `step-${i + 1}`,
@@ -114,22 +89,18 @@ export const AgenticTaskRunner = ({ isOpen, onClose, onTaskComplete, initialGoal
         );
       }
 
-      setCurrentTask(prev => prev ? { ...prev, status: "executing", steps: plannedSteps } : null);
-      addLog(`Plan created with ${plannedSteps.length} steps`);
+      await updateTask(newTask.id, { status: "executing", steps: plannedSteps });
+      addDbLog(newTask.id, `Plan created with ${plannedSteps.length} steps`);
 
-      // Step 2: Execute each step
       for (let i = 0; i < plannedSteps.length; i++) {
-        const step = plannedSteps[i];
-        addLog(`Executing step ${i + 1}: ${step.action}`);
+        if (!isExecutingRef.current) break; // Check for pause/cancel
         
-        setCurrentTask(prev => {
-          if (!prev) return null;
-          const newSteps = [...prev.steps];
-          newSteps[i] = { ...newSteps[i], status: "running" };
-          return { ...prev, steps: newSteps };
-        });
+        const step = plannedSteps[i];
+        addDbLog(newTask.id, `Executing step ${i + 1}: ${step.action}`);
+        
+        plannedSteps[i] = { ...plannedSteps[i], status: "running" };
+        await updateTask(newTask.id, { steps: [...plannedSteps] });
 
-        // Execute step via AI
         const startMs = Date.now();
         try {
           const stepResp = await turboComplete(
@@ -137,92 +108,76 @@ export const AgenticTaskRunner = ({ isOpen, onClose, onTaskComplete, initialGoal
             `Execute this step for the goal "${goal}": ${step.action}. Provide a concise result.`
           );
           const stepResult = stepResp.content || `Completed: ${step.action}`;
-          const duration = Date.now() - startMs;
-
-          setCurrentTask(prev => {
-            if (!prev) return null;
-            const newSteps = [...prev.steps];
-            newSteps[i] = { 
-              ...newSteps[i], 
-              status: "completed",
-              result: stepResult.slice(0, 200),
-              duration
-            };
-            return { ...prev, steps: newSteps };
-          });
+          
+          plannedSteps[i] = { 
+            ...plannedSteps[i], 
+            status: "completed",
+            result: stepResult.slice(0, 200),
+            duration: Date.now() - startMs
+          };
         } catch (stepError) {
-          setCurrentTask(prev => {
-            if (!prev) return null;
-            const newSteps = [...prev.steps];
-            newSteps[i] = { ...newSteps[i], status: "failed", result: "Step execution failed", duration: Date.now() - startMs };
-            return { ...prev, steps: newSteps };
-          });
+          plannedSteps[i] = { ...plannedSteps[i], status: "failed", result: "Step execution failed", duration: Date.now() - startMs };
+          isExecutingRef.current = false;
         }
 
-        addLog(`Step ${i + 1} completed`);
+        await updateTask(newTask.id, { steps: [...plannedSteps] });
+        addDbLog(newTask.id, `Step ${i + 1} completed`);
+        
+        if (plannedSteps[i].status === "failed") {
+          await updateTask(newTask.id, { status: "failed" });
+          toast({ title: "Task Failed", description: "A step failed to execute.", variant: "destructive" });
+          return;
+        }
       }
 
-      // Step 3: Generate final result
-      addLog("Generating final output...");
+      if (!isExecutingRef.current) return;
 
+      addDbLog(newTask.id, "Generating final output...");
       const resultResp = await turboComplete(
         "You are a professional assistant summarizing the execution of a multi-step task.",
         goal
       );
 
       const resultContent = resultResp.content;
-
-      setCurrentTask(prev => prev ? { ...prev, status: "completed", endTime: new Date() } : null);
-      addLog("Task completed successfully!");
+      await updateTask(newTask.id, { status: "completed", endTime: new Date().toISOString() });
+      addDbLog(newTask.id, "Task completed successfully!");
 
       toast({ title: "Task Complete", description: "The agent has finished executing your task." });
       onTaskComplete(resultContent);
 
     } catch (error) {
       console.error("Agent task error:", error);
-      setCurrentTask(prev => prev ? { ...prev, status: "failed" } : null);
-      addLog(`Error: ${error instanceof Error ? error.message : "Task failed"}`);
-      toast({
-        title: "Task Failed",
-        description: "The agent encountered an error while executing the task.",
-        variant: "destructive"
-      });
+      await updateTask(newTask.id, { status: "failed" });
+      addDbLog(newTask.id, `Error: ${error instanceof Error ? error.message : "Task failed"}`);
+      toast({ title: "Task Failed", description: "An error occurred.", variant: "destructive" });
     }
   };
 
-  const pauseTask = () => {
+  const pauseTask = async () => {
     if (currentTask?.status === "executing") {
-      setCurrentTask(prev => prev ? { ...prev, status: "paused" } : null);
-      addLog("Task paused by user");
+      isExecutingRef.current = false;
+      await updateTask(currentTask.id, { status: "paused" });
+      addDbLog(currentTask.id, "Task paused by user");
     }
   };
 
-  const resumeTask = () => {
-    if (currentTask?.status === "paused") {
-      setCurrentTask(prev => prev ? { ...prev, status: "executing" } : null);
-      addLog("Task resumed");
+  const cancelTask = async () => {
+    if (currentTask) {
+      isExecutingRef.current = false;
+      await updateTask(currentTask.id, { status: "failed" });
+      addDbLog(currentTask.id, "Task cancelled by user");
     }
   };
 
-  const cancelTask = () => {
-    setCurrentTask(prev => prev ? { ...prev, status: "failed" } : null);
-    addLog("Task cancelled by user");
-  };
-
-  // Auto-start task when opened with a goal (after startTask is defined)
   useEffect(() => {
     if (autoStart && initialGoal && !currentTask && !hasAutoStarted) {
       setHasAutoStarted(true);
       startTask();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoStart, initialGoal, hasAutoStarted]);
 
-  // Update goal when initialGoal changes
   useEffect(() => {
-    if (initialGoal) {
-      setGoal(initialGoal);
-    }
+    if (initialGoal) setGoal(initialGoal);
   }, [initialGoal]);
 
   const getStatusColor = (status: TaskStep["status"]) => {
@@ -244,9 +199,10 @@ export const AgenticTaskRunner = ({ isOpen, onClose, onTaskComplete, initialGoal
     }
   };
 
-  const completedSteps = currentTask?.steps.filter(s => s.status === "completed").length || 0;
-  const totalSteps = currentTask?.steps.length || 0;
+  const completedSteps = currentTask?.steps?.filter(s => s.status === "completed").length || 0;
+  const totalSteps = currentTask?.steps?.length || 0;
   const progress = totalSteps > 0 ? (completedSteps / totalSteps) * 100 : 0;
+  const logs = currentTask?.logs || [];
 
   if (!isOpen) return null;
 
@@ -257,7 +213,6 @@ export const AgenticTaskRunner = ({ isOpen, onClose, onTaskComplete, initialGoal
       exit={{ opacity: 0 }}
       className="fixed inset-0 bg-background/95 backdrop-blur-xl z-50 flex flex-col"
     >
-      {/* Header - Premium */}
       <div className="flex items-center justify-between p-4 border-b border-border/50 bg-gradient-to-r from-muted/30 via-transparent to-muted/30">
         <div className="flex items-center gap-3">
           <div className="relative">
@@ -275,7 +230,7 @@ export const AgenticTaskRunner = ({ isOpen, onClose, onTaskComplete, initialGoal
               <Badge variant="secondary" className="text-xs font-mono">AUTONOMOUS</Badge>
             </h2>
             <p className="text-xs text-muted-foreground">
-              Multi-step reasoning with Cognitive Loop architecture
+              Cross-Device Workflow Execution
             </p>
           </div>
         </div>
@@ -283,11 +238,42 @@ export const AgenticTaskRunner = ({ isOpen, onClose, onTaskComplete, initialGoal
       </div>
 
       <div className="flex-1 flex overflow-hidden">
+        {/* Sidebar History */}
+        <div className="w-64 border-r border-border/50 flex flex-col bg-muted/10">
+          <div className="p-3 border-b border-border/50 flex items-center gap-2">
+            <History className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-medium">Task History</span>
+          </div>
+          <ScrollArea className="flex-1">
+            <div className="p-2 space-y-1">
+              <Button 
+                variant={!selectedTaskId ? "secondary" : "ghost"} 
+                className="w-full justify-start text-sm" 
+                onClick={() => setSelectedTaskId(null)}
+              >
+                + New Task
+              </Button>
+              {tasks.map(t => (
+                <Button
+                  key={t.id}
+                  variant={selectedTaskId === t.id ? "secondary" : "ghost"}
+                  className="w-full justify-start text-xs truncate font-normal"
+                  onClick={() => setSelectedTaskId(t.id)}
+                >
+                  <div className="flex flex-col items-start text-left overflow-hidden">
+                    <span className="truncate w-48 font-medium">{t.goal || 'Untitled Task'}</span>
+                    <span className="text-[10px] text-muted-foreground">{t.status}</span>
+                  </div>
+                </Button>
+              ))}
+            </div>
+          </ScrollArea>
+        </div>
+
         {/* Main Panel */}
-        <div className="flex-1 flex flex-col p-6">
-          {/* Goal Input */}
-          {!currentTask && (
-            <div className="space-y-6">
+        <div className="flex-1 flex flex-col p-6 overflow-y-auto">
+          {!currentTask ? (
+            <div className="space-y-6 max-w-3xl mx-auto w-full">
               <div className="space-y-3">
                 <label className="text-sm font-medium">What would you like me to do?</label>
                 <div className="flex gap-2">
@@ -305,10 +291,9 @@ export const AgenticTaskRunner = ({ isOpen, onClose, onTaskComplete, initialGoal
                 </div>
               </div>
 
-              {/* Quick Templates */}
               <div className="space-y-3">
                 <label className="text-sm font-medium">Quick Templates</label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {TASK_TEMPLATES.map((template) => (
                     <button
                       key={template.label}
@@ -322,7 +307,6 @@ export const AgenticTaskRunner = ({ isOpen, onClose, onTaskComplete, initialGoal
                 </div>
               </div>
 
-              {/* Settings */}
               <div className="flex items-center justify-between p-4 rounded-lg border border-border">
                 <div className="flex items-center gap-3">
                   <Settings className="h-5 w-5 text-muted-foreground" />
@@ -336,17 +320,13 @@ export const AgenticTaskRunner = ({ isOpen, onClose, onTaskComplete, initialGoal
                 <Switch checked={autoApprove} onCheckedChange={setAutoApprove} />
               </div>
             </div>
-          )}
-
-          {/* Task Progress */}
-          {currentTask && (
-            <div className="space-y-6">
-              {/* Current Goal */}
+          ) : (
+            <div className="space-y-6 max-w-3xl mx-auto w-full">
               <div className="p-4 rounded-lg bg-muted/30 border border-border">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <Zap className="h-5 w-5 text-primary" />
-                    <span className="font-medium">Current Goal</span>
+                    <span className="font-medium">Task Goal</span>
                   </div>
                   <Badge variant={
                     currentTask.status === "completed" ? "default" :
@@ -357,9 +337,14 @@ export const AgenticTaskRunner = ({ isOpen, onClose, onTaskComplete, initialGoal
                   </Badge>
                 </div>
                 <p className="text-sm text-muted-foreground">{currentTask.goal}</p>
+                {currentTask.executor_device_id !== deviceId && currentTask.status === 'executing' && (
+                  <div className="mt-3 p-2 bg-primary/10 text-primary text-xs rounded border border-primary/20 flex items-center gap-2">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    Executing on another device.
+                  </div>
+                )}
               </div>
 
-              {/* Progress Bar */}
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Progress</span>
@@ -368,13 +353,11 @@ export const AgenticTaskRunner = ({ isOpen, onClose, onTaskComplete, initialGoal
                 <Progress value={progress} className="h-2" />
               </div>
 
-              {/* Steps - Connected Timeline */}
               <div className="space-y-2">
                 <h3 className="text-sm font-medium">Execution Pipeline</h3>
                 <div className="relative space-y-0">
-                  {/* Connecting line */}
                   <div className="absolute left-[19px] top-4 bottom-4 w-px bg-border/50" />
-                  {currentTask.steps.map((step, i) => (
+                  {currentTask.steps?.map((step, i) => (
                     <motion.div
                       key={step.id}
                       initial={{ opacity: 0, x: -20 }}
@@ -382,7 +365,6 @@ export const AgenticTaskRunner = ({ isOpen, onClose, onTaskComplete, initialGoal
                       transition={{ delay: i * 0.08, type: "spring", stiffness: 200 }}
                       className="relative pl-12 py-2"
                     >
-                      {/* Node */}
                       <div className={`absolute left-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center z-10 ${
                         step.status === "running" ? "bg-primary/20 border-2 border-primary" :
                         step.status === "completed" ? "bg-emerald-500/20 border border-emerald-500/50" :
@@ -391,7 +373,6 @@ export const AgenticTaskRunner = ({ isOpen, onClose, onTaskComplete, initialGoal
                       }`}>
                         <span className={getStatusColor(step.status)}>{getStatusIcon(step.status)}</span>
                       </div>
-                      {/* Content */}
                       <div className={`p-3 rounded-xl border transition-all ${
                         step.status === "running" ? "border-primary/50 bg-primary/5 shadow-sm shadow-primary/10" : 
                         step.status === "completed" ? "border-emerald-500/20 bg-emerald-500/5" :
@@ -416,38 +397,28 @@ export const AgenticTaskRunner = ({ isOpen, onClose, onTaskComplete, initialGoal
                 </div>
               </div>
 
-              {/* Controls */}
-              <div className="flex gap-2">
-                {currentTask.status === "executing" && (
-                  <Button variant="outline" onClick={pauseTask}>
-                    <Pause className="h-4 w-4 mr-2" />
-                    Pause
-                  </Button>
-                )}
-                {currentTask.status === "paused" && (
-                  <Button onClick={resumeTask}>
-                    <Play className="h-4 w-4 mr-2" />
-                    Resume
-                  </Button>
-                )}
-                {["executing", "paused"].includes(currentTask.status) && (
-                  <Button variant="destructive" onClick={cancelTask}>
-                    <Square className="h-4 w-4 mr-2" />
-                    Cancel
-                  </Button>
-                )}
-                {["completed", "failed"].includes(currentTask.status) && (
-                  <Button onClick={() => setCurrentTask(null)}>
-                    Start New Task
-                  </Button>
-                )}
-              </div>
+              {currentTask.executor_device_id === deviceId && (
+                <div className="flex gap-2">
+                  {currentTask.status === "executing" && (
+                    <Button variant="outline" onClick={pauseTask}>
+                      <Pause className="h-4 w-4 mr-2" />
+                      Pause
+                    </Button>
+                  )}
+                  {["executing", "paused"].includes(currentTask.status) && (
+                    <Button variant="destructive" onClick={cancelTask}>
+                      <Square className="h-4 w-4 mr-2" />
+                      Cancel
+                    </Button>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
 
-        {/* Logs Panel - Premium */}
-        <div className="w-96 border-l border-border/50 flex flex-col bg-muted/10">
+        {/* Logs Panel */}
+        <div className="w-80 border-l border-border/50 flex flex-col bg-muted/10">
           <div className="flex items-center justify-between p-3 border-b border-border/50">
             <span className="text-sm font-medium flex items-center gap-2">
               <MessageSquare className="h-4 w-4 text-primary" />
