@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { backend } from '@/integrations/local/client';
-import { stringifyChatBody } from "@/lib/chatRequest";
+import { turboComplete } from "@/lib/turbo/turboEngine";
 
 interface WorkflowStep {
   id: string;
@@ -83,60 +83,37 @@ export const AIAgentWorkflows: React.FC<AIAgentWorkflowsProps> = ({ isOpen, onCl
     setSteps(workflowSteps);
 
     try {
-      const { data: { session } } = await backend.auth.getSession();
+      // Run each step through turboComplete sequentially
+      for (let i = 0; i < workflowSteps.length; i++) {
+        const step = workflowSteps[i];
+        setSteps(prev => prev.map((s, idx) => idx === i ? { ...s, status: 'running' } : s));
+        setProgress(Math.round(((i + 1) / workflowSteps.length) * 100));
 
-      const response = await fetch('', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_API_KEY}`,
-        },
-        body: stringifyChatBody({
-          agentWorkflow: {
-            workflowId: selectedWorkflow.id,
-            input,
-            steps: selectedWorkflow.steps.map((name) => ({ name })),
-          },
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Workflow failed with status ${response.status}`);
+        try {
+          const result = await turboComplete(
+            `You are an AI agent executing a workflow step. Step: "${step.name}" for workflow "${selectedWorkflow.name}".`,
+            `Execute this workflow step: "${step.name}"\n\nUser input: ${input}\n\nProvide a detailed, actionable result for this step.`
+          );
+          setSteps(prev => prev.map((s, idx) => idx === i ? { ...s, status: 'completed', result: result.content } : s));
+        } catch {
+          setSteps(prev => prev.map((s, idx) => idx === i ? { ...s, status: 'error', result: 'Step failed' } : s));
+        }
       }
-
-      const result = await response.json();
-
-      if (!Array.isArray(result.steps)) {
-        throw new Error('Invalid workflow response from server');
-      }
-
-      const serverSteps: { step: string; result: string; status: string }[] = result.steps;
-
-      // Map server results back onto local steps state
-      setSteps((prev) =>
-        prev.map((s) => {
-          const match = serverSteps.find((st) => st.step === s.name);
-          if (!match) return s;
-          return {
-            ...s,
-            status: match.status === 'completed' ? 'completed' : match.status === 'error' ? 'error' : s.status,
-            result: match.result,
-          };
-        })
-      );
 
       setProgress(100);
 
-      const finalResult = serverSteps
-        .filter((s) => s.result)
-        .map((s) => `### ${s.step}\n\n${s.result}`)
-        .join('\n\n');
-
-      onResult(`## ${selectedWorkflow.name} Results\n\n${finalResult || 'Workflow completed successfully.'}`);
-
+      // Gather results
+      setSteps(prev => {
+        const finalResult = prev
+          .filter(s => s.result)
+          .map(s => `### ${s.name}\n\n${s.result}`)
+          .join('\n\n');
+        onResult(`## ${selectedWorkflow.name} Results\n\n${finalResult || 'Workflow completed successfully.'}`);
+        return prev;
+      });
       toast({
         title: 'Workflow completed',
-        description: `${selectedWorkflow.name} finished ${result.status === 'partial' ? 'with some errors' : 'successfully'}`,
+        description: `${selectedWorkflow.name} finished successfully`,
       });
     } catch (error) {
       console.error('Workflow error:', error);

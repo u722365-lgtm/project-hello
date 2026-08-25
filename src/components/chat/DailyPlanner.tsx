@@ -51,7 +51,7 @@ import { turboComplete } from "@/lib/turbo/turboEngine";
  };
  
  const STORAGE_KEY = "shadowtalk_daily_plan";
- const CHAT_URL = '';
+
  
  export const DailyPlanner = ({ isOpen, onClose, onPlanGenerated }: DailyPlannerProps) => {
    const { toast } = useToast();

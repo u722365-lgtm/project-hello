@@ -1,10 +1,8 @@
 import { useCallback } from "react";
-import { backend } from "@/integrations/local/client";
 import { useShadowToolBridge } from "@/hooks/useShadowToolBridge";
 import type { ChatMode } from "@/components/chat/ModeSelector";
 import { SHADOWTALK_SELF_KNOWLEDGE_BRIEF } from "@/lib/shadowTalkProductKnowledge";
-
-const CHAT_URL = '';
+import { turboComplete } from "@/lib/turbo/turboEngine";
 
 export interface ChatToolRouterMessage {
   id: string;
@@ -39,81 +37,41 @@ export function useChatToolRouter(handlers: Parameters<typeof useShadowToolBridg
       chatMessages: Array<{ role: string; content: string }>,
       personality: string,
       chatMode: string,
-      bodyExtras: Record<string, unknown>,
+      _bodyExtras: Record<string, unknown>,
       onMessagesUpdate: RunChatTurnParams["onMessagesUpdate"],
       saveAssistant: (content: string) => Promise<void>,
-      signal?: AbortSignal
+      _signal?: AbortSignal
     ) => {
-      const { data: { session } } = await backend.auth.getSession();
-      const token = session?.access_token || import.meta.env.VITE_API_KEY;
       const aiMessageId = crypto.randomUUID();
+      const lastUserMsg = [...chatMessages].reverse().find(m => m.role === "user")?.content ?? "";
 
-      const resp = await fetch(CHAT_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          messages: chatMessages,
-          personality,
-          mode: chatMode,
-          ...bodyExtras,
-        }),
-        signal,
-      });
-
-      if (!resp.ok) {
-        const errText = await resp.text().catch(() => "");
-        let msg = `Chat request failed (${resp.status})`;
-        try {
-          const parsed = JSON.parse(errText) as { error?: string; code?: string };
-          if (parsed.error) msg = parsed.error;
-        } catch {
-          if (errText) msg = errText.slice(0, 200);
-        }
-        throw new Error(msg);
-      }
-
-      const reader = resp.body?.getReader();
-      const decoder = new TextDecoder();
-      let assistantContent = "";
-
-      while (reader) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        for (const line of decoder.decode(value).split("\n")) {
-          if (line.startsWith("data: ") && line !== "data: [DONE]") {
-            try {
-              const data = JSON.parse(line.slice(6));
-              const delta = data.choices?.[0]?.delta?.content;
-              if (delta) {
-                assistantContent += delta;
-                onMessagesUpdate((prev) => {
-                  const exists = prev.find((m) => m.id === aiMessageId);
-                  if (exists) {
-                    return prev.map((m) =>
-                      m.id === aiMessageId ? { ...m, content: assistantContent } : m
-                    );
-                  }
-                  return [
-                    ...prev,
-                    {
-                      id: aiMessageId,
-                      type: "ai",
-                      content: assistantContent,
-                      timestamp: new Date(),
-                    },
-                  ];
-                });
+      const result = await turboComplete(
+        `You are ShadowTalk AI. Be ${personality || 'friendly'} and helpful. Mode: ${chatMode}. Use markdown formatting.`,
+        lastUserMsg,
+        {
+          onDelta: (accumulated) => {
+            onMessagesUpdate((prev) => {
+              const exists = prev.find((m) => m.id === aiMessageId);
+              if (exists) {
+                return prev.map((m) =>
+                  m.id === aiMessageId ? { ...m, content: accumulated } : m
+                );
               }
-            } catch {
-              /* ignore */
-            }
-          }
-        }
-      }
+              return [
+                ...prev,
+                {
+                  id: aiMessageId,
+                  type: "ai",
+                  content: accumulated,
+                  timestamp: new Date(),
+                },
+              ];
+            });
+          },
+        },
+      );
 
+      const assistantContent = result.content;
       if (assistantContent) await saveAssistant(assistantContent);
       return assistantContent;
     },

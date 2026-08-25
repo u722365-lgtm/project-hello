@@ -10,6 +10,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { turboComplete } from "@/lib/turbo/turboEngine";
 import { 
   Bot, Zap, Brain, Play, CheckCircle2, Loader2, AlertCircle,
   Target, Clock, Database, Globe, Code, FileSearch, History,
@@ -469,53 +470,18 @@ const ShadowAgentPanel: React.FC<ShadowAgentPanelProps> = ({ onExecuteTask, isEx
     }), 80);
 
     try {
-      const { data: { session } } = await backend.auth.getSession();
       const industry = INDUSTRIES.find(i => i.id === selectedIndustry);
       const regionLabels = selectedRegions.map(r => REGIONS.find(reg => reg.id === r)?.label || r);
       
-      const resp = await fetch('', {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
-        },
-        body: stringifyChatBody({
-          messages: [{
-            role: 'user',
-            content: `You are a regulatory compliance expert. Generate a compliance checklist for a ${industry?.label} business operating in ${regionLabels.join(', ')}. Return ONLY a JSON array of objects with these fields: regulation (string), category (string - region name), requirement (string), status (one of: compliant, partial, non_compliant, review_needed), risk (one of: critical, high, medium, low), action (string), deadline (string date). Generate 6-12 realistic items based on real regulations. Return only the JSON array, no markdown.`
-          }],
-          personality: 'professional',
-          mode: 'general'
-        }),
-      });
+      const resp = await turboComplete(
+        "You are a regulatory compliance expert.",
+        `Generate a compliance checklist for a ${industry?.label} business operating in ${regionLabels.join(', ')}. Return ONLY a JSON array of objects with these fields: regulation (string), category (string - region name), requirement (string), status (one of: compliant, partial, non_compliant, review_needed), risk (one of: critical, high, medium, low), action (string), deadline (string date). Generate 6-12 realistic items based on real regulations. Return only the JSON array, no markdown.`
+      );
 
       clearInterval(interval);
       setComplianceProgress(100);
 
-      if (resp.ok) {
-        const reader = resp.body?.getReader();
-        const decoder = new TextDecoder();
-        let fullContent = "";
-        let textBuffer = "";
-
-        while (reader) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          textBuffer += decoder.decode(value, { stream: true });
-          let newlineIndex: number;
-          while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
-            let line = textBuffer.slice(0, newlineIndex);
-            textBuffer = textBuffer.slice(newlineIndex + 1);
-            if (line.endsWith("\r")) line = line.slice(0, -1);
-            if (!line.startsWith("data: ")) continue;
-            const jsonStr = line.slice(6).trim();
-            if (jsonStr === "[DONE]") break;
-            try {
-              const content = JSON.parse(jsonStr).choices?.[0]?.delta?.content;
-              if (content) fullContent += content;
-            } catch { /* skip */ }
-          }
-        }
+      const fullContent = resp.content || "";
 
         // Parse AI response as JSON
         try {
@@ -535,7 +501,6 @@ const ShadowAgentPanel: React.FC<ShadowAgentPanelProps> = ({ onExecuteTask, isEx
             return;
           }
         } catch (e) { console.error('Failed to parse AI compliance response:', e); }
-      }
       
       // Fallback to local generation if AI fails
       const items = getIndustryRegulations(selectedIndustry, selectedRegions);

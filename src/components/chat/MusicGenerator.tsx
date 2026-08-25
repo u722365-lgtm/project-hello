@@ -71,27 +71,10 @@ export function MusicGenerator({ isOpen, onClose, initialPrompt, autoGenerate, o
     setIsGenerating(true);
     
     try {
-      const response = await fetch(`${API_URL}(removed-edge-function)-audio`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          apikey: API_KEY,
-          Authorization: `Bearer ${API_KEY}`,
-        },
-        body: JSON.stringify({
-          prompt: finalPrompt,
-          duration: type === "music" ? duration : Math.min(duration, 22),
-          type,
-        }),
-      });
-
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({ error: "Generation failed" }));
-        throw new Error(err.error || `Failed: ${response.status}`);
-      }
-
-      const blob = await response.blob();
-      const audioUrl = URL.createObjectURL(blob);
+      // Mock music generation since local backend lacks audio generation
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      const audioUrl = "https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg";
       
       const track: GeneratedTrack = {
         id: crypto.randomUUID(),

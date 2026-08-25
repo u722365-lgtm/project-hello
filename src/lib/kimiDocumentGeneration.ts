@@ -153,7 +153,6 @@ export function extractDocumentTopic(message: string): string {
     .trim() || message;
 }
 
-export const CHAT_FUNCTION_URL = '';
 
 export interface StreamDocumentOptions {
   topic: string;
@@ -167,7 +166,7 @@ export interface StreamDocumentOptions {
 }
 
 export async function streamKimiDocument(options: StreamDocumentOptions): Promise<string> {
-  const { topic, docType, tone, length, additionalContext, accessToken, onChunk, signal } = options;
+  const { topic, docType, tone, length, additionalContext, onChunk, signal } = options;
 
   const label = KIMI_DOCUMENT_TYPES.find((d) => d.type === docType)?.label ?? "Document";
   const userPrompt = `Produce a publication-ready ${label} for executive review.
@@ -177,53 +176,16 @@ ${additionalContext ? `\nRequirements:\n${additionalContext}` : ""}
 
 The output must be clean Markdown only — suitable for immediate export to Word or PDF.`;
 
-  const response = await fetch(CHAT_FUNCTION_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken || import.meta.env.VITE_API_KEY}`,
-    },
-    body: stringifyChatBody({
-        messages: [{ role: "user", content: userPrompt }],
-        personality: "professional",
-        mode: "document",
-        documentGeneration: true,
-        documentType: docType,
-        documentTone: tone,
-        documentLength: length,
-    }),
-    signal,
-  });
-
-  if (!response.ok) {
-    const errText = await response.text().catch(() => "");
-    throw new Error(errText || `Document generation failed (${response.status})`);
-  }
-
-  const reader = response.body?.getReader();
-  const decoder = new TextDecoder();
-  let content = "";
-
-  while (reader) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    const chunk = decoder.decode(value, { stream: true });
-    for (const line of chunk.split("\n")) {
-      if (!line.startsWith("data: ") || line === "data: [DONE]") continue;
-      try {
-        const data = JSON.parse(line.slice(6));
-        const text = data.choices?.[0]?.delta?.content;
-        if (text) {
-          content += text;
-          onChunk(content);
-        }
-      } catch { /* partial SSE */ }
+  const result = await turboComplete(
+    `You are a professional document writer. Tone: ${tone}. Length: ${length}.`,
+    userPrompt,
+    {
+      signal,
+      onDelta: onChunk ? (accumulated) => onChunk(accumulated) : undefined,
     }
-  }
+  );
 
-  const polished = polishProfessionalMarkdown(content, { tone });
-  onChunk(polished);
-  return polished;
+  return result.content || "";
 }
 
 const WORD_DOC_STYLES = `

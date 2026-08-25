@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { stringifyChatBody } from "@/lib/chatRequest";
+import { turboComplete } from "@/lib/turbo/turboEngine";
 
 interface HypeTask {
   id: string;
@@ -60,22 +60,12 @@ export const ProactiveInsights = () => {
     setCompletedTasks(new Set());
 
     try {
-      const CHAT_URL = '';
-      const resp = await fetch(CHAT_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_API_KEY}`
-        },
-        body: stringifyChatBody({
-          messages: [{ role: "user", content: "Generate 5 proactive business growth insights for a privacy-first AI chat platform. For each, provide: title, description, urgency (low/medium/high/critical), impact score (1-100), category, and actionable next step. Format as JSON array." }],
-          personality: "professional",
-          mode: "general"
-        })
-      });
+      const resp = await turboComplete(
+        "You are a business growth strategist.",
+        "Generate 5 proactive business growth insights for a privacy-first AI chat platform. For each, provide: title, description, urgency (low/medium/high/critical), impact score (1-100), category, and actionable next step. Format as JSON array."
+      );
 
-      const data = await resp.json();
-      const responseText = typeof data === 'string' ? data : (data?.response || data?.text || '');
+      const responseText = resp.content || '';
       
       // Try to parse AI-generated insights
       try {

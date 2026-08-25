@@ -19,7 +19,7 @@ import { useRealtimePresence } from "@/hooks/useRealtimePresence";
 import { LiveCursors } from "@/components/collaboration/LiveCursors";
 import { MentionInput } from "@/components/collaboration/MentionInput";
 import { useCollaborativeAI } from "@/hooks/useCollaborativeAI";
-import { stringifyChatBody } from "@/lib/chatRequest";
+import { turboComplete } from "@/lib/turbo/turboEngine";
 interface RoomMessage {
   id: string;
   room_id: string;
@@ -37,7 +37,6 @@ interface Participant {
   joined_at: string;
 }
 
-const CHAT_URL = '';
 
 const CollaborativeRoom = () => {
   const { roomId } = useParams<{ roomId: string }>();
@@ -277,53 +276,19 @@ const CollaborativeRoom = () => {
     setIsLoading(true);
 
     try {
-      const { data: { session } } = await backend.auth.getSession();
-      
       const chatMessages = messages.slice(-10).map(m => ({
         role: m.role,
         content: m.content
       }));
       chatMessages.push({ role: 'user', content: userMessage });
+      const lastUserMsg = userMessage;
 
-      const resp = await fetch(CHAT_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session?.access_token}`
-        },
-        body: stringifyChatBody({
-          messages: chatMessages,
-          personality: 'friendly',
-          mode: 'general'
-        }),
-      });
+      const result = await turboComplete(
+        "You are ShadowTalk AI in a collaborative room. Be friendly and helpful. Use markdown formatting.",
+        lastUserMsg,
+      );
 
-      if (!resp.ok) throw new Error("Failed to get AI response");
-
-      const reader = resp.body?.getReader();
-      const decoder = new TextDecoder();
-      let assistantContent = "";
-      let textBuffer = "";
-
-      while (reader) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        textBuffer += decoder.decode(value, { stream: true });
-
-        let newlineIndex: number;
-        while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
-          let line = textBuffer.slice(0, newlineIndex);
-          textBuffer = textBuffer.slice(newlineIndex + 1);
-          if (line.endsWith("\r")) line = line.slice(0, -1);
-          if (line.startsWith(":") || line.trim() === "" || !line.startsWith("data: ")) continue;
-          const jsonStr = line.slice(6).trim();
-          if (jsonStr === "[DONE]") break;
-          try {
-            const content = JSON.parse(jsonStr).choices?.[0]?.delta?.content;
-            if (content) assistantContent += content;
-          } catch { break; }
-        }
-      }
+      const assistantContent = result.content;
 
       if (assistantContent) {
         await backend

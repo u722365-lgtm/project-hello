@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { useOfflineRAG } from "@/hooks/useOfflineRAG";
 import { useOfflineChat } from "@/hooks/useOfflineChat";
-import { AI_CHAT_URL } from "@/lib/aiEndpoints";
+import { turboComplete } from "@/lib/turbo/turboEngine";
 
 export type ResearchDepth = "quick" | "standard" | "deep";
 export type ResearchStage =
@@ -44,21 +44,9 @@ async function askModel(
     const out = await local.ask(prompt, system);
     if (out) return out;
   }
-  if (!AI_CHAT_URL) return "";
   try {
-    const res = await fetch(AI_CHAT_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        messages: [
-          { role: "system", content: system },
-          { role: "user", content: prompt },
-        ],
-      }),
-    });
-    if (!res.ok) return "";
-    const data = await res.json();
-    return data?.content ?? data?.message ?? data?.choices?.[0]?.message?.content ?? "";
+    const result = await turboComplete(system, prompt);
+    return result.content || "";
   } catch {
     return "";
   }

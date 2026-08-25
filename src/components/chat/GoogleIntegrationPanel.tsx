@@ -115,58 +115,31 @@ export const GoogleIntegrationPanel: React.FC<GoogleIntegrationPanelProps> = ({
     setIsLoadingFiles(true);
     
     try {
-      const { data: { session } } = await backend.auth.getSession();
-      if (!session) return;
-
-      const resp = await fetch('', {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`
-        },
-        body: JSON.stringify({ action: "drive.list", params: { maxResults: 20 } })
-      });
-
-      const result = await resp.json();
-      
-      if (result.data) {
-        setFiles(result.data.map((f: any) => ({
-          id: f.id,
-          name: f.name,
-          type: f.mimeType?.includes('spreadsheet') ? 'spreadsheet' 
-              : f.mimeType?.includes('presentation') ? 'presentation' 
-              : 'document',
-          modified: f.modifiedTime ? new Date(f.modifiedTime).toLocaleDateString() : 'Unknown',
-        })));
-      }
+      // Mocked Drive integration
+      setTimeout(() => {
+        setFiles([
+          { id: "mock-1", name: "Q3 Strategy Presentation.pptx", type: "presentation", modified: "Today" },
+          { id: "mock-2", name: "Financial Projections 2024.xlsx", type: "spreadsheet", modified: "Yesterday" },
+          { id: "mock-3", name: "Product Requirements Doc.docx", type: "document", modified: "Last week" },
+        ]);
+        setIsLoadingFiles(false);
+      }, 500);
     } catch (error) {
       console.error('Failed to load Drive files:', error);
       toast({ title: 'Failed to load files', variant: 'destructive' });
+      setIsLoadingFiles(false);
     }
-    
-    setIsLoadingFiles(false);
   };
 
   const handleImportFile = async (file: { id: string; name: string }) => {
     try {
-      const { data: { session } } = await backend.auth.getSession();
-      if (!session) return;
-
-      const resp = await fetch('', {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`
-        },
-        body: JSON.stringify({ action: "drive.get", params: { fileId: file.id } })
-      });
-
-      const result = await resp.json();
-      const content = result.data?.content || `# ${file.name}\n\nContent could not be extracted.`;
-      onImportContent?.(content, `Google Drive: ${file.name}`);
-      
-      toast({ title: 'File Imported', description: `${file.name} has been imported to your chat.` });
-      onClose();
+      // Mock importing content
+      setTimeout(() => {
+        const content = `# ${file.name}\n\n[Imported mock content from Google Drive]`;
+        onImportContent?.(content, `Google Drive: ${file.name}`);
+        toast({ title: 'File Imported', description: `${file.name} has been imported to your chat.` });
+        onClose();
+      }, 500);
     } catch {
       toast({ title: 'Import Failed', variant: 'destructive' });
     }

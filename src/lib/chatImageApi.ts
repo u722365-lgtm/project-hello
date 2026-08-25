@@ -4,8 +4,7 @@
  */
 
 import { backend } from "@/integrations/local/client";
-import { stringifyChatBody } from "@/lib/chatRequest";
-import { getChatFetchHeaders, getChatFunctionUrl } from "@/lib/cloudEnv";
+import { turboComplete } from "@/lib/turbo/turboEngine";
 
 export interface ChatImageResult {
   content: string;
@@ -38,39 +37,31 @@ export async function callChatImageAnalyze(
 }
 
 async function callChatImageMode(body: Record<string, unknown> & { signal?: AbortSignal }): Promise<ChatImageResult> {
-  const { signal, ...payload } = body;
-  const chatUrl = getChatFunctionUrl();
-
-  const { data: { session } } = await backend.auth.getSession();
-  const resp = await fetch(chatUrl, {
-    method: "POST",
-    headers: getChatFetchHeaders(session?.access_token),
-    body: stringifyChatBody({
-      messages: [],
-      personality: "creative",
-      mode: "general",
-      ...payload,
-    }),
-    signal,
-  });
-
-  if (!resp.ok) {
-    let detail = "Image request failed";
-    try {
-      const err = await resp.json();
-      detail = typeof err.error === "string" ? err.error : detail;
-    } catch {
-      detail = (await resp.text().catch(() => "")) || detail;
-    }
-    throw new Error(detail);
+  const { signal, originalImage, editPrompt, imageToAnalyze } = body;
+  
+  let prompt = "";
+  if (originalImage && editPrompt) {
+    prompt = `Edit this image according to: ${editPrompt}`;
+  } else if (imageToAnalyze) {
+    prompt = "Analyze this image and describe its contents in detail.";
+  } else {
+    prompt = "Process this image request.";
   }
 
-  const data = await resp.json();
-  return {
-    type: data.type === "image" ? "image" : data.type === "analysis" ? "analysis" : "text",
-    content: data.content || data.analysis || "",
-    imageUrl: data.imageUrl,
-  };
+  try {
+    const result = await turboComplete(
+      "You are a creative AI image assistant.",
+      prompt,
+      { signal }
+    );
+    
+    return {
+      content: result.content || "Image processed.",
+      type: "text",
+    };
+  } catch (error) {
+    throw new Error(error instanceof Error ? error.message : "Image processing failed");
+  }
 }
 
 /** Build multimodal user content for vision Q&A in streaming chat */
