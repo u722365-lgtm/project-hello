@@ -1,15 +1,18 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import { backend } from '@/integrations/local/client';
+import { useToast } from '@/hooks/use-toast';
 
 export interface VaultDocument {
   id: string;
   name: string;
   type: string;
   size: number;
-  content: string;
+  content: string; // The text content
   chunks: string[];
   embeddings?: number[][];
   addedAt: Date;
+  storagePath?: string;
+  user_id?: string;
 }
 
 interface KnowledgeVaultState {
@@ -23,8 +26,6 @@ interface KnowledgeVaultState {
 
 const CHUNK_SIZE = 500;
 const CHUNK_OVERLAP = 50;
-const DB_NAME = 'shadowtalk-knowledge-vault';
-const STORE_NAME = 'documents';
 
 const chunkText = (text: string, size = CHUNK_SIZE, overlap = CHUNK_OVERLAP): string[] => {
   const chunks: string[] = [];
@@ -64,20 +65,6 @@ const searchChunks = (query: string, chunks: string[]): string[] => {
     .map(s => s.chunk);
 };
 
-const openDB = (): Promise<IDBDatabase> => {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, 1);
-    request.onupgradeneeded = () => {
-      const db = request.result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME, { keyPath: 'id' });
-      }
-    };
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
-};
-
 export const useKnowledgeVault = () => {
   const [state, setState] = useState<KnowledgeVaultState>({
     documents: [],
@@ -88,31 +75,49 @@ export const useKnowledgeVault = () => {
     error: null,
   });
 
-  const dbRef = useRef<IDBDatabase | null>(null);
+  const { toast } = useToast();
 
   const initialize = useCallback(async () => {
     try {
-      const db = await openDB();
-      dbRef.current = db;
+      const { data: { user } } = await backend.auth.getUser();
+      if (!user) return;
 
-      const tx = db.transaction(STORE_NAME, 'readonly');
-      const store = tx.objectStore(STORE_NAME);
-      const request = store.getAll();
+      const { data: docs, error } = await backend
+        .from('vault_documents')
+        .select('*')
+        .eq('user_id', user.id);
 
-      request.onsuccess = () => {
-        const docs = request.result.map((d: any) => ({
+      if (error) {
+        console.error('[KnowledgeVault] Init error:', error);
+        return;
+      }
+
+      if (docs) {
+        const parsedDocs = docs.map((d: any) => ({
           ...d,
-          addedAt: new Date(d.addedAt),
+          addedAt: new Date(d.addedAt || d.created_at || Date.now()),
         }));
-        const totalChunks = docs.reduce((sum: number, d: VaultDocument) => sum + d.chunks.length, 0);
-        setState(prev => ({ ...prev, documents: docs, totalChunks }));
-      };
+        
+        const totalChunks = parsedDocs.reduce((sum: number, d: VaultDocument) => sum + (d.chunks?.length || 0), 0);
+        
+        setState(prev => ({ 
+          ...prev, 
+          documents: parsedDocs, 
+          totalChunks 
+        }));
+      }
     } catch (e) {
       console.error('[KnowledgeVault] Init failed:', e);
     }
   }, []);
 
   const addFiles = useCallback(async (files: File[]) => {
+    const { data: { user } } = await backend.auth.getUser();
+    if (!user) {
+      toast({ title: 'Auth Required', description: 'Please sign in to upload to the Knowledge Vault.', variant: 'destructive' });
+      return [];
+    }
+
     setState(prev => ({ ...prev, isProcessing: true, progress: 0, stage: 'Reading files...', error: null }));
 
     try {
@@ -120,9 +125,28 @@ export const useKnowledgeVault = () => {
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
+        const docId = crypto.randomUUID();
+        
         setState(prev => ({
           ...prev,
-          progress: Math.round((i / files.length) * 80),
+          progress: Math.round((i / files.length) * 40),
+          stage: `Uploading ${file.name}...`,
+        }));
+
+        // Upload to Firebase Storage
+        const storagePath = `${user.id}/${docId}/${file.name}`;
+        const { error: uploadError } = await backend.storage.from('vault').upload(storagePath, file);
+        
+        if (uploadError) {
+          console.error('[KnowledgeVault] Storage upload failed:', uploadError);
+          // If storage bucket isn't enabled yet, just skip Cloud Storage, or we can error out.
+          // We continue local processing to gracefully handle the case where storage isn't ready,
+          // but we will still try to save to Firestore.
+        }
+
+        setState(prev => ({
+          ...prev,
+          progress: 40 + Math.round((i / files.length) * 40),
           stage: `Processing ${file.name}...`,
         }));
 
@@ -136,50 +160,28 @@ export const useKnowledgeVault = () => {
         const chunks = chunkText(content);
 
         const doc: VaultDocument = {
-          id: crypto.randomUUID(),
+          id: docId,
           name: file.name,
           type: file.type || 'text/plain',
           size: file.size,
-          content: content.slice(0, 50000),
+          content: content.slice(0, 50000), // limit size for firestore
           chunks,
           addedAt: new Date(),
+          storagePath,
+          user_id: user.id,
         };
 
         newDocs.push(doc);
       }
 
-      // Save to IndexedDB
       setState(prev => ({ ...prev, progress: 90, stage: 'Saving to vault...' }));
 
-      const db = dbRef.current || await openDB();
-      const tx = db.transaction(STORE_NAME, 'readwrite');
-      const store = tx.objectStore(STORE_NAME);
-
+      // Save to Firestore
       for (const doc of newDocs) {
-        store.put(doc);
-      }
-
-      await new Promise((resolve, reject) => {
-        tx.oncomplete = resolve;
-        tx.onerror = () => reject(tx.error);
-      });
-
-      // Sync metadata to knowledge_entries table for cloud persistence
-      try {
-        const { data: { user } } = await backend.auth.getUser();
-        if (user) {
-          for (const doc of newDocs) {
-            await backend.from('knowledge_entries').insert({
-              user_id: user.id,
-              title: doc.name,
-              content: doc.content.slice(0, 10000),
-              entry_type: 'document',
-              tags: [doc.type, 'vault-upload'],
-            });
-          }
-        }
-      } catch {
-        // Cloud sync is best-effort
+        await backend.from('vault_documents').insert({
+          ...doc,
+          created_at: doc.addedAt.toISOString(),
+        });
       }
 
       setState(prev => ({
@@ -201,10 +203,10 @@ export const useKnowledgeVault = () => {
       }));
       return [];
     }
-  }, []);
+  }, [toast]);
 
   const search = useCallback((query: string): string[] => {
-    const allChunks = state.documents.flatMap(d => d.chunks);
+    const allChunks = state.documents.flatMap(d => d.chunks || []);
     return searchChunks(query, allChunks);
   }, [state.documents]);
 
@@ -220,34 +222,49 @@ export const useKnowledgeVault = () => {
 
   const removeDocument = useCallback(async (docId: string) => {
     try {
-      const db = dbRef.current || await openDB();
-      const tx = db.transaction(STORE_NAME, 'readwrite');
-      tx.objectStore(STORE_NAME).delete(docId);
+      const { data: { user } } = await backend.auth.getUser();
+      if (!user) return;
+      
+      const doc = state.documents.find(d => d.id === docId);
+      
+      if (doc?.storagePath) {
+        await backend.storage.from('vault').remove(doc.storagePath);
+      }
+
+      await backend.from('vault_documents').delete().eq('id', docId);
 
       setState(prev => {
-        const doc = prev.documents.find(d => d.id === docId);
         return {
           ...prev,
           documents: prev.documents.filter(d => d.id !== docId),
-          totalChunks: prev.totalChunks - (doc?.chunks.length || 0),
+          totalChunks: prev.totalChunks - (doc?.chunks?.length || 0),
         };
       });
     } catch (e) {
       console.error('[KnowledgeVault] Remove failed:', e);
     }
-  }, []);
+  }, [state.documents]);
 
   const clearVault = useCallback(async () => {
     try {
-      const db = dbRef.current || await openDB();
-      const tx = db.transaction(STORE_NAME, 'readwrite');
-      tx.objectStore(STORE_NAME).clear();
+      const { data: { user } } = await backend.auth.getUser();
+      if (!user) return;
 
-      setState(prev => ({ ...prev, documents: [], totalChunks: 0 }));
+      setState(prev => ({ ...prev, isProcessing: true, stage: 'Clearing vault...' }));
+
+      for (const doc of state.documents) {
+        if (doc.storagePath) {
+          await backend.storage.from('vault').remove(doc.storagePath);
+        }
+        await backend.from('vault_documents').delete().eq('id', doc.id);
+      }
+
+      setState(prev => ({ ...prev, documents: [], totalChunks: 0, isProcessing: false }));
     } catch (e) {
       console.error('[KnowledgeVault] Clear failed:', e);
+      setState(prev => ({ ...prev, isProcessing: false, error: 'Failed to clear vault' }));
     }
-  }, []);
+  }, [state.documents]);
 
   return {
     ...state,
