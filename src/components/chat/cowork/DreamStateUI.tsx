@@ -77,7 +77,7 @@ export const DreamStateUI: React.FC<DreamStateUIProps> = ({ onCodeGenerated }) =
                   {phase === "idle" && "Ready to simulate."}
                   {phase === "initializing" && "Initializing Neural Sandbox..."}
                   {phase === "coding" && "Writing Initial Draft..."}
-                  {phase === "simulating" && \`Running Simulation (Iteration \${iteration})...\`}
+                  {phase === "simulating" && `Running Simulation (Iteration ${iteration})...`}
                   {phase === "debugging" && "Metacognitive Debugging..."}
                   {phase === "success" && "Zero-Shot Perfection Achieved."}
                 </p>

@@ -117,6 +117,13 @@ export function OmnisciencePanel({ predictions, isAnalyzing, onApplyCode }: Omni
           ))}
         </AnimatePresence>
       </div>
+      
+      {/* Marketplace Tab Support */}
+      <div className="p-2 border-t border-border/50 bg-background flex gap-2">
+         <Button variant="secondary" size="sm" className="w-full text-xs" onClick={() => {}}>
+            Marketplace Plugins
+         </Button>
+      </div>
     </div>
   );
 }

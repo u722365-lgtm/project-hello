@@ -1,5 +1,5 @@
 import { turboComplete, TurboConfig } from '../turbo/turboEngine';
-import { AgentRole, AgentPrompts } from './agents';
+import { AgentRole, getAgentPrompt } from './agents';
 import { trackAiMetrics } from '../telemetry/agenticMetrics';
 
 export interface HiveTask {
@@ -32,7 +32,7 @@ export class HiveOrchestrator {
     try {
       // 1. PM Agent Planning
       this.notifyStatus('PM', 'Analyzing request and planning tasks...');
-      const pmPrompt = `${AgentPrompts.PM}\n\nUser Request: ${prompt}`;
+      const pmPrompt = `${getAgentPrompt('PM')}\n\nUser Request: ${prompt}`;
       const pmResponse = await turboComplete(pmPrompt, config);
       
       // We assume PM returns a plan (either JSON or text). 
@@ -41,13 +41,13 @@ export class HiveOrchestrator {
       
       // 2. Coder Agent Execution
       this.notifyStatus('Coder', 'Writing code based on PM plan...');
-      const coderPrompt = `${AgentPrompts.Coder}\n\nPM Plan: ${plan}`;
+      const coderPrompt = `${getAgentPrompt('Coder')}\n\nPM Plan: ${plan}`;
       const coderResponse = await turboComplete(coderPrompt, config);
       const codeOutput = coderResponse;
 
       // 3. QA Agent Review
       this.notifyStatus('QA', 'Reviewing and testing code...');
-      const qaPrompt = `${AgentPrompts.QA}\n\nCoder Output: ${codeOutput}`;
+      const qaPrompt = `${getAgentPrompt('QA')}\n\nCoder Output: ${codeOutput}`;
       const qaResponse = await turboComplete(qaPrompt, config);
       
       this.notifyStatus('PM', 'Workflow completed.');
