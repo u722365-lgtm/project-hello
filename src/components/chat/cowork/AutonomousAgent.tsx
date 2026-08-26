@@ -17,6 +17,7 @@
  import { useToast } from "@/hooks/use-toast";
  import { cn } from "@/lib/utils";
  import { backend } from "@/integrations/local/client";
+ import { turboComplete } from "@/lib/turbo/turboEngine";
  import ReactMarkdown from "react-markdown";
  import remarkGfm from "remark-gfm";
  
@@ -266,74 +267,37 @@
    ],
    "summary": "Brief summary of what was done"
  }
- \`\`\`
- 
- **Supabase Integration:**
+// Supabase Integration:
  Always use Supabase for backend. Include proper error handling, loading states, and TypeScript types.
  
  Be thorough and create complete, working code. Don't use placeholders - implement full functionality.`;
- 
-       // Call AI
-        // Call AI - invoke returns data directly (not a Response object)
-        const { data: rawData, error: streamError } = await backend.functions.invoke('chat', {
-          body: {
-            messages: [
-              { role: "system", content: systemPrompt },
-              ...messages.filter(m => m.role !== "system").map(m => ({
-                role: m.role === "agent" ? "assistant" : m.role,
-                content: m.content
-              })),
-              { role: "user", content: input }
-            ]
+
+        // Format conversation history into user prompt
+        const historyText = messages
+          .filter(m => m.role !== "system" && m.id !== "welcome")
+          .map(m => `${m.role.toUpperCase()}:\n${m.content}`)
+          .join("\n\n");
+          
+        const fullPrompt = historyText 
+          ? `Conversation History:\n${historyText}\n\nUSER:\n${input}`
+          : input;
+
+        let aiContent = "";
+        
+        const response = await turboComplete(systemPrompt, fullPrompt, {
+          taskComplexity: 'high',
+          onDelta: (accumulated) => {
+            aiContent = accumulated;
+            
+            // Try to extract thinking field during stream
+            const thinkMatch = accumulated.match(/"thinking"\s*:\s*"([^"]+)"?/);
+            if (thinkMatch && thinkMatch[1]) {
+              setThinkingText(thinkMatch[1]);
+            }
           }
         });
         
-        if (streamError) {
-          throw new Error(streamError.message || "Failed to get AI response");
-        }
-        
-        // Handle response - rawData might be a string (SSE), object, or Response-like
-        let aiContent = "";
-        
-        // If rawData is a Response object, read it as text first
-        let streamData = rawData;
-        if (rawData && typeof rawData === 'object' && typeof rawData.text === 'function') {
-          try {
-            streamData = await rawData.text();
-          } catch (e) {
-            console.error('[AutonomousAgent] Failed to read response:', e);
-            streamData = "";
-          }
-        }
-        
-        if (typeof streamData === "string" && streamData.length > 0) {
-          // Parse SSE format
-          const lines = streamData.split("\n");
-          for (const line of lines) {
-            if (line.startsWith("data: ")) {
-              const jsonStr = line.slice(6).trim();
-              if (jsonStr === "[DONE]") continue;
-              try {
-                const parsed = JSON.parse(jsonStr);
-                const content = parsed.choices?.[0]?.delta?.content || parsed.choices?.[0]?.message?.content;
-                if (content) aiContent += content;
-              } catch {
-                // Skip invalid JSON
-              }
-            }
-          }
-          // If no SSE content was parsed, use the raw string
-          if (!aiContent && streamData.trim()) {
-            aiContent = streamData;
-          }
-        } else if (streamData?.choices?.[0]?.message?.content) {
-          aiContent = streamData.choices[0].message.content;
-        } else if (streamData?.text) {
-          // Ensure text is a string, not a function
-          aiContent = typeof streamData.text === 'string' ? streamData.text : "";
-        } else if (streamData?.generatedText) {
-          aiContent = streamData.generatedText;
-        }
+        aiContent = response.content;
         
         if (!aiContent) {
           aiContent = "I couldn't process that request. Please try again.";

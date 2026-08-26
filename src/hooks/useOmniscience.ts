@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { backend } from "@/integrations/local/client";
+import { turboComplete } from "@/lib/turbo/turboEngine";
 
 export type OmnisciencePrediction = {
   id: string;
@@ -27,10 +27,7 @@ export function useOmniscience(fileContent: string, isEnabled: boolean) {
 
     const timer = setTimeout(async () => {
       try {
-        const messages = [
-          { 
-            role: "system", 
-            content: `You are an omniscient IDE assistant. Analyze the user's code and predict their next obstacle or need. 
+        const systemMsg = `You are an omniscient IDE assistant. Analyze the user's code and predict their next obstacle or need. 
 Return a strict JSON array of objects (no markdown, just raw JSON). 
 Each object must match this TypeScript interface:
 {
@@ -40,18 +37,18 @@ Each object must match this TypeScript interface:
   codeSnippet?: string;
   confidence: number; // 0.0 to 1.0
 }
-Provide 1 to 3 highly relevant predictions. If the code is trivial, return an empty array [].` 
-          },
-          { role: "user", content: `Code context:\n\n${fileContent}` }
-        ];
+Provide 1 to 3 highly relevant predictions. If the code is trivial, return an empty array [].`;
 
-        const response = await backend.functions.invoke("chat", { body: { messages } });
+        const userMsg = `Code context:\n\n${fileContent}`;
+
+        const response = await turboComplete(systemMsg, userMsg, {
+          signal: abortController.signal,
+          taskComplexity: 'low'
+        });
         
         if (abortController.signal.aborted) return;
 
-        let rawResponse = response.data?.choices?.[0]?.message?.content || 
-                          response.data?.generatedText || 
-                          "[]";
+        let rawResponse = response.content || "[]";
                           
         // Cleanup potential markdown wrapping
         if (rawResponse.startsWith("\`\`\`")) {

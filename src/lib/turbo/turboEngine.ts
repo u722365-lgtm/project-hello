@@ -14,7 +14,9 @@
  * Falls back to the standard edge-function path if no Turbo key is available.
  */
 
-import { resolveTurboKey, TURBO_MODEL_GROQ, GROQ_API_URL, OPENROUTER_API_URL, TURBO_MODEL_OPENROUTER } from './turboProviders';
+import { resolveTurboKey, TURBO_MODEL_GROQ, TURBO_MODEL_CHAT, GROQ_API_URL, OPENROUTER_API_URL, TURBO_MODEL_OPENROUTER } from './turboProviders';
+import { isSovereignAgentsEnabled } from '@/lib/desktop/sovereignAgentMode';
+import { localComplete, isWebGPUSupported, WEBGPU_MODEL } from '@/lib/webgpu/localEngine';
 
 // ---- Public Types ----
 
@@ -29,11 +31,14 @@ export interface TurboEngineOptions {
   signal?: AbortSignal;
   /** Stream callback (optional — for live UI updates) */
   onDelta?: (accumulated: string) => void;
+  /** Task complexity for intelligent model routing. Default: 'high' */
+  taskComplexity?: 'low' | 'high';
 }
 
 export interface TurboEngineResult {
   content: string;
-  source: 'turbo-groq' | 'turbo-openrouter' | 'fallback';
+  source: 'turbo-groq' | 'turbo-openrouter' | 'webgpu-local' | 'fallback';
+  modelUsed?: string;
   ttftMs?: number;
   totalMs?: number;
 }
@@ -82,11 +87,13 @@ async function streamGroq(
   const controller = new AbortController();
   if (opts.signal) opts.signal.addEventListener('abort', () => controller.abort(), { once: true });
 
+  const modelToUse = opts.model || (opts.taskComplexity === 'low' ? TURBO_MODEL_CHAT : TURBO_MODEL_GROQ);
+
   const resp = await fetch(GROQ_API_URL, {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: opts.model || TURBO_MODEL_GROQ,
+      model: modelToUse,
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userContent },
@@ -130,6 +137,7 @@ async function streamGroq(
   return {
     content,
     source: 'turbo-groq',
+    modelUsed: modelToUse,
     ttftMs: ttftRecorded ? performance.now() - startMs : undefined,
     totalMs: performance.now() - startMs,
   };
@@ -189,7 +197,7 @@ async function streamOpenRouter(
     }
   }
 
-  return { content, source: 'turbo-openrouter', totalMs: performance.now() - startMs };
+  return { content, source: 'turbo-openrouter', modelUsed: TURBO_MODEL_OPENROUTER, totalMs: performance.now() - startMs };
 }
 
 // ---- Main Entry Point ----
@@ -205,6 +213,18 @@ export async function turboComplete(
 ): Promise<TurboEngineResult> {
   const startMs = performance.now();
   const apiKey = resolveTurboKey();
+
+  // WebGPU Local Fallback Strategy
+  // If Sovereign Agents is enabled, and we don't have a specific API key (or we do and want to force local),
+  // we try local WebGPU first if supported.
+  if (isSovereignAgentsEnabled() && isWebGPUSupported()) {
+    try {
+      const content = await localComplete(systemPrompt, userContent, opts.onDelta);
+      return { content, source: 'webgpu-local', modelUsed: WEBGPU_MODEL, totalMs: performance.now() - startMs };
+    } catch (localErr) {
+      console.warn('[TurboEngine] WebGPU local execution failed:', localErr);
+    }
+  }
 
   if (!apiKey) {
     return { content: '', source: 'fallback', totalMs: performance.now() - startMs };
