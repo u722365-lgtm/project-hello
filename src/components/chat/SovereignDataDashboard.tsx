@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useZeroKnowledgeSync } from '@/hooks/useZeroKnowledgeSync';
-import { useLocalKnowledgeGraph } from '@/hooks/useLocalKnowledgeGraph';
+import { useKnowledgeGraph } from '@/hooks/useKnowledgeGraph';
 import { useBusinessMemory } from '@/hooks/useBusinessMemory';
 import { Link } from 'react-router-dom';
 
@@ -28,7 +28,7 @@ const SovereignDataDashboard = () => {
     getPendingCount,
   } = useZeroKnowledgeSync();
 
-  const { nodes, edges } = useLocalKnowledgeGraph();
+  const { nodes, edges } = useKnowledgeGraph();
   const { memories } = useBusinessMemory();
 
   const [syncTriggered, setSyncTriggered] = useState(false);

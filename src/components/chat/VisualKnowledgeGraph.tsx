@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useLocalKnowledgeGraph } from "@/hooks/useLocalKnowledgeGraph";
+import { useKnowledgeGraph } from "@/hooks/useKnowledgeGraph";
 import { useMemoryGraph } from "@/hooks/useMemoryGraph";
 import { useKnowledgeSnapshot } from "@/hooks/useKnowledgeSnapshot";
 import { useToast } from "@/hooks/use-toast";
@@ -41,7 +41,7 @@ const VisualKnowledgeGraph = () => {
     clearGraph,
     getRelatedNodes,
     importGraph,
-  } = useLocalKnowledgeGraph();
+  } = useKnowledgeGraph();
 
   const { isReady: memoryReady, stats: memoryStats } = useMemoryGraph();
   const { saveSnapshot, loadLatestSnapshot } = useKnowledgeSnapshot();

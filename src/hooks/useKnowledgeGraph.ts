@@ -1,42 +1,41 @@
-import { useState, useCallback, useEffect } from 'react';
-import { openDB, IDBPDatabase } from 'idb';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { backend } from '@/integrations/local/client';
+import { useAuth } from '@/components/AuthProvider';
 
-interface KnowledgeNode {
+export interface KnowledgeNode {
   id: string;
+  user_id: string;
   label: string;
   type: 'entity' | 'concept' | 'topic' | 'memory';
   content: string;
   frequency: number;
-  lastMentioned: Date;
+  lastMentioned: string; // ISO string
   metadata?: Record<string, unknown>;
 }
 
-interface KnowledgeEdge {
+export interface KnowledgeEdge {
+  id: string;
+  user_id: string;
   source: string;
   target: string;
   relationship: string;
   weight: number;
 }
 
-interface KnowledgeGraphState {
+export interface KnowledgeGraphState {
   nodes: KnowledgeNode[];
   edges: KnowledgeEdge[];
   isLoading: boolean;
   error: string | null;
 }
 
-interface GraphInsight {
+export interface GraphInsight {
   type: 'frequent_topic' | 'connection' | 'trend' | 'recommendation';
   title: string;
   description: string;
   relatedNodes: string[];
 }
 
-const DB_NAME = 'shadowtalk-knowledge-graph';
-const NODES_STORE = 'nodes';
-const EDGES_STORE = 'edges';
-
-// Entity extraction patterns — expanded for Sprint 4
 const ENTITY_PATTERNS = {
   company: /\b(Google|Apple|Microsoft|Amazon|Meta|OpenAI|Anthropic|Tesla|Netflix|Stripe|Vercel|ShadowTalk backend|[A-Z][a-z]+ (?:Inc|Corp|LLC|Ltd|Company|Co|Labs|AI))\b/g,
   product: /\b((?:the )?[A-Z][a-z]+ (?:Platform|App|Software|System|Tool|Service))\b/g,
@@ -47,57 +46,63 @@ const ENTITY_PATTERNS = {
   strategy: /\b(go-to-market|GTM|product-led growth|PLG|freemium|SWOT|OKR|KPI|north star metric|competitive moat|value proposition)\b/gi,
 };
 
-export const useLocalKnowledgeGraph = () => {
+export const useKnowledgeGraph = () => {
+  const { user } = useAuth();
   const [state, setState] = useState<KnowledgeGraphState>({
     nodes: [],
     edges: [],
-    isLoading: false,
+    isLoading: true,
     error: null,
   });
 
-  const getDB = useCallback(async (): Promise<IDBPDatabase> => {
-    return openDB(DB_NAME, 1, {
-      upgrade(db) {
-        if (!db.objectStoreNames.contains(NODES_STORE)) {
-          db.createObjectStore(NODES_STORE, { keyPath: 'id' });
-        }
-        if (!db.objectStoreNames.contains(EDGES_STORE)) {
-          db.createObjectStore(EDGES_STORE, { keyPath: ['source', 'target'] });
-        }
-      },
-    });
-  }, []);
+  const unsubscribeNodesRef = useRef<(() => void) | null>(null);
+  const unsubscribeEdgesRef = useRef<(() => void) | null>(null);
 
-  // Load graph on mount
   useEffect(() => {
-    const loadGraph = async () => {
-      try {
-        setState(prev => ({ ...prev, isLoading: true }));
-        const db = await getDB();
-        
-        const nodes = await db.getAll(NODES_STORE) as KnowledgeNode[];
-        const edges = await db.getAll(EDGES_STORE) as KnowledgeEdge[];
-        
-        setState({
-          nodes,
-          edges,
-          isLoading: false,
-          error: null,
-        });
-      } catch (e) {
-        console.error('[KnowledgeGraph] Failed to load:', e);
-        setState(prev => ({
-          ...prev,
-          isLoading: false,
-          error: e instanceof Error ? e.message : 'Failed to load graph',
-        }));
-      }
+    if (!user) {
+      setState({ nodes: [], edges: [], isLoading: false, error: null });
+      return;
+    }
+
+    setState(prev => ({ ...prev, isLoading: true, error: null }));
+
+    try {
+      const nodesSub = backend.from('knowledge_nodes').onSnapshot(
+        { filter: { field: 'user_id', op: '==', value: user.id } },
+        (snapshot: any) => {
+          const nodes = snapshot.docs.map((doc: any) => ({ ...doc.data, id: doc.id })) as KnowledgeNode[];
+          setState(prev => ({ ...prev, nodes, isLoading: false }));
+        },
+        (error: any) => {
+          console.error('[KnowledgeGraph] Nodes error:', error);
+          setState(prev => ({ ...prev, error: error.message, isLoading: false }));
+        }
+      );
+      unsubscribeNodesRef.current = nodesSub.unsubscribe;
+
+      const edgesSub = backend.from('knowledge_edges').onSnapshot(
+        { filter: { field: 'user_id', op: '==', value: user.id } },
+        (snapshot: any) => {
+          const edges = snapshot.docs.map((doc: any) => ({ ...doc.data, id: doc.id })) as KnowledgeEdge[];
+          setState(prev => ({ ...prev, edges }));
+        },
+        (error: any) => {
+          console.error('[KnowledgeGraph] Edges error:', error);
+        }
+      );
+      unsubscribeEdgesRef.current = edgesSub.unsubscribe;
+
+    } catch (e: any) {
+      console.error('[KnowledgeGraph] Setup error:', e);
+      setState(prev => ({ ...prev, isLoading: false, error: e.message }));
+    }
+
+    return () => {
+      if (unsubscribeNodesRef.current) unsubscribeNodesRef.current();
+      if (unsubscribeEdgesRef.current) unsubscribeEdgesRef.current();
     };
+  }, [user]);
 
-    loadGraph();
-  }, [getDB]);
-
-  // Extract entities from text
   const extractEntities = useCallback((text: string): Array<{ label: string; type: string }> => {
     const entities: Array<{ label: string; type: string }> = [];
     const seen = new Set<string>();
@@ -118,75 +123,72 @@ export const useLocalKnowledgeGraph = () => {
     return entities;
   }, []);
 
-  // Add or update a node
   const addNode = useCallback(async (
     label: string,
     type: KnowledgeNode['type'],
     content: string,
     metadata?: Record<string, unknown>
-  ): Promise<KnowledgeNode> => {
-    const db = await getDB();
+  ): Promise<KnowledgeNode | null> => {
+    if (!user) return null;
+
     const id = `${type}-${label.toLowerCase().replace(/\s+/g, '-')}`;
-    
-    const existing = await db.get(NODES_STORE, id) as KnowledgeNode | undefined;
-    
-    const node: KnowledgeNode = {
+    const existing = state.nodes.find(n => n.id === id);
+
+    const nodeData = {
       id,
+      user_id: user.id,
       label,
       type,
       content: existing?.content ? `${existing.content}\n\n${content}` : content,
       frequency: (existing?.frequency || 0) + 1,
-      lastMentioned: new Date(),
+      lastMentioned: new Date().toISOString(),
       metadata: { ...existing?.metadata, ...metadata },
     };
 
-    await db.put(NODES_STORE, node);
-    
-    setState(prev => ({
-      ...prev,
-      nodes: [...prev.nodes.filter(n => n.id !== id), node],
-    }));
+    if (existing) {
+      await backend.from('knowledge_nodes').update(nodeData as never).eq('id', id).eq('user_id', user.id);
+    } else {
+      await backend.from('knowledge_nodes').insert(nodeData as never);
+    }
 
-    return node;
-  }, [getDB]);
+    return nodeData as KnowledgeNode;
+  }, [user, state.nodes]);
 
-  // Add an edge between nodes
   const addEdge = useCallback(async (
     sourceId: string,
     targetId: string,
     relationship: string
-  ): Promise<KnowledgeEdge> => {
-    const db = await getDB();
-    
-    const existingEdge = await db.get(EDGES_STORE, [sourceId, targetId]) as KnowledgeEdge | undefined;
-    
-    const edge: KnowledgeEdge = {
+  ): Promise<KnowledgeEdge | null> => {
+    if (!user) return null;
+
+    const id = `${sourceId}-${targetId}`;
+    const existingEdge = state.edges.find(e => e.id === id || (e.source === sourceId && e.target === targetId));
+
+    const edgeData = {
+      id,
+      user_id: user.id,
       source: sourceId,
       target: targetId,
       relationship,
       weight: (existingEdge?.weight || 0) + 1,
     };
 
-    await db.put(EDGES_STORE, edge);
-    
-    setState(prev => ({
-      ...prev,
-      edges: [
-        ...prev.edges.filter(e => !(e.source === sourceId && e.target === targetId)),
-        edge,
-      ],
-    }));
+    if (existingEdge) {
+      await backend.from('knowledge_edges').update(edgeData as never).eq('id', existingEdge.id).eq('user_id', user.id);
+    } else {
+      await backend.from('knowledge_edges').insert(edgeData as never);
+    }
 
-    return edge;
-  }, [getDB]);
+    return edgeData as KnowledgeEdge;
+  }, [user, state.edges]);
 
-  // Process a conversation and extract knowledge
   const processConversation = useCallback(async (
     messages: Array<{ role: string; content: string }>
   ): Promise<{ nodesAdded: number; edgesAdded: number }> => {
+    if (!user) return { nodesAdded: 0, edgesAdded: 0 };
+    
     let nodesAdded = 0;
     let edgesAdded = 0;
-
     const allEntities: Array<{ label: string; type: string; nodeId?: string }> = [];
 
     for (const message of messages) {
@@ -196,35 +198,29 @@ export const useLocalKnowledgeGraph = () => {
         const node = await addNode(
           entity.label,
           entity.type as KnowledgeNode['type'],
-          message.content.slice(0, 500),
+          message.content.slice(0, 500)
         );
-        
-        allEntities.push({ ...entity, nodeId: node.id });
-        nodesAdded++;
+        if (node) {
+          allEntities.push({ ...entity, nodeId: node.id });
+          nodesAdded++;
+        }
       }
     }
 
-    // Create edges between entities mentioned together
     for (let i = 0; i < allEntities.length; i++) {
       for (let j = i + 1; j < allEntities.length; j++) {
-        if (allEntities[i].nodeId && allEntities[j].nodeId) {
-          await addEdge(
-            allEntities[i].nodeId!,
-            allEntities[j].nodeId!,
-            'mentioned_with'
-          );
+        if (allEntities[i].nodeId && allEntities[j].nodeId && allEntities[i].nodeId !== allEntities[j].nodeId) {
+          await addEdge(allEntities[i].nodeId!, allEntities[j].nodeId!, 'mentioned_with');
           edgesAdded++;
         }
       }
     }
 
     return { nodesAdded, edgesAdded };
-  }, [extractEntities, addNode, addEdge]);
+  }, [extractEntities, addNode, addEdge, user]);
 
-  // Search the knowledge graph
   const searchGraph = useCallback((query: string): KnowledgeNode[] => {
     const queryLower = query.toLowerCase();
-    
     return state.nodes
       .filter(node => 
         node.label.toLowerCase().includes(queryLower) ||
@@ -234,7 +230,6 @@ export const useLocalKnowledgeGraph = () => {
       .slice(0, 10);
   }, [state.nodes]);
 
-  // Get related nodes
   const getRelatedNodes = useCallback((nodeId: string): KnowledgeNode[] => {
     const relatedIds = new Set<string>();
     
@@ -248,14 +243,9 @@ export const useLocalKnowledgeGraph = () => {
       .sort((a, b) => b.frequency - a.frequency);
   }, [state.nodes, state.edges]);
 
-  // Generate insights from the graph
   const generateInsights = useCallback((): GraphInsight[] => {
     const insights: GraphInsight[] = [];
-
-    // Most frequent topics
-    const frequentNodes = [...state.nodes]
-      .sort((a, b) => b.frequency - a.frequency)
-      .slice(0, 5);
+    const frequentNodes = [...state.nodes].sort((a, b) => b.frequency - a.frequency).slice(0, 5);
 
     if (frequentNodes.length > 0) {
       insights.push({
@@ -266,15 +256,10 @@ export const useLocalKnowledgeGraph = () => {
       });
     }
 
-    // Strong connections
-    const strongEdges = [...state.edges]
-      .sort((a, b) => b.weight - a.weight)
-      .slice(0, 3);
-
+    const strongEdges = [...state.edges].sort((a, b) => b.weight - a.weight).slice(0, 3);
     strongEdges.forEach(edge => {
       const sourceNode = state.nodes.find(n => n.id === edge.source);
       const targetNode = state.nodes.find(n => n.id === edge.target);
-      
       if (sourceNode && targetNode) {
         insights.push({
           type: 'connection',
@@ -285,11 +270,7 @@ export const useLocalKnowledgeGraph = () => {
       }
     });
 
-    // Recent topics
-    const recentNodes = [...state.nodes]
-      .sort((a, b) => new Date(b.lastMentioned).getTime() - new Date(a.lastMentioned).getTime())
-      .slice(0, 3);
-
+    const recentNodes = [...state.nodes].sort((a, b) => new Date(b.lastMentioned).getTime() - new Date(a.lastMentioned).getTime()).slice(0, 3);
     if (recentNodes.length > 0 && recentNodes[0].lastMentioned) {
       insights.push({
         type: 'trend',
@@ -302,7 +283,6 @@ export const useLocalKnowledgeGraph = () => {
     return insights;
   }, [state.nodes, state.edges]);
 
-  // Get graph statistics
   const getStatistics = useCallback(() => ({
     totalNodes: state.nodes.length,
     totalEdges: state.edges.length,
@@ -315,69 +295,40 @@ export const useLocalKnowledgeGraph = () => {
       : 0,
   }), [state.nodes, state.edges]);
 
-  // Clear the graph
   const clearGraph = useCallback(async () => {
-    const db = await getDB();
-    await db.clear(NODES_STORE);
-    await db.clear(EDGES_STORE);
-    setState({
-      nodes: [],
-      edges: [],
-      isLoading: false,
-      error: null,
-    });
-  }, [getDB]);
-
-  const importGraph = useCallback(async (
-    importNodes: KnowledgeNode[],
-    importEdges: KnowledgeEdge[]
-  ) => {
-    const db = await getDB();
-    const tx = db.transaction([NODES_STORE, EDGES_STORE], "readwrite");
-
-    for (const node of importNodes) {
-      await tx.objectStore(NODES_STORE).put({
-        ...node,
-        lastMentioned: node.lastMentioned ? new Date(node.lastMentioned) : new Date(),
-      });
+    if (!user) return;
+    
+    // Simplistic batch delete logic: just iterate or assume the backend adapter can handle multiple
+    for (const node of state.nodes) {
+      await backend.from('knowledge_nodes').delete().eq('id', node.id).eq('user_id', user.id);
     }
-
-    for (const edge of importEdges) {
-      await tx.objectStore(EDGES_STORE).put(edge);
+    for (const edge of state.edges) {
+      await backend.from('knowledge_edges').delete().eq('id', edge.id).eq('user_id', user.id);
     }
-
-    await tx.done;
-
-    setState(prev => ({
-      ...prev,
-      nodes: importNodes,
-      edges: importEdges,
-    }));
-  }, [getDB]);
+  }, [user, state.nodes, state.edges]);
 
   const deleteNode = useCallback(async (nodeId: string) => {
-    const db = await getDB();
-    await db.delete(NODES_STORE, nodeId);
+    if (!user) return;
     
-    // Delete related edges
-    const tx = db.transaction(EDGES_STORE, 'readwrite');
-    const store = tx.objectStore(EDGES_STORE);
-    const allEdges = await store.getAll() as KnowledgeEdge[];
+    await backend.from('knowledge_nodes').delete().eq('id', nodeId).eq('user_id', user.id);
     
-    for (const edge of allEdges) {
+    for (const edge of state.edges) {
       if (edge.source === nodeId || edge.target === nodeId) {
-        await store.delete([edge.source, edge.target]);
+        await backend.from('knowledge_edges').delete().eq('id', edge.id).eq('user_id', user.id);
       }
     }
-    
-    await tx.done;
+  }, [user, state.edges]);
 
-    setState(prev => ({
-      ...prev,
-      nodes: prev.nodes.filter(n => n.id !== nodeId),
-      edges: prev.edges.filter(e => e.source !== nodeId && e.target !== nodeId),
-    }));
-  }, [getDB]);
+  // Cloud synced import (saves to DB immediately)
+  const importGraph = useCallback(async (importNodes: KnowledgeNode[], importEdges: KnowledgeEdge[]) => {
+    if (!user) return;
+    for (const node of importNodes) {
+      await backend.from('knowledge_nodes').insert({ ...node, user_id: user.id } as never);
+    }
+    for (const edge of importEdges) {
+      await backend.from('knowledge_edges').insert({ ...edge, user_id: user.id } as never);
+    }
+  }, [user]);
 
   return {
     ...state,

@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import { backend } from '@/integrations/local/client';
-import { privateRealtimeChannel, userScopedRealtimeTopic } from '@/lib/realtimeChannel';
 import { useAuth } from '@/components/AuthProvider';
 import { useToast } from '@/hooks/use-toast';
 
@@ -75,24 +74,34 @@ export function useBusinessMemory() {
 
     // Subscribe to realtime changes
     if (user) {
-      const channel = privateRealtimeChannel(userScopedRealtimeTopic('business-memories', user.id))
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'business_memories',
-            filter: `user_id=eq.${user.id}`,
-          },
-          () => {
-            fetchMemories();
-          }
-        )
-        .subscribe();
+      try {
+        const sub = backend
+          .from('business_memories')
+          .onSnapshot(
+            { filter: { field: 'user_id', op: '==', value: user.id } },
+            (snapshot: any) => {
+              // Firebase onSnapshot provides the entire current list of docs matching the query
+              if (snapshot.docs) {
+                // Since our queries also sort, let's just do an in-memory sort or call fetchMemories.
+                // It's safer to just let the callback trigger a fetch if the data sorting is complex, 
+                // but we can also just map the snapshot docs. For simplicity and consistency with 
+                // the existing code, we will just call fetchMemories() when the snapshot updates.
+                fetchMemories();
+              }
+            },
+            (error: any) => {
+              console.error('Error listening to business memories:', error);
+            }
+          );
 
-      return () => {
-        backend.removeChannel(channel);
-      };
+        return () => {
+          if (sub && typeof sub.unsubscribe === 'function') {
+            sub.unsubscribe();
+          }
+        };
+      } catch (err) {
+        console.error('Failed to setup snapshot listener', err);
+      }
     }
   }, [user, fetchMemories]);
 

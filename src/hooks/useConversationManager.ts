@@ -274,93 +274,139 @@ export function useConversationManager({
   // Loading
   // -----------------------------------------------------------------------
 
+  const unsubscribeConversationsRef = useRef<(() => void) | null>(null);
+
   /**
    * Fetch every conversation for the authenticated user from the backend,
    * decrypt titles when E2EE is active, and auto-select the first active
-   * conversation if none is selected yet.
+   * conversation if none is selected yet. Uses onSnapshot for real-time updates.
    */
   const loadConversations = useCallback(async (): Promise<void> => {
     if (!user) return;
+    
+    // Clear previous listener if any
+    if (unsubscribeConversationsRef.current) {
+      unsubscribeConversationsRef.current();
+      unsubscribeConversationsRef.current = null;
+    }
 
-    const { data, error } = await backend
-      .from("conversations")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("updated_at", { ascending: false });
+    try {
+      const sub = backend.from("conversations").onSnapshot(
+        { filter: { field: "user_id", op: "==", value: user.id } },
+        async (snapshot) => {
+          const rows = await Promise.all(
+            snapshot.docs.map(async (doc) => {
+              const c = doc.data as Record<string, unknown>;
+              return {
+                ...c,
+                id: doc.id,
+                title: await chatPrivate.resolveDisplayText(
+                  (c.title as string) || "Untitled",
+                ),
+                archived_at: (c as Conversation).archived_at ?? null,
+              };
+            }),
+          );
+          
+          // Sort by updated_at desc
+          rows.sort((a, b) => {
+            const timeA = new Date((a.updated_at as string) || (a.created_at as string) || 0).getTime();
+            const timeB = new Date((b.updated_at as string) || (b.created_at as string) || 0).getTime();
+            return timeB - timeA;
+          });
 
-    if (data && !error) {
-      const rows = await Promise.all(
-        data.map(async (c: Record<string, unknown>) => ({
-          ...c,
-          title: await chatPrivate.resolveDisplayText(
-            (c.title as string) || "Untitled",
-          ),
-          archived_at: (c as Conversation).archived_at ?? null,
-        })),
+          setConversations(rows as Conversation[]);
+
+          const activeConvs = rows.filter(
+            (c) =>
+              !isConversationArchived(
+                c.id,
+                c.archived_at,
+                guestArchivedIdsRef.current,
+              ),
+          );
+
+          if (activeConvs.length > 0 && !currentConversationIdRef.current) {
+            // eslint-disable-next-line @typescript-eslint/no-use-before-define
+            void loadConversation(activeConvs[0].id);
+          } else if (activeConvs.length === 0) {
+            setMessages([
+              {
+                id: "welcome",
+                type: "ai",
+                content: getWelcomeMessage(),
+                timestamp: new Date(),
+              },
+            ]);
+          }
+        },
+        (err) => {
+          console.error("Conversations snapshot error:", err);
+        }
       );
-      setConversations(rows);
-
-      const activeConvs = rows.filter(
-        (c: Conversation) =>
-          !isConversationArchived(
-            c.id,
-            c.archived_at,
-            guestArchivedIdsRef.current,
-          ),
-      );
-
-      if (activeConvs.length > 0 && !currentConversationIdRef.current) {
-        // We'll invoke `loadConversation` — defined below.
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        void loadConversation(activeConvs[0].id);
-      } else if (activeConvs.length === 0) {
-        setMessages([
-          {
-            id: "welcome",
-            type: "ai",
-            content: getWelcomeMessage(),
-            timestamp: new Date(),
-          },
-        ]);
-      }
+      unsubscribeConversationsRef.current = sub.unsubscribe;
+    } catch (err) {
+      console.error("Conversations listen setup error:", err);
     }
   }, [user, backend, chatPrivate, setMessages, getWelcomeMessage]);
+
+  const unsubscribeMessagesRef = useRef<(() => void) | null>(null);
 
   /**
    * Load a single conversation by its ID: switch to it, fetch its messages
    * from the backend, decrypt them if needed, and populate the message list.
+   * Uses onSnapshot for real-time updates.
    */
   const loadConversation = useCallback(
     async (conversationId: string): Promise<void> => {
       setCurrentConversationId(conversationId);
+      
+      if (unsubscribeMessagesRef.current) {
+        unsubscribeMessagesRef.current();
+        unsubscribeMessagesRef.current = null;
+      }
 
-      const { data, error } = await backend
-        .from("messages")
-        .select("*")
-        .eq("conversation_id", conversationId)
-        .order("created_at", { ascending: true });
-
-      if (data && !error) {
-        const loadedMessages: Message[] = await Promise.all(
-          data.map(async (m: Record<string, unknown>) => ({
-            id: m.id as string,
-            type: (m.role === "user" ? "user" : "ai") as Message["type"],
-            content: await chatPrivate.resolveDisplayText(m.content as string),
-            timestamp: new Date(m.created_at as string),
-          })),
+      try {
+        const sub = backend.from("messages").onSnapshot(
+          { filter: { field: "conversation_id", op: "==", value: conversationId } },
+          async (snapshot) => {
+            const msgs = snapshot.docs.map(d => ({ ...d.data, id: d.id })) as Record<string, unknown>[];
+            // Sort by created_at asc
+            msgs.sort((a, b) => {
+              const timeA = new Date((a.created_at as string) || 0).getTime();
+              const timeB = new Date((b.created_at as string) || 0).getTime();
+              return timeA - timeB;
+            });
+            
+            const loadedMessages: Message[] = await Promise.all(
+              msgs.map(async (m) => ({
+                id: m.id as string,
+                type: (m.role === "user" ? "user" : "ai") as Message["type"],
+                content: await chatPrivate.resolveDisplayText(m.content as string),
+                timestamp: new Date(m.created_at as string),
+              })),
+            );
+            
+            setMessages(
+              loadedMessages.length === 0
+                ? [
+                    {
+                      id: "welcome",
+                      type: "ai",
+                      content: getWelcomeMessage(),
+                      timestamp: new Date(),
+                    },
+                  ]
+                : loadedMessages,
+            );
+          },
+          (err) => {
+            console.error("Messages snapshot error:", err);
+          }
         );
-        setMessages(
-          loadedMessages.length === 0
-            ? [
-                {
-                  id: "welcome",
-                  type: "ai",
-                  content: getWelcomeMessage(),
-                  timestamp: new Date(),
-                },
-              ]
-            : loadedMessages,
-        );
+        unsubscribeMessagesRef.current = sub.unsubscribe;
+      } catch (err) {
+        console.error("Messages listen setup error:", err);
       }
     },
     [backend, chatPrivate, setMessages, getWelcomeMessage],

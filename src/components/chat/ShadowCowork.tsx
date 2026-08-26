@@ -10,7 +10,7 @@ import {
   AlertTriangle, Lightbulb, Code, Shield, Smartphone, Monitor, Tablet, Wand2,
   Search, Split, Maximize2, Minimize2, Moon, Sun, Zap,
   PanelLeftClose, PanelLeft, Send, Braces, Hash, FileText,
-  FolderTree, Undo2, Redo2, Command, ArrowRight
+  FolderTree, Undo2, Redo2, Command, ArrowRight, Share2, Users
 } from "lucide-react";
 import { Github } from "lucide-react";
 import { backend } from "@/integrations/local/client";
@@ -27,21 +27,12 @@ import Editor from "@monaco-editor/react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ProjectImportDialog } from "./cowork/ProjectImportDialog";
 import { AutonomousAgent } from "./cowork/AutonomousAgent";
+import { useWorkspaces, Project, FileNode, GitCommit as GitCommitType } from "@/hooks/useWorkspaces";
 
 interface ShadowCoworkProps {
   isOpen: boolean;
   onClose: () => void;
   onInsertToChat?: (content: string) => void;
-}
-
-interface FileNode {
-  name: string;
-  type: "file" | "folder";
-  path: string;
-  content?: string;
-  children?: FileNode[];
-  expanded?: boolean;
-  language?: string;
 }
 
 interface TerminalLine {
@@ -74,25 +65,6 @@ interface CodeReview {
   suggestions: CodeReviewSuggestion[];
   reviewedAt: Date;
   isLoading?: boolean;
-}
-
-interface GitCommit {
-  id: string;
-  message: string;
-  timestamp: Date;
-  files: string[];
-  snapshot: FileNode[];
-}
-
-interface Project {
-  id: string;
-  name: string;
-  description: string;
-  createdAt: Date;
-  files: FileNode[];
-  commits: GitCommit[];
-  currentBranch: string;
-  branches: string[];
 }
 
 interface SearchResult {
@@ -228,9 +200,32 @@ export const ShadowCowork = ({ isOpen, onClose, onInsertToChat }: ShadowCoworkPr
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  // Projects state
-  const [projects, setProjects] = useState<Project[]>([createDefaultProject()]);
-  const [activeProjectId, setActiveProjectId] = useState("default");
+  // Workspace ID can be loaded from localStorage, or URL (for now localStorage)
+  const [activeWorkspaceId, setActiveWorkspaceId] = useState<string | undefined>(
+    () => localStorage.getItem("shadowtalk_active_workspace") || undefined
+  );
+  
+  const { workspace, isLoading: workspaceLoading, updateWorkspace, createWorkspace, joinWorkspace } = useWorkspaces(activeWorkspaceId);
+
+  // Initialize workspace if not present
+  useEffect(() => {
+    if (!workspaceLoading && !workspace && !activeWorkspaceId) {
+      // Create a default one
+      createWorkspace("My Workspace", [createDefaultProject()]).then(id => {
+        if (id) {
+          setActiveWorkspaceId(id);
+          localStorage.setItem("shadowtalk_active_workspace", id);
+        }
+      });
+    }
+  }, [workspace, workspaceLoading, activeWorkspaceId, createWorkspace]);
+  
+  // Local fallbacks if workspace is loading or offline
+  const defaultLocalProjects = [createDefaultProject()];
+  
+  // Projects state derived from workspace
+  const projects = workspace?.projects || defaultLocalProjects;
+  const activeProjectId = workspace?.active_project_id || projects[0]?.id;
   const [newProjectName, setNewProjectName] = useState("");
   const [commitMessage, setCommitMessage] = useState("");
   const [showNewProjectDialog, setShowNewProjectDialog] = useState(false);
@@ -318,13 +313,16 @@ export const ShadowCowork = ({ isOpen, onClose, onInsertToChat }: ShadowCoworkPr
       branches: ["main"]
     };
     
-    setProjects(prev => [...prev, newProject]);
-    setActiveProjectId(newProject.id);
+    updateWorkspace({
+      projects: [...projects, newProject],
+      active_project_id: newProject.id
+    });
+    
     toast({ 
       title: "✓ Project imported", 
       description: `${projectName} is now ready` 
     });
-  }, [toast]);
+  }, [projects, updateWorkspace, toast]);
 
   // Auto-scroll terminal
   useEffect(() => {
@@ -335,7 +333,7 @@ export const ShadowCowork = ({ isOpen, onClose, onInsertToChat }: ShadowCoworkPr
 
   // Helper to update files in active project
   const setFiles = useCallback((newFiles: FileNode[] | ((prev: FileNode[]) => FileNode[])) => {
-    setProjects(prev => prev.map(p => {
+    const updatedProjects = projects.map(p => {
       if (p.id === activeProjectId) {
         return { 
           ...p, 
@@ -343,8 +341,9 @@ export const ShadowCowork = ({ isOpen, onClose, onInsertToChat }: ShadowCoworkPr
         };
       }
       return p;
-    }));
-  }, [activeProjectId]);
+    });
+    updateWorkspace({ projects: updatedProjects });
+  }, [projects, activeProjectId, updateWorkspace]);
 
   // Toggle folder expansion
   const toggleFolder = useCallback((path: string) => {
@@ -912,7 +911,7 @@ export const ShadowCowork = ({ isOpen, onClose, onInsertToChat }: ShadowCoworkPr
     };
     
     const changedFiles = getAllFileNames(files);
-    const newCommit: GitCommit = {
+    const newCommit: GitCommitType = {
       id: crypto.randomUUID(),
       message: commitMessage,
       timestamp: new Date(),
@@ -920,12 +919,14 @@ export const ShadowCowork = ({ isOpen, onClose, onInsertToChat }: ShadowCoworkPr
       snapshot: JSON.parse(JSON.stringify(files))
     };
     
-    setProjects(prev => prev.map(p => {
+    const updatedProjects = projects.map(p => {
       if (p.id === activeProjectId) {
         return { ...p, commits: [...p.commits, newCommit] };
       }
       return p;
-    }));
+    });
+    
+    updateWorkspace({ projects: updatedProjects });
     
     setCommitMessage("");
     toast({ title: "✓ Committed", description: commitMessage });
@@ -933,7 +934,7 @@ export const ShadowCowork = ({ isOpen, onClose, onInsertToChat }: ShadowCoworkPr
     if (onInsertToChat) {
       onInsertToChat(`📝 **Git Commit**\n\nMessage: "${commitMessage}"\nFiles changed: ${changedFiles.join(", ")}\nBranch: ${activeProject?.currentBranch || "main"}`);
     }
-  }, [commitMessage, files, activeProjectId, activeProject, toast, onInsertToChat]);
+  }, [commitMessage, files, activeProjectId, activeProject, toast, onInsertToChat, projects, updateWorkspace]);
 
   // Render file tree recursively
   const renderFileTree = useCallback((nodes: FileNode[], depth = 0) => {
@@ -1259,9 +1260,10 @@ export const ShadowCowork = ({ isOpen, onClose, onInsertToChat }: ShadowCoworkPr
                                   <button
                                     key={branch}
                                     onClick={() => {
-                                      setProjects(prev => prev.map(p => 
+                                      const updatedProjects = projects.map(p => 
                                         p.id === activeProjectId ? { ...p, currentBranch: branch } : p
-                                      ));
+                                      );
+                                      updateWorkspace({ projects: updatedProjects });
                                       toast({ title: `Switched to ${branch}` });
                                     }}
                                     className={cn(
