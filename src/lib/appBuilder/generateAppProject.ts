@@ -42,7 +42,7 @@ User request: ${prompt}
 
 Generate a complete ${platform === "mobile" ? "mobile-first web app (PWA-style)" : "multi-page web application"} matching this request.`;
 
-  const token = accessToken || import.meta.env.VITE_API_KEY;
+  const token = accessToken;
 
   try {
     const resp = await turboComplete(

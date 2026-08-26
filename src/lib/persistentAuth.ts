@@ -118,4 +118,6 @@ export const PRESERVE_ON_LOCAL_CLEAR = [
   RETURN_TO_KEY,
   LAST_WORKSPACE_KEY,
   LOCAL_AUTH_KEY,
+  "shadowtalk_session_token",
+  "shadowtalk_offline_auth",
 ] as const;

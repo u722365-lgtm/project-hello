@@ -84,7 +84,7 @@ async function invokeKeys<T>(action: string, body?: Record<string, unknown>): Pr
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
-      apikey: import.meta.env.VITE_API_KEY,
+      apikey: "",
     },
     body: action === "list" ? undefined : JSON.stringify(body ?? {}),
   });

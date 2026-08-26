@@ -80,7 +80,7 @@ if (typeof process !== 'undefined') {
   (globalThis as any).import = {
     meta: {
       env: {
-        VITE_API_KEY: 'test-key',
+        
       },
     },
   };

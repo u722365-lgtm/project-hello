@@ -1,7 +1,6 @@
 import { backend } from "@/integrations/local/client";
+import { getFirebaseFunctionUrl, getChatFetchHeaders } from "@/lib/cloudEnv";
 import type { AuthorizationContext, ShadowSpectreHead, ShadowSpectreMessage } from "./types";
-
-export const SHADOWSPECTRE_URL = '';
 
 export type StreamShadowSpectreOptions = {
   messages: ShadowSpectreMessage[];
@@ -17,18 +16,23 @@ export async function streamShadowSpectre(
   const { messages, head, authorization, onToken, signal } = options;
 
   const { data: { session } } = await backend.auth.getSession();
-  const token = session?.access_token ?? import.meta.env.VITE_API_KEY;
+  const token = session?.access_token;
+  
+  if (!token) {
+    throw new Error("Unauthorized. Sign in to use ShadowSpectre.");
+  }
 
-  const resp = await fetch(SHADOWSPECTRE_URL, {
+  const url = getFirebaseFunctionUrl("chat");
+  const headers = getChatFetchHeaders(token);
+
+  const resp = await fetch(url, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      apikey: import.meta.env.VITE_API_KEY,
-      Authorization: `Bearer ${token}`,
-    },
+    headers,
     body: JSON.stringify({
       messages: messages.filter((m) => m.role !== "system"),
-      head: head ?? "general",
+      model: "google/gemini-2.0-flash", // Default model for shadowspectre
+      personality: head ?? "general",
+      stream: true,
       authorization: authorization ?? undefined,
     }),
     signal,

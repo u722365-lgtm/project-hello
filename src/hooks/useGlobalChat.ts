@@ -35,7 +35,7 @@ export function useGlobalChat() {
       setIsLoading(true);
       try {
         const { data } = await backend.auth.getSession();
-        const token = data.session?.access_token || import.meta.env.VITE_API_KEY;
+        const token = data.session?.access_token;
 
         const lastUser = [...messages].reverse().find((m) => m.role === "user");
         const prompt = [opts.systemPrompt, lastUser?.content].filter(Boolean).join("\n\n");

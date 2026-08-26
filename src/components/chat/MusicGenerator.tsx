@@ -51,7 +51,7 @@ const SFX_PRESETS = [
 ];
 
 const API_URL = '';
-const API_KEY = import.meta.env.VITE_API_KEY;
+const API_KEY = "";
 
 export function MusicGenerator({ isOpen, onClose, initialPrompt, autoGenerate, onInsertToChat }: MusicGeneratorProps) {
   const { toast } = useToast();

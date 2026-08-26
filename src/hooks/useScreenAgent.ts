@@ -131,7 +131,7 @@ export function useScreenAgent() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_API_KEY}`,
+          'Authorization': `Bearer `,
         },
         body: JSON.stringify({ screenshot, action, userPrompt }),
       });

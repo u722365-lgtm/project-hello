@@ -69,7 +69,7 @@ export function isIdentityOptionalUser(user: User | null | undefined, isAnonymou
 }
 
 export function shouldUseAnonymousMissionStore(): boolean {
-  return true;
+  return isAnonymousAutonomousEnabled();
 }
 
 export function getLocalMissionQuotaInfo(): {

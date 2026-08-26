@@ -1,0 +1,1 @@
+export const selfHealedFetch = async (url: string, options?: RequestInit) => fetch(url, options);

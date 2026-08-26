@@ -1,5 +1,6 @@
  import { useState, useCallback, useRef, useEffect } from 'react';
  import { useToast } from '@/hooks/use-toast';
+ import { backend } from '@/integrations/local/client';
  
  export interface VisionAnalysis {
    face_detected: boolean;
@@ -239,22 +240,26 @@
    const analyzeFrame = useCallback(async (imageData: string): Promise<VisionAnalysis | null> => {
      setState(prev => ({ ...prev, isAnalyzing: true }));
      
-     try {
-       const response = await fetch(
-         '',
-         {
-           method: 'POST',
-           headers: {
-             'Content-Type': 'application/json',
-             'apikey': import.meta.env.VITE_API_KEY,
-             'Authorization': `Bearer ${import.meta.env.VITE_API_KEY}`
-           },
-           body: JSON.stringify({ 
-             imageData,
-             previousAnalysis: state.currentAnalysis 
-           })
-         }
-       );
+      try {
+        const { data: { session } } = await backend.auth.getSession();
+        const token = session?.access_token;
+        if (!token) throw new Error("Unauthorized to use Vision Agent");
+
+        const { getFirebaseFunctionUrl, getChatFetchHeaders } = await import("@/lib/cloudEnv");
+        
+        const response = await fetch(
+          getFirebaseFunctionUrl('chat'),
+          {
+            method: 'POST',
+            headers: getChatFetchHeaders(token),
+            body: JSON.stringify({ 
+              model: "google/gemini-2.5-pro",
+              messages: [{ role: "user", content: `Analyze this frame. Previous analysis: ${JSON.stringify(state.currentAnalysis)}. Image: ${imageData.slice(0, 50)}...` }],
+              imageData, // If the backend supports it
+              stream: false
+            })
+          }
+        );
        
        if (!response.ok) {
          throw new Error('Analysis failed');

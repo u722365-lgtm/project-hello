@@ -202,10 +202,7 @@
            }
          }));
          
-         // Rate limit delay
-         if (i + batchSize < files.length) {
-           await new Promise(resolve => setTimeout(resolve, 100));
-         }
+         // No artificial delay needed
        }
        
        onImport(fileNodes, parsed.repo, 'github');

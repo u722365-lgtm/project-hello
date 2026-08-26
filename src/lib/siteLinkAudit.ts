@@ -22,6 +22,9 @@ export const LEGACY_REDIRECT_PATHS = [
   "/presentations",
   "/knowledge",
   "/enterprise-license",
+  "/enterprise",
+  "/compliance",
+  "/self-healing",
 ] as const;
 
 export function extractAppRoutePaths(appSource: string): string[] {

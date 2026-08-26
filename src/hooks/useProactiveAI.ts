@@ -113,7 +113,7 @@ async function generateAIMessage(context: {
   try {
     const { backend } = await import("@/integrations/local/client");
     const { data: { session } } = await backend.auth.getSession();
-    const anonKey = import.meta.env.VITE_API_KEY ?? "";
+    const anonKey = "";
     const token = session?.access_token ?? anonKey;
 
     lastApiCallTimestamp = now;

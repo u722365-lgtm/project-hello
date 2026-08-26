@@ -20,7 +20,7 @@ export async function fetchElevenLabsSpeech(
   options: ElevenLabsTtsOptions
 ): Promise<ElevenLabsTtsResult> {
   const apiBaseUrl = '';
-  const anonKey = import.meta.env.VITE_API_KEY;
+  const anonKey = "";
 
   if (!apiBaseUrl || !anonKey) {
     return { ok: false, error: "ShadowTalk backend is not configured", code: "CONFIG_ERROR" };

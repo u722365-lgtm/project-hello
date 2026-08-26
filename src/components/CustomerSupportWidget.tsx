@@ -109,7 +109,7 @@ const CustomerSupportWidget = () => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            apikey: import.meta.env.VITE_API_KEY,
+            apikey: "",
             ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
           },
             body: JSON.stringify({

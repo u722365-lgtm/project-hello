@@ -475,17 +475,8 @@ const AdvancedSecurityAuditPanel: React.FC<AdvancedSecurityAuditPanelProps> = ({
     };
     return mappings[category] || [{ framework: 'OWASP', requirement: 'A05:2021 - Security Misconfiguration', status: 'fail' }];
   };
-  const parseDependencies = (files: ProjectFile[]): DependencyVuln[] => {
+  const parseDependencies = async (files: ProjectFile[]): Promise<DependencyVuln[]> => {
     const vulnDeps: DependencyVuln[] = [];
-    
-    // Known vulnerable packages (simulated - in real app would use npm audit API)
-    const knownVulns: Record<string, { severity: 'critical' | 'high' | 'medium' | 'low', cveId: string, description: string, fixedIn: string }> = {
-      'lodash': { severity: 'high', cveId: 'CVE-2021-23337', description: 'Prototype Pollution in lodash', fixedIn: '4.17.21' },
-      'axios': { severity: 'medium', cveId: 'CVE-2021-3749', description: 'Inefficient Regular Expression in axios', fixedIn: '0.21.2' },
-      'moment': { severity: 'medium', cveId: 'CVE-2022-24785', description: 'Path Traversal in moment', fixedIn: '2.29.4' },
-      'minimist': { severity: 'critical', cveId: 'CVE-2021-44906', description: 'Prototype Pollution in minimist', fixedIn: '1.2.6' },
-      'node-fetch': { severity: 'high', cveId: 'CVE-2022-0235', description: 'Exposure of Sensitive Information in node-fetch', fixedIn: '2.6.7' },
-    };
     
     const packageJson = files.find(f => f.name === 'package.json');
     if (packageJson) {
@@ -493,21 +484,39 @@ const AdvancedSecurityAuditPanel: React.FC<AdvancedSecurityAuditPanelProps> = ({
         const pkg = JSON.parse(packageJson.content);
         const allDeps = { ...pkg.dependencies, ...pkg.devDependencies };
         
-        Object.entries(allDeps).forEach(([name, version]) => {
-          if (knownVulns[name]) {
-            const vuln = knownVulns[name];
-            vulnDeps.push({
-              package: name,
-              version: version as string,
-              severity: vuln.severity,
-              cveId: vuln.cveId,
-              description: vuln.description,
-              fixedIn: vuln.fixedIn
-            });
+        // Use real AI backend to analyze dependencies
+        const messages = [
+          {
+            role: "system",
+            content: "You are a dependency vulnerability scanner. Analyze the following package.json dependencies and return a JSON array of known vulnerabilities in this format: [{ severity: 'critical'|'high'|'medium'|'low', cveId: string, description: string, fixedIn: string, package: string }]. If none, return []."
+          },
+          {
+            role: "user",
+            content: JSON.stringify(allDeps)
           }
-        });
+        ];
+        
+        const response = await backend.functions.invoke("chat", { body: { messages } });
+        let rawContent = response.data?.choices?.[0]?.message?.content || response.data?.generatedText || "[]";
+        if (rawContent.startsWith("```")) {
+           rawContent = rawContent.replace(/```(json)?\n/, "").replace(/```$/, "");
+        }
+        
+        const aiVulns = JSON.parse(rawContent);
+        if (Array.isArray(aiVulns)) {
+           aiVulns.forEach(vuln => {
+              vulnDeps.push({
+                package: vuln.package,
+                version: allDeps[vuln.package] || "unknown",
+                severity: vuln.severity || 'medium',
+                cveId: vuln.cveId || 'Unknown',
+                description: vuln.description || 'Vulnerability detected by AI',
+                fixedIn: vuln.fixedIn || 'Latest'
+              });
+           });
+        }
       } catch (e) {
-        console.error('Failed to parse package.json:', e);
+        console.error('Failed to parse dependencies via AI:', e);
       }
     }
     
@@ -698,32 +707,6 @@ const AdvancedSecurityAuditPanel: React.FC<AdvancedSecurityAuditPanelProps> = ({
     });
 
     try {
-      const phases = scanMode === 'quick' 
-        ? [
-            { name: 'Quick scan in progress', duration: 800 },
-            { name: 'Generating report', duration: 400 },
-          ]
-        : scanMode === 'full'
-        ? [
-            { name: 'Parsing source files', duration: 500 },
-            { name: 'Building dependency graph', duration: 600 },
-            { name: 'Scanning for secrets', duration: 700 },
-            { name: 'Checking dependencies', duration: 800 },
-            { name: 'Analyzing data flows', duration: 900 },
-            { name: 'Checking security patterns', duration: 800 },
-            { name: 'Detecting vulnerabilities', duration: 700 },
-            { name: 'Mapping to compliance', duration: 500 },
-            { name: 'Generating attack chains', duration: 600 },
-            { name: 'Preparing remediation', duration: 400 },
-          ]
-        : [
-            { name: 'Parsing source files', duration: 400 },
-            { name: 'Scanning for secrets', duration: 500 },
-            { name: 'Analyzing security patterns', duration: 600 },
-            { name: 'Detecting vulnerabilities', duration: 500 },
-            { name: 'Generating report', duration: 300 },
-          ];
-
       // Run secret detection
       const detectedSecrets = detectSecrets(filesToAnalyze);
       setSecrets(detectedSecrets);
@@ -732,22 +715,17 @@ const AdvancedSecurityAuditPanel: React.FC<AdvancedSecurityAuditPanelProps> = ({
       const sastVulns = runLocalSAST(filesToAnalyze);
       setLocalSASTVulns(sastVulns);
 
-      // Run dependency analysis
-      const vulnDeps = parseDependencies(filesToAnalyze);
+      // Run dependency analysis via AI
+      const vulnDeps = await parseDependencies(filesToAnalyze);
       setDependencies(vulnDeps);
 
-      for (let i = 0; i < phases.length; i++) {
-        const phase = phases[i];
-        setScanProgress(prev => ({
-          ...prev!,
-          phase: phase.name,
-          progress: Math.round(((i + 1) / phases.length) * 100),
-          currentFile: filesToAnalyze[Math.min(i, filesToAnalyze.length - 1)]?.name,
-          filesScanned: Math.min(i + 1, filesToAnalyze.length),
-          vulnerabilitiesFound: detectedSecrets.length + sastVulns.length,
-        }));
-        await new Promise(resolve => setTimeout(resolve, phase.duration));
-      }
+      setScanProgress(prev => ({
+        ...prev!,
+        phase: 'Sending to AI for deep analysis...',
+        progress: 50,
+        filesScanned: filesToAnalyze.length,
+        vulnerabilitiesFound: detectedSecrets.length + sastVulns.length,
+      }));
 
       const combinedCode = filesToAnalyze
         .map(f => `// === File: ${f.path} ===\n${f.content}`)

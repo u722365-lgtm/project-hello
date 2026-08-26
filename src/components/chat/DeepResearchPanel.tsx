@@ -106,30 +106,36 @@ export const DeepResearchPanel = ({ isOpen, onClose, onInsertToChat, initialQuer
     setError(null);
     if (!isRetry) setResult(null);
 
-    const stages = [
-      { text: "Analyzing query...", progress: 10 },
-      { text: "Searching primary sources...", progress: 25 },
-      { text: "Cross-referencing data...", progress: 45 },
-      { text: "Verifying facts...", progress: 65 },
-      { text: "Synthesizing findings...", progress: 85 },
-      { text: "Generating report...", progress: 95 },
-    ];
-
     try {
-      for (const s of stages) {
-        setStage(s.text);
-        setProgress(s.progress);
-        await new Promise(r => setTimeout(r, 400));
-      }
-
+      setStage("Researching primary sources...");
+      setProgress(50);
+      
+      let accumulatedSummary = "";
       const { data: { session } } = await backend.auth.getSession();
       
       const resp = await turboComplete(
         `You are a Deep Research AI assistant. Your goal is to synthesize the following query comprehensively. Mode: ${searchMode}`,
-        query
+        query,
+        {
+          onDelta: (accumulated) => {
+            accumulatedSummary = accumulated;
+            // Optimistically update result while streaming
+            setResult(prev => prev ? {
+              ...prev,
+              summary: accumulated
+            } : {
+              summary: accumulated,
+              sources: [],
+              keyFindings: [],
+              relatedTopics: []
+            });
+            setProgress(75);
+            setStage("Synthesizing findings...");
+          }
+        }
       );
 
-      const fullContent = resp.content;
+      const fullContent = resp.content || accumulatedSummary;
 
       if (!fullContent.trim()) {
         throw new Error("No results found. Try rephrasing your query.");
@@ -148,6 +154,7 @@ export const DeepResearchPanel = ({ isOpen, onClose, onInsertToChat, initialQuer
 
       setResult(parsedResult);
       setProgress(100);
+      setStage("Complete");
       setStage("Research complete!");
       setRetryCount(0);
       

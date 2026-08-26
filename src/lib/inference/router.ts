@@ -12,6 +12,8 @@
 import { decryptKey, listStoredKeyProviders } from '@/lib/byok/crypto';
 import { getByokProvider, type ByokProviderId } from '@/lib/byok/providers';
 import { byokChatStream, type ByokStreamResult } from '@/lib/byok/client';
+import { getFirebaseFunctionUrl, getChatFetchHeaders } from '@/lib/cloudEnv';
+import { backend } from '@/integrations/local/client';
 import {
   isWebGPUSupported,
   isModelLoaded,
@@ -22,7 +24,7 @@ import {
 
 // ---- Types ----
 
-export type InferenceMode = 'byok' | 'webllm';
+export type InferenceMode = 'byok' | 'webllm' | 'cloud';
 
 export interface InferenceMessage {
   role: 'system' | 'user' | 'assistant';
@@ -101,8 +103,8 @@ async function detectMode(opts: InferenceRequest): Promise<InferenceMode> {
     const key = await decryptKey(providers[0]);
     if (key) return 'byok';
   }
-
-  throw new Error('No inference mode available. Add an API key in Settings (BYOK) or use a WebLLM model.');
+  // 5. Cloud fallback
+  return 'cloud';
 }
 
 // ---- Main Router ----
@@ -121,6 +123,7 @@ export async function infer(request: InferenceRequest): Promise<InferenceResult>
   const modeDetails: Record<InferenceMode, string> = {
     'webllm': request.model || 'local-model',
     'byok': request.byokProvider || 'user-key',
+    'cloud': request.model || 'cloud-model',
   };
   request.onModeResolved?.(mode, modeDetails[mode]);
 
@@ -182,6 +185,86 @@ export async function infer(request: InferenceRequest): Promise<InferenceResult>
       model: result.model,
       ttftMs: result.ttftMs,
       totalMs: result.totalMs,
+    };
+  }
+
+  // ---- Cloud path ----
+  if (mode === 'cloud') {
+    const startMs = performance.now();
+    let ttftRecorded = false;
+    
+    const { data: { session } } = await backend.auth.getSession();
+    const token = session?.access_token;
+    
+    if (!token) {
+      throw new Error('Unauthorized. Sign in to use the cloud shared pool or configure a BYOK key in settings.');
+    }
+
+    const headers = getChatFetchHeaders(token);
+    const body = {
+      messages: request.messages,
+      model: request.model,
+      max_tokens: request.maxTokens,
+      temperature: request.temperature,
+      personality: request.personality,
+      deepResearch: request.deepResearch,
+      stream: true,
+    };
+
+    const resp = await fetch(getFirebaseFunctionUrl('chat'), {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body),
+      signal: request.signal,
+    });
+
+    if (!resp.ok) {
+      const errText = await resp.text().catch(() => '');
+      throw new Error(`Cloud Inference Error (${resp.status}): ${errText.slice(0, 300)}`);
+    }
+
+    const reader = resp.body?.getReader();
+    if (!reader) throw new Error('No response body from Cloud');
+
+    const providerId = resp.headers.get('X-Provider') || 'cloud';
+    const resolvedModel = resp.headers.get('X-Model') || request.model || 'unknown';
+
+    const decoder = new TextDecoder();
+    let content = '';
+    let lineBuffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      lineBuffer += decoder.decode(value, { stream: true });
+      const lines = lineBuffer.split('\n');
+      lineBuffer = lines.pop() ?? '';
+      for (const line of lines) {
+        if (!line.startsWith('data: ') || line === 'data: [DONE]') continue;
+        try {
+          const data = JSON.parse(line.slice(6));
+          const delta = data.choices?.[0]?.delta?.content;
+          if (delta) {
+            if (!ttftRecorded) {
+              ttftRecorded = true;
+              request.onProviderInfo?.({ provider: providerId, model: resolvedModel, ttftMs: performance.now() - startMs });
+            }
+            content += delta;
+            request.onDelta?.(delta, content);
+          }
+        } catch {
+          // ignore malformed SSE
+        }
+      }
+    }
+
+    return {
+      content,
+      mode: 'cloud',
+      provider: providerId,
+      model: resolvedModel,
+      ttftMs: ttftRecorded ? performance.now() - startMs : undefined,
+      totalMs: performance.now() - startMs,
     };
   }
 
@@ -263,9 +346,9 @@ export function getAvailableModes(): { mode: InferenceMode; available: boolean; 
       reason: isWebGPUSupported() ? 'WebGPU available' : 'WebGPU not supported in this browser',
     },
     {
-      mode: 'byok' as InferenceMode,
+      mode: 'cloud' as InferenceMode,
       available: true,
-      reason: 'Add API keys in Settings',
+      reason: 'Shared cloud pool',
     },
   ];
 }

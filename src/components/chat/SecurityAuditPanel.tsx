@@ -225,7 +225,7 @@ const SecurityAuditPanel: React.FC<SecurityAuditPanelProps> = ({
   
   const getLocalCodeFix = (category: string): string => {
     const fixes: Record<string, string> = {
-      'Secrets': `// Use environment variables:\nconst apiKey = process.env.API_KEY;\n// Or for Vite: import.meta.env.VITE_API_KEY`,
+      'Secrets': `// Use environment variables:\nconst apiKey = process.env.API_KEY;\n`,
       'XSS': `// Use textContent instead:\nelement.textContent = userInput;\n// Or use DOMPurify for HTML`,
       'Injection': `// Avoid eval - use safer alternatives`,
       'SQL Injection': `// Use parameterized queries:\nconst result = await db.query('SELECT * FROM users WHERE id = $1', [userId]);`,
@@ -546,24 +546,13 @@ const SecurityAuditPanel: React.FC<SecurityAuditPanelProps> = ({
       const localVulns = detectLocalVulnerabilities(filesToAnalyze);
       console.log('[SecurityAudit] Local detection found:', localVulns.length, 'issues');
 
-      const phases = [
-        { name: 'Analyzing code structure', duration: 300 },
-        { name: 'Sending to AI for deep analysis', duration: 400 },
-        { name: 'Processing AI findings', duration: 300 },
-      ];
-
-      for (let i = 0; i < phases.length; i++) {
-        const phase = phases[i];
-        setScanProgress(prev => ({
-          ...prev!,
-          phase: phase.name,
-          progress: 50 + Math.round((i / phases.length) * 40),
-          currentFile: filesToAnalyze[Math.min(i, filesToAnalyze.length - 1)]?.name,
-          filesScanned: Math.min(i + 1, filesToAnalyze.length),
-          vulnerabilitiesFound: localVulns.length,
-        }));
-        await new Promise(resolve => setTimeout(resolve, phase.duration));
-      }
+      setScanProgress(prev => ({
+        ...prev!,
+        phase: 'Sending to AI for deep analysis...',
+        progress: 50,
+        filesScanned: filesToAnalyze.length,
+        vulnerabilitiesFound: localVulns.length,
+      }));
 
       const combinedCode = filesToAnalyze
         .map(f => `// === File: ${f.path} ===\n// Language: ${f.language || 'unknown'}\n${f.content}`)

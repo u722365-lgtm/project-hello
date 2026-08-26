@@ -62,6 +62,7 @@ export const MultiModalFusion = ({
   const [isRecording, setIsRecording] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const recognitionRef = useRef<any>(null);
   const { toast } = useToast();
 
   // Handle file upload
@@ -155,31 +156,74 @@ export const MultiModalFusion = ({
     }
   }, []);
 
-  // Voice recording
+  // Voice recording using Web Speech API
   const toggleRecording = useCallback(async () => {
     if (isRecording) {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
       setIsRecording(false);
-      // Stop recording and add voice item
+      toast({ title: 'Recording stopped', description: 'Voice transcribed' });
+    } else {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        toast({ title: 'Speech Recognition not supported in this browser', variant: 'destructive' });
+        return;
+      }
+      
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'en-US';
+      
       const id = crypto.randomUUID();
+      let finalTranscript = '';
+      
       setItems(prev => [...prev, {
         id,
         type: 'voice',
         data: 'voice-recording',
         name: 'Voice Recording',
-        status: 'processing'
+        status: 'processing',
+        transcription: 'Listening...'
       }]);
       
-      // Simulate transcription
-      setTimeout(() => {
-        setItems(prev => prev.map(i => 
-          i.id === id ? { ...i, status: 'ready', transcription: 'Voice transcribed' } : i
+      recognition.onresult = (event: any) => {
+        let interimTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            finalTranscript += event.results[i][0].transcript;
+          } else {
+            interimTranscript += event.results[i][0].transcript;
+          }
+        }
+        
+        setItems(prev => prev.map(item => 
+          item.id === id ? { ...item, transcription: finalTranscript + interimTranscript } : item
         ));
-      }, 1500);
-    } else {
+      };
+      
+      recognition.onend = () => {
+        setIsRecording(false);
+        setItems(prev => prev.map(item => 
+          item.id === id ? { ...item, status: 'ready', transcription: finalTranscript || '(No speech detected)' } : item
+        ));
+      };
+      
+      recognition.onerror = (event: any) => {
+        setIsRecording(false);
+        setItems(prev => prev.map(item => 
+          item.id === id ? { ...item, status: 'error', transcription: `Error: ${event.error}` } : item
+        ));
+        toast({ title: 'Microphone error', variant: 'destructive', description: event.error });
+      };
+      
       try {
         await navigator.mediaDevices.getUserMedia({ audio: true });
+        recognition.start();
+        recognitionRef.current = recognition;
         setIsRecording(true);
-        toast({ title: 'Recording started', description: 'Click again to stop' });
+        toast({ title: 'Recording started', description: 'Speak now...' });
       } catch (e) {
         toast({ title: 'Microphone access denied', variant: 'destructive' });
       }

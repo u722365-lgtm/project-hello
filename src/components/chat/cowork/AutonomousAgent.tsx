@@ -371,7 +371,6 @@
        // Show thinking
        if (thinking) {
          setThinkingText(thinking);
-         await new Promise(r => setTimeout(r, 1000));
        }
        
        // Execute actions
@@ -396,8 +395,6 @@
              setCurrentActions(prev => prev.map(a => 
                a.id === action.id ? { ...a, status: "completed" as const, output } : a
              ));
-             
-             await new Promise(r => setTimeout(r, 300));
            } catch (e) {
              setCurrentActions(prev => prev.map(a => 
                a.id === action.id ? { ...a, status: "failed" as const, output: String(e) } : a

@@ -7,14 +7,14 @@ export function getApiBaseUrl(): string {
   return "";
 }
 
-/** Always returns empty string in local-only mode. */
+/** Always returns empty string since API keys are now on the backend. */
 export function getApiKey(): string {
   return "";
 }
 
 /** Returns true since cloud is now configured via Firebase Functions. */
 export function isCloudConfigured(): boolean {
-  return false;
+  return true;
 }
 
 /** Returns the URL for the chat function. */

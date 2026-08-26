@@ -601,7 +601,7 @@ export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl, emb
     const { data: { session } } = await backend.auth.getSession();
     return {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_API_KEY}`,
+      Authorization: `Bearer ${session?.access_token}`,
     };
   }, []);
 

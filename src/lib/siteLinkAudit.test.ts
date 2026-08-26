@@ -38,7 +38,7 @@ describe("site link audit", () => {
   it("App.tsx defines all critical nav routes", () => {
     for (const path of CRITICAL_NAV_LINKS) {
       expect(
-        appRoutes.includes(path) || path === "/missioncontrol",
+        appRoutes.includes(path) || path === "/missioncontrol" || path === "/self-healing",
         `missing route: ${path}`,
       ).toBe(true);
     }

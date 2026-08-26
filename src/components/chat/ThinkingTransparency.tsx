@@ -3,6 +3,7 @@ import { Brain, ChevronDown, ChevronUp, Loader2, CheckCircle, Lightbulb, Search,
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Progress } from "@/components/ui/progress";
+import { backend } from "@/integrations/local/client";
 
 // =============================================================================
 // THINKING TRANSPARENCY - Claude-style reasoning display
@@ -284,18 +285,48 @@ export const useThinkingSteps = () => {
   const [steps, setSteps] = useState<ThinkingStep[]>([]);
   const [isThinking, setIsThinking] = useState(false);
 
-  const startThinking = (query: string) => {
+  const startThinking = async (query: string) => {
     setIsThinking(true);
-    const newSteps: ThinkingStep[] = [
-      { id: '1', phase: 'understanding', title: 'Parsing your request', content: `Understanding: "${query.slice(0, 50)}..."`, status: 'pending' },
-      { id: '2', phase: 'analyzing', title: 'Analyzing context', content: 'Checking conversation history and user preferences', status: 'pending' },
-      { id: '3', phase: 'reasoning', title: 'Reasoning through options', content: 'Evaluating multiple approaches to provide the best response', status: 'pending' },
-      { id: '4', phase: 'synthesizing', title: 'Synthesizing response', content: 'Combining insights into a coherent answer', status: 'pending' },
-      { id: '5', phase: 'refining', title: 'Refining output', content: 'Polishing for clarity and accuracy', status: 'pending' },
-    ];
+    // Setup initial fallback step while AI generates plan
+    setSteps([{ id: '0', phase: 'understanding', title: 'Planning...', content: 'Generating reasoning plan', status: 'active' }]);
+    
+    let generatedSteps: any[] = [];
+    try {
+      const messages = [
+        { role: 'system', content: 'Generate a 3-5 step reasoning plan for processing the user query. Output ONLY a JSON array of objects with fields: phase (must be one of understanding, analyzing, researching, reasoning, synthesizing, refining), title (short string), content (brief description).' },
+        { role: 'user', content: query }
+      ];
+      
+      const response = await backend.functions.invoke('chat', { body: { messages } });
+      let result = response.data?.choices?.[0]?.message?.content || response.data?.generatedText || "[]";
+      result = result.replace(/^```[a-z]*\n/, "").replace(/```$/, "").trim();
+      
+      try {
+        generatedSteps = JSON.parse(result);
+      } catch (e) {
+        generatedSteps = [
+          { phase: 'understanding', title: 'Parsing request', content: 'Understanding query' },
+          { phase: 'reasoning', title: 'Reasoning', content: 'Evaluating options' },
+          { phase: 'synthesizing', title: 'Synthesizing response', content: 'Generating answer' }
+        ];
+      }
+    } catch (e) {
+      generatedSteps = [
+        { phase: 'understanding', title: 'Parsing request', content: 'Understanding query' }
+      ];
+    }
+    
+    const newSteps: ThinkingStep[] = generatedSteps.map((s: any, i: number) => ({
+      id: String(i + 1),
+      phase: s.phase || 'reasoning',
+      title: s.title || `Step ${i + 1}`,
+      content: s.content || 'Processing',
+      status: i === 0 ? 'active' : 'pending'
+    }));
+    
     setSteps(newSteps);
     
-    // Simulate step progression
+    // The consumer typically calls progressStep() as their processing advances
     let currentIndex = 0;
     const progressStep = () => {
       if (currentIndex >= newSteps.length) {
@@ -312,7 +343,7 @@ export const useThinkingSteps = () => {
       currentIndex++;
     };
     
-    // Start first step immediately
+    // Advance past the first step that was just made active
     progressStep();
     
     return { progressStep, completeAll: () => {

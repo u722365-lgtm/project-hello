@@ -10,7 +10,7 @@ import {
   AlertTriangle, Lightbulb, Code, Shield, Smartphone, Monitor, Tablet, Wand2,
   Search, Split, Maximize2, Minimize2, Moon, Sun, Zap,
   PanelLeftClose, PanelLeft, Send, Braces, Hash, FileText,
-  FolderTree, Undo2, Redo2, Command, ArrowRight, Share2, Users
+  FolderTree, Undo2, Redo2, Command, ArrowRight, Share2, Users, CloudLightning, BrainCircuit
 } from "lucide-react";
 import { Github } from "lucide-react";
 import { backend } from "@/integrations/local/client";
@@ -27,7 +27,12 @@ import Editor from "@monaco-editor/react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ProjectImportDialog } from "./cowork/ProjectImportDialog";
 import { AutonomousAgent } from "./cowork/AutonomousAgent";
+import { DreamStateUI } from "./cowork/DreamStateUI";
+import { OmnisciencePanel } from "./cowork/OmnisciencePanel";
+import { ShadowTwinSetup } from "./cowork/ShadowTwinSetup";
 import { useWorkspaces, Project, FileNode, GitCommit as GitCommitType } from "@/hooks/useWorkspaces";
+import { useOmniscience } from "@/hooks/useOmniscience";
+import { useShadowTwin } from "@/hooks/useShadowTwin";
 
 interface ShadowCoworkProps {
   isOpen: boolean;
@@ -231,6 +236,9 @@ export const ShadowCowork = ({ isOpen, onClose, onInsertToChat }: ShadowCoworkPr
   const [showNewProjectDialog, setShowNewProjectDialog] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [showAgent, setShowAgent] = useState(true);
+  const [showDreamState, setShowDreamState] = useState(false);
+  const [showTwinSetup, setShowTwinSetup] = useState(false);
+  const [showOmniscience, setShowOmniscience] = useState(true);
   
   const activeProject = projects.find(p => p.id === activeProjectId) || projects[0];
   const files = activeProject?.files || [];
@@ -293,6 +301,12 @@ export const ShadowCowork = ({ isOpen, onClose, onInsertToChat }: ShadowCoworkPr
   // Undo/Redo stack
   const [undoStack, setUndoStack] = useState<string[]>([]);
   const [redoStack, setRedoStack] = useState<string[]>([]);
+
+  // Omniscience Hook
+  const { predictions, isAnalyzing } = useOmniscience(fileContent, showOmniscience);
+
+  // Twin Hook
+  const { twinState, progress: twinProgress, isTwinModeActive, trainTwin, toggleTwinMode, getTwinContext, styleVector } = useShadowTwin(activeProject);
 
   // Import project handler
   const handleImportProject = useCallback((importedFiles: FileNode[], projectName: string, source: 'github' | 'local') => {
@@ -672,56 +686,47 @@ export const ShadowCowork = ({ isOpen, onClose, onInsertToChat }: ShadowCoworkPr
         break;
         
       case "npm":
-        if (firstArg === "run" || firstArg === "start") {
-          output = [
-            { type: "system", content: "⚡ Starting development server...", timestamp },
-            { type: "output", content: "", timestamp },
-            { type: "success", content: "  VITE v5.0.0  ready in 234 ms", timestamp },
-            { type: "output", content: "", timestamp },
-            { type: "output", content: "  ➜  Local:   http://localhost:5173/", timestamp },
-            { type: "output", content: "  ➜  Network: http://192.168.1.100:5173/", timestamp },
-            { type: "output", content: "", timestamp },
-            { type: "system", content: "  Press Ctrl+C to stop", timestamp },
-          ];
-        } else if (firstArg === "install" || firstArg === "i") {
-          output = [
-            { type: "system", content: "📦 Installing dependencies...", timestamp },
-            { type: "output", content: "", timestamp },
-            { type: "output", content: "added 847 packages, and audited 848 packages in 12s", timestamp },
-            { type: "success", content: "✓ Packages installed successfully", timestamp },
-          ];
-        } else if (firstArg === "test") {
-          output = [
-            { type: "system", content: "🧪 Running tests...", timestamp },
-            { type: "success", content: "✓ All tests passed (8 tests)", timestamp },
-          ];
-        } else {
-          output = [{ type: "output", content: `npm ${args.join(" ")}`, timestamp }];
-        }
+        output = [{ type: "system", content: `⚡ Running npm ${args.join(" ")}...`, timestamp }];
+        setTerminalLines(prev => [...prev, ...output]);
+        (async () => {
+          try {
+            const messages = [
+              { role: "system", content: "You are a helpful coding assistant simulating a terminal for npm commands. The user ran an npm command in their project. Generate the typical console output for this command. Keep it realistic but concise. Output only the console text." },
+              { role: "user", content: `npm ${args.join(" ")}` }
+            ];
+            const response = await backend.functions.invoke('chat', { body: { messages } });
+            let result = response.data?.choices?.[0]?.message?.content || response.data?.generatedText || `npm ${args.join(" ")} completed`;
+            result = result.replace(/^```[a-z]*\n/, "").replace(/```$/, "").trim();
+            const resultLines = result.split("\n").map((l: string) => ({ type: "output" as const, content: l, timestamp: new Date() }));
+            setTerminalLines(prev => [...prev, ...resultLines, { type: "success", content: "✓ Command completed", timestamp: new Date() }]);
+          } catch (e: any) {
+            setTerminalLines(prev => [...prev, { type: "error", content: `Error: ${e.message}`, timestamp: new Date() }]);
+          }
+        })();
         break;
         
       case "git":
-        if (firstArg === "status") {
-          output = [
-            { type: "output", content: `On branch ${activeProject?.currentBranch || "main"}`, timestamp },
-            { type: "output", content: "Changes not staged for commit:", timestamp },
-            { type: "output", content: "  modified:   src/App.tsx", timestamp },
-          ];
-        } else if (firstArg === "branch") {
-          output = (activeProject?.branches || ["main"]).map(b => ({
-            type: "output" as const,
-            content: `  ${b === activeProject?.currentBranch ? "* " : "  "}${b}`,
-            timestamp
-          }));
-        } else if (firstArg === "log") {
-          output = (activeProject?.commits || []).slice(-5).reverse().map(c => ({
-            type: "output" as const,
-            content: `  ${c.id.slice(0, 7)} - ${c.message} (${new Date(c.timestamp).toLocaleDateString()})`,
-            timestamp
-          }));
-        } else {
-          output = [{ type: "output", content: `git ${args.join(" ")}`, timestamp }];
-        }
+        output = [{ type: "system", content: `⚡ Running git ${args.join(" ")}...`, timestamp }];
+        setTerminalLines(prev => [...prev, ...output]);
+        (async () => {
+          try {
+            const projectContext = {
+              branch: activeProject?.currentBranch || "main",
+              files: activeProject?.files ? JSON.stringify(activeProject.files.slice(0, 3).map(f => f.name)) : ""
+            };
+            const messages = [
+              { role: "system", content: `You are a helpful coding assistant simulating a terminal for git commands. The user ran a git command. Current branch is ${projectContext.branch}. Keep it realistic. Output only the console text.` },
+              { role: "user", content: `git ${args.join(" ")}` }
+            ];
+            const response = await backend.functions.invoke('chat', { body: { messages } });
+            let result = response.data?.choices?.[0]?.message?.content || response.data?.generatedText || `git ${args.join(" ")} completed`;
+            result = result.replace(/^```[a-z]*\n/, "").replace(/```$/, "").trim();
+            const resultLines = result.split("\n").map((l: string) => ({ type: "output" as const, content: l, timestamp: new Date() }));
+            setTerminalLines(prev => [...prev, ...resultLines, { type: "success", content: "✓ Command completed", timestamp: new Date() }]);
+          } catch (e: any) {
+            setTerminalLines(prev => [...prev, { type: "error", content: `Error: ${e.message}`, timestamp: new Date() }]);
+          }
+        })();
         break;
         
       case "node":
@@ -1068,6 +1073,42 @@ export const ShadowCowork = ({ isOpen, onClose, onInsertToChat }: ShadowCoworkPr
                 <Bot className="h-3.5 w-3.5" />
                 <span className="hidden md:inline">Agent</span>
               </Button>
+
+              <Button
+                variant={showDreamState ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => setShowDreamState(prev => {
+                  if (!prev) setShowTwinSetup(false);
+                  return !prev;
+                })}
+                className="h-7 gap-1.5 text-xs text-fuchsia-400 hover:text-fuchsia-300"
+              >
+                <CloudLightning className="h-3.5 w-3.5" />
+                <span className="hidden md:inline font-bold">DreamState</span>
+              </Button>
+
+              <Button
+                variant={showTwinSetup ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => setShowTwinSetup(prev => {
+                  if (!prev) setShowDreamState(false);
+                  return !prev;
+                })}
+                className="h-7 gap-1.5 text-xs text-emerald-400 hover:text-emerald-300"
+              >
+                <BrainCircuit className="h-3.5 w-3.5" />
+                <span className="hidden md:inline font-bold">Twin</span>
+              </Button>
+
+              <Button
+                variant={showOmniscience ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => setShowOmniscience(prev => !prev)}
+                className="h-7 gap-1.5 text-xs text-cyan-400 hover:text-cyan-300"
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                <span className="hidden md:inline">Omni</span>
+              </Button>
               
               <Button
                 variant="ghost"
@@ -1368,7 +1409,32 @@ export const ShadowCowork = ({ isOpen, onClose, onInsertToChat }: ShadowCoworkPr
                 <ResizablePanelGroup direction="vertical">
                   {/* Editor */}
                   <ResizablePanel defaultSize={showTerminal ? 70 : 100}>
-                    <div className="h-full flex flex-col">
+                    <div className="h-full flex flex-col relative">
+                      {showDreamState ? (
+                        <div className="absolute inset-0 z-50 bg-black/95 overflow-hidden">
+                          <DreamStateUI onCodeGenerated={(code) => {
+                            if (selectedFile) {
+                              setFileContent(code);
+                            } else {
+                              createNode("/src", `dreamstate_${Date.now()}.ts`, "file");
+                              setTimeout(() => setFileContent(code), 100);
+                            }
+                            setShowDreamState(false);
+                          }} />
+                        </div>
+                      ) : null}
+
+                      {showTwinSetup ? (
+                        <div className="absolute inset-0 z-50 overflow-hidden">
+                          <ShadowTwinSetup 
+                            twinState={twinState}
+                            progress={twinProgress}
+                            onTrain={trainTwin}
+                            styleVector={styleVector}
+                          />
+                        </div>
+                      ) : null}
+                      
                       {/* Editor tabs */}
                       {selectedFile && (
                         <div className="h-9 border-b border-border flex items-center px-2 bg-muted/20 shrink-0">
@@ -1387,7 +1453,6 @@ export const ShadowCowork = ({ isOpen, onClose, onInsertToChat }: ShadowCoworkPr
                           </div>
                         </div>
                       )}
-                      
                       {/* Monaco Editor */}
                       <div className="flex-1">
                         {selectedFile ? (
