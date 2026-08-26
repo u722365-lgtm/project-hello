@@ -17,6 +17,7 @@
 import { resolveTurboKey, TURBO_MODEL_GROQ, TURBO_MODEL_CHAT, GROQ_API_URL, OPENROUTER_API_URL, TURBO_MODEL_OPENROUTER } from './turboProviders';
 import { isSovereignAgentsEnabled } from '@/lib/desktop/sovereignAgentMode';
 import { localComplete, isWebGPUSupported, WEBGPU_MODEL } from '@/lib/webgpu/localEngine';
+import { trackAiMetrics, estimateTokens } from '@/lib/telemetry/agenticMetrics';
 
 // ---- Public Types ----
 
@@ -220,7 +221,15 @@ export async function turboComplete(
   if (isSovereignAgentsEnabled() && isWebGPUSupported()) {
     try {
       const content = await localComplete(systemPrompt, userContent, opts.onDelta);
-      return { content, source: 'webgpu-local', modelUsed: WEBGPU_MODEL, totalMs: performance.now() - startMs };
+      const totalMs = performance.now() - startMs;
+      trackAiMetrics('llm_completion', {
+        source: 'webgpu-local',
+        model: WEBGPU_MODEL,
+        totalMs,
+        inputTokens: estimateTokens(systemPrompt + userContent),
+        outputTokens: estimateTokens(content),
+      });
+      return { content, source: 'webgpu-local', modelUsed: WEBGPU_MODEL, totalMs };
     } catch (localErr) {
       console.warn('[TurboEngine] WebGPU local execution failed:', localErr);
     }
@@ -234,7 +243,16 @@ export async function turboComplete(
 
   // Try Groq
   try {
-    return await streamGroq(apiKey, systemPrompt, userContent, opts);
+    const result = await streamGroq(apiKey, systemPrompt, userContent, opts);
+    trackAiMetrics('llm_completion', {
+      source: 'turbo-groq',
+      model: result.modelUsed,
+      ttftMs: result.ttftMs,
+      totalMs: result.totalMs,
+      inputTokens: estimateTokens(systemPrompt + userContent),
+      outputTokens: estimateTokens(result.content),
+    });
+    return result;
   } catch (groqErr) {
     console.warn('[TurboEngine] Groq failed:', groqErr);
   }
@@ -242,7 +260,16 @@ export async function turboComplete(
   // Try OpenRouter fallback
   if (apiKey.startsWith('sk-or-')) {
     try {
-      return await streamOpenRouter(apiKey, systemPrompt, userContent, opts);
+      const result = await streamOpenRouter(apiKey, systemPrompt, userContent, opts);
+      trackAiMetrics('llm_completion', {
+        source: 'turbo-openrouter',
+        model: result.modelUsed,
+        ttftMs: result.ttftMs,
+        totalMs: result.totalMs,
+        inputTokens: estimateTokens(systemPrompt + userContent),
+        outputTokens: estimateTokens(result.content),
+      });
+      return result;
     } catch (orErr) {
       console.warn('[TurboEngine] OpenRouter fallback failed:', orErr);
     }

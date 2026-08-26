@@ -20,6 +20,7 @@
  import { turboComplete } from "@/lib/turbo/turboEngine";
  import ReactMarkdown from "react-markdown";
  import remarkGfm from "remark-gfm";
+ import { trackAiMetrics } from "@/lib/telemetry/agenticMetrics";
  
  interface FileNode {
    name: string;
@@ -360,6 +361,10 @@
                a.id === action.id ? { ...a, status: "completed" as const, output } : a
              ));
            } catch (e) {
+             trackAiMetrics('agent_loop_failure', {
+               actionId: action.id,
+               error: String(e)
+             });
              setCurrentActions(prev => prev.map(a => 
                a.id === action.id ? { ...a, status: "failed" as const, output: String(e) } : a
              ));
