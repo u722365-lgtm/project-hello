@@ -124,11 +124,12 @@ const MessageBubbleInner: React.FC<MessageBubbleProps> = ({
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ 
-        duration: 0.3, 
-        ease: [0.25, 0.46, 0.45, 0.94],
+        type: "spring",
+        stiffness: 260,
+        damping: 20,
         delay: Math.min(index * 0.02, 0.1)
       }}
       className={`group flex items-start gap-3 md:gap-4 py-3 ${isUser ? 'flex-row-reverse' : ''} ${isClean ? 'neural-message-row' : ''}`}

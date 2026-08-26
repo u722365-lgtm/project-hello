@@ -331,7 +331,7 @@ export const ChatInput = ({
                 ? "relative flex items-center gap-2 bg-transparent rounded-[18px] px-2 py-1"
                 : isComposer
                   ? "relative flex items-center gap-1 bg-[#2f2f2f] hover:bg-[#383838] focus-within:bg-[#383838] rounded-[26px] border border-[#404040] px-3 py-2 shadow-none transition-colors duration-200"
-                  : "relative flex items-end gap-2 bg-[#1e1f20]/60 backdrop-blur-2xl rounded-[30px] border border-white/10 p-2.5 px-4 shadow-2xl transition-all duration-500 group-focus-within:bg-[#1e1f20]/80 group-focus-within:border-white/20 ring-1 ring-white/5"
+                  : `relative flex items-end gap-2 bg-[#1e1f20]/60 backdrop-blur-3xl rounded-[30px] border border-white/10 p-2.5 px-4 shadow-2xl transition-all duration-500 group-focus-within:bg-[#1e1f20]/80 group-focus-within:border-white/20 ring-1 ${message.trim() ? "ring-primary/50 shadow-primary/20" : "ring-white/5"}`
             }
           >
             <div className={`flex items-center shrink-0 ${isComposer ? "" : "pb-1"}`}>
