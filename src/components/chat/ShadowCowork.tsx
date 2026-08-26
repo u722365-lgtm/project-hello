@@ -779,7 +779,7 @@ export const ShadowCowork = ({ isOpen, onClose, onInsertToChat }: ShadowCoworkPr
   }, [files, activeProject, createNode, deleteNode]);
 
   // Handle terminal key events (history navigation)
-  const handleTerminalKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleTerminalKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && currentCommand.trim()) {
       executeCommand(currentCommand);
       setCurrentCommand("");
@@ -803,10 +803,10 @@ export const ShadowCowork = ({ isOpen, onClose, onInsertToChat }: ShadowCoworkPr
         }
       }
     }
-  };
+  }, [currentCommand, executeCommand, commandHistory, historyIndex]);
 
   // AI Chat in IDE
-  const sendAiMessage = async () => {
+  const sendAiMessage = useCallback(async () => {
     if (!aiInput.trim() || isAiLoading) return;
     
     const userMessage: AIChatMessage = {
@@ -856,7 +856,7 @@ export const ShadowCowork = ({ isOpen, onClose, onInsertToChat }: ShadowCoworkPr
     } finally {
       setIsAiLoading(false);
     }
-  };
+  }, [aiInput, isAiLoading, aiMessages, selectedFile, fileContent]);
 
   // Git operations
   const createCommit = useCallback(() => {
@@ -1117,8 +1117,8 @@ export const ShadowCowork = ({ isOpen, onClose, onInsertToChat }: ShadowCoworkPr
               {/* Sidebar */}
               {showSidebar && (
                 <>
-                  <ResizablePanel defaultSize={18} minSize={15} maxSize={30}>
-                    <div className="h-full flex flex-col border-r border-border bg-muted/20">
+                  <ResizablePanel defaultSize={18} minSize={15} maxSize={30} asChild>
+                    <aside aria-label="Workspace Explorer" className="h-full flex flex-col border-r border-border bg-muted/20">
                       {/* Sidebar Tabs */}
                       <div className="border-b border-border">
                         <div className="flex">
@@ -1358,14 +1358,15 @@ export const ShadowCowork = ({ isOpen, onClose, onInsertToChat }: ShadowCoworkPr
                           </div>
                         )}
                       </ScrollArea>
-                    </div>
+                    </aside>
                   </ResizablePanel>
                   <ResizableHandle withHandle />
                 </>
               )}
               
               {/* Editor + Terminal */}
-              <ResizablePanel defaultSize={showSidebar ? 82 : 100}>
+              <ResizablePanel defaultSize={showSidebar ? 82 : 100} asChild>
+                <main aria-label="Workspace Main">
                 <ResizablePanelGroup direction="vertical">
                   {/* Editor */}
                   <ResizablePanel defaultSize={showTerminal ? 70 : 100}>
@@ -1540,6 +1541,7 @@ export const ShadowCowork = ({ isOpen, onClose, onInsertToChat }: ShadowCoworkPr
                     </>
                   )}
                 </ResizablePanelGroup>
+                </main>
               </ResizablePanel>
             </ResizablePanelGroup>
             </div>
