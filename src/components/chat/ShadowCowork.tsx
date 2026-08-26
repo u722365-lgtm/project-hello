@@ -686,84 +686,44 @@ export const ShadowCowork = ({ isOpen, onClose, onInsertToChat }: ShadowCoworkPr
         break;
         
       case "npm":
-        output = [{ type: "system", content: `⚡ Running npm ${args.join(" ")}...`, timestamp }];
-        setTerminalLines(prev => [...prev, ...output]);
-        (async () => {
-          try {
-            const messages = [
-              { role: "system", content: "You are a helpful coding assistant simulating a terminal for npm commands. The user ran an npm command in their project. Generate the typical console output for this command. Keep it realistic but concise. Output only the console text." },
-              { role: "user", content: `npm ${args.join(" ")}` }
-            ];
-            const response = await backend.functions.invoke('chat', { body: { messages } });
-            let result = response.data?.choices?.[0]?.message?.content || response.data?.generatedText || `npm ${args.join(" ")} completed`;
-            result = result.replace(/^```[a-z]*\n/, "").replace(/```$/, "").trim();
-            const resultLines = result.split("\n").map((l: string) => ({ type: "output" as const, content: l, timestamp: new Date() }));
-            setTerminalLines(prev => [...prev, ...resultLines, { type: "success", content: "✓ Command completed", timestamp: new Date() }]);
-          } catch (e: any) {
-            setTerminalLines(prev => [...prev, { type: "error", content: `Error: ${e.message}`, timestamp: new Date() }]);
-          }
-        })();
-        break;
-        
-      case "git":
-        output = [{ type: "system", content: `⚡ Running git ${args.join(" ")}...`, timestamp }];
-        setTerminalLines(prev => [...prev, ...output]);
-        (async () => {
-          try {
-            const projectContext = {
-              branch: activeProject?.currentBranch || "main",
-              files: activeProject?.files ? JSON.stringify(activeProject.files.slice(0, 3).map(f => f.name)) : ""
-            };
-            const messages = [
-              { role: "system", content: `You are a helpful coding assistant simulating a terminal for git commands. The user ran a git command. Current branch is ${projectContext.branch}. Keep it realistic. Output only the console text.` },
-              { role: "user", content: `git ${args.join(" ")}` }
-            ];
-            const response = await backend.functions.invoke('chat', { body: { messages } });
-            let result = response.data?.choices?.[0]?.message?.content || response.data?.generatedText || `git ${args.join(" ")} completed`;
-            result = result.replace(/^```[a-z]*\n/, "").replace(/```$/, "").trim();
-            const resultLines = result.split("\n").map((l: string) => ({ type: "output" as const, content: l, timestamp: new Date() }));
-            setTerminalLines(prev => [...prev, ...resultLines, { type: "success", content: "✓ Command completed", timestamp: new Date() }]);
-          } catch (e: any) {
-            setTerminalLines(prev => [...prev, { type: "error", content: `Error: ${e.message}`, timestamp: new Date() }]);
-          }
-        })();
-        break;
-        
       case "node":
-        if (firstArg) {
-          const findFile = (nodes: FileNode[]): FileNode | undefined => {
-            for (const node of nodes) {
-              if ((node.name === firstArg || node.path.endsWith(`/${firstArg}`)) && node.type === "file") return node;
-              if (node.children) {
-                const found = findFile(node.children);
-                if (found) return found;
+        output = [{ type: "system", content: `⚡ Running ${cmd.split(" ")[0]} ${args.join(" ")}...`, timestamp }];
+        setTerminalLines(prev => [...prev, ...output]);
+        
+        (async () => {
+          try {
+            // Ensure WebContainer has the latest file state before running
+            const { mountProject, runCommand } = await import('@/lib/webcontainer/engine');
+            await mountProject(files);
+            
+            await runCommand(
+              cmd.split(" ")[0],
+              args,
+              (data) => {
+                // Stream output chunks to terminal
+                const lines = data.split('\n').filter(Boolean);
+                if (lines.length > 0) {
+                  setTerminalLines(prev => [
+                    ...prev,
+                    ...lines.map(l => ({ type: "output" as const, content: l, timestamp: new Date() }))
+                  ]);
+                }
+              },
+              (code) => {
+                setTerminalLines(prev => [
+                  ...prev,
+                  { 
+                    type: code === 0 ? "success" : "error", 
+                    content: `Process exited with code ${code}`, 
+                    timestamp: new Date() 
+                  }
+                ]);
               }
-            }
-            return undefined;
-          };
-          const file = findFile(files);
-          if (file && file.content) {
-            try {
-              // Safely "execute" by showing console.log outputs
-              const consoleOutputs: string[] = [];
-              const mockConsole = {
-                log: (...args: any[]) => consoleOutputs.push(args.map(String).join(" "))
-              };
-              const code = file.content.replace(/console\.log/g, "mockConsole.log");
-              new Function("mockConsole", code)(mockConsole);
-              output = consoleOutputs.map(o => ({ type: "output" as const, content: o, timestamp }));
-              if (output.length === 0) {
-                output = [{ type: "success", content: "✓ Script executed (no output)", timestamp }];
-              }
-            } catch (e: unknown) {
-              output = [{ type: "error", content: `Error: ${(e as Error).message}`, timestamp }];
-            }
-          } else {
-            output = [{ type: "error", content: `File not found: ${firstArg}`, timestamp }];
+            );
+          } catch (e: any) {
+            setTerminalLines(prev => [...prev, { type: "error", content: `Error: ${e.message}`, timestamp: new Date() }]);
           }
-        } else {
-          output = [{ type: "output", content: "Node.js v20.10.0", timestamp }];
-        }
+        })();
         break;
         
       case "ai":

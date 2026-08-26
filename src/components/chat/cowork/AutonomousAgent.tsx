@@ -285,20 +285,13 @@
 
         let aiContent = "";
         
-        const response = await turboComplete(systemPrompt, fullPrompt, {
-          taskComplexity: 'high',
-          onDelta: (accumulated) => {
-            aiContent = accumulated;
-            
-            // Try to extract thinking field during stream
-            const thinkMatch = accumulated.match(/"thinking"\s*:\s*"([^"]+)"?/);
-            if (thinkMatch && thinkMatch[1]) {
-              setThinkingText(thinkMatch[1]);
-            }
-          }
+        // Use the Hive Swarm Orchestrator instead of a direct turboComplete call
+        const { HiveOrchestrator } = await import("@/lib/hive/orchestrator");
+        const orchestrator = new HiveOrchestrator((agent, status) => {
+          setThinkingText(`[${agent} Agent] ${status}`);
         });
-        
-        aiContent = response.content;
+
+        aiContent = await orchestrator.runWorkflow(fullPrompt, { taskComplexity: 'high' });
         
         if (!aiContent) {
           aiContent = "I couldn't process that request. Please try again.";
