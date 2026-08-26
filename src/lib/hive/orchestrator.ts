@@ -1,6 +1,6 @@
-import { turboComplete, TurboConfig } from '../turbo/turboEngine';
+import { turboComplete, TurboEngineOptions } from '../turbo/turboEngine';
 import { AgentRole, getAgentPrompt } from './agents';
-import { trackAiMetrics } from '../telemetry/agenticMetrics';
+import { trackAiMetrics, estimateTokens } from '../telemetry/agenticMetrics';
 
 export interface HiveTask {
   id: string;
@@ -26,41 +26,39 @@ export class HiveOrchestrator {
     }
   }
 
-  async runWorkflow(prompt: string, config: TurboConfig = {}): Promise<string> {
+  async runWorkflow(prompt: string, config: TurboEngineOptions = {}): Promise<string> {
     const startTime = performance.now();
     
     try {
       // 1. PM Agent Planning
       this.notifyStatus('PM', 'Analyzing request and planning tasks...');
-      const pmPrompt = `${getAgentPrompt('PM')}\n\nUser Request: ${prompt}`;
-      const pmResponse = await turboComplete(pmPrompt, config);
+      const pmSystemPrompt = getAgentPrompt('PM');
+      const pmResponse = await turboComplete(pmSystemPrompt, `User Request: ${prompt}`, config);
       
       // We assume PM returns a plan (either JSON or text). 
       // For this MVP, we treat the PM's response as the master plan for the Coder.
-      const plan = pmResponse;
+      const plan = pmResponse.content;
       
       // 2. Coder Agent Execution
       this.notifyStatus('Coder', 'Writing code based on PM plan...');
-      const coderPrompt = `${getAgentPrompt('Coder')}\n\nPM Plan: ${plan}`;
-      const coderResponse = await turboComplete(coderPrompt, config);
-      const codeOutput = coderResponse;
+      const coderSystemPrompt = getAgentPrompt('Coder');
+      const coderResponse = await turboComplete(coderSystemPrompt, `PM Plan: ${plan}`, config);
+      const codeOutput = coderResponse.content;
 
       // 3. QA Agent Review
       this.notifyStatus('QA', 'Reviewing and testing code...');
-      const qaPrompt = `${getAgentPrompt('QA')}\n\nCoder Output: ${codeOutput}`;
-      const qaResponse = await turboComplete(qaPrompt, config);
+      const qaSystemPrompt = getAgentPrompt('QA');
+      const qaResponse = await turboComplete(qaSystemPrompt, `Coder Output: ${codeOutput}`, config);
       
       this.notifyStatus('PM', 'Workflow completed.');
 
       const totalLatency = performance.now() - startTime;
-      trackAiMetrics({
-        modelId: 'hive-swarm',
-        latencyMs: totalLatency,
-        timeToFirstTokenMs: 0,
-        provider: 'swarm',
-        tokensPerSecond: 0,
-        taskComplexity: 'high',
-        isSovereignFallback: false
+      trackAiMetrics('llm_completion', {
+        model: 'hive-swarm',
+        source: 'swarm',
+        totalMs: totalLatency,
+        inputTokens: estimateTokens(prompt),
+        outputTokens: estimateTokens(qaResponse.content)
       });
 
       // Wrap the final result into the JSON schema expected by the UI
