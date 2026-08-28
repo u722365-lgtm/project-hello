@@ -1,3 +1,4 @@
+import type { RouterMessage } from "@/lib/offline/localRuntime";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";

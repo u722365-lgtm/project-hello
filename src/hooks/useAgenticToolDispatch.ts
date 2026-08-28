@@ -59,8 +59,9 @@ export function useAgenticToolDispatch() {
   const { resolveDetection, runCritic } = useAutonomousPlanner();
 
   const goToExecute = useCallback(
-    (goal: string) => {
-      navigate(`/missioncontrol?goal=${encodeURIComponent(goal)}`);
+    (goal: string, deliverable?: string) => {
+      const suffix = deliverable ? `&deliverable=${encodeURIComponent(deliverable)}` : "";
+      navigate(`/missioncontrol?goal=${encodeURIComponent(goal)}${suffix}`);
     },
     [navigate],
   );

@@ -13,7 +13,7 @@ interface DreamStateUIProps {
 }
 
 export const DreamStateUI: React.FC<DreamStateUIProps> = ({ onCodeGenerated }) => {
-  const { phase, logs, iteration, progress, runSimulation, abort } = useDreamState();
+  const { phase, logs, iteration, progress, runSimulation, cancelSimulation: abort } = useDreamState();
   const [prompt, setPrompt] = useState("");
 
   const handleStart = () => {

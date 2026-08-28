@@ -5,7 +5,6 @@
  * Falls back to useGlobalChat if no Groq key is available.
  */
 
-import { analyzeComplexity } from "@/lib/turbo/modelRouter";
 import { useRef, useCallback, useState, useEffect } from "react";
 import {
   turboComplete,
@@ -34,7 +33,7 @@ export interface TurboChatHookOptions {
 
 export interface TurboChatResult {
   content: string;
-  source: "turbo-groq" | "turbo-openrouter" | "standard-cloud" | "standard-offline" | "error";
+  source: "turbo-groq" | "turbo-openrouter" | "webgpu-local" | "standard-cloud" | "standard-offline" | "error";
   ttftMs?: number;
   totalMs?: number;
 }

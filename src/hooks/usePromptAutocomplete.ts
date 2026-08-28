@@ -1,3 +1,4 @@
+import { isAnyLocalModelReady, decideRoute, runOfflineCompletion } from "@/lib/offline/localRuntime";
 "use client";
 
 import { useCallback, useEffect, useRef, useState, useMemo } from "react";
@@ -69,7 +70,7 @@ export function usePromptAutocomplete(
 
   const runNext = useCallback(
     async (base: string) => {
-      if (!composerEnabled || (localOnly && typeof isAnyLocalModelReady === "function" && !false)) {
+      if (!composerEnabled || (localOnly && !isAnyLocalModelReady())) {
         return;
       }
       const trimmed = base.trim();
@@ -85,11 +86,10 @@ export function usePromptAutocomplete(
       setSuggestion("");
 
       try {
-        const route = decideRoute(
-          [{ role: "user", content: trimmed }],
-          typeof navigator !== "undefined" ? Boolean(navigator.onLine) : true,
-        );
-        if (route.target !== "local" || route.backend === "none") {
+        const route = decideRoute({
+          isOnline: typeof navigator !== "undefined" ? Boolean(navigator.onLine) : true,
+        });
+        if (route.target !== "local") {
           setSuggestion("");
           setIsLoading(false);
           return;
@@ -117,7 +117,8 @@ export function usePromptAutocomplete(
 
         let candidate = "";
         try {
-          const content = await null.then((r) => r.content);
+          const result = await runOfflineCompletion({ messages, maxTokens: 48 });
+          const content = result?.content ?? "";
           candidate = content
             .replace(/^["“”'‘’]+/, "")
             .replace(/^[\s:–—\-;]+/, "")

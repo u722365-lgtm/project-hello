@@ -1,3 +1,4 @@
+import { turboComplete } from "@/lib/turbo/turboEngine";
 /**
  * Kimi-style long-form document generation for ShadowTalk.
  * Publication-quality markdown, TOC, tables, citations.
