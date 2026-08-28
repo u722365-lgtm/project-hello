@@ -86,11 +86,10 @@ export function usePromptAutocomplete(
       setSuggestion("");
 
       try {
-        const route = decideRoute(
-          [{ role: "user", content: trimmed }],
-          typeof navigator !== "undefined" ? Boolean(navigator.onLine) : true,
-        );
-        if (route.target !== "local" || route.backend === "none") {
+        const route = decideRoute({
+          isOnline: typeof navigator !== "undefined" ? Boolean(navigator.onLine) : true,
+        });
+        if (route.target !== "local") {
           setSuggestion("");
           setIsLoading(false);
           return;
