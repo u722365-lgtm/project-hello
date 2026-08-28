@@ -35,9 +35,6 @@ export function useGlobalChat() {
     async (messages: GlobalChatMessage[], opts: GlobalChatOptions = {}): Promise<GlobalChatResponse> => {
       setIsLoading(true);
       try {
-        const { data } = await backend.auth.getSession();
-        const token = data.session?.access_token;
-
         const lastUser = [...messages].reverse().find((m) => m.role === "user");
         
         let contextPrefix = opts.systemPrompt;
@@ -48,14 +45,22 @@ export function useGlobalChat() {
           }
         }
         
-        const prompt = [contextPrefix, lastUser?.content].filter(Boolean).join("\n\n");
+        // Build final message list
+        const chatMessages = [...messages];
+        if (contextPrefix) {
+           chatMessages.unshift({ role: "system", content: contextPrefix });
+        }
 
-        const content = await streamChatCompletion(token as string, prompt, {
-          model: opts.model,
+        const { data, error } = await backend.functions.invoke("chat", {
+          body: { messages: chatMessages, model: opts.model },
           signal: opts.signal,
         });
 
-        opts.onDelta?.(content);
+        if (error) throw error;
+        
+        const content = data?.content || data?.choices?.[0]?.message?.content || "";
+        opts.onDelta?.(content); // No streaming for now, just the final content
+        
         return { content, source: "cloud" };
       } catch (err) {
         return {

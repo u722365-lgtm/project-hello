@@ -55,7 +55,8 @@ export type ToolType =
   | 'privacy_score'
   | 'presentation_builder'
   | 'ide'
-  | 'music_generator';
+  | 'music_generator'
+  | 'strategy_agent';
 
 export interface ToolDetectionResult {
   tool: ToolType | null;

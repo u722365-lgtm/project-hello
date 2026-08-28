@@ -363,17 +363,20 @@ const VisualKnowledgeGraph = () => {
       .filter((e) => e.id && e.label && e.type)
       .map((e) => ({
         id: e.id!,
+        user_id: "",
         label: e.label!,
         type: e.type as "entity" | "concept" | "topic" | "memory",
         content: e.content || e.label!,
         frequency: e.frequency ?? 1,
-        lastMentioned: e.lastMentioned ? new Date(e.lastMentioned) : new Date(),
+        lastMentioned: (e.lastMentioned ? new Date(e.lastMentioned) : new Date()).toISOString(),
         metadata: e.metadata,
       }));
 
     const importEdges = relationships
       .filter((r) => r.source && r.target)
       .map((r) => ({
+        id: `${r.source!}-${r.target!}`,
+        user_id: "",
         source: r.source!,
         target: r.target!,
         relationship: r.relationship || "related",

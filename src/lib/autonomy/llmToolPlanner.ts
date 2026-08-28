@@ -18,6 +18,7 @@ const ROUTABLE_TOOLS = [
   "calculator",
   "shadow_browser",
   "cognitive_loop",
+  "strategy_agent",
   "none",
 ] as const;
 

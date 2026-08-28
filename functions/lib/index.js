@@ -33,12 +33,20 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.drive = exports.audio = exports.chat = void 0;
+exports.shadowScaleOrchestrator = exports.drive = exports.audio = exports.chat = void 0;
 const https_1 = require("firebase-functions/v2/https");
 const admin = __importStar(require("firebase-admin"));
+const genkit_1 = require("genkit");
+const googleai_1 = require("@genkit-ai/googleai");
+const https_2 = require("firebase-functions/v2/https");
 const cors = require("cors");
 // Initialize Firebase Admin
 admin.initializeApp();
+// Initialize Genkit
+const ai = (0, genkit_1.genkit)({
+    plugins: [(0, googleai_1.googleAI)()],
+    model: googleai_1.gemini15Flash,
+});
 const corsHandler = cors({ origin: true });
 const PLANS = {
     free: { messagesPerDay: 50, deepResearchPerDay: 3, imagesPerDay: 5 },
@@ -391,4 +399,33 @@ exports.drive = (0, https_1.onRequest)((req, res) => {
         }
     });
 });
+// ============================================================
+// Genkit Flow for shadow-scale-orchestrator
+// ============================================================
+const ActionPlanSchema = genkit_1.z.object({
+    actionType: genkit_1.z.enum(["investigate", "code", "deploy"]),
+    confidenceScore: genkit_1.z.number().min(0).max(100),
+    payload: genkit_1.z.any()
+});
+exports.shadowScaleOrchestrator = (0, https_2.onCallGenkit)({
+    authPolicy: () => {
+        return true; // By default, allowing all for now since the original function didn't strictly require valid auth
+    }
+}, ai.defineFlow({
+    name: "shadowScaleOrchestrator",
+    inputSchema: genkit_1.z.any(),
+    outputSchema: ActionPlanSchema
+}, async (input) => {
+    // Try to parse input if possible, though Genkit handles some typed input. 
+    // Let's assume input is loosely GrowthSignalSchema structure
+    const result = await ai.generate({
+        model: googleai_1.gemini15Flash,
+        prompt: `Analyze these growth signals and output an action plan: ${JSON.stringify(input)}`,
+        output: { schema: ActionPlanSchema }
+    });
+    if (!result.output) {
+        throw new Error("Failed to generate action plan");
+    }
+    return result.output;
+}));
 //# sourceMappingURL=index.js.map

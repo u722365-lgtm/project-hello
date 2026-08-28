@@ -1,9 +1,18 @@
 import { onRequest } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
+import { genkit, z } from "genkit";
+import { googleAI, gemini15Flash } from "@genkit-ai/googleai";
+import { onCallGenkit } from "firebase-functions/v2/https";
 const cors = require("cors");
 
 // Initialize Firebase Admin
 admin.initializeApp();
+
+// Initialize Genkit
+const ai = genkit({
+  plugins: [googleAI()],
+  model: gemini15Flash,
+});
 
 const corsHandler = cors({ origin: true });
 
@@ -420,3 +429,34 @@ export const drive = onRequest((req, res) => {
     }
   });
 });
+
+// ============================================================
+// Genkit Flow for shadow-scale-orchestrator
+// ============================================================
+const ActionPlanSchema = z.object({
+  actionType: z.enum(["investigate", "code", "deploy"]),
+  confidenceScore: z.number().min(0).max(100),
+  payload: z.any()
+});
+
+export const shadowScaleOrchestrator = onCallGenkit({
+  authPolicy: () => {
+    return true; // By default, allowing all for now since the original function didn't strictly require valid auth
+  }
+}, ai.defineFlow({
+  name: "shadowScaleOrchestrator",
+  inputSchema: z.any(),
+  outputSchema: ActionPlanSchema
+}, async (input: any) => {
+  // Try to parse input if possible, though Genkit handles some typed input. 
+  // Let's assume input is loosely GrowthSignalSchema structure
+  const result = await ai.generate({
+    model: gemini15Flash,
+    prompt: `Analyze these growth signals and output an action plan: ${JSON.stringify(input)}`,
+    output: { schema: ActionPlanSchema }
+  });
+  if (!result.output) {
+    throw new Error("Failed to generate action plan");
+  }
+  return result.output;
+}));

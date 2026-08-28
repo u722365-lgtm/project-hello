@@ -96,7 +96,7 @@ export function GrowthCommandPanel() {
 
   const runWorker = async () => {
     const { error } = await backend.functions.invoke("shadow-scale-orchestrator", {
-      body: { run_worker_only: true },
+      run_worker_only: true,
     });
     if (error) toast.error(error.message);
   };
@@ -115,7 +115,7 @@ export function GrowthCommandPanel() {
 
   const runOrchestrator = async () => {
     const { data, error } = await backend.functions.invoke("shadow-scale-orchestrator", {
-      body: { source: "admin_manual" },
+      source: "admin_manual",
     });
     if (error) toast.error(error.message);
     else toast.success(`Orchestrator ran: ${JSON.stringify(data?.queued ?? [])}`);

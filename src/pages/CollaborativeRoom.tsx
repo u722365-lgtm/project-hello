@@ -305,15 +305,16 @@ const CollaborativeRoom = () => {
       const result = await turboComplete(
         "You are ShadowTalk AI in a collaborative room. Be friendly and helpful. Use markdown formatting.",
         lastUserMsg,
-        undefined,
-        (chunk, fullContent) => {
-           // Throttled update to Firestore
-           const now = Date.now();
-           if (now - lastUpdateTime > 200 && aiMsgId) {
-              lastUpdateTime = now;
-              // Fire and forget
-              backend.from('room_messages').update({ content: fullContent }).eq('id', aiMsgId);
-           }
+        {
+          onDelta: (fullContent) => {
+             // Throttled update to Firestore
+             const now = Date.now();
+             if (now - lastUpdateTime > 200 && aiMsgId) {
+                lastUpdateTime = now;
+                // Fire and forget
+                backend.from('room_messages').update({ content: fullContent }).eq('id', aiMsgId);
+             }
+          }
         }
       );
 
