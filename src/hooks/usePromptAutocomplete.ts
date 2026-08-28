@@ -1,3 +1,4 @@
+import { isAnyLocalModelReady, decideRoute, runOfflineCompletion } from "@/lib/offline/localRuntime";
 "use client";
 
 import { useCallback, useEffect, useRef, useState, useMemo } from "react";
