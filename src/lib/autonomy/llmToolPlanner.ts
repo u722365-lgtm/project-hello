@@ -84,7 +84,7 @@ async function callPlannerLlm(system: string, user: string, signal?: AbortSignal
   const resp = await turboComplete(
     system,
     user,
-    { abortSignal: signal }
+    { signal }
   );
   return resp.content || "";
 }
@@ -155,7 +155,7 @@ Outcome: ${outcomeSummary.slice(0, 1500)}`;
 /** Convert planner step to legacy ToolDetectionResult for dispatch */
 export function plannerStepToDetection(step: PlannerStep, message: string): ToolDetectionResult {
   let tool = step.tool as ToolType;
-  if (step.tool === "strategy_agent") tool = "strategy_agent";
+  // strategy_agent is handled by the strategy surface, not the tool orchestrator
   if (step.tool === "none") return { tool: null, confidence: 0 };
 
   return {
