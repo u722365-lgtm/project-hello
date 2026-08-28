@@ -70,7 +70,7 @@ export function usePromptAutocomplete(
 
   const runNext = useCallback(
     async (base: string) => {
-      if (!composerEnabled || (localOnly && typeof isAnyLocalModelReady === "function" && !false)) {
+      if (!composerEnabled || (localOnly && !isAnyLocalModelReady())) {
         return;
       }
       const trimmed = base.trim();
