@@ -106,11 +106,14 @@ const FounderAccessPage = () => {
   }, [promoApplied, promoCode, selectedProduct.price]);
 
   return (
-    <div className="min-h-screen bg-background relative">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Ambient Orb */}
+      <div className="absolute top-[10%] left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
+      
       <SEOHead meta={PAGE_SEO.founderAccess} structuredData={undefined} />
       <Navigation />
 
-      <div className="relative pt-20 pb-16">
+      <div className="relative pt-20 pb-16 z-10">
         <div className="container max-w-3xl mx-auto px-4">
           <div className="mb-6 flex flex-wrap items-center gap-3">
             <Badge variant="secondary" className="gap-1.5 text-xs"><ShieldCheck className="h-3.5 w-3.5" />Verified checkout</Badge>
@@ -123,7 +126,7 @@ const FounderAccessPage = () => {
             <p className="text-muted-foreground mt-2">You are not charged until payment is verified. Choose your plan and preferred payment method.</p>
           </div>
 
-          <Card className="mb-6 border-[hsl(var(--border))] bg-[hsl(var(--card)/0.6)]">
+          <Card className="mb-6 card-glass border-primary/20">
             <CardContent className="p-4">
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 {["Plan", "Payment", "Proof", "Verified"].map((label, i) => (
@@ -138,7 +141,7 @@ const FounderAccessPage = () => {
           </Card>
 
           <div className="space-y-6">
-            <Card className="border-[hsl(var(--border))] bg-[hsl(var(--card)/0.6)]">
+            <Card className="card-glass border-primary/20">
               <CardHeader className="pb-3 border-b border-[hsl(var(--border))]">
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -167,11 +170,14 @@ const FounderAccessPage = () => {
                         const isSelected = selectedTier === tier.id;
                         const Icon = tier.id === "pro" ? Star : tier.id === "premium" ? Rocket : Crown;
                         return (
-                          <button
+                          <motion.button
+                            whileHover={{ y: -4, scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            transition={{ type: "spring", stiffness: 400, damping: 25 }}
                             key={tier.id}
                             type="button"
                             onClick={() => { setSelectedTier(tier.id); setStep("plan"); }}
-                            className={`rounded-xl p-4 text-left border-2 transition-all ${isSelected ? "border-primary bg-primary/10" : "border-[hsl(var(--border))]"}`}
+                            className={`rounded-xl p-4 text-left border transition-all ${isSelected ? "border-primary bg-primary/10 shadow-[0_0_20px_rgba(var(--primary),0.15)]" : "border-border/50 glass-subtle hover:border-primary/50"}`}
                           >
                             <div className="flex items-center gap-2 mb-2">
                               <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${isSelected ? "bg-primary text-primary-foreground" : "bg-[hsl(var(--muted))]"}`}>
@@ -186,7 +192,7 @@ const FounderAccessPage = () => {
                             {(["pro", "premium", "elite"] as PaidPlanId[]).includes(tier.id as PaidPlanId) && (
                               <p className="text-[10px] text-muted-foreground mt-1">≈ Rs {PKR_MONTHLY[tier.id as PaidPlanId].toLocaleString()} PK</p>
                             )}
-                          </button>
+                          </motion.button>
                         );
                       })}
                     </div>
@@ -231,7 +237,7 @@ const FounderAccessPage = () => {
               paymentStatus={submitted ? "pending" : undefined}
             />
 
-            <Card className="border-[hsl(var(--border))] bg-[hsl(var(--card)/0.6)]">
+            <Card className="card-glass border-primary/20">
               <CardHeader className="pb-3 border-b border-[hsl(var(--border))]">
                 <CardTitle className="text-base font-semibold">Payment method</CardTitle>
                 <p className="text-xs text-muted-foreground mt-1">Choose your preferred payment method.</p>
@@ -254,7 +260,7 @@ const FounderAccessPage = () => {
             <AnimatePresence>
               {step === "proof" && (
                 <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 0 }} className="space-y-4">
-                  <Card className="border-[hsl(var(--border))] bg-[hsl(var(--card)/0.6)]">
+                  <Card className="card-glass border-primary/20">
                     <CardHeader className="pb-3 border-b border-[hsl(var(--border))]">
                       <CardTitle className="text-base font-semibold">Confirm payment</CardTitle>
                       <p className="text-xs text-muted-foreground mt-1">Submit your receipt and transaction reference. Not verified within 24h? Message us for a full refund within 7 days.</p>

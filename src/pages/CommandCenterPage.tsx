@@ -28,9 +28,13 @@ const CommandCenterPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Dynamic Cyber Grid Background */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
+      <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-primary/5 rounded-full blur-[150px] pointer-events-none" />
+      
       <Navigation />
-      <div className="container mx-auto px-4 py-8 pt-24 max-w-6xl">
+      <div className="relative container mx-auto px-4 py-8 pt-24 max-w-6xl z-10">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -76,7 +80,7 @@ const CommandCenterPage = () => {
             animate={{ opacity: 1, y: 0 }}
             className="space-y-8"
           >
-            <Card className="border-dashed border-2 border-primary/20 bg-primary/5">
+            <Card className="card-glass border-primary/30 bg-primary/5">
               <CardContent className="flex flex-col items-center justify-center py-16 text-center">
                 <Building2 className="h-16 w-16 text-primary/40 mb-4" />
                 <h2 className="text-xl font-bold mb-2">Choose Your Industry</h2>
@@ -103,7 +107,7 @@ const CommandCenterPage = () => {
                     transition={{ delay: i * 0.05 }}
                   >
                     <Card
-                      className="cursor-pointer hover:border-primary/30 transition-all group"
+                      className="cursor-pointer border-border/50 card-glass hover:border-primary/50 hover:shadow-[0_0_30px_rgba(var(--primary),0.1)] transition-all group"
                       onClick={() => {
                         handleSelectIndustry(industry.id);
                       }}
@@ -135,7 +139,7 @@ const CommandCenterPage = () => {
             className="space-y-6"
           >
             {/* Industry banner */}
-            <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
+            <Card className="card-glass border-primary/30 bg-gradient-to-r from-primary/10 to-transparent">
               <CardContent className="flex items-center justify-between p-5">
                 <div className="flex items-center gap-4">
                   {(() => {
@@ -192,7 +196,7 @@ const CommandCenterPage = () => {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.05 }}
                   >
-                    <Card className="hover:border-primary/30 transition-all cursor-pointer group"
+                    <Card className="border-border/50 card-glass hover:border-primary/50 hover:shadow-[0_0_20px_rgba(var(--primary),0.1)] transition-all cursor-pointer group"
                       onClick={() => navigate(`/missioncontrol?goal=${encodeURIComponent(template.prompt)}`)}
                     >
                       <CardContent className="p-4 flex items-start gap-3">
@@ -231,7 +235,7 @@ const CommandCenterPage = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 + i * 0.05 }}
                   >
-                    <Card className="hover:border-primary/20 transition-all cursor-pointer"
+                    <Card className="border-border/50 card-glass hover:border-primary/50 hover:shadow-[0_0_20px_rgba(var(--primary),0.1)] transition-all cursor-pointer"
                       onClick={() => navigate(widget.href)}
                     >
                       <CardContent className="p-4 text-center">
@@ -246,7 +250,7 @@ const CommandCenterPage = () => {
             </div>
 
             {/* CTA to chat */}
-            <Card className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-primary/20">
+            <Card className="card-glass bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-primary/30">
               <CardContent className="flex items-center justify-between p-5">
                 <div className="flex items-center gap-3">
                   <Brain className="h-6 w-6 text-primary" />

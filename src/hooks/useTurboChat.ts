@@ -5,6 +5,7 @@
  * Falls back to useGlobalChat if no Groq key is available.
  */
 
+import { analyzeComplexity } from "@/lib/turbo/modelRouter";
 import { useRef, useCallback, useState, useEffect } from "react";
 import {
   turboComplete,
@@ -13,6 +14,8 @@ import {
   type TurboEngineResult,
 } from "@/lib/turbo";
 import { useGlobalChat, type GlobalChatMessage } from "@/hooks/useGlobalChat";
+import { globalMemory, buildRecallPacket } from "@/lib/memory/adaptiveMemory";
+import { analyzeComplexity } from "@/lib/turbo/modelRouter";
 
 export interface UseTurboChatReturn {
   send: (messages: GlobalChatMessage[], opts?: TurboChatHookOptions) => Promise<TurboChatResult>;
@@ -77,8 +80,11 @@ export function useTurboChat(): UseTurboChatReturn {
       try {
         const turboKey = resolveTurboKey();
 
-        // No key or forced standard → use global chat
-        if (opts.forceStandard || !turboKey) {
+        // Intelligent Model Routing
+        const complexity = analyzeComplexity(messages);
+        
+        // No key or forced standard or high complexity → use global chat
+        if ((complexity === 'high' && opts.forceStandard) || (!turboKey && !opts.forceStandard)) {
           const result = await globalChat.send(messages, {
             systemPrompt: opts.systemPrompt,
             personality: opts.personality,
@@ -92,10 +98,17 @@ export function useTurboChat(): UseTurboChatReturn {
 
         // ---- TURBO PATH ----
         const lastUser = [...messages].reverse().find(m => m.role === "user");
-        const systemPrompt =
+        let systemPrompt =
           opts.systemPrompt ||
           PERSONALITY_PREFIXES[opts.personality || "turbo"] ||
           PERSONALITY_PREFIXES.turbo;
+
+        if (lastUser) {
+          const recall = await buildRecallPacket(globalMemory, lastUser.content);
+          if (recall) {
+            systemPrompt = systemPrompt + "\n\n" + recall;
+          }
+        }
 
         const result = await turboComplete(
           systemPrompt,
@@ -103,6 +116,7 @@ export function useTurboChat(): UseTurboChatReturn {
           {
             signal: controller.signal,
             onDelta: opts.onDelta,
+            taskComplexity: complexity,
           },
         );
 

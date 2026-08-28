@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useProactiveOptIn } from '@/hooks/useProactiveOptIn';
 import { PROACTIVE_ETHICS } from '@/lib/ethicalGrowth';
+import { turboComplete } from '@/lib/turbo/turboEngine';
 
 // ─── Types ─────────────────────────────────────────────
 
@@ -23,6 +24,8 @@ export interface ProactiveMessage {
   priority: number;
   dismissable: boolean;
   icon?: string;
+  aiContext?: any;
+  fallbackText?: string;
 }
 
 type UserMood = 'neutral' | 'frustrated' | 'excited' | 'confused' | 'focused' | 'bored' | 'rushed';
@@ -257,16 +260,44 @@ export function useProactiveAI(isChatOpen: boolean) {
     messageQueueRef.current.sort((a, b) => b.priority - a.priority);
     const msg = messageQueueRef.current.shift()!;
     isShowingRef.current = true;
-    setCurrentMessage(msg);
-    setIsVisible(true);
-    setTimeout(() => {
-      setIsVisible(false);
+    
+    if (msg.aiContext) {
+      setCurrentMessage({ ...msg, content: '' });
+      setIsVisible(true);
+      
+      const systemPrompt = "You are ShadowTalk's proactive AI. Respond with a very short, conversational message based on the context. Max 1-2 sentences. Do not use quotes.";
+      
+      let gotContent = false;
+      turboComplete(systemPrompt, JSON.stringify(msg.aiContext), {
+        onDelta: (delta) => {
+          gotContent = true;
+          setCurrentMessage(prev => prev ? { ...prev, content: delta } : null);
+        }
+      }).then(() => {
+        if (!gotContent && msg.fallbackText) {
+          setCurrentMessage(prev => prev ? { ...prev, content: msg.fallbackText! } : null);
+        }
+        setTimeout(() => {
+          setIsVisible(false);
+          setTimeout(() => {
+            setCurrentMessage(null);
+            isShowingRef.current = false;
+            setTimeout(() => processQueue(), 12_000);
+          }, 400);
+        }, 8000);
+      });
+    } else {
+      setCurrentMessage(msg);
+      setIsVisible(true);
       setTimeout(() => {
-        setCurrentMessage(null);
-        isShowingRef.current = false;
-        setTimeout(() => processQueue(), 12_000);
-      }, 400);
-    }, 8000); // Show each message for 8s instead of 12s
+        setIsVisible(false);
+        setTimeout(() => {
+          setCurrentMessage(null);
+          isShowingRef.current = false;
+          setTimeout(() => processQueue(), 12_000);
+        }, 400);
+      }, 8000);
+    }
   }, [isChatOpen]);
 
   const enqueueMessage = useCallback((msg: Omit<ProactiveMessage, 'id'>) => {
@@ -329,18 +360,21 @@ export function useProactiveAI(isChatOpen: boolean) {
       const extraContext = memory.visitCount > 1
         ? `Returning visitor (visit #${memory.visitCount}, ${daysSinceVisit} days since last visit). ${memory.lastConversationTopic ? `Last topic: "${memory.lastConversationTopic}"` : ''}`
         : 'First-time visitor, make them feel welcome';
-      const aiMsg = await generateAIMessage({
+      const context = {
         triggerType,
         currentPage: location.pathname,
         visitCount: memory.visitCount,
         pagesVisited: memory.pagesVisited,
         extraContext,
-      });
+      };
       const icon = TRIGGER_ICONS[triggerType] || '👋';
+      const fallback = `${icon} Welcome! How can I help you today?`;
       enqueueMessage({
-        content: aiMsg || `${icon} Welcome! How can I help you today?`,
+        content: fallback,
         type: triggerType === 'greeting' ? 'temporal' : 'returning',
         priority: 10, dismissable: true, icon,
+        aiContext: context,
+        fallbackText: fallback
       });
     }, delay);
     return () => clearTimeout(timer);
@@ -423,18 +457,19 @@ export function useProactiveAI(isChatOpen: boolean) {
         memoryRef.current.moodHistory.push({ mood, timestamp: now });
         if (memoryRef.current.moodHistory.length > 20) memoryRef.current.moodHistory = memoryRef.current.moodHistory.slice(-20);
         saveVisitorMemory(memoryRef.current);
-        const aiMsg = await generateAIMessage({
-          triggerType: 'mood',
-          currentPage: location.pathname,
-          mood,
-          visitCount: memoryRef.current.visitCount,
-          pagesVisited: memoryRef.current.pagesVisited,
-          extraContext: `User mood changed to ${mood}. Clicks/min: ${clicksPerMinute}, idle: ${mouseIdleRef.current}ms`,
-        });
         const icon = TRIGGER_ICONS.mood;
-        if (aiMsg) {
-          enqueueMessage({ content: aiMsg, type: 'mood', priority: mood === 'frustrated' ? 9 : 6, dismissable: true, icon });
-        }
+        enqueueMessage({
+          content: "...",
+          type: 'mood', priority: mood === 'frustrated' ? 9 : 6, dismissable: true, icon,
+          aiContext: {
+            triggerType: 'mood',
+            currentPage: location.pathname,
+            mood,
+            visitCount: memoryRef.current.visitCount,
+            pagesVisited: memoryRef.current.pagesVisited,
+            extraContext: `User mood changed to ${mood}. Clicks/min: ${clicksPerMinute}, idle: ${mouseIdleRef.current}ms`,
+          }
+        });
       }
       if (now % 10000 < 3000) rapidClickRef.current = 0;
     }, 10000);
@@ -460,16 +495,16 @@ export function useProactiveAI(isChatOpen: boolean) {
       // Use AI for navigation predictions instead of hardcoded patterns
       if (recentPaths.length >= 2) {
         setTimeout(async () => {
-          const aiMsg = await generateAIMessage({
-            triggerType: 'prediction',
-            currentPage: currentPath,
-            visitCount: memory.visitCount,
-            pagesVisited: recentPaths,
-            extraContext: `Navigation path: ${recentPaths.join(' → ')}. Dwell time on previous page: ${Math.round(dwellMs / 1000)}s`,
+          enqueueMessage({
+            content: "...", type: 'prediction', priority: 8, dismissable: true, icon: TRIGGER_ICONS.prediction,
+            aiContext: {
+              triggerType: 'prediction',
+              currentPage: currentPath,
+              visitCount: memory.visitCount,
+              pagesVisited: recentPaths,
+              extraContext: `Navigation path: ${recentPaths.join(' → ')}. Dwell time on previous page: ${Math.round(dwellMs / 1000)}s`,
+            }
           });
-          if (aiMsg) {
-            enqueueMessage({ content: aiMsg, type: 'prediction', priority: 8, dismissable: true, icon: TRIGGER_ICONS.prediction });
-          }
         }, 3000);
       }
       
@@ -498,17 +533,17 @@ export function useProactiveAI(isChatOpen: boolean) {
             saveSessionState(session);
             lastMilestone = milestone;
             
-            const aiMsg = await generateAIMessage({
-              triggerType: 'narration',
-              currentPage: location.pathname,
-              scrollPercent: milestone,
-              visitCount: memoryRef.current.visitCount,
-              pagesVisited: memoryRef.current.pagesVisited,
-              extraContext: `User scrolled to ${milestone}% of the ${location.pathname} page`,
+            enqueueMessage({
+              content: "...", type: 'narration', priority: 5, dismissable: true, icon: TRIGGER_ICONS.narration,
+              aiContext: {
+                triggerType: 'narration',
+                currentPage: location.pathname,
+                scrollPercent: milestone,
+                visitCount: memoryRef.current.visitCount,
+                pagesVisited: memoryRef.current.pagesVisited,
+                extraContext: `User scrolled to ${milestone}% of the ${location.pathname} page`,
+              }
             });
-            if (aiMsg) {
-              enqueueMessage({ content: aiMsg, type: 'narration', priority: 5, dismissable: true, icon: TRIGGER_ICONS.narration });
-            }
             break;
           }
         }
@@ -523,16 +558,18 @@ export function useProactiveAI(isChatOpen: boolean) {
   useEffect(() => {
     const handler = async (e: MouseEvent) => {
       if (e.clientY <= 0 && Date.now() - pageEntryRef.current > 3000) {
-        const aiMsg = await generateAIMessage({
-          triggerType: 'exit-intent',
-          currentPage: location.pathname,
-          visitCount: memoryRef.current.visitCount,
-          pagesVisited: memoryRef.current.pagesVisited,
-          extraContext: `User moving mouse to leave. Time on page: ${Math.round((Date.now() - pageEntryRef.current) / 1000)}s`,
-        });
+        const fallback = "🚪 Heading out? Let me know if there's anything I can help with before you go.";
         enqueueMessage({
-          content: aiMsg || "🚪 Heading out? Let me know if there's anything I can help with before you go.",
+          content: fallback,
           type: 'exit-intent', priority: 9, dismissable: true, icon: TRIGGER_ICONS['exit-intent'],
+          aiContext: {
+            triggerType: 'exit-intent',
+            currentPage: location.pathname,
+            visitCount: memoryRef.current.visitCount,
+            pagesVisited: memoryRef.current.pagesVisited,
+            extraContext: `User moving mouse to leave. Time on page: ${Math.round((Date.now() - pageEntryRef.current) / 1000)}s`,
+          },
+          fallbackText: fallback
         });
       }
     };
@@ -545,17 +582,17 @@ export function useProactiveAI(isChatOpen: boolean) {
   useEffect(() => {
     const timer = setInterval(async () => {
       if (mouseIdleRef.current > 12000 && !isChatOpen) {
-        const aiMsg = await generateAIMessage({
-          triggerType: 'nudge',
-          currentPage: location.pathname,
-          mood: detectedMood,
-          visitCount: memoryRef.current.visitCount,
-          pagesVisited: memoryRef.current.pagesVisited,
-          extraContext: `User has been idle for ${Math.round(mouseIdleRef.current / 1000)}s on ${location.pathname}`,
+        enqueueMessage({
+          content: "...", type: 'nudge', priority: 4, dismissable: true, icon: TRIGGER_ICONS.nudge,
+          aiContext: {
+            triggerType: 'nudge',
+            currentPage: location.pathname,
+            mood: detectedMood,
+            visitCount: memoryRef.current.visitCount,
+            pagesVisited: memoryRef.current.pagesVisited,
+            extraContext: `User has been idle for ${Math.round(mouseIdleRef.current / 1000)}s on ${location.pathname}`,
+          }
         });
-        if (aiMsg) {
-          enqueueMessage({ content: aiMsg, type: 'nudge', priority: 4, dismissable: true, icon: TRIGGER_ICONS.nudge });
-        }
       }
     }, 15000);
     return () => clearInterval(timer);

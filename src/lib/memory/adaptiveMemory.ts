@@ -6,7 +6,10 @@
  * - Forget low-signal noise: pleasantries, filler, one-off errors.
  * - Expose compact recall packets for prompts/UI.
  * - Stay local-first by default; never require cloud storage.
+ * - Backed by IndexedDB (idb) for scalability.
  */
+
+import { openDB, DBSchema, IDBPDatabase } from 'idb';
 
 export interface MemoryFact {
   id: string;
@@ -19,7 +22,34 @@ export interface MemoryFact {
   source?: string;
 }
 
+interface MemoryDB extends DBSchema {
+  facts: {
+    key: string;
+    value: MemoryFact;
+    indexes: { 'by-confidence': number, 'by-lastUsedAt': number };
+  };
+}
+
 const STORAGE_KEY = 'shadowtalk_adaptive_memory_v2';
+const DB_NAME = 'shadowtalk_memory_db';
+const DB_VERSION = 1;
+
+let dbPromise: Promise<IDBPDatabase<MemoryDB>> | null = null;
+
+function getDB() {
+  if (!dbPromise) {
+    dbPromise = openDB<MemoryDB>(DB_NAME, DB_VERSION, {
+      upgrade(db) {
+        if (!db.objectStoreNames.contains('facts')) {
+          const store = db.createObjectStore('facts', { keyPath: 'id' });
+          store.createIndex('by-confidence', 'confidence');
+          store.createIndex('by-lastUsedAt', 'lastUsedAt');
+        }
+      },
+    });
+  }
+  return dbPromise;
+}
 
 function hashContent(content: string): string {
   let h = 0;
@@ -66,55 +96,53 @@ function classifyKind(content: string): MemoryFact['kind'] {
   return 'fact';
 }
 
-function loadRaw(): MemoryFact[] {
-  try {
-    if (typeof localStorage === 'undefined') return [];
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter(
-      (item: any) =>
-        item &&
-        typeof item.content === 'string' &&
-        item.content.trim().length > 0 &&
-        typeof item.confidence === 'number',
-    );
-  } catch {
-    return [];
-  }
-}
-
-function saveRaw(facts: MemoryFact[]): void {
-  try {
-    if (typeof localStorage === 'undefined') return;
-    const trimmed = facts
-      .sort((a, b) => b.lastUsedAt - a.lastUsedAt || b.useCount - a.useCount)
-      .slice(0, 500);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed));
-  } catch {
-    // storage full or unavailable
-  }
-}
-
 export interface MemoryOptions {
   maxFacts?: number;
   minConfidence?: number;
 }
 
 export class AdaptiveMemory {
-  private facts: MemoryFact[] = [];
   private options: MemoryOptions;
+  private initialized = false;
 
   constructor(options: MemoryOptions = {}) {
     this.options = {
       maxFacts: options.maxFacts ?? 300,
       minConfidence: options.minConfidence ?? 0.25,
     };
-    this.facts = loadRaw();
   }
 
-  ingest(conversationText: string, source?: string): MemoryFact[] {
+  async init() {
+    if (this.initialized) return;
+    const db = await getDB();
+    
+    // Migrate from localStorage if needed
+    try {
+      if (typeof localStorage !== 'undefined') {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            const tx = db.transaction('facts', 'readwrite');
+            for (const item of parsed) {
+              if (item && typeof item.content === 'string' && item.content.trim().length > 0) {
+                await tx.store.put(item);
+              }
+            }
+            await tx.done;
+          }
+          localStorage.removeItem(STORAGE_KEY);
+        }
+      }
+    } catch (e) {
+      console.warn('Memory migration failed', e);
+    }
+    
+    this.initialized = true;
+  }
+
+  async ingest(conversationText: string, source?: string): Promise<MemoryFact[]> {
+    await this.init();
     const sentences = conversationText
       .split(/(?<=[.!?])\s+/)
       .map((s) => s.trim())
@@ -122,19 +150,24 @@ export class AdaptiveMemory {
 
     const added: MemoryFact[] = [];
     const now = Date.now();
+    const db = await getDB();
 
     for (const sentence of sentences) {
       const confidence = scoreContent(sentence);
       if (confidence < this.options.minConfidence!) continue;
 
-      const existing = this.facts.find(
-        (f) => f.content.toLowerCase() === sentence.toLowerCase(),
-      );
+      const lower = sentence.toLowerCase();
+      
+      const tx = db.transaction('facts', 'readwrite');
+      const allFacts = await tx.store.getAll();
+      
+      const existing = allFacts.find((f) => f.content.toLowerCase() === lower);
 
       if (existing) {
         existing.confidence = clampScore(existing.confidence + 0.05);
         existing.useCount += 1;
         existing.lastUsedAt = now;
+        await tx.store.put(existing);
         added.push(existing);
         continue;
       }
@@ -150,18 +183,22 @@ export class AdaptiveMemory {
         source,
       };
 
-      this.facts.push(fact);
+      await tx.store.put(fact);
       added.push(fact);
+      await tx.done;
     }
 
-    this.prune();
-    saveRaw(this.facts);
+    await this.prune();
     return added;
   }
 
-  recall(query: string, limit = 12): MemoryFact[] {
+  async recall(query: string, limit = 12): Promise<MemoryFact[]> {
+    await this.init();
+    const db = await getDB();
+    const allFacts = await db.getAll('facts');
     const q = query.toLowerCase();
-    const scored = this.facts.map((fact) => {
+    
+    const scored = allFacts.map((fact) => {
       const contentMatch = fact.content.toLowerCase().includes(q) ? 0.45 : 0;
       const kindMatch =
         fact.kind === 'preference' || fact.kind === 'identity' ? 0.15 : 0;
@@ -178,35 +215,60 @@ export class AdaptiveMemory {
       .map((s) => s.fact);
   }
 
-  getRecent(limit = 20): MemoryFact[] {
-    return [...this.facts]
-      .sort((a, b) => b.lastUsedAt - a.lastUsedAt)
-      .slice(0, limit);
+  async getRecent(limit = 20): Promise<MemoryFact[]> {
+    await this.init();
+    const db = await getDB();
+    const index = db.transaction('facts').store.index('by-lastUsedAt');
+    let cursor = await index.openCursor(null, 'prev');
+    const results: MemoryFact[] = [];
+    
+    while (cursor && results.length < limit) {
+      results.push(cursor.value);
+      cursor = await cursor.continue();
+    }
+    
+    return results;
   }
 
-  getTopFacts(limit = 40): MemoryFact[] {
-    return [...this.facts]
+  async getTopFacts(limit = 40): Promise<MemoryFact[]> {
+    await this.init();
+    const db = await getDB();
+    const allFacts = await db.getAll('facts');
+    return allFacts
       .sort((a, b) => b.useCount - a.useCount || b.confidence - a.confidence)
       .slice(0, limit);
   }
 
-  clear(): void {
-    this.facts = [];
-    saveRaw([]);
+  async clear(): Promise<void> {
+    const db = await getDB();
+    const tx = db.transaction('facts', 'readwrite');
+    await tx.store.clear();
+    await tx.done;
   }
 
-  private prune(): void {
-    if (this.facts.length <= this.options.maxFacts!) return;
-    this.facts = this.facts
-      .sort((a, b) => b.confidence - a.confidence || b.useCount - a.useCount)
-      .slice(0, this.options.maxFacts);
+  private async prune(): Promise<void> {
+    const db = await getDB();
+    const count = await db.count('facts');
+    if (count <= this.options.maxFacts!) return;
+    
+    const allFacts = await db.getAll('facts');
+    allFacts.sort((a, b) => b.confidence - a.confidence || b.useCount - a.useCount);
+    
+    const toDelete = allFacts.slice(this.options.maxFacts);
+    const tx = db.transaction('facts', 'readwrite');
+    for (const f of toDelete) {
+      await tx.store.delete(f.id);
+    }
+    await tx.done;
   }
 }
 
-export function buildRecallPacket(memory: AdaptiveMemory, query: string): string {
-  const facts = memory.recall(query, 10);
+export async function buildRecallPacket(memory: AdaptiveMemory, query: string): Promise<string> {
+  const facts = await memory.recall(query, 10);
   if (!facts.length) return '';
 
   const lines = facts.map((f) => `- [${f.kind}] ${f.content}`);
   return `[Memory hints]\n${lines.join('\n')}`;
 }
+
+export const globalMemory = new AdaptiveMemory();

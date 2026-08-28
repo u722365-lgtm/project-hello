@@ -61,7 +61,7 @@ export const ProfileTab = ({
     <SettingsStagger className="space-y-6">
       <SettingsStaggerItem>
       <motion.div whileHover={reduced ? undefined : { y: -2 }} transition={spring}>
-      <Card className="glass border-border/50 card-glass">
+      <Card className="card-glass border-border/50 card-glass">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <User className="h-5 w-5 text-primary" /> Profile Information
@@ -147,7 +147,7 @@ export const ProfileTab = ({
         </CardContent>
       </Card>
 
-      <Card className="glass border-border/50">
+      <Card className="card-glass border-border/50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <Calendar className="h-4 w-4 text-primary" /> Account Details

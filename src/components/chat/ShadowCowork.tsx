@@ -1117,7 +1117,7 @@ export const ShadowCowork = ({ isOpen, onClose, onInsertToChat }: ShadowCoworkPr
               {/* Sidebar */}
               {showSidebar && (
                 <>
-                  <ResizablePanel defaultSize={18} minSize={15} maxSize={30} asChild>
+                  <ResizablePanel defaultSize={18} minSize={15} maxSize={30}>
                     <aside aria-label="Workspace Explorer" className="h-full flex flex-col border-r border-border bg-muted/20">
                       {/* Sidebar Tabs */}
                       <div className="border-b border-border">
@@ -1365,7 +1365,7 @@ export const ShadowCowork = ({ isOpen, onClose, onInsertToChat }: ShadowCoworkPr
               )}
               
               {/* Editor + Terminal */}
-              <ResizablePanel defaultSize={showSidebar ? 82 : 100} asChild>
+              <ResizablePanel defaultSize={showSidebar ? 82 : 100}>
                 <main aria-label="Workspace Main">
                 <ResizablePanelGroup direction="vertical">
                   {/* Editor */}

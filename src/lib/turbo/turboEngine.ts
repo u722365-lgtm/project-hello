@@ -33,7 +33,7 @@ export interface TurboEngineOptions {
   /** Stream callback (optional — for live UI updates) */
   onDelta?: (accumulated: string) => void;
   /** Task complexity for intelligent model routing. Default: 'high' */
-  taskComplexity?: 'low' | 'high';
+  taskComplexity?: 'low' | 'medium' | 'high';
 }
 
 export interface TurboEngineResult {

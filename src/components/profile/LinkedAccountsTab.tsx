@@ -174,7 +174,7 @@ export const LinkedAccountsTab = ({ userId, email }: LinkedAccountsTabProps) => 
 
   return (
     <SettingsStagger className="space-y-6">
-      <Card className="glass border-border/50">
+      <Card className="card-glass border-border/50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5 text-primary" /> Sign-In Methods
@@ -227,7 +227,7 @@ export const LinkedAccountsTab = ({ userId, email }: LinkedAccountsTabProps) => 
         </CardContent>
       </Card>
 
-      <Card className="glass border-border/50">
+      <Card className="card-glass border-border/50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Link2 className="h-5 w-5 text-primary" /> Integrations

@@ -6,6 +6,7 @@
 import { useCallback, useRef, useState } from "react";
 import { backend } from "@/integrations/local/client";
 import { streamChatCompletion } from "@/lib/see/chatCompletion";
+import { globalMemory, buildRecallPacket } from "@/lib/memory/adaptiveMemory";
 
 export interface GlobalChatMessage {
   role: "user" | "assistant" | "system";
@@ -38,7 +39,16 @@ export function useGlobalChat() {
         const token = data.session?.access_token;
 
         const lastUser = [...messages].reverse().find((m) => m.role === "user");
-        const prompt = [opts.systemPrompt, lastUser?.content].filter(Boolean).join("\n\n");
+        
+        let contextPrefix = opts.systemPrompt;
+        if (lastUser) {
+          const recall = await buildRecallPacket(globalMemory, lastUser.content);
+          if (recall) {
+            contextPrefix = (contextPrefix ? contextPrefix + "\n\n" : "") + recall;
+          }
+        }
+        
+        const prompt = [contextPrefix, lastUser?.content].filter(Boolean).join("\n\n");
 
         const content = await streamChatCompletion(token as string, prompt, {
           model: opts.model,

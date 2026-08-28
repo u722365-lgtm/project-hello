@@ -89,7 +89,7 @@ export default function SettingsPage() {
     mainRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, [section]);
 
-  if (authLoading || !user) {
+  if (authLoading) {
     return <SettingsLoading />;
   }
 

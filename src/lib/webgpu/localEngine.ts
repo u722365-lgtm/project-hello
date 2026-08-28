@@ -97,6 +97,10 @@ export async function unloadLocalEngine(): Promise<void> {
 /**
  * Quickly checks if WebGPU is supported by the current browser.
  */
+export function isEngineLoaded(): boolean {
+  return enginePromise !== null;
+}
+
 export function isWebGPUSupported(): boolean {
   return typeof navigator !== 'undefined' && 'gpu' in navigator;
 }

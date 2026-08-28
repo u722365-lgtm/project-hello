@@ -254,9 +254,9 @@
             headers: getChatFetchHeaders(token),
             body: JSON.stringify({ 
               model: "google/gemini-2.5-pro",
-              messages: [{ role: "user", content: `Analyze this frame. Previous analysis: ${JSON.stringify(state.currentAnalysis)}. Image: ${imageData.slice(0, 50)}...` }],
+              messages: [{ role: "user", content: `Analyze this frame. Return ONLY JSON. Previous analysis: ${JSON.stringify(state.currentAnalysis)}. Image: ${imageData.slice(0, 50)}...` }],
               imageData, // If the backend supports it
-              stream: false
+              stream: true
             })
           }
         );
@@ -265,10 +265,59 @@
          throw new Error('Analysis failed');
        }
        
-       const data = await response.json();
-       const analysis = data.analysis as VisionAnalysis;
+       const reader = response.body!.getReader();
+       const decoder = new TextDecoder();
+       let buffer = '';
+       let accumulated = '';
+       let partialAnalysis: Partial<VisionAnalysis> = {};
        
-       // Update personality based on detected emotion
+       while (true) {
+         const { done, value } = await reader.read();
+         if (done) break;
+         buffer += decoder.decode(value, { stream: true });
+         
+         let newlineIdx: number;
+         while ((newlineIdx = buffer.indexOf('\n')) !== -1) {
+           let line = buffer.slice(0, newlineIdx).trim();
+           buffer = buffer.slice(newlineIdx + 1);
+           
+           if (line.startsWith('data: ') && line !== 'data: [DONE]') {
+             try {
+               const data = JSON.parse(line.slice(6));
+               const delta = data.choices?.[0]?.delta?.content || '';
+               accumulated += delta;
+               
+               // Optimistic UI Extraction
+               if (accumulated.includes('"emotion"')) {
+                 const m = accumulated.match(/"emotion"\s*:\s*"([^"]+)"/);
+                 if (m) partialAnalysis.emotion = m[1] as any;
+               }
+               if (accumulated.includes('"suggested_action"')) {
+                 const m = accumulated.match(/"suggested_action"\s*:\s*"([^"]+)"/);
+                 if (m) partialAnalysis.suggested_action = m[1];
+               }
+               
+               if (Object.keys(partialAnalysis).length > 0) {
+                 setState(prev => ({
+                   ...prev,
+                   currentAnalysis: { ...prev.currentAnalysis, ...partialAnalysis } as VisionAnalysis,
+                   currentPersonality: partialAnalysis.emotion ? getPersonalityForEmotion(partialAnalysis.emotion) : prev.currentPersonality
+                 }));
+               }
+             } catch(e) {}
+           }
+         }
+       }
+       
+       // Final parse
+       let analysis: VisionAnalysis;
+       try {
+         const parsed = JSON.parse(accumulated);
+         analysis = parsed.analysis || parsed;
+       } catch(e) {
+         analysis = { ...state.currentAnalysis, ...partialAnalysis } as VisionAnalysis;
+       }
+       
        const newPersonality = getPersonalityForEmotion(analysis.emotion);
        
        setState(prev => ({

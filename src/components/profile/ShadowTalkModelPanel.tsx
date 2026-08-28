@@ -9,7 +9,7 @@ export function ShadowTalkModelPanel() {
 
   if (!enabled) {
     return (
-      <Card className="glass border-border/50">
+      <Card className="card-glass border-border/50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <Brain className="h-5 w-5 text-primary" />
@@ -27,7 +27,7 @@ export function ShadowTalkModelPanel() {
   const status = state?.status ?? "untrained";
 
   return (
-    <Card className="glass border-border/50">
+    <Card className="card-glass border-border/50">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <Brain className="h-5 w-5 text-primary" />

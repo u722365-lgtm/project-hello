@@ -42,7 +42,7 @@ export const CustomApiKeysPanel = () => {
   };
 
   return (
-    <Card className="glass border-border/50">
+    <Card className="card-glass border-border/50">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <KeyRound className="h-5 w-5 text-primary" />

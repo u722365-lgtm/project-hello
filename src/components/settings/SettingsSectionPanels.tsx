@@ -152,11 +152,6 @@ export function SettingsSectionPanels({
         </SettingsStaggerItem>
         <SettingsStaggerItem>
           <AnimatedCard>
-
-          </AnimatedCard>
-        </SettingsStaggerItem>
-        <SettingsStaggerItem>
-          <AnimatedCard>
             <ShadowTalkModelPanel />
           </AnimatedCard>
         </SettingsStaggerItem>
