@@ -33,7 +33,7 @@ export interface TurboChatHookOptions {
 
 export interface TurboChatResult {
   content: string;
-  source: "turbo-groq" | "turbo-openrouter" | "standard-cloud" | "standard-offline" | "error";
+  source: "turbo-groq" | "turbo-openrouter" | "webgpu-local" | "standard-cloud" | "standard-offline" | "error";
   ttftMs?: number;
   totalMs?: number;
 }
