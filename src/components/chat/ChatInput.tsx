@@ -16,6 +16,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { usePromptAutocomplete } from "@/hooks/usePromptAutocomplete";
 import { buildInAppSharePayload, getViralShareLinks } from "@/lib/viralShare";
 import { ViralShareButton } from "@/components/chat/ViralShareButton";
@@ -74,6 +75,7 @@ export const ChatInput = ({
   onSuggestionChange,
 }: ChatInputProps) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { play } = useSoundEffects();
 
   // Auto-focus the composer on mount so users can start typing immediately.
   // Skip on touch devices so the mobile keyboard doesn't pop up unprompted.
@@ -100,6 +102,7 @@ export const ChatInput = ({
     }
     if (e.key === "Enter" && !e.shiftKey && getChatEnterToSend()) {
       e.preventDefault();
+      play('send');
       onSend();
       return;
     }
@@ -142,14 +145,15 @@ export const ChatInput = ({
               {[...Array(5)].map((_, i) => (
                 <motion.div
                   key={i}
-                  animate={{ height: isListening ? [8, 16, 8] : [4, 10, 4] }}
+                  animate={{ scaleY: isListening ? [0.5, 1, 0.5] : [0.25, 0.625, 0.25] }}
+                  style={{ originY: 0.5 }}
                   transition={{
                     duration: isListening ? 0.6 : 1.2,
                     repeat: Infinity,
                     delay: i * 0.1,
                     ease: "easeInOut",
                   }}
-                  className="w-1 bg-primary rounded-full"
+                  className="w-1 h-4 bg-primary rounded-full"
                 />
               ))}
             </div>
@@ -255,7 +259,7 @@ export const ChatInput = ({
               </TooltipProvider>
 
               <Button
-                onClick={onSend}
+                onClick={() => { play('send'); onSend(); }}
                 size="icon"
                 className="shadowtalk-composer__send"
                 disabled={!canSend || isLoading}
@@ -412,7 +416,7 @@ export const ChatInput = ({
                 (message.trim() || selectedFile) &&
                 !isLoading && (
                   <Button
-                    onClick={onSend}
+                    onClick={() => { play('send'); onSend(); }}
                     size="icon"
                     className="h-9 w-9 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-all disabled:opacity-40"
                     disabled={!message.trim() && !selectedFile}
@@ -433,7 +437,7 @@ export const ChatInput = ({
               ) : (
                 <>
                   <Button
-                    onClick={onSend}
+                    onClick={() => { play('send'); onSend(); }}
                     size="icon"
                     className="h-9 w-9 rounded-full bg-white text-black hover:bg-white/90 shadow-lg transition-all duration-300 disabled:opacity-10 disabled:bg-white/5 disabled:text-white/20 hover:scale-105 active:scale-95"
                     disabled={!message.trim() && !selectedFile}

@@ -13,7 +13,7 @@ service firebase.storage {
     // Public, read-only assets (logos, share images).
     match /public-assets/{allPaths=**} {
       allow read: if true;
-      allow write: if signedIn();
+      allow write: if false;
     }
 
     // Marketing/email assets — read-only for everyone, no client writes.

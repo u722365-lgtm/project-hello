@@ -19,7 +19,17 @@ export default defineConfig(({ mode }) => {
       target: 'es2020',
       minify: isProduction ? 'esbuild' : false,
       sourcemap: isProduction ? 'hidden' : true,
-      chunkSizeWarningLimit: 500,
+      chunkSizeWarningLimit: 1000,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+            'vendor-firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage', 'firebase/analytics', 'firebase/remote-config'],
+            'vendor-ui': ['lucide-react', 'framer-motion', '@radix-ui/react-dialog', '@radix-ui/react-toast', 'sonner'],
+            'vendor-query': ['@tanstack/react-query'],
+          }
+        }
+      }
     },
     plugins: [react()],
     resolve: {

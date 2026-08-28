@@ -9,6 +9,10 @@ import { warmHardwareProfile, prewarmFastestLocalPath } from "./lib/hardwareInte
 import { installViteChunkRecovery, clearViteChunkRecoveryFlag } from "./lib/viteChunkRecovery";
 import { applyAnonymousAutonomousDefaults } from "./lib/anonymousAutonomousMode";
 import { applyPerfProfile } from "./lib/perf/devicePerfTier";
+import { setupGlobalErrorHandling } from "./lib/globalErrorHandler";
+
+// Setup global error interceptors for better UX
+setupGlobalErrorHandling();
 
 // Detect device perf tier ASAP so CSS degrades heavy effects on low-end hardware.
 applyPerfProfile();
@@ -20,16 +24,7 @@ initPerformanceMonitoring();
 
 applyAnonymousAutonomousDefaults();
  
-// Report errors to console in production
-if (import.meta.env.PROD) {
-  window.addEventListener('error', (event) => {
-    console.error('[Global Error]', event.error);
-  });
-  
-  window.addEventListener('unhandledrejection', (event) => {
-    console.error('[Unhandled Promise Rejection]', event.reason);
-  });
-}
+// Global error listeners have been moved to setupGlobalErrorHandling
  
 // Warm WebGPU + configure on-device inference runtimes (idle, non-blocking)
 deferNonCritical(() => {

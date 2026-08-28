@@ -23,6 +23,13 @@ service cloud.firestore {
       return signedIn() && request.resource.data.user_id == request.auth.uid;
     }
 
+    function isValidIntake() {
+      return (!('message' in request.resource.data) || request.resource.data.message.size() < 5000)
+          && (!('email' in request.resource.data) || request.resource.data.email.size() < 256)
+          && (!('name' in request.resource.data) || request.resource.data.name.size() < 256)
+          && (!('subject' in request.resource.data) || request.resource.data.subject.size() < 256);
+    }
+
     // Roles are admin-managed only — never writable by the user they describe.
     match /user_roles/{uid} {
       allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
@@ -31,14 +38,14 @@ service cloud.firestore {
 
     // Publicly readable content collections.
     match /blog_posts/{doc}      { allow read: if true; allow write: if isAdmin(); }
-    match /shared_answers/{doc}  { allow read: if true; allow create: if signedIn(); allow update, delete: if ownsExisting() || isAdmin(); }
-    match /shared_missions/{doc} { allow read: if true; allow create: if signedIn(); allow update, delete: if ownsExisting() || isAdmin(); }
+    match /shared_answers/{doc}  { allow read: if true; allow create: if ownsIncoming(); allow update, delete: if ownsExisting() || isAdmin(); }
+    match /shared_missions/{doc} { allow read: if true; allow create: if ownsIncoming(); allow update, delete: if ownsExisting() || isAdmin(); }
     match /announcements/{doc}   { allow read: if true; allow write: if isAdmin(); }
 
     // Write-only intake collections (no public reads — they contain emails).
-    match /feedback/{doc}                { allow create: if true; allow read, update, delete: if isAdmin(); }
-    match /newsletter_subscriptions/{doc} { allow create: if true; allow read, update, delete: if isAdmin(); }
-    match /contact_messages/{doc}         { allow create: if true; allow read, update, delete: if isAdmin(); }
+    match /feedback/{doc}                { allow create: if isValidIntake(); allow read, update, delete: if isAdmin(); }
+    match /newsletter_subscriptions/{doc} { allow create: if isValidIntake(); allow read, update, delete: if isAdmin(); }
+    match /contact_messages/{doc}         { allow create: if isValidIntake(); allow read, update, delete: if isAdmin(); }
 
     // Billing / entitlement state — readable by owner, writable only by admins or server.
     match /subscribers/{doc}       { allow read: if ownsExisting() || isAdmin(); allow write: if isAdmin(); }
@@ -50,7 +57,7 @@ service cloud.firestore {
     match /{collection}/{doc} {
       allow read: if ownsExisting() || isAdmin();
       allow create: if ownsIncoming();
-      allow update, delete: if ownsExisting() || isAdmin();
+      allow update, delete: if (ownsExisting() && ownsIncoming()) || isAdmin();
     }
   }
 }

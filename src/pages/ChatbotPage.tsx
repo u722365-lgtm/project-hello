@@ -154,6 +154,8 @@ import { GeminiKeyAnalytics } from "@/components/chat/GeminiKeyAnalytics";
 import { DataOrganizer } from "@/components/chat/DataOrganizer";
 import { UncensoredArena } from "@/components/chat/UncensoredArena";
 import { ShadowCowork } from "@/components/chat/ShadowCowork";
+import { SwarmMode } from "@/components/chat/SwarmMode";
+import { NeuralCanvasMode } from "@/components/chat/NeuralCanvasMode";
 import { SignInPrompt } from "@/components/chat/SignInPrompt";
 import { InterimCloudConsentDialog } from "@/components/chat/InterimCloudConsentDialog";
 import { AdBanner } from "@/components/chat/AdBanner";
@@ -355,6 +357,8 @@ const ChatbotPage = () => {
   const [showDataOrganizer, setShowDataOrganizer] = useState(false);
   const [showUncensoredArena, setShowUncensoredArena] = useState(false);
   const [showShadowCowork, setShowShadowCowork] = useState(false);
+  const [showSwarmMode, setShowSwarmMode] = useState(false);
+  const [swarmPrompt, setSwarmPrompt] = useState("");
   const [showSignInPrompt, setShowSignInPrompt] = useState(false);
   const [signInPromptReason, setSignInPromptReason] = useState<"chats" | "images" | "deepResearch" | "general">("chats");
   const [showInterimCloudConsent, setShowInterimCloudConsent] = useState(false);
@@ -1390,14 +1394,18 @@ const ChatbotPage = () => {
       // Soft downgrade: do not interrupt sends for anonymous users.
     }
 
-    recordFunnelEvent("first_send_attempt");
-    markHasChatted();
-
-    const conversationId = await resolveConversationId();
-    if (!conversationId) {
-      recordFunnelEvent("send_blocked", "no_conversation_id");
+    if (chatMode === "swarm") {
+      setSwarmPrompt(msgContent);
+      setShowSwarmMode(true);
+      if (!overrideText) {
+        setMessage("");
+      }
+      setSelectedFile(null);
       return;
     }
+
+    recordFunnelEvent("first_send_attempt");
+    markHasChatted();
 
     const userMessage: Message = {
       id: crypto.randomUUID(),
@@ -1406,12 +1414,30 @@ const ChatbotPage = () => {
       timestamp: new Date(),
       attachment: selectedFile || undefined,
     };
+    const cachedFile = selectedFile;
+    
+    // OPTIMISTIC UI: Update state synchronously before any network requests
     setMessages((prev) => [...prev, userMessage]);
     if (!overrideText) {
       setMessage("");
     }
     setSelectedFile(null);
     setIsLoading(true);
+
+    // Yield briefly to allow the browser to paint the optimistic updates
+    await new Promise(resolve => requestAnimationFrame(resolve));
+
+    const conversationId = await resolveConversationId();
+    if (!conversationId) {
+      // Revert optimistic update on critical failure
+      setMessages((prev) => prev.filter(m => m.id !== userMessage.id));
+      if (!overrideText) setMessage(msgContent);
+      setSelectedFile(cachedFile);
+      setIsLoading(false);
+      recordFunnelEvent("send_blocked", "no_conversation_id");
+      return;
+    }
+
     // SPEED: persist user message in the background; don't block the AI call on a DB write.
     if (user) void saveMessage(msgContent, "user", conversationId).catch((e) =>
       console.warn("[chat] saveMessage(user) failed", e),
@@ -1796,12 +1822,33 @@ const ChatbotPage = () => {
       }
       recordFunnelEvent("send_error", msg.slice(0, 80));
       toast({ title: "Message failed", description: msg, variant: "destructive" });
-      setMessages((prev) => [
-        ...prev,
-        { id: crypto.randomUUID(), type: "ai", content: msg, timestamp: new Date() },
-      ]);
-    } finally {
-      setIsLoading(false);
+    }
+  };
+
+  const handleSwarmComplete = async (finalAnswer: string) => {
+    setShowSwarmMode(false);
+    if (!finalAnswer) return;
+
+    const userMessage = {
+      id: crypto.randomUUID(),
+      type: "user" as const,
+      content: swarmPrompt,
+      timestamp: new Date(),
+    };
+    
+    const aiMessage = {
+      id: crypto.randomUUID(),
+      type: "ai" as const,
+      content: finalAnswer,
+      timestamp: new Date(),
+    };
+    
+    setMessages((prev) => [...prev, userMessage, aiMessage]);
+    
+    const conversationId = await resolveConversationId();
+    if (conversationId && user) {
+      await saveMessage(swarmPrompt, "user", conversationId).catch(console.error);
+      await saveMessage(finalAnswer, "assistant", conversationId).catch(console.error);
     }
   };
 
@@ -2286,45 +2333,60 @@ const ChatbotPage = () => {
                       onStarterSelect={(p) => setMessage(p)}
                     />
                   )}
-                  <ChatMessages
-                    messages={messages}
-                    isLoading={isLoading}
-                    showSuggestions={false}
-                    personality={personality}
-                    userPlan={userPlan}
-                    speakingMessageId={speakingMessageId}
-                    isSpeaking={isSpeaking}
-                    onSelectPrompt={handleQuickPrompt}
-                    onEdit={handleEditMessage}
-                    onRegenerate={handleRegenerateMessage}
-                    onTextToSpeech={speakMessage}
-                    onOpenCodeCanvas={(code, language) => {
-                      saveIdePayload({ code, language: language || "javascript" });
-                      navigate("/ide");
-                    }}
-                    onOpenIDE={(code, language) => {
-                      saveIdePayload({ code, language });
-                      navigate("/ide");
-                    }}
-                    onLaunchWebsite={(code) => {
-                      saveIdePayload({ code, language: "html", openPreview: true });
-                      navigate("/ide");
-                    }}
-                    onOpenInBrowser={(url) => {
-                      if (url) window.open(url, "_blank", "noopener,noreferrer");
-                      else setShowShadowBrowser(true);
-                    }}
-                    onShareReply={(content) => openChatShare(content)}
-                    enterpriseShare={enterprise.isEnterpriseUser}
-                    includeReferralInShare={enterprise.includeReferralInShare}
-                    onConfirmTool={handleConfirmTool}
-                    messagesEndRef={messagesEndRef}
-                    layout="gemini"
-                  />
+                  {chatMode === "neural" ? (
+                    <NeuralCanvasMode messages={messages} />
+                  ) : (
+                    <ChatMessages
+                      messages={messages}
+                      isLoading={isLoading}
+                      showSuggestions={false}
+                      personality={personality}
+                      userPlan={userPlan}
+                      speakingMessageId={speakingMessageId}
+                      isSpeaking={isSpeaking}
+                      onSelectPrompt={handleQuickPrompt}
+                      onEdit={handleEditMessage}
+                      onRegenerate={handleRegenerateMessage}
+                      onTextToSpeech={speakMessage}
+                      onOpenCodeCanvas={(code, language) => {
+                        saveIdePayload({ code, language: language || "javascript" });
+                        navigate("/ide");
+                      }}
+                      onOpenIDE={(code, language) => {
+                        saveIdePayload({ code, language });
+                        navigate("/ide");
+                      }}
+                      onLaunchWebsite={(code) => {
+                        saveIdePayload({ code, language: "html", openPreview: true });
+                        navigate("/ide");
+                      }}
+                      onOpenEnBrowser={(url) => {
+                        if (url) window.open(url, "_blank", "noopener,noreferrer");
+                        else setShowShadowBrowser(true);
+                      }}
+                      onShareReply={(content) => openChatShare(content)}
+                      enterpriseShare={enterprise.isEnterpriseUser}
+                      includeReferralInShare={enterprise.includeReferralInShare}
+                      onConfirmTool={handleConfirmTool}
+                      messagesEndRef={messagesEndRef}
+                      layout="gemini"
+                    />
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
+
+          <AnimatePresence>
+            {showSwarmMode && (
+              <SwarmMode
+                prompt={swarmPrompt}
+                onClose={() => setShowSwarmMode(false)}
+                onComplete={handleSwarmComplete}
+              />
+            )}
+          </AnimatePresence>
+
           {!isEmptyChat && (
             <>
               {enterprise.allowProductSharing && (

@@ -1,3 +1,5 @@
+import { AppError } from './AppError';
+
 // Centralized API Error Handler for Production
 
 export interface APIError {
@@ -13,11 +15,10 @@ export interface APIError {
  * to. The UI catches this and opens the BYOK key dialog so the user can add
  * their own key and continue without losing their conversation.
  */
-export class CreditsExhaustedError extends Error {
-  readonly code = "PLATFORM_CREDITS_EXHAUSTED" as const;
+export class CreditsExhaustedError extends AppError {
   readonly needsByok = true as const;
   constructor(message = "Platform AI credits are exhausted. Add your own API key to continue.") {
-    super(message);
+    super(message, { code: "PLATFORM_CREDITS_EXHAUSTED", statusCode: 402, isOperational: true });
     this.name = "CreditsExhaustedError";
   }
 }
@@ -54,7 +55,7 @@ export const API_ERROR_MESSAGES: Record<number, string> = {
   504: 'Request timeout. Please try again.',
 };
 
-export const parseAPIError = async (response: Response): Promise<APIError> => {
+export const parseAPIError = async (response: Response): Promise<AppError> => {
   let message = API_ERROR_MESSAGES[response.status] || 'An unexpected error occurred.';
   let code: string | undefined;
 
@@ -71,24 +72,22 @@ export const parseAPIError = async (response: Response): Promise<APIError> => {
     // Response body wasn't JSON, use default message
   }
 
-  const retryable = [429, 502, 503, 504].includes(response.status);
-
-  return {
-    status: response.status,
-    message,
-    code,
-    retryable,
-  };
+  // Not strictly an 'APIError' interface anymore, but an AppError
+  return new AppError(message, {
+    statusCode: response.status,
+    code: code || `HTTP_${response.status}`,
+    isOperational: true,
+  });
 };
 
 export const handleAPIError = async (
   response: Response,
   toast: (props: { title: string; description?: string; variant?: 'default' | 'destructive' }) => void
-): Promise<APIError> => {
+): Promise<AppError> => {
   const error = await parseAPIError(response);
 
   // Handle specific error types
-  switch (error.status) {
+  switch (error.statusCode) {
     case 401:
       toast({
         title: 'Session Expired',

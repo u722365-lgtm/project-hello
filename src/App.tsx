@@ -4,7 +4,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import FeedbackAutoPrompt from "@/components/FeedbackAutoPrompt";
 import MobileViewportFix from "@/components/MobileViewportFix";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, QueryCache, MutationCache } from "@tanstack/react-query";
+import { AppError } from "@/lib/AppError";
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { PageTransition } from "@/components/PageTransition";
@@ -144,6 +145,22 @@ const OnboardingFlow = lazy(() => import("./components/OnboardingFlow"));
 
  // Configure React Query with production-ready settings
  const queryClient = new QueryClient({
+   queryCache: new QueryCache({
+     onError: (error) => {
+       const appErr = AppError.fromUnknown(error, 'Failed to fetch data');
+       if (appErr.isOperational) {
+         import('sonner').then(({ toast }) => toast.error(appErr.message));
+       }
+     }
+   }),
+   mutationCache: new MutationCache({
+     onError: (error) => {
+       const appErr = AppError.fromUnknown(error, 'Action failed');
+       if (appErr.isOperational) {
+         import('sonner').then(({ toast }) => toast.error(appErr.message));
+       }
+     }
+   }),
    defaultOptions: {
      queries: {
        staleTime: 1000 * 60 * 5, // 5 minutes

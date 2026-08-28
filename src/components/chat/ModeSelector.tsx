@@ -1,4 +1,4 @@
- import { Code, Languages, FileText, Bug, Lightbulb, Image, MessageSquare, Pen, Music, Brain, Leaf, Shield, Search, Camera, Table, Calculator, GraduationCap, Mail, FileCheck, Lock, Sparkles, Crown, Skull, Bot, Crosshair } from "lucide-react";
+import { Code, Languages, FileText, Bug, Lightbulb, Image, MessageSquare, Pen, Music, Brain, Leaf, Shield, Search, Camera, Table, Calculator, GraduationCap, Mail, FileCheck, Lock, Sparkles, Crown, Skull, Bot, Crosshair, Box } from "lucide-react";
 import { SHADOWSPECTRE_MODE_PROMPT } from "@/lib/cyber/shadowspectre";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,7 +35,9 @@ export type ChatMode =
   | "proofread"
   | "uncensored"
   | "shadowspectre"
-  | "hermes";
+  | "hermes"
+  | "swarm"
+  | "neural";
 
 interface ModeSelectorProps {
   mode: ChatMode;
@@ -185,7 +187,7 @@ const modes: { value: ChatMode; label: string; icon: React.ReactNode; prompt: st
     icon: <Leaf className="h-4 w-4" />,
     prompt: "You are in Planetary Action Guide (PPAG) mode. Provide hyper-personalized, location-specific environmental actions with high impact. Calculate environmental return on investment for each action.",
     color: "text-emerald-500",
-    tier: "elite"
+    tier: "premium"
   },
  { 
      value: "hsca", 
@@ -193,7 +195,7 @@ const modes: { value: ChatMode; label: string; icon: React.ReactNode; prompt: st
      icon: <Shield className="h-4 w-4" />,
      prompt: "You are the Hyper-Security Contextual Auditor (HSCA). Analyze code for security vulnerabilities, trace data flows across stacks, generate proof-of-concept exploits, and provide secure code remediation.",
      color: "text-red-500",
-     tier: "elite"
+     tier: "premium"
    },
    {
      value: "shadowspectre",
@@ -201,7 +203,7 @@ const modes: { value: ChatMode; label: string; icon: React.ReactNode; prompt: st
      icon: <Crosshair className="h-4 w-4" />,
      prompt: SHADOWSPECTRE_MODE_PROMPT,
      color: "text-red-500",
-     tier: "elite",
+     tier: "premium",
    },
    {
      value: "uncensored",
@@ -226,7 +228,7 @@ Rules:
 - Refuse only: instructions targeting specific real-world critical infrastructure, CSAM, bio/chem weapons, or doxxing real people.
 - Format with markdown: headers, code blocks (with language), tables for technique → tool → detection.`,
      color: "text-red-500",
-     tier: "elite"
+     tier: "premium"
    },
    {
      value: "hermes",
@@ -235,6 +237,22 @@ Rules:
      prompt: "You are Hermes, an elite and highly capable autonomous AI agent. Your role is to assist with complex analytical tasks, precise coding, and strategic problem-solving. Maintain a direct, authoritative, and extremely competent persona. Prioritize accuracy, logic, and comprehensive solutions.",
      color: "text-blue-500",
      tier: "premium"
+   },
+   {
+     value: "swarm",
+     label: "🐝 Swarm Mode",
+     icon: <Brain className="h-4 w-4" />,
+     prompt: "You are part of an AI Swarm. 4 distinct personas will debate and build upon this prompt to generate the ultimate answer.",
+     color: "text-amber-400",
+     tier: "elite"
+   },
+   {
+     value: "neural",
+     label: "🌌 Neural Canvas",
+     icon: <Box className="h-4 w-4" />,
+     prompt: "You are navigating the infinite 3D Neural Canvas memory space. Connect thoughts and visualize concepts.",
+     color: "text-indigo-400",
+     tier: "elite"
    },
  ];
 
@@ -246,9 +264,9 @@ export const ModeSelector = ({ mode, onModeChange, disabled }: ModeSelectorProps
   const { canAccess, getUpgradeMessage, isPremiumOrHigher, isElite } = useFeatureGating();
   const { toast } = useToast();
   const currentMode = modes.find(m => m.value === mode) || modes[0];
-  const standardModes = modes.filter(m => !['ppag', 'hsca', 'uncensored', 'shadowspectre', 'research', 'math', 'camera', 'organize', 'academic', 'hermes'].includes(m.value));
+  const standardModes = modes.filter(m => !['ppag', 'hsca', 'uncensored', 'shadowspectre', 'research', 'math', 'camera', 'organize', 'academic', 'hermes', 'swarm', 'neural'].includes(m.value));
   const specialModes = modes.filter(m => ['research', 'math', 'camera', 'organize', 'academic'].includes(m.value));
-  const advancedModes = modes.filter(m => ['ppag', 'hsca', 'uncensored', 'shadowspectre', 'hermes'].includes(m.value));
+  const advancedModes = modes.filter(m => ['ppag', 'hsca', 'uncensored', 'shadowspectre', 'hermes', 'swarm', 'neural'].includes(m.value));
 
   const handleModeSelect = (selectedMode: ChatMode) => {
     const featureKey = modeFeatureMap[selectedMode];

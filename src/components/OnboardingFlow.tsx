@@ -1,39 +1,40 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { WelcomeDialog } from "@/components/chat/WelcomeDialog";
+import { CinematicOnboarding } from "@/components/chat/CinematicOnboarding";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 export const WELCOME_SEEN_KEY = "shadowtalk_welcome_seen";
+export const USER_ROLE_KEY = "shadowtalk_user_role";
 
 const OnboardingFlow = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
-  const [open, setOpen] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
     if (location.pathname !== "/chatbot") return;
-    if (isMobile) return;
     try {
       if (!localStorage.getItem(WELCOME_SEEN_KEY)) {
-        setOpen(true);
+        setShowOnboarding(true);
       }
     } catch {
       // private mode — skip
     }
   }, [isMobile, location.pathname]);
 
-  const handleOpenChange = (next: boolean) => {
-    setOpen(next);
-    if (!next) {
-      try {
-        localStorage.setItem(WELCOME_SEEN_KEY, "true");
-      } catch {
-        // ignore
-      }
+  const handleComplete = (profile: string) => {
+    setShowOnboarding(false);
+    try {
+      localStorage.setItem(WELCOME_SEEN_KEY, "true");
+      localStorage.setItem(USER_ROLE_KEY, profile);
+    } catch {
+      // ignore
     }
   };
 
-  return <WelcomeDialog open={open} onOpenChange={handleOpenChange} />;
+  if (!showOnboarding) return null;
+
+  return <CinematicOnboarding onComplete={handleComplete} />;
 };
 
 export default OnboardingFlow;
