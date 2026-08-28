@@ -74,6 +74,7 @@ export const adminNavGroups: AdminNavGroup[] = [
       { id: "geo-tracking", label: "User map", icon: Globe },
       { id: "journeys", label: "Journeys", icon: Route },
       { id: "timezone", label: "Timezones", icon: Clock },
+      { id: "firebase-analytics", label: "Firebase Analytics", icon: Activity, description: "Real-time usage limits & logs" },
       { id: "business", label: "Business insights", icon: BarChart3 },
       { id: "gsc", label: "Search Console", icon: Globe, description: "Read-only GSC summary" },
     ],

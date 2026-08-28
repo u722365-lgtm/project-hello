@@ -74,6 +74,7 @@ import GoogleSearchConsoleSummary from '@/components/admin/GoogleSearchConsoleSu
 import { BusinessInsightsDashboard } from '@/components/admin/BusinessInsightsDashboard';
 import { GrowthCommandPanel } from '@/components/admin/GrowthCommandPanel';
 import { TimezoneInsights } from '@/components/admin/TimezoneInsights';
+import { FirebaseAnalytics } from '@/components/admin/FirebaseAnalytics';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAdminMotion } from '@/hooks/useAdminMotion';
@@ -328,6 +329,8 @@ const AdminPage = () => {
         return <UserJourneyTracker />;
       case 'timezone':
         return <TimezoneInsights />;
+      case 'firebase-analytics':
+        return <FirebaseAnalytics />;
       case 'business':
         return <BusinessInsightsDashboard />;
       case 'gsc':
