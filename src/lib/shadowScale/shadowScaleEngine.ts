@@ -8,6 +8,7 @@ import {
   SHADOWSCALE_TICK_MS,
 } from "./shadowScaleConfig";
 import { refreshShadowScaleSignals, subscribeShadowScaleSignals } from "./shadowScaleSignals";
+import { supabase } from "@/integrations/supabase/client";
 
 async function sendHeartbeat(route: string, userId: string | null): Promise<void> {
   const events = drainGrowthEvents();
@@ -23,11 +24,13 @@ async function sendHeartbeat(route: string, userId: string | null): Promise<void
   }
 
   try {
-    const { data, error } = await backend.functions.invoke("shadow-scale-orchestrator", {
-      client_id: getShadowScaleClientId(),
-      user_id: userId,
-      route,
-      events,
+    const { data, error } = await supabase.functions.invoke("shadow-scale-orchestrator", {
+      body: {
+        client_id: getShadowScaleClientId(),
+        user_id: userId,
+        route,
+        events,
+      }
     });
     if (error) {
       console.warn("[ShadowScale] Orchestrator Genkit Error:", error);

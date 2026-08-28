@@ -7,6 +7,7 @@ import { useCallback, useRef, useState } from "react";
 import { backend } from "@/integrations/local/client";
 import { streamChatCompletion } from "@/lib/see/chatCompletion";
 import { globalMemory, buildRecallPacket } from "@/lib/memory/adaptiveMemory";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface GlobalChatMessage {
   role: "user" | "assistant" | "system";
@@ -51,7 +52,7 @@ export function useGlobalChat() {
            chatMessages.unshift({ role: "system", content: contextPrefix });
         }
 
-        const { data, error } = await backend.functions.invoke("chat", {
+        const { data, error } = await supabase.functions.invoke("chat", {
           body: { messages: chatMessages, model: opts.model },
           signal: opts.signal,
         });
