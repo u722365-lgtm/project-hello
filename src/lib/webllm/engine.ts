@@ -18,6 +18,7 @@ export interface WebLlmProgress {
   percent: number;
   text: string;
   message: string;
+  phase?: 'downloading' | 'initializing' | 'ready' | 'error';
 }
 
 export interface WebLlmChatResult {
