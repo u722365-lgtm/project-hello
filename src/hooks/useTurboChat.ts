@@ -5,7 +5,6 @@
  * Falls back to useGlobalChat if no Groq key is available.
  */
 
-import { analyzeComplexity } from "@/lib/turbo/modelRouter";
 import { useRef, useCallback, useState, useEffect } from "react";
 import {
   turboComplete,
