@@ -117,7 +117,8 @@ export function usePromptAutocomplete(
 
         let candidate = "";
         try {
-          const content = await null.then((r) => r.content);
+          const result = await runOfflineCompletion({ messages, maxTokens: 48 });
+          const content = result?.content ?? "";
           candidate = content
             .replace(/^["“”'‘’]+/, "")
             .replace(/^[\s:–—\-;]+/, "")
