@@ -167,15 +167,13 @@ export async function executeShadowTool(
 
     case "presentation_builder": {
       const topic = p.topic || message;
-      try {
-        throw new Error("S.E.E removed");
         return {
           kind: "inline",
           tool,
           content: `### Presentation outline: ${topic}\n\n\`\`\`json\n${JSON.stringify({ slides: [{ title: topic, bullets: ["Intro", "Body", "Conclusion"] }], export: "Use Presentations page to generate PPTX." }, null, 2)}\`\`\``,
         };
-      }
     }
+
 
     case "database_query":
     case "analytics_agent": {
