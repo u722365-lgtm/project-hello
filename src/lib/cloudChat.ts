@@ -25,10 +25,13 @@ export interface CloudChatResult {
   error?: string;
 }
 
-const FUNCTIONS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
-
 export function isCloudChatConfigured(): boolean {
   return Boolean(import.meta.env.VITE_SUPABASE_URL);
+}
+
+function getFunctionsUrl(): string {
+  const base = (import.meta.env.VITE_SUPABASE_URL as string | undefined)?.replace(/\/+$/, "") || "";
+  return base ? `${base}/functions/v1/chat` : "";
 }
 
 /** Stream a chat completion from the Lovable Cloud AI edge function. */
@@ -36,11 +39,22 @@ export async function streamCloudChat(
   messages: CloudChatMessage[],
   opts: CloudChatOptions = {},
 ): Promise<CloudChatResult> {
-  const { data } = await supabase.auth.getSession();
-  const accessToken = data.session?.access_token;
-  const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+  const url = getFunctionsUrl();
+  if (!url) {
+    return { content: "", error: "Lovable Cloud AI is not configured." };
+  }
 
-  const resp = await fetch(FUNCTIONS_URL, {
+  let accessToken: string | undefined;
+  try {
+    const { data } = await supabase.auth.getSession();
+    accessToken = data?.session?.access_token;
+  } catch {
+    /* ignore session lookup failure */
+  }
+
+  const anonKey = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string) || "";
+
+  const resp = await fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
