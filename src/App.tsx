@@ -51,7 +51,7 @@ const SharedMissionPage = lazy(() => import("./pages/SharedMissionPage"));
 import { NotificationPermissionRequester } from "@/components/notifications/NotificationPermissionRequester";
 import { UpdateNotificationProvider } from "@/components/notifications/UpdateNotificationProvider";
 import { AutonomousAgentEngine } from "@/components/autonomy/AutonomousAgentEngine";
-import { MissionSchedulerEngine } from "@/components/autonomy/MissionSchedulerEngine";
+
 import { ScriptSchedulerEngine } from "@/components/autonomy/ScriptSchedulerEngine";
 import { GoalPursuitEngine } from "@/components/autonomy/GoalPursuitEngine";
 import { NetworkTransitionOverlay } from "@/components/chat/NetworkTransitionOverlay";
@@ -406,7 +406,7 @@ const App = () => {
                       <AutoImproveEngine />
                       <ShadowScaleEngine />
                       <AutonomousAgentEngine />
-                      <MissionSchedulerEngine />
+
                       <ScriptSchedulerEngine />
                       <GoalPursuitEngine />
                       <VoiceCommandSystem />

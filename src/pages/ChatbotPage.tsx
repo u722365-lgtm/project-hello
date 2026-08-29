@@ -36,7 +36,7 @@ import { useGuestUsage, GUEST_LIMITS } from "@/hooks/useGuestUsage";
 import { useDailyLimits } from "@/hooks/useDailyLimits";
 import { useToolOrchestrator } from "@/hooks/useToolOrchestrator";
 import { useAgenticToolDispatch } from "@/hooks/useAgenticToolDispatch";
-import { detectShadowExecutionFromChat } from "@/lib/execution/inferFromChat";
+
 import { ChatAmbientBackground } from "@/components/chat/ChatAmbientBackground";
 import { ChatEmptyState } from "@/components/chat/ChatEmptyState";
 import { ChatMainPanel } from "@/components/chat/ChatMainPanel";
@@ -48,7 +48,7 @@ import { ChatMobileNavDrawer } from "@/components/chat/ChatMobileNavDrawer";
 import { useShadowMemoryContext } from "@/contexts/ShadowMemoryContext";
 import { useIntelligenceHub } from "@/hooks/useIntelligenceHub";
 import { useAutoImproveContext } from "@/contexts/AutoImproveContext";
-import { resolveAutonomousRoute } from "@/lib/autonomy/autonomousRouter";
+
 import { trackAgenticEvent } from "@/lib/agenticMetrics";
 import { upsertGoalsFromMessage, syncGoalToAiMemories } from "@/lib/autonomy/goalPersistence";
 import { detectChatImageIntent } from "@/lib/chatImageIntent";
@@ -1569,36 +1569,7 @@ const ChatbotPage = () => {
       return;
     }
 
-    const execHint = detectShadowExecutionFromChat(msgContent);
-    const route = resolveAutonomousRoute(msgContent, execHint, { preferSeeRouting });
-    if (route.redirectToExecute) {
-      goToExecute(msgContent);
-      const label =
-        execHint.deliverableType === "strategy_report"
-          ? "Strategy report"
-          : execHint.deliverableType === "research_brief"
-            ? "Research brief"
-            : "Shadow Execution";
-      const routeMsg = `**${label}** fits this request better than a single chat reply — opening the execution workspace with your goal pre-filled. I'll run a visible plan with live web research and a saved deliverable.`;
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: crypto.randomUUID(),
-          type: "ai",
-          content: routeMsg,
-          timestamp: new Date(),
-          toolExecution: {
-            tool: "shadow_execution",
-            status: "complete",
-            params: { goal: msgContent, mode: execHint.deliverableType },
-            result: label,
-          },
-        },
-      ]);
-      if (user) void saveMessage(routeMsg, "assistant", conversationId).catch(() => {});
-      setIsLoading(false);
-      return;
-    }
+
 
     const toolDispatchUi = {
       openDeepResearch: (q?: string) => {
@@ -1611,12 +1582,7 @@ const ChatbotPage = () => {
         setMusicAutoGenerate(Boolean(prompt));
         setShowMusicGenerator(true);
       },
-      openAgenticRunner: (g: string) => goToExecute(g),
-      openBrowser: () => setShowShadowBrowser(true),
-      openShadowLive: () => setShowShadowTalkLive(true),
-      openMissionControl: () => goToExecute(msgContent),
-      openShadowExecution: (g: string, mode?: import("@/lib/execution/types").DeliverableType) =>
-        goToExecute(g),
+
       setPendingMessage: (text: string) => setMessage(text),
       appendAssistantMessage: (
         content: string,

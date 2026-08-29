@@ -3,7 +3,7 @@ import type { ToolType } from "@/hooks/useToolOrchestrator";
 import { chatAuthHeaders } from "./chatAuthHeaders";
 import type { ExecuteShadowToolContext, ShadowToolResult } from "./types";
 import { turboComplete } from "@/lib/turbo/turboEngine";
-import { buildExecutePath } from "@/lib/execution/inferFromChat";
+
 
 function formatSearchResults(results: Array<{ title?: string; link?: string; snippet?: string }>): string {
   if (!results.length) return "No search results returned.";
@@ -13,7 +13,7 @@ function formatSearchResults(results: Array<{ title?: string; link?: string; sni
 }
 
 const UI_ROUTES: Partial<Record<ToolType, { path: string; label: string }>> = {
-  mission_control: { path: "/missioncontrol", label: "Mission Control" },
+
   workspace: { path: "/workspace", label: "AI Workspace" },
   ide: { path: "/ide", label: "Code IDE" },
   computer_mode: { path: "/computer", label: "Computer Mode" },
@@ -168,13 +168,7 @@ export async function executeShadowTool(
     case "presentation_builder": {
       const topic = p.topic || message;
       try {
-        const outline = buildExecutePath(message, "content_pack");
-        return {
-          kind: "inline",
-          tool,
-          content: `### Presentation outline: ${topic}\n\n\`\`\`json\n${JSON.stringify(outline, null, 2).slice(0, 8000)}\`\`\`\n\nOpen **Presentations** to export as PPTX.`,
-        };
-      } catch {
+        throw new Error("S.E.E removed");
         return {
           kind: "inline",
           tool,
@@ -214,17 +208,7 @@ export async function executeShadowTool(
       };
     }
 
-    case "mission_control": {
-      return {
-        kind: "ui",
-        tool: "mission_control",
-        path: "/missioncontrol",
-        state: {
-          message,
-          params: p,
-        },
-      };
-    }
+
 
     default:
       return {
