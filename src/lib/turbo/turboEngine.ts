@@ -17,6 +17,7 @@
 import { resolveTurboKey, TURBO_MODEL_GROQ, TURBO_MODEL_CHAT, GROQ_API_URL, OPENROUTER_API_URL, TURBO_MODEL_OPENROUTER } from './turboProviders';
 import { isSovereignAgentsEnabled } from '@/lib/desktop/sovereignAgentMode';
 import { localComplete, isWebGPUSupported, WEBGPU_MODEL } from '@/lib/webgpu/localEngine';
+import { isAnyLocalModelReady } from '@/lib/offline/localRuntime';
 import { trackAiMetrics, estimateTokens } from '@/lib/telemetry/agenticMetrics';
 import { streamCloudChat } from '@/lib/cloudChat';
 
@@ -219,7 +220,9 @@ export async function turboComplete(
   // WebGPU Local Fallback Strategy
   // If Sovereign Agents is enabled, and we don't have a specific API key (or we do and want to force local),
   // we try local WebGPU first if supported.
-  if (isSovereignAgentsEnabled() && isWebGPUSupported()) {
+  // Only use the local model when it is ALREADY loaded — otherwise the first
+  // message would block on a multi-minute model download.
+  if (isSovereignAgentsEnabled() && isWebGPUSupported() && isAnyLocalModelReady()) {
     try {
       const content = await localComplete(systemPrompt, userContent, opts.onDelta);
       const totalMs = performance.now() - startMs;

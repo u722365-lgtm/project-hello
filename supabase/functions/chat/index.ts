@@ -1,6 +1,8 @@
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 
-const DEFAULT_MODEL = 'google/gemini-3.7-flash';
+const DEFAULT_MODEL = 'openai/gpt-5.6-sol';
+
+type Msg = { role: 'system' | 'user' | 'assistant'; content: string };
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -17,7 +19,7 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json().catch(() => null);
-    const messages = body?.messages;
+    const messages = body?.messages as Msg[] | undefined;
     if (!Array.isArray(messages) || messages.length === 0) {
       return new Response(JSON.stringify({ error: 'messages must be a non-empty array' }), {
         status: 400,
@@ -25,10 +27,7 @@ Deno.serve(async (req) => {
       });
     }
     for (const m of messages) {
-      if (
-        !m || typeof m.content !== 'string' ||
-        !['system', 'user', 'assistant'].includes(m.role)
-      ) {
+      if (!m || typeof m.content !== 'string' || !['system', 'user', 'assistant'].includes(m.role)) {
         return new Response(JSON.stringify({ error: 'invalid message shape' }), {
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -38,18 +37,27 @@ Deno.serve(async (req) => {
 
     const model = typeof body?.model === 'string' && body.model ? body.model : DEFAULT_MODEL;
 
-    const upstream = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    // Responses API input items (assistant turns use output_text parts).
+    const input = messages.map((m) => ({
+      role: m.role,
+      content: [{ type: m.role === 'assistant' ? 'output_text' : 'input_text', text: m.content }],
+    }));
+
+    const upstream = await fetch('https://ai.gateway.lovable.dev/v1/responses', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
+        'Lovable-API-Key': apiKey,
         'X-Lovable-AIG-SDK': 'fetch',
       },
       body: JSON.stringify({
         model,
-        messages,
+        input,
         stream: true,
-        ...(typeof body?.temperature === 'number' ? { temperature: body.temperature } : {}),
+        store: false,
+        // Latency-optimized: minimal thinking + priority serving tier.
+        reasoning: { effort: 'low' },
+        service_tier: 'priority',
       }),
     });
 
@@ -66,7 +74,47 @@ Deno.serve(async (req) => {
       });
     }
 
-    return new Response(upstream.body, {
+    // Translate Responses SSE -> chat-completions delta SSE so clients stay unchanged.
+    const decoder = new TextDecoder();
+    const encoder = new TextEncoder();
+    let buffer = '';
+
+    const stream = new ReadableStream({
+      async start(controller) {
+        const reader = upstream.body!.getReader();
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+            let idx: number;
+            while ((idx = buffer.indexOf('\n')) !== -1) {
+              const line = buffer.slice(0, idx).trim();
+              buffer = buffer.slice(idx + 1);
+              if (!line.startsWith('data:')) continue;
+              const payload = line.slice(5).trim();
+              if (!payload || payload === '[DONE]') continue;
+              try {
+                const evt = JSON.parse(payload);
+                if (evt?.type === 'response.output_text.delta' && typeof evt.delta === 'string') {
+                  controller.enqueue(
+                    encoder.encode(
+                      `data: ${JSON.stringify({ choices: [{ delta: { content: evt.delta } }] })}\n\n`,
+                    ),
+                  );
+                }
+              } catch { /* partial JSON — next chunk completes it */ }
+            }
+          }
+          controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+          controller.close();
+        } catch (err) {
+          controller.error(err);
+        }
+      },
+    });
+
+    return new Response(stream, {
       headers: {
         ...corsHeaders,
         'Content-Type': 'text/event-stream',
