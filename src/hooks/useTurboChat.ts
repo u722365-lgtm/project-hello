@@ -135,7 +135,7 @@ export function useTurboChat(): UseTurboChatReturn {
         setIsLoading(false);
         return {
           content: result.content,
-          source: result.source,
+          source: result.source === "cloud" ? "standard-cloud" : result.source,
           ttftMs: result.ttftMs,
           totalMs: result.totalMs,
         };

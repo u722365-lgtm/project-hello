@@ -7,7 +7,7 @@ import { useCallback, useRef, useState } from "react";
 import { backend } from "@/integrations/local/client";
 import { streamChatCompletion } from "@/lib/see/chatCompletion";
 import { globalMemory, buildRecallPacket } from "@/lib/memory/adaptiveMemory";
-import { supabase } from "@/integrations/supabase/client";
+import { streamCloudChat } from "@/lib/cloudChat";
 
 export interface GlobalChatMessage {
   role: "user" | "assistant" | "system";
