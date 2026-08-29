@@ -5,7 +5,7 @@
 
 import { useCallback, useRef, useState } from "react";
 import { backend } from "@/integrations/local/client";
-import { streamChatCompletion } from "@/lib/see/chatCompletion";
+import { streamChatCompletion } from "@/lib/turbo/chatCompletion";
 import { globalMemory, buildRecallPacket } from "@/lib/memory/adaptiveMemory";
 import { streamCloudChat } from "@/lib/cloudChat";
 

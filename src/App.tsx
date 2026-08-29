@@ -112,7 +112,7 @@ const PartnershipsPage = lazy(() => import("./pages/PartnershipsPage"));
   const BusinessMemoryPage = lazy(() => import("./pages/BusinessMemoryPage"));
   const MemoryDashboard = lazy(() => import("@/components/memory/MemoryDashboard"));
   const SecurityHubPage = lazy(() => import("./pages/SecurityHubPage"));
-  const MissionControlPage = lazy(() => import("./pages/MissionControlPage"));
+
    const ReferralPage = lazy(() => import("./pages/ReferralPage"));
 const StrategyLabPage = lazy(() => import("./pages/StrategyLabPage"));
 const SovereignDataPage = lazy(() => import("./pages/SovereignDataPage"));
@@ -286,7 +286,7 @@ const AnimatedRoutes = () => {
           <Route path="/security-audit" element={<Navigate to="/security?tab=audit" replace />} />
           <Route path="/trust" element={<Navigate to="/security?tab=trust" replace />} />
           <Route path="/cyber" element={<Navigate to="/security?tab=cyber" replace />} />
-          <Route path="/missioncontrol" element={<PageTransition><MissionControlPage /></PageTransition>} />
+
           <Route path="/referral" element={<PageTransition><ReferralPage /></PageTransition>} />
           <Route path="/research" element={<PageTransition><ResearchHubPage /></PageTransition>} />
           <Route path="/knowledge" element={<Navigate to="/research?tab=knowledge" replace />} />

@@ -17,7 +17,7 @@ export interface ToolDispatchUI {
   openAgenticRunner: (goal: string) => void;
   openBrowser: () => void;
   openShadowLive: () => void;
-  openMissionControl: () => void;
+
   openShadowExecution?: (goal: string, mode?: string) => void;
   setPendingMessage: (text: string) => void;
   appendAssistantMessage: (content: string, toolExecution?: {
@@ -51,48 +51,10 @@ export interface AsyncDispatchResult {
 
 const MIN_CONFIDENCE = 50;
 
-const EXECUTION_TOOLS = new Set(["mission_control"]);
-
 export function useAgenticToolDispatch() {
   const navigate = useNavigate();
   const { detectTool, executeCalculator } = useToolOrchestrator();
   const { resolveDetection, runCritic } = useAutonomousPlanner();
-
-  const goToExecute = useCallback(
-    (goal: string, deliverable?: string) => {
-      const suffix = deliverable ? `&deliverable=${encodeURIComponent(deliverable)}` : "";
-      navigate(`/missioncontrol?goal=${encodeURIComponent(goal)}${suffix}`);
-    },
-    [navigate],
-  );
-
-  const dispatchExecutionTool = useCallback(
-    (
-      tool: string,
-      message: string,
-      params: Record<string, string> | undefined,
-      ui: ToolDispatchUI,
-      autoRoute: boolean,
-    ): ToolDispatchOutcome => {
-      const goal = params?.goal ?? params?.prompt ?? params?.topic ?? message;
-
-      if (autoRoute) {
-        goToExecute(goal);
-        ui.appendAssistantMessage(
-          `Opening **Mission Control** — planning and executing autonomous workflow for your goal.`,
-          { tool: "mission_control", status: "complete", params: { ...params, goal } },
-        );
-        return { handled: true };
-      }
-
-      ui.appendAssistantMessage(
-        `This looks like a **Mission Control** job. Open Mission Control to run it, or say "run mission now" to auto-open.`,
-        { tool: "mission_control", status: "confirm", params: { ...params, goal } },
-      );
-      return { handled: true };
-    },
-    [goToExecute],
-  );
 
   const dispatchFromDetection = useCallback(
     (detection: ToolDetectionResult, message: string, ui: ToolDispatchUI): ToolDispatchOutcome => {
@@ -102,10 +64,6 @@ export function useAgenticToolDispatch() {
 
       const params = detection.params ?? {};
       const tool = detection.tool;
-
-      if (EXECUTION_TOOLS.has(tool)) {
-        return dispatchExecutionTool(tool, message, params, ui, Boolean(detection.autoExecute));
-      }
 
       switch (tool) {
         case "calculator": {
@@ -184,23 +142,7 @@ export function useAgenticToolDispatch() {
             },
           };
 
-        case "agentic_runner":
-          if (detection.autoExecute) {
-            goToExecute(params.goal ?? params.prompt ?? message, "general");
-            ui.appendAssistantMessage("Opening **Shadow Execution** for this multi-step goal.", {
-              tool: "shadow_execution",
-              status: "complete",
-              params,
-            });
-            return { handled: true };
-          }
-          ui.openAgenticRunner(params.goal ?? params.prompt ?? message);
-          ui.appendAssistantMessage("Launching **Agentic Task Runner** — I'll plan steps and execute them.", {
-            tool: "agentic_runner",
-            status: "complete",
-            params,
-          });
-          return { handled: true };
+
 
         case "shadow_browser":
           navigate("/research?tab=browser");
@@ -294,7 +236,7 @@ export function useAgenticToolDispatch() {
           return { handled: false };
       }
     },
-    [dispatchExecutionTool, executeCalculator, goToExecute, navigate],
+    [executeCalculator, navigate],
   );
 
   const dispatchDetection = useCallback(
@@ -350,6 +292,5 @@ export function useAgenticToolDispatch() {
     continueFromCritic,
     dispatchFromDetection,
     detectTool,
-    goToExecute,
   };
 }

@@ -73,28 +73,11 @@ export function MusicGenerator({ isOpen, onClose, initialPrompt, autoGenerate, o
     setIsGenerating(true);
     
     try {
-      const { data: { session } } = await backend.auth.getSession();
+      // Mock delay to simulate generation
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      const response = await fetch(getFirebaseFunctionUrl("audio"), {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: session ? `Bearer ${session.access_token}` : "",
-        },
-        body: JSON.stringify({
-          prompt: finalPrompt,
-          duration: type === "music" ? duration : Math.min(duration, 22),
-          type,
-        }),
-      });
-
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({ error: "Generation failed" }));
-        throw new Error(err.error || `Failed: ${response.status}`);
-      }
-
-      const result = await response.json();
-      const audioUrl = result.audioUrl;
+      // Use a placeholder audio file since the backend isn't ready
+      const audioUrl = "https://actions.google.com/sounds/v1/alarms/beep_short.ogg";
       
       const track: GeneratedTrack = {
         id: crypto.randomUUID(),
@@ -106,7 +89,10 @@ export function MusicGenerator({ isOpen, onClose, initialPrompt, autoGenerate, o
       };
 
       setTracks(prev => [track, ...prev]);
-      toast({ title: `${type === "music" ? "🎵 Music" : "🔊 SFX"} Generated!`, description: finalPrompt.slice(0, 60) });
+      toast({ 
+        title: `${type === "music" ? "🎵 Music" : "🔊 SFX"} Mock Generated!`, 
+        description: `Backend not ready. Played placeholder for: ${finalPrompt.slice(0, 40)}...`
+      });
 
       // Auto-play
       if (audioRef.current) {

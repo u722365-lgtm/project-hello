@@ -117,53 +117,30 @@ export const GoogleIntegrationPanel: React.FC<GoogleIntegrationPanelProps> = ({
     setIsLoadingFiles(true);
     
     try {
-      const { data: { session } } = await backend.auth.getSession();
-      if (!session) return;
-
-      const resp = await fetch(getFirebaseFunctionUrl("drive"), {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`
-        },
-        body: JSON.stringify({ action: "drive.list", params: { maxResults: 20 } })
-      });
-
-      const result = await resp.json();
+      // Mock delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      if (result.data) {
-        setFiles(result.data.map((f: any) => ({
-          id: f.id,
-          name: f.name,
-          type: f.mimeType?.includes('spreadsheet') ? 'spreadsheet' 
-              : f.mimeType?.includes('presentation') ? 'presentation' 
-              : 'document',
-          modified: f.modifiedTime ? new Date(f.modifiedTime).toLocaleDateString() : 'Unknown',
-        })));
-      }
+      const mockFiles = [
+        { id: '1', name: 'Project Requirements.docx', type: 'document', modified: new Date().toLocaleDateString() },
+        { id: '2', name: 'Q3 Financials.xlsx', type: 'spreadsheet', modified: new Date().toLocaleDateString() },
+        { id: '3', name: 'Pitch Deck.pptx', type: 'presentation', modified: new Date().toLocaleDateString() }
+      ];
+      setFiles(mockFiles);
+      toast({ title: 'Mock Files Loaded', description: 'This is a simulated response since the backend is not ready.' });
     } catch (error) {
       console.error('Failed to load Drive files:', error);
       toast({ title: 'Failed to load files', variant: 'destructive' });
+    } finally {
       setIsLoadingFiles(false);
     }
   };
 
   const handleImportFile = async (file: { id: string; name: string }) => {
     try {
-      const { data: { session } } = await backend.auth.getSession();
-      if (!session) return;
-
-      const resp = await fetch(getFirebaseFunctionUrl("drive"), {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`
-        },
-        body: JSON.stringify({ action: "drive.get", params: { fileId: file.id } })
-      });
-
-      const result = await resp.json();
-      const content = result.data?.content || `# ${file.name}\n\nContent could not be extracted.`;
+      // Mock delay
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      const content = `# ${file.name}\n\nThis is mocked content extracted from the Google Drive file.`;
       onImportContent?.(content, `Google Drive: ${file.name}`);
       
       toast({ title: 'File Imported', description: `${file.name} has been imported to your chat.` });

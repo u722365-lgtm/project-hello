@@ -30,7 +30,7 @@ const Footer = () => {
       title: "Tools",
       links: [
         { name: "Computer Mode", href: "/computer" },
-        { name: "Mission Control", href: "/missioncontrol" },
+
         { name: "Privacy Score", href: "/privacy-score" },
         { name: "Developers", href: "/developers" },
         { name: "Billing", href: "/billing" },

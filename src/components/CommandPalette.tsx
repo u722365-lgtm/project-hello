@@ -52,7 +52,7 @@ const pages: PageEntry[] = [
   { name: "Data Insights", href: "/data-insights", icon: LineChart, desc: "Data licensing dashboard", group: "Tools" },
   { name: "Analytics", href: "/analytics", icon: BarChart3, desc: "Platform analytics", group: "Tools" },
   { name: "Strategy Lab", href: "/strategy-lab", icon: FlaskConical, desc: "Strategy experiments", group: "Tools" },
-  { name: "Mission Control", href: "/missioncontrol", icon: Rocket, desc: "Mission templates & quotas", group: "Tools" },
+
   { name: "Command Center", href: "/command-center", icon: Target, desc: "Automation hub", group: "Tools" },
   { name: "Cyber Command", href: "/cyber", icon: ShieldCheck, desc: "8-module security suite", group: "Tools" },
   { name: "Security Center", href: "/security", icon: ShieldCheck, desc: "Vault, privacy score & audits", group: "Tools" },

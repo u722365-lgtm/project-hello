@@ -99,7 +99,7 @@ export const WebHealthMonitor: React.FC = () => {
     // Check Edge Functions
     const edgeStart = performance.now();
     try {
-      const response = await fetch('', {
+      const response = await fetch('https://api.groq.com/openai/v1/models', {
         method: 'OPTIONS'
       });
       const edgeLatency = Math.round(performance.now() - edgeStart);
