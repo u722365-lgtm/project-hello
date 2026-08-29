@@ -52,16 +52,14 @@ export function useGlobalChat() {
            chatMessages.unshift({ role: "system", content: contextPrefix });
         }
 
-        const { data, error } = await supabase.functions.invoke("chat", {
-          body: { messages: chatMessages, model: opts.model },
+        const { content, error } = await streamCloudChat(chatMessages, {
+          model: opts.model,
           signal: opts.signal,
+          onDelta: opts.onDelta,
         });
 
-        if (error) throw error;
-        
-        const content = data?.content || data?.choices?.[0]?.message?.content || "";
-        opts.onDelta?.(content); // No streaming for now, just the final content
-        
+        if (error) throw new Error(error);
+
         return { content, source: "cloud" };
       } catch (err) {
         return {
