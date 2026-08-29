@@ -1,0 +1,104 @@
+/**
+ * Lovable Cloud AI chat — streaming client.
+ *
+ * Calls the `chat` edge function, which proxies the Lovable AI Gateway with
+ * `stream: true`, and yields incremental text through `onDelta`.
+ */
+
+import { supabase } from "@/integrations/supabase/client";
+
+export interface CloudChatMessage {
+  role: "system" | "user" | "assistant";
+  content: string;
+}
+
+export interface CloudChatOptions {
+  model?: string;
+  temperature?: number;
+  signal?: AbortSignal;
+  /** Called with the full accumulated text on every delta. */
+  onDelta?: (accumulated: string) => void;
+}
+
+export interface CloudChatResult {
+  content: string;
+  error?: string;
+}
+
+const FUNCTIONS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
+
+export function isCloudChatConfigured(): boolean {
+  return Boolean(import.meta.env.VITE_SUPABASE_URL);
+}
+
+/** Stream a chat completion from the Lovable Cloud AI edge function. */
+export async function streamCloudChat(
+  messages: CloudChatMessage[],
+  opts: CloudChatOptions = {},
+): Promise<CloudChatResult> {
+  const { data } = await supabase.auth.getSession();
+  const accessToken = data.session?.access_token;
+  const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+
+  const resp = await fetch(FUNCTIONS_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: anonKey,
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+    },
+    body: JSON.stringify({
+      messages,
+      ...(opts.model ? { model: opts.model } : {}),
+      ...(typeof opts.temperature === "number" ? { temperature: opts.temperature } : {}),
+    }),
+    signal: opts.signal,
+  });
+
+  if (!resp.ok) {
+    let message = `AI request failed (${resp.status})`;
+    try {
+      const body = await resp.json();
+      message = body?.error || message;
+    } catch {
+      /* keep default */
+    }
+    if (resp.status === 429) message = "Rate limit reached — please try again in a moment.";
+    if (resp.status === 402) message = message || "AI credits exhausted.";
+    return { content: "", error: message };
+  }
+
+  if (!resp.body) return { content: "", error: "Empty response from AI service." };
+
+  const reader = resp.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let content = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+
+    let idx: number;
+    while ((idx = buffer.indexOf("\n")) !== -1) {
+      const line = buffer.slice(0, idx).trim();
+      buffer = buffer.slice(idx + 1);
+      if (!line.startsWith("data:")) continue;
+      const payload = line.slice(5).trim();
+      if (!payload || payload === "[DONE]") continue;
+      try {
+        const parsed = JSON.parse(payload);
+        const delta: string | undefined = parsed?.choices?.[0]?.delta?.content;
+        if (delta) {
+          content += delta;
+          opts.onDelta?.(content);
+        }
+      } catch {
+        /* partial JSON — ignore, next chunk completes it */
+      }
+    }
+  }
+
+  return { content };
+}
