@@ -88,16 +88,16 @@ export const SwarmMode = ({
       
       // Step 2: Run CEO based on the others
       const ceo = PERSONAS[3];
-      const context = \`
-Topic: \${prompt}
+      const context = `
+Topic: ${prompt}
 
 The team has debated this.
-Hacker's take: \${results[0]?.content || 'Nothing'}
-Designer's take: \${results[1]?.content || 'Nothing'}
-Critic's take: \${results[2]?.content || 'Nothing'}
+Hacker's take: ${results[0]?.content || 'Nothing'}
+Designer's take: ${results[1]?.content || 'Nothing'}
+Critic's take: ${results[2]?.content || 'Nothing'}
 
 Now, synthesize this and provide the final executive decision and plan of action.
-      \`;
+      `;
       
       const ceoResult = await turboComplete(ceo.systemPrompt, context, {
         signal: abortControllers[3].signal,
@@ -165,11 +165,11 @@ Now, synthesize this and provide the final executive decision and plan of action
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className={\`relative flex flex-col p-4 rounded-xl border border-white/10 bg-black/40 overflow-hidden \${isCeo ? 'md:col-span-2 ring-1 ring-blue-500/30' : ''}\`}
+                className={`relative flex flex-col p-4 rounded-xl border border-white/10 bg-black/40 overflow-hidden ${isCeo ? 'md:col-span-2 ring-1 ring-blue-500/30' : ''}`}
               >
-                <div className={\`absolute top-0 left-0 w-full h-1 bg-gradient-to-r \${persona.color} opacity-50\`} />
+                <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${persona.color} opacity-50`} />
                 <div className="flex items-center gap-2 mb-3">
-                  <div className={\`p-1.5 rounded-lg bg-gradient-to-br \${persona.color} text-white\`}>
+                  <div className={`p-1.5 rounded-lg bg-gradient-to-br ${persona.color} text-white`}>
                     {persona.icon}
                   </div>
                   <h3 className="font-semibold text-sm">{persona.name}</h3>

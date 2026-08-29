@@ -18,6 +18,7 @@ import { resolveTurboKey, TURBO_MODEL_GROQ, TURBO_MODEL_CHAT, GROQ_API_URL, OPEN
 import { isSovereignAgentsEnabled } from '@/lib/desktop/sovereignAgentMode';
 import { localComplete, isWebGPUSupported, WEBGPU_MODEL } from '@/lib/webgpu/localEngine';
 import { trackAiMetrics, estimateTokens } from '@/lib/telemetry/agenticMetrics';
+import { streamCloudChat } from '@/lib/cloudChat';
 
 // ---- Public Types ----
 
@@ -38,7 +39,7 @@ export interface TurboEngineOptions {
 
 export interface TurboEngineResult {
   content: string;
-  source: 'turbo-groq' | 'turbo-openrouter' | 'webgpu-local' | 'fallback';
+  source: 'turbo-groq' | 'turbo-openrouter' | 'webgpu-local' | 'cloud' | 'fallback';
   modelUsed?: string;
   ttftMs?: number;
   totalMs?: number;
@@ -236,7 +237,7 @@ export async function turboComplete(
   }
 
   if (!apiKey) {
-    return { content: '', source: 'fallback', totalMs: performance.now() - startMs };
+    return cloudFallback(systemPrompt, userContent, opts, startMs);
   }
 
   prewarmGroqConnection(apiKey);
@@ -275,7 +276,30 @@ export async function turboComplete(
     }
   }
 
-  return { content: '', source: 'fallback', totalMs: performance.now() - startMs };
+  return cloudFallback(systemPrompt, userContent, opts, startMs);
+}
+
+/** Lovable Cloud AI streaming fallback (used when no BYOK Turbo key works). */
+async function cloudFallback(
+  systemPrompt: string,
+  userContent: string,
+  opts: TurboEngineOptions,
+  startMs: number,
+): Promise<TurboEngineResult> {
+  try {
+    const { content, error } = await streamCloudChat(
+      [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userContent },
+      ],
+      { signal: opts.signal, onDelta: opts.onDelta, temperature: opts.temperature },
+    );
+    if (error) console.warn('[TurboEngine] Cloud AI failed:', error);
+    return { content, source: 'cloud', totalMs: performance.now() - startMs };
+  } catch (err) {
+    console.warn('[TurboEngine] Cloud AI failed:', err);
+    return { content: '', source: 'fallback', totalMs: performance.now() - startMs };
+  }
 }
 
 /**
