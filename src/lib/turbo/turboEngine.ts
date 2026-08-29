@@ -275,7 +275,30 @@ export async function turboComplete(
     }
   }
 
-  return { content: '', source: 'fallback', totalMs: performance.now() - startMs };
+  return cloudFallback(systemPrompt, userContent, opts, startMs);
+}
+
+/** Lovable Cloud AI streaming fallback (used when no BYOK Turbo key works). */
+async function cloudFallback(
+  systemPrompt: string,
+  userContent: string,
+  opts: TurboEngineOptions,
+  startMs: number,
+): Promise<TurboEngineResult> {
+  try {
+    const { content, error } = await streamCloudChat(
+      [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userContent },
+      ],
+      { signal: opts.signal, onDelta: opts.onDelta, temperature: opts.temperature },
+    );
+    if (error) console.warn('[TurboEngine] Cloud AI failed:', error);
+    return { content, source: 'cloud', totalMs: performance.now() - startMs };
+  } catch (err) {
+    console.warn('[TurboEngine] Cloud AI failed:', err);
+    return { content: '', source: 'fallback', totalMs: performance.now() - startMs };
+  }
 }
 
 /**
