@@ -2360,7 +2360,7 @@ const ChatbotPage = () => {
                         saveIdePayload({ code, language: "html", openPreview: true });
                         navigate("/ide");
                       }}
-                      onOpenEnBrowser={(url) => {
+                      onOpenInBrowser={(url) => {
                         if (url) window.open(url, "_blank", "noopener,noreferrer");
                         else setShowShadowBrowser(true);
                       }}
