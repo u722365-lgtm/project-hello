@@ -78,7 +78,7 @@ export const useAgentTasks = (deviceId: string) => {
       if (!user) return null;
 
       const newTask: AgentTask = {
-        id: crypto.randomUUID(),
+        id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })),
         user_id: user.id,
         goal,
         status: "planning",

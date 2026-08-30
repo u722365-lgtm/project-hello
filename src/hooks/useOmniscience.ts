@@ -59,7 +59,7 @@ Provide 1 to 3 highly relevant predictions. If the code is trivial, return an em
           const parsed = JSON.parse(rawResponse);
           if (Array.isArray(parsed)) {
             const validPredictions = parsed.map(p => ({
-              id: crypto.randomUUID(),
+              id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })),
               type: p.type || 'completion',
               title: p.title || 'Suggestion',
               description: p.description || '',

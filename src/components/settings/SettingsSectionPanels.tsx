@@ -8,6 +8,7 @@ import {
   Link2,
   User,
   ChevronRight,
+  TrendingUp,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,12 +22,14 @@ import { ChatAIPreferencesCard } from "@/components/profile/ChatAIPreferencesCar
 
 import { ShadowTalkModelPanel } from "@/components/profile/ShadowTalkModelPanel";
 import { AutoImproveInsights } from "@/components/autoImprove/AutoImproveInsights";
-import { PrivacyDataCard } from "@/components/profile/PrivacyDataCard";
-import { CustomApiKeysPanel } from "@/components/profile/CustomApiKeysPanel";
+
+
 import { DesktopAppSettings } from "@/components/desktop/DesktopAppSettings";
 import { useSettingsMotion } from "@/hooks/useSettingsMotion";
 import { SettingsHomeGrid } from "@/components/settings/SettingsHomeGrid";
 import { SettingsShellCard } from "@/components/settings/SettingsShellCard";
+import { StrategyRunnerPanel } from "@/components/strategy/StrategyRunnerPanel";
+import { GrowthCommandPanel } from "@/components/admin/GrowthCommandPanel";
 import type { SettingsNavSection } from "@/components/settings/SettingsNav";
 import type { SettingsSectionId } from "@/lib/settingsTypes";
 import { Brain } from "lucide-react";
@@ -233,7 +236,29 @@ export function SettingsSectionPanels({
         </SettingsStaggerItem>
         <SettingsStaggerItem>
           <AnimatedCard>
-            <PrivacyDataCard />
+
+          </AnimatedCard>
+        </SettingsStaggerItem>
+      </SettingsStagger>
+    );
+  }
+
+  if (section === "growth") {
+    return (
+      <SettingsStagger className="space-y-6">
+        <SettingsSectionHeader
+          icon={TrendingUp}
+          title="Growth Engine"
+          description="AI-powered strategy, market mapping, and autonomous scale plays"
+        />
+        <SettingsStaggerItem>
+          <AnimatedCard>
+            <StrategyRunnerPanel />
+          </AnimatedCard>
+        </SettingsStaggerItem>
+        <SettingsStaggerItem>
+          <AnimatedCard>
+            <GrowthCommandPanel />
           </AnimatedCard>
         </SettingsStaggerItem>
       </SettingsStagger>
@@ -250,7 +275,7 @@ export function SettingsSectionPanels({
         />
         <SettingsStaggerItem>
           <AnimatedCard>
-            <CustomApiKeysPanel />
+
           </AnimatedCard>
         </SettingsStaggerItem>
         <SettingsStaggerItem>

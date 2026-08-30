@@ -26,7 +26,7 @@ export function useDreamState() {
   const addLog = useCallback((type: SimulationLog["type"], message: string) => {
     setLogs((prev) => [
       ...prev.slice(-50), // Keep last 50 logs for performance
-      { id: crypto.randomUUID(), type, message, timestamp: new Date() }
+      { id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })), type, message, timestamp: new Date() }
     ]);
   }, []);
 

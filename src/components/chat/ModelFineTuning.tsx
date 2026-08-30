@@ -10,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { usePersonalLLMStore } from "@/hooks/usePersonalLLMStore";
-import { syncPersonalExamplesToSovereign } from "@/lib/personalModel";
+
 import { backend } from "@/integrations/local/client";
 import { useAuth } from "@/components/AuthProvider";
 
@@ -106,7 +106,7 @@ export const ModelFineTuning = ({ onClose }: ModelFineTuningProps) => {
               presencePenalty: (config.presencePenalty as number) || 0,
               systemPrompt: (config.systemPrompt as string) || '',
               trainingExamples: trainingExamples.map(ex => ({
-                id: ex.id || crypto.randomUUID(),
+                id: ex.id || (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })),
                 userMessage: ex.userMessage || '',
                 assistantResponse: ex.assistantResponse || '',
               })),
@@ -143,7 +143,7 @@ export const ModelFineTuning = ({ onClose }: ModelFineTuningProps) => {
       ...prev,
       trainingExamples: [
         ...prev.trainingExamples,
-        { id: crypto.randomUUID(), ...newExample }
+        { id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })), ...newExample }
       ]
     }));
     setNewExample({ userMessage: "", assistantResponse: "" });
@@ -177,10 +177,7 @@ export const ModelFineTuning = ({ onClose }: ModelFineTuningProps) => {
 
     setModels(updatedModels);
     localStorage.setItem('custom-models', JSON.stringify(updatedModels));
-    void syncPersonalExamplesToSovereign({
-      ...currentModel,
-      autoLearnFromChat: currentModel.autoLearnFromChat ?? true,
-    });
+
 
     if (currentModel.isActive || currentModel.systemPrompt) {
       void updatePersonalLlmSettings({
@@ -283,10 +280,7 @@ export const ModelFineTuning = ({ onClose }: ModelFineTuningProps) => {
     localStorage.setItem('active-custom-model', name);
     const activated = updated.find((m) => m.name === name);
     if (activated) {
-      void syncPersonalExamplesToSovereign({
-        ...activated,
-        autoLearnFromChat: activated.autoLearnFromChat ?? true,
-      });
+
     }
 
     void updatePersonalLlmSettings({

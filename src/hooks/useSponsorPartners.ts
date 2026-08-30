@@ -89,7 +89,7 @@ export function useSponsorPartners() {
       await backend.from('affiliate_clicks').insert({
         user_id: user?.id || null,
         partner_id: partnerId,
-        session_id: sessionId || crypto.randomUUID(),
+        session_id: sessionId || (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })),
       });
     } catch (error) {
       console.error('Error tracking click:', error);

@@ -53,7 +53,7 @@ export const useZeroKnowledgeSync = () => {
     const db = await getDB();
     const queueItem: SyncQueueItem = {
       ...item,
-      id: crypto.randomUUID(),
+      id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })),
       timestamp: Date.now(),
     };
     await db.put(QUEUE_STORE, queueItem);

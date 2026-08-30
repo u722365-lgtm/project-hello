@@ -42,7 +42,7 @@ export function useChatToolRouter(handlers: Parameters<typeof useShadowToolBridg
       saveAssistant: (content: string) => Promise<void>,
       _signal?: AbortSignal
     ) => {
-      const aiMessageId = crypto.randomUUID();
+      const aiMessageId = (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); }));
       const lastUserMsg = [...chatMessages].reverse().find(m => m.role === "user")?.content ?? "";
 
       const result = await turboComplete(
@@ -91,7 +91,7 @@ export function useChatToolRouter(handlers: Parameters<typeof useShadowToolBridg
         const about = `${SHADOWTALK_SELF_KNOWLEDGE_BRIEF}\n\nAsk a specific question (e.g. "How do missions work?" or "What's in Elite?") for more detail.`;
         onMessagesUpdate((prev) => [
           ...prev,
-          { id: crypto.randomUUID(), type: "ai", content: about, timestamp: new Date() },
+          { id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })), type: "ai", content: about, timestamp: new Date() },
         ]);
         await saveAssistant(about);
         return;
@@ -101,7 +101,7 @@ export function useChatToolRouter(handlers: Parameters<typeof useShadowToolBridg
         const help = toolBridge.listAvailableTools();
         onMessagesUpdate((prev) => [
           ...prev,
-          { id: crypto.randomUUID(), type: "ai", content: help, timestamp: new Date() },
+          { id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })), type: "ai", content: help, timestamp: new Date() },
         ]);
         return;
       }
@@ -116,7 +116,7 @@ export function useChatToolRouter(handlers: Parameters<typeof useShadowToolBridg
         onMessagesUpdate((prev) => [
           ...prev,
           {
-            id: crypto.randomUUID(),
+            id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })),
             type: "ai",
             content: toolRun.assistantContent!,
             timestamp: new Date(),
@@ -145,7 +145,7 @@ export function useChatToolRouter(handlers: Parameters<typeof useShadowToolBridg
         onMessagesUpdate((prev) => [
           ...prev,
           {
-            id: crypto.randomUUID(),
+            id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })),
             type: "ai",
             content: toolRun.assistantContent!,
             timestamp: new Date(),

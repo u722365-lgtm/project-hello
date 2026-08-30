@@ -6,10 +6,7 @@ import { settingsHapticTick } from "@/lib/settingsFeedback";
 import { cn } from "@/lib/utils";
 import { resolveEnterpriseTenant } from "@/lib/enterpriseTenants";
 import { useAuth } from "@/components/AuthProvider";
-import {
-  canUseCloudAI,
-  isDeviceOnlyPledgeActive,
-} from "@/lib/privacy/deviceOnlyPledge";
+
 
 /** Spec §7 — four labelled starting shortcuts (prompt shortcuts, not new pages). */
 const DEFAULT_QUICK_PROMPTS = [
@@ -39,14 +36,8 @@ export function ChatEmptyState({
   const tenant = resolveEnterpriseTenant(user?.email);
   const quickPrompts = tenant?.quickPrompts ?? DEFAULT_QUICK_PROMPTS;
 
-  // Spec §14 — only claim what the code actually guarantees.
-  const privacy = useMemo(() => {
-    const deviceOnly = isDeviceOnlyPledgeActive() && !canUseCloudAI();
-    return deviceOnly
-      ? { label: "On-device only", deviceOnly: true }
-      : { label: "Cloud AI enabled", deviceOnly: false };
-  }, []);
-  const PrivacyIcon = privacy.deviceOnly ? ShieldCheck : Cloud;
+  const privacy = { label: "Cloud AI enabled", deviceOnly: false };
+  const PrivacyIcon = Cloud;
 
   const firstName = (userDisplayName || "there").split(" ")[0];
 

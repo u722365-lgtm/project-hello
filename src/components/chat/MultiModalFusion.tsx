@@ -76,7 +76,7 @@ export const MultiModalFusion = ({
       }
 
       const type = getModalityType(file);
-      const id = crypto.randomUUID();
+      const id = (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); }));
       
       // Create preview for images
       let preview: string | undefined;
@@ -176,7 +176,7 @@ export const MultiModalFusion = ({
       recognition.interimResults = true;
       recognition.lang = 'en-US';
       
-      const id = crypto.randomUUID();
+      const id = (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); }));
       let finalTranscript = '';
       
       setItems(prev => [...prev, {

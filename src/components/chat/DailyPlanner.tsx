@@ -92,7 +92,7 @@ import { turboComplete } from "@/lib/turbo/turboEngine";
      if (!newTask.trim()) return;
      
      const task: Task = {
-       id: crypto.randomUUID(),
+       id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })),
        time: "09:00",
        title: newTask,
        duration: 30,
@@ -140,7 +140,7 @@ import { turboComplete } from "@/lib/turbo/turboEngine";
        if (jsonMatch) {
          const parsedTasks = JSON.parse(jsonMatch[0]);
          const newTasks: Task[] = parsedTasks.map((t: Partial<Task>) => ({
-           id: crypto.randomUUID(),
+           id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })),
            time: t.time || "09:00",
            title: t.title || "Task",
            duration: t.duration || 30,

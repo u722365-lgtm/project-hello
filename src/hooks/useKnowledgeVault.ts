@@ -125,7 +125,7 @@ export const useKnowledgeVault = () => {
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        const docId = crypto.randomUUID();
+        const docId = (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); }));
         
         setState(prev => ({
           ...prev,

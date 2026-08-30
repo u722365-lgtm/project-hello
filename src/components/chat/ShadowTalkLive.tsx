@@ -313,7 +313,7 @@ export const ShadowTalkLive = ({ isOpen, onClose, onInsertToChat, autoConnect = 
         if (userText && userText !== lastUserTranscriptRef.current) {
           lastUserTranscriptRef.current = userText;
           setCurrentUserSpeech("");
-          setTranscript(prev => [...prev, { id: crypto.randomUUID(), role: "user", text: userText, timestamp: new Date() }]);
+          setTranscript(prev => [...prev, { id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })), role: "user", text: userText, timestamp: new Date() }]);
         }
       } else if (msgType === "agent_response") {
         const event = msg?.agent_response_event as Record<string, unknown> | undefined;
@@ -321,7 +321,7 @@ export const ShadowTalkLive = ({ isOpen, onClose, onInsertToChat, autoConnect = 
         if (agentText && agentText !== lastAgentResponseRef.current) {
           lastAgentResponseRef.current = agentText;
           setCurrentAgentSpeech("");
-          setTranscript(prev => [...prev, { id: crypto.randomUUID(), role: "ai", text: agentText, timestamp: new Date() }]);
+          setTranscript(prev => [...prev, { id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })), role: "ai", text: agentText, timestamp: new Date() }]);
         }
       } else if (msgType === "agent_response_correction") {
         const event = msg?.agent_response_correction_event as Record<string, unknown> | undefined;

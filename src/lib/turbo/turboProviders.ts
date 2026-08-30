@@ -35,12 +35,20 @@ const PLATFORM_GROQ_KEY = _K.join('');
  * Resolve the Turbo API key from multiple sources.
  * Non-reactive — safe to call from any context (React hooks, forge/execute libs).
  *
+ *
  * Priority:
+ *   0. Environment variable (VITE_GROQ_API_KEY)
  *   1. localStorage (shadowtalk_custom_ai_keys — if provider is groq or turbo)
  *   2. sessionStorage (shadowtalk_turbo_groq_key — set by settings page)
  *   3. Embedded platform Groq key (always available — powers free tier)
  */
 export function resolveTurboKey(): string | null {
+  // 0. Check environment variables (.env file)
+  const envKey = import.meta.env.VITE_GROQ_API_KEY;
+  if (envKey && envKey.startsWith('gsk_')) {
+    return envKey;
+  }
+
   // 1. Check localStorage (BYOK config)
   try {
     const config: CustomAiKeysConfig = loadCustomAiConfig();

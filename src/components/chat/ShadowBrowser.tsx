@@ -488,7 +488,7 @@ export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl, emb
     const searchQuery = getShadowSearchQuery(url);
     const onHome = isShadowHome(url) && searchQuery === null;
     return {
-      id: crypto.randomUUID(), url, title: searchQuery ? `Search: ${searchQuery}` : "New Tab",
+      id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })), url, title: searchQuery ? `Search: ${searchQuery}` : "New Tab",
       isLoading: !onHome,
       canGoBack: false, canGoForward: false, error: null, isPinned: false,
       isMuted: false, history: [url], historyIndex: 0,
@@ -922,7 +922,7 @@ export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl, emb
       setBookmarks(prev => prev.filter(b => b.url !== activeTab.url));
       toast({ title: "Bookmark removed" });
     } else {
-      setBookmarks(prev => [{ id: crypto.randomUUID(), url: activeTab.url, title: activeTab.title, createdAt: new Date() }, ...prev]);
+      setBookmarks(prev => [{ id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })), url: activeTab.url, title: activeTab.title, createdAt: new Date() }, ...prev]);
       toast({ title: "Bookmark added ★" });
     }
   };
@@ -950,7 +950,7 @@ export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl, emb
   const takeScreenshot = () => {
     toast({ title: "📸 Screenshot captured", description: "Saved to downloads" });
     setDownloads(prev => [{
-      id: crypto.randomUUID(), url: activeTab.url, filename: `screenshot-${Date.now()}.png`,
+      id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })), url: activeTab.url, filename: `screenshot-${Date.now()}.png`,
       status: "complete", progress: 100, timestamp: new Date(),
     }, ...prev]);
   };
@@ -983,7 +983,7 @@ export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl, emb
     addBrowseMessage({ role: "user", content: `Translate this page to ${language}`, type: "question" });
     try {
       const headers = await getAuthHeaders();
-      const aiMsgId = crypto.randomUUID();
+      const aiMsgId = (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); }));
       setBrowseTogetherMessages(prev => [...prev, { id: aiMsgId, role: "ai", content: "", timestamp: new Date(), type: "translation" }]);
       const response = await fetchAIWithRetry(
         '',
@@ -1009,7 +1009,7 @@ export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl, emb
     addBrowseMessage({ role: "user", content: `Extract ${type} from this page`, type: "question" });
     try {
       const headers = await getAuthHeaders();
-      const aiMsgId = crypto.randomUUID();
+      const aiMsgId = (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); }));
       setBrowseTogetherMessages(prev => [...prev, { id: aiMsgId, role: "ai", content: "", timestamp: new Date(), type: "extraction" }]);
       const response = await fetchAIWithRetry(
         '',
@@ -1065,7 +1065,7 @@ export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl, emb
   }, [activeTab?.url, browseTogetherEnabled, autoAnalyze, activeTab?.error]);
 
   const addBrowseMessage = (msg: Omit<BrowseTogetherMessage, "id" | "timestamp">) => {
-    setBrowseTogetherMessages(prev => [...prev, { ...msg, id: crypto.randomUUID(), timestamp: new Date() }]);
+    setBrowseTogetherMessages(prev => [...prev, { ...msg, id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })), timestamp: new Date() }]);
   };
 
   const analyzePageForBrowseTogether = async () => {
@@ -1113,7 +1113,7 @@ export const ShadowBrowser = ({ isOpen, onClose, onInsertToChat, initialUrl, emb
     if (!question.trim()) return;
     setIsAIThinking(true);
     addBrowseMessage({ role: "user", content: question, type: "question" });
-    const aiMsgId = crypto.randomUUID();
+    const aiMsgId = (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); }));
     setBrowseTogetherMessages(prev => [...prev, { id: aiMsgId, role: "ai", content: "", timestamp: new Date(), type: "answer" }]);
     try {
       const headers = await getAuthHeaders();

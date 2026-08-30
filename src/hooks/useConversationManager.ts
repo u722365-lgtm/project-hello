@@ -6,7 +6,6 @@ import {
 } from "@/lib/chatArchive";
 import { hasChattedBefore } from "@/lib/growth/firstVisit";
 import { getSuccessfulSessionCount } from "@/lib/growth/sessionMilestones";
-import { shouldPersistChatToCloud } from "@/lib/privacy/deviceOnlyPledge";
 import { recordFunnelEvent } from "@/lib/growth/funnelEvents";
 
 // ---------------------------------------------------------------------------
@@ -814,7 +813,7 @@ export function useConversationManager({
 
     // Anonymous / device-only path — no DB row needed.
     if (!user || isAnonymous) {
-      const localId = `local-${crypto.randomUUID()}`;
+      const localId = `local-${(typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); }))}`;
       setCurrentConversationId(localId);
       setConversations((prev) => [
         {
@@ -925,7 +924,7 @@ export function useConversationManager({
       role: "user" | "assistant",
       conversationId: string,
     ): Promise<unknown> => {
-      if (!user || !conversationId || !shouldPersistChatToCloud()) return null;
+      if (!user || !conversationId) return null;
 
       const contentToSave = await chatPrivate.wrapForStorage(content);
 

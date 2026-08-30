@@ -263,7 +263,7 @@ export function usePersonalLLMStore() {
 
   // Create new conversation
   const createConversation = useCallback(async (systemPrompt?: string): Promise<string> => {
-    const id = crypto.randomUUID();
+    const id = (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); }));
     const now = Date.now();
 
     const newConvo: LocalConversation = {
@@ -298,7 +298,7 @@ export function usePersonalLLMStore() {
     content: string,
     tokens?: number
   ) => {
-    const messageId = crypto.randomUUID();
+    const messageId = (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); }));
     const now = Date.now();
 
     const newMessage: LocalMessage = {

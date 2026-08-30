@@ -64,13 +64,6 @@ import { resolveAgentRuntime } from "@/lib/marketplace/resolveAgentConfig";
 import { prependAgentSystemPrompt } from "@/lib/marketplace/applyAgentToChat";
 import { prependChatKnowledgeContext } from "@/lib/shadowTalkProductKnowledge";
 import {
-  ensureDefaultPersonalModel,
-  getActivePersonalModel,
-  getPersonalModelSampling,
-  learnPersonalExampleFromTurn,
-  prependPersonalModelToMessages,
-} from "@/lib/personalModel";
-import {
   clearActiveMarketplaceAgent,
   getActiveMarketplaceSession,
   setActiveMarketplaceAgent,
@@ -81,19 +74,6 @@ import type { MarketplaceAgent, MarketplaceAgentRuntime } from "@/lib/marketplac
 import { prewarmFastestLocalPath, warmHardwareProfile } from "@/lib/hardwareIntelligence";
 
 import {
-  canUseCloudAI,
-  DEVICE_ONLY_BLOCKED_MESSAGE,
-  ensureAutoCloudUntilLocalReady,
-  shouldPersistChatToCloud,
-  setInterimCloudConsent,
-} from "@/lib/privacy/deviceOnlyPledge";
-import {
-  isLocalInferenceReady,
-  LOCAL_MODEL_READY_EVENT,
-} from "@/lib/privacy/localInferenceReady";
-
-
-import {
   getShadowSpectreScope,
   hasAcceptedShadowSpectreTerms,
   routeShadowSpectreHead,
@@ -101,18 +81,7 @@ import {
 } from "@/lib/cyber/shadowspectre";
 import { ShadowSpectreScopeBar } from "@/components/cyber/ShadowSpectreScopeBar";
 import { ShadowSpectrePanel } from "@/components/cyber/ShadowSpectrePanel";
-import { ShadowSpectreTermsDialog } from "@/components/cyber/ShadowSpectreTermsDialog";
-
-
-import { useCustomApiKeys } from "@/hooks/useCustomApiKeys";
 import { useUserSettings } from "@/hooks/useUserSettings";
-import { stringifyChatBody } from "@/lib/chatRequest";
-import { ByokProviderKeyDialog } from "@/components/chat/ByokProviderKeyDialog";
-import {
-  buildChatProviderPayload,
-  hasStoredKeyForProvider,
-  resolveActiveUiProvider,
-} from "@/lib/chatProviderBridge";
 import { loadCustomAiConfig, saveCustomAiConfig } from "@/lib/customApiKeys";
 import { turboComplete, resolveTurboKey } from "@/lib/turbo";
 import {
@@ -157,7 +126,6 @@ import { ShadowCowork } from "@/components/chat/ShadowCowork";
 import { SwarmMode } from "@/components/chat/SwarmMode";
 import { NeuralCanvasMode } from "@/components/chat/NeuralCanvasMode";
 import { SignInPrompt } from "@/components/chat/SignInPrompt";
-import { InterimCloudConsentDialog } from "@/components/chat/InterimCloudConsentDialog";
 import { AdBanner } from "@/components/chat/AdBanner";
 import { BRAND } from "@/lib/brand";
 import { ReferralNudgeBanner } from "@/components/growth/ReferralNudgeBanner";
@@ -250,8 +218,6 @@ const ChatbotPage = () => {
     getChatDefaults,
   } = useAutoImproveContext();
   const { extractMemories, extractKnowledge, getMemoryContext } = useIntelligenceHub();
-
-  const sovereignModel = useShadowTalkModel();
   
   // Mocks for removed enterprise and self-healing features
   const enterprise = {
@@ -278,8 +244,6 @@ const ChatbotPage = () => {
   const { getAgentById, agents: marketplaceAgents, loading: marketplaceCatalogLoading } = useMarketplace();
   const [activeMarketplaceAgent, setActiveMarketplaceAgentState] = useState<MarketplaceAgent | null>(null);
   const marketplaceRuntimeRef = useRef<MarketplaceAgentRuntime | null>(null);
-  const { aiConfig, hasVerifiedKey, keys, switchToPlatformDefault, setDefault, refresh: refreshApiKeys } =
-    useCustomApiKeys();
   
   // State
   const [message, setMessage] = useState("");
@@ -299,14 +263,14 @@ const ChatbotPage = () => {
   const [personality, setPersonality] = useState<Personality>("friendly");
   const [chatMode, setChatMode] = useState<ChatMode>("general");
   const [aiProvider, setAiProvider] = useState<AIProvider>('turbo');
+  const aiConfig = { useCustomKey: false, preferredProvider: null };
+  const keys = {};
   const { preferences: chatPreferences, isLoading: chatPrefsLoading } = useChatSettings();
-  const [localModelReady, setLocalModelReady] = useState(() => isLocalInferenceReady());
+  const [localModelReady, setLocalModelReady] = useState(false);
   const hasLocalDesktop = typeof window !== 'undefined' && (window as any).__TAURI__ && localModelReady;
   const e2ee = useE2EE();
   const chatPrivate = useChatPrivateMode(e2ee);
   const appliedChatDefaults = useRef(false);
-  const [byokDialogOpen, setByokDialogOpen] = useState(false);
-  const [pendingByokProvider, setPendingByokProvider] = useState<AIProvider | null>(null);
   const [showSidebar, setShowSidebar] = useState(false);
   const [showMobileNav, setShowMobileNav] = useState(false);
   const { collapsed: sidebarCollapsed, toggle: toggleSidebar, width: sidebarWidth } =
@@ -361,7 +325,6 @@ const ChatbotPage = () => {
   const [swarmPrompt, setSwarmPrompt] = useState("");
   const [showSignInPrompt, setShowSignInPrompt] = useState(false);
   const [signInPromptReason, setSignInPromptReason] = useState<"chats" | "images" | "deepResearch" | "general">("chats");
-  const [showInterimCloudConsent, setShowInterimCloudConsent] = useState(false);
   const [showBrowseActivity, setShowBrowseActivity] = useState(false);
   const { browseSession, startBrowseSession, closeBrowseSession } = useAutoBrowse();
   const pushPermissionAskedRef = useRef(false);
@@ -397,14 +360,6 @@ const ChatbotPage = () => {
   useEffect(() => {
     warmHardwareProfile();
     prewarmFastestLocalPath();
-    ensureDefaultPersonalModel();
-
-  }, []);
-
-  useEffect(() => {
-    const onReady = () => setLocalModelReady(true);
-    window.addEventListener(LOCAL_MODEL_READY_EVENT, onReady);
-    return () => window.removeEventListener(LOCAL_MODEL_READY_EVENT, onReady);
   }, []);
 
   useEffect(() => {
@@ -444,47 +399,7 @@ const ChatbotPage = () => {
     return () => window.removeEventListener("keydown", onKey, true);
   }, []);
 
-  useEffect(() => {
-    if (keys.length === 0 && !aiConfig.useCustomKey && loadCustomAiConfig().usePlatformDefault) return;
-    setAiProvider(resolveActiveUiProvider(keys, aiConfig));
-  }, [keys, aiConfig.useCustomKey, aiConfig.preferredProvider]);
 
-  const hasKeyForProvider = useCallback(
-    (p: AIProvider) => hasStoredKeyForProvider(p, keys),
-    [keys],
-  );
-
-  const handleProviderChange = useCallback(
-    async (next: AIProvider) => {
-      if (next === "shadowtalk") {
-        setAiProvider("shadowtalk");
-        return;
-      }
-
-
-      if (!hasStoredKeyForProvider(next, keys)) {
-        setPendingByokProvider(next);
-        setByokDialogOpen(true);
-        return;
-      }
-
-      setAiProvider(next);
-      const serverId = next === "gemini" ? "google" : null;
-      if (serverId && keys.some((k) => k.provider === serverId && k.verified_at)) {
-        await setDefault(serverId);
-      }
-    },
-    [keys, setDefault, switchToPlatformDefault],
-  );
-
-  const handleByokSaved = useCallback(
-    async (saved: AIProvider) => {
-      setAiProvider(saved);
-      await refreshApiKeys();
-      setPendingByokProvider(null);
-    },
-    [refreshApiKeys],
-  );
 
   useEffect(() => {
     if (chatPrefsLoading || appliedChatDefaults.current) return;
@@ -505,7 +420,6 @@ const ChatbotPage = () => {
         void extractMemories(userMsg, assistantReply);
         void extractKnowledge(userMsg, assistantReply, conversationId);
       }
-      learnPersonalExampleFromTurn(userMsg, assistantReply);
     },
     [extractMemories, extractKnowledge, user],
   );
@@ -876,7 +790,7 @@ const ChatbotPage = () => {
     if (currentConversationId) return currentConversationId;
 
   if (!user || isAnonymous) {
-    const localId = `local-${crypto.randomUUID()}`;
+    const localId = `local-${(typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); }))}`;
     setCurrentConversationId(localId);
     setConversations((prev) => [
       { id: localId, title: "Private Chat", created_at: new Date().toISOString() },
@@ -935,7 +849,7 @@ const ChatbotPage = () => {
   };
 
   const saveMessage = async (content: string, role: 'user' | 'assistant', conversationId: string) => {
-    if (!user || !conversationId || !shouldPersistChatToCloud()) return null;
+    if (!user || !conversationId) return null;
 
     const contentToSave = await chatPrivate.wrapForStorage(content);
     const { data } = await backend
@@ -1022,23 +936,12 @@ const ChatbotPage = () => {
             ? (lastUserMsg.content.find((p) => p.type === "text") as { text?: string } | undefined)?.text?.trim() ?? ""
             : "";
 
-      augmented = prependPersonalModelToMessages(
-        augmented,
-        getActivePersonalModel(),
-        lastUser,
-      );
-
       const userMemoryContext = await buildMemoryContextForUser(user);
       if (userMemoryContext) {
         augmented = [{ role: "system", content: userMemoryContext }, ...augmented];
       }
 
-      if (aiProvider === "shadowtalk" && sovereignModel.enabled && lastUser) {
-        const learned = await sovereignModel.getLearnedSystemPrompt(lastUser);
-        if (learned) {
-          augmented = [{ role: "system", content: learned }, ...augmented];
-        }
-      }
+
 
       const routerMessages = augmented.map((m) => ({
         role: m.role as "user" | "assistant" | "system",
@@ -1055,13 +958,10 @@ const ChatbotPage = () => {
           setShowShadowSpectreTerms(true);
           throw new Error("Accept ShadowSpectre authorized-use terms to continue.");
         }
-        if (!canUseCloudAI()) {
-          throw new Error(DEVICE_ONLY_BLOCKED_MESSAGE);
-        }
 
         const head = routeShadowSpectreHead(lastUser);
         setShadowSpectreHead(head);
-        const aiMessageId = crypto.randomUUID();
+        const aiMessageId = (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); }));
         let assistantContent = "";
         const streamToken = (token: string) => {
           assistantContent += token;
@@ -1095,15 +995,6 @@ const ChatbotPage = () => {
       }
 
       const hasMultimodalImage = chatMessages.some((m) => Array.isArray(m.content));
-      if (user && !isAnonymous) {
-        ensureAutoCloudUntilLocalReady();
-      }
-
-
-
-      if (!canUseCloudAI()) {
-        throw new Error(DEVICE_ONLY_BLOCKED_MESSAGE);
-      }
 
       const chatUrl = getChatFunctionUrl();
       if (!chatUrl || !isCloudConfigured()) {
@@ -1170,7 +1061,7 @@ const ChatbotPage = () => {
         throw new Error(detail);
       };
 
-      const aiMessageId = crypto.randomUUID();
+      const aiMessageId = (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); }));
       let assistantContent = "";
 
       // SPEED: coalesce setMessages calls to one per frame so streaming
@@ -1213,87 +1104,56 @@ const ChatbotPage = () => {
         if (pendingContent !== null) flushAssistant();
       };
 
-      // ---- SHADOWTALK-TURBO FAST PATH ----
-      // Try direct Groq streaming first (bypasses edge function, ~5x faster TTFB).
-      // Falls through to standard path if no Groq key or if Turbo fails.
       const turboKey = resolveTurboKey();
-      const turboUserText =
-        [...routerMessages].reverse().find((m) => m.role === "user")?.content ?? "";
-      if (
-        turboKey &&
-        !hasMultimodalImage &&
-        !chatFlags?.webSearch &&
-        !chatFlags?.deepResearch &&
-        typeof turboUserText === "string" &&
-        turboUserText.trim().length > 0
-      ) {
-        try {
-          const turboResult = await turboComplete(
-            `You are ShadowTalk AI. Be ${personality || 'friendly'} and helpful. Use markdown formatting. Current date: ${new Date().toISOString().split('T')[0]}.`,
-            turboUserText,
-            {
-              signal: controller.signal,
-              onDelta: (accumulated) => pushAssistant(accumulated),
-            },
-          );
-          if (turboResult.source !== 'fallback' && turboResult.content.trim()) {
-            finalizeAssistant();
-            return assistantContent;
-          }
-          // Turbo returned empty/fallback — fall through to standard path
-        } catch (turboErr) {
-          console.warn('[Chat] Turbo fast-path failed, using standard:', turboErr);
-        }
+      if (!turboKey) {
+        throw new Error("No Groq API key found. Please configure VITE_GROQ_API_KEY in your .env file.");
       }
 
-      if (isShadowTalkDesktop()) {
-        let lineBuffer = "";
-        const end = await desktopChatStream(
-          chatUrl,
-          requestBody,
-          session?.access_token,
-          controller.signal,
-          (chunk) => {
-            lineBuffer += chunk;
-            const lines = lineBuffer.split("\n");
-            lineBuffer = lines.pop() ?? "";
-            const next = parseSseContentLines(lines, assistantContent);
-            if (next !== assistantContent) pushAssistant(next);
-          },
-        );
-        if (!end.ok) {
-          await raiseChatHttpError((end as unknown as { status?: number }).status ?? 500, (end as unknown as { body?: string }).body);
-        }
-      } else {
-        const resp = await fetch(chatUrl, {
-          method: "POST",
-          headers: getChatFetchHeaders(session?.access_token),
-          signal: controller.signal,
-          body: requestBody,
-        });
+      const groqMessages = [
+        { role: 'system', content: `You are ShadowTalk AI. Be ${personality || 'friendly'} and helpful. Use markdown formatting. Current date: ${new Date().toISOString().split('T')[0]}.` },
+        ...routerMessages.map(m => ({ role: m.role, content: m.content }))
+      ];
 
-        if (!resp.ok) {
-          const cloudFailed = new Error((await resp.text().catch(() => "")) || "Cloud chat failed");
-          await raiseChatHttpError(resp.status, cloudFailed.message);
-        }
+      const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${turboKey}`
+        },
+        signal: controller.signal,
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile",
+          messages: groqMessages,
+          stream: true,
+          temperature: 0.7,
+        })
+      });
 
-        const contentType = resp.headers.get("content-type") || "";
-        if (!contentType.includes("text/event-stream")) {
-          await raiseChatHttpError(resp.status, await resp.text().catch(() => ""));
-        }
+      if (!resp.ok) {
+        const cloudFailed = new Error((await resp.text().catch(() => "")) || "Groq chat failed");
+        await raiseChatHttpError(resp.status, cloudFailed.message);
+      }
 
-        const reader = resp.body?.getReader();
-        const decoder = new TextDecoder();
-        let lineBuffer = "";
+      const reader = resp.body?.getReader();
+      const decoder = new TextDecoder();
+      let lineBuffer = "";
 
-        while (reader) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          lineBuffer += decoder.decode(value, { stream: true });
-          const lines = lineBuffer.split("\n");
-          lineBuffer = lines.pop() ?? "";
-          const next = parseSseContentLines(lines, assistantContent);
-          if (next !== assistantContent) pushAssistant(next);
+      while (reader) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        lineBuffer += decoder.decode(value, { stream: true });
+        const lines = lineBuffer.split("\n");
+        lineBuffer = lines.pop() ?? "";
+        
+        for (const line of lines) {
+          if (!line.startsWith('data: ') || line === 'data: [DONE]') continue;
+          try {
+            const data = JSON.parse(line.slice(6));
+            const delta = data.choices?.[0]?.delta?.content;
+            if (delta) {
+              pushAssistant(assistantContent + delta);
+            }
+          } catch {}
         }
       }
 
@@ -1311,7 +1171,7 @@ const ChatbotPage = () => {
       }
       return assistantContent || undefined;
     },
-    [aiProvider, aiConfig, keys, chatMode, personality, user, sovereignModel, getChatDefaults, getMemoryContext],
+    [aiProvider, aiConfig, keys, chatMode, personality, user, getChatDefaults, getMemoryContext],
   );
 
   const handleStopGeneration = () => {
@@ -1408,7 +1268,7 @@ const ChatbotPage = () => {
     markHasChatted();
 
     const userMessage: Message = {
-      id: crypto.randomUUID(),
+      id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })),
       type: "user",
       content: msgContent,
       timestamp: new Date(),
@@ -1478,7 +1338,7 @@ const ChatbotPage = () => {
       const imageIntent = detectChatImageIntent(msgContent);
 
       if (imageIntent === "edit" || imageIntent === "analyze") {
-        const statusId = crypto.randomUUID();
+        const statusId = (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); }));
         const isEdit = imageIntent === "edit";
         setMessages((prev) => [
           ...prev,
@@ -1554,9 +1414,7 @@ const ChatbotPage = () => {
 
       try {
         const assistantReply = await runChatCompletion(chatMessages, conversationId);
-        if (aiProvider === "shadowtalk" && sovereignModel.enabled) {
-          void sovereignModel.learnFromTurn(msgContent, assistantReply);
-        }
+
         learnFromTurn(msgContent || "[image]", assistantReply ?? "", conversationId);
       } catch (err) {
         if (!(err instanceof DOMException && err.name === "AbortError")) {
@@ -1596,7 +1454,7 @@ const ChatbotPage = () => {
         setMessages((prev) => [
           ...prev,
           {
-            id: crypto.randomUUID(),
+            id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })),
             type: "ai",
             content,
             timestamp: new Date(),
@@ -1695,7 +1553,7 @@ const ChatbotPage = () => {
 
     if (appIntent && appIntent.confidence >= 50) {
       const platform = appIntent.platform;
-      const statusId = crypto.randomUUID();
+      const statusId = (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); }));
       const platformLabel = platform === "mobile" ? "mobile" : "web";
       setMessages((prev) => [
         ...prev,
@@ -1716,7 +1574,7 @@ const ChatbotPage = () => {
           accessToken: session?.access_token,
           personality,
           mode: "code",
-          providerPayload: buildChatProviderPayload(aiProvider, aiConfig, keys),
+          providerPayload: {},
         });
 
         openProjectInIde(
@@ -1769,9 +1627,7 @@ const ChatbotPage = () => {
 
     try {
       const assistantReply = await runChatCompletion(chatMessages, conversationId);
-      if (aiProvider === "shadowtalk" && sovereignModel.enabled) {
-        void sovereignModel.learnFromTurn(msgContent, assistantReply);
-      }
+
       learnFromTurn(msgContent, assistantReply, conversationId);
       if (assistantReply && isShareWorthyReply(assistantReply) && shouldShowChatShareBanner()) {
         setChatShareOffer({
@@ -1783,9 +1639,7 @@ const ChatbotPage = () => {
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") return;
       const msg = formatChatFetchError(err);
-      if (msg.includes("Device-only mode") || msg.includes("Stay device-only")) {
-        setShowInterimCloudConsent(true);
-      }
+
       recordFunnelEvent("send_error", msg.slice(0, 80));
       toast({ title: "Message failed", description: msg, variant: "destructive" });
     }
@@ -1796,14 +1650,14 @@ const ChatbotPage = () => {
     if (!finalAnswer) return;
 
     const userMessage = {
-      id: crypto.randomUUID(),
+      id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })),
       type: "user" as const,
       content: swarmPrompt,
       timestamp: new Date(),
     };
     
     const aiMessage = {
-      id: crypto.randomUUID(),
+      id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })),
       type: "ai" as const,
       content: finalAnswer,
       timestamp: new Date(),
@@ -1903,7 +1757,7 @@ const ChatbotPage = () => {
     (content: string) => {
       setMessages((prev) => [
         ...prev,
-        { id: crypto.randomUUID(), type: "ai", content, timestamp: new Date() },
+        { id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })), type: "ai", content, timestamp: new Date() },
       ]);
       if (user && currentConversationId) {
         void saveMessage(content, "assistant", currentConversationId).catch(() => {});
@@ -2088,8 +1942,8 @@ const ChatbotPage = () => {
     personality,
     layout: "composer" as const,
     aiProvider,
-    onProviderChange: handleProviderChange,
-    hasKeyForProvider,
+    onProviderChange: setAiProvider,
+    hasKeyForProvider: true,
     promptSuggestion,
     onPromptAccept: setMessage,
     onPromptClear: () => setPromptSuggestion(""),
@@ -2177,8 +2031,8 @@ const ChatbotPage = () => {
               onOpenShadowTalkLive={() => setShowShadowTalkLive(true)}
               onOpenBrowser={() => setShowShadowBrowser(true)}
               aiProvider={aiProvider}
-              onProviderChange={handleProviderChange}
-              hasKeyForProvider={hasKeyForProvider}
+              onProviderChange={setAiProvider}
+              hasKeyForProvider={true}
               maxChats="∞"
               dailyChats={messageCount}
               toolsMenuOpen={toolsMenuOpen}
@@ -2272,11 +2126,7 @@ const ChatbotPage = () => {
                   <ChatEmptyState
                     userDisplayName={userDisplayName}
                     onSelectPrompt={handleQuickPrompt}
-                    apiConnectedLabel={
-                      hasVerifiedKey && aiConfig.useCustomKey
-                        ? `${aiConfig.preferredProvider} API connected`
-                        : null
-                    }
+                    apiConnectedLabel={null}
                     composerDockStyle={inputDockStyle}
                   >
                     <ChatInput {...chatInputProps} isEmptyState />
@@ -2399,7 +2249,7 @@ const ChatbotPage = () => {
             customLink={chatShareCustomLink ?? undefined}
           />
         </ChatMainPanel>
-      {showImageGenerator && <ImageGenerator onClose={() => setShowImageGenerator(false)} onImageGenerated={(url) => setMessages(prev => [...prev, { id: crypto.randomUUID(), type: 'ai', content: '🎨 Generated image', timestamp: new Date(), imageUrl: url }])} />}
+      {showImageGenerator && <ImageGenerator onClose={() => setShowImageGenerator(false)} onImageGenerated={(url) => setMessages(prev => [...prev, { id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })), type: 'ai', content: '🎨 Generated image', timestamp: new Date(), imageUrl: url }])} />}
       <MusicGenerator
         isOpen={showMusicGenerator}
         onClose={() => {
@@ -2422,7 +2272,7 @@ const ChatbotPage = () => {
           setShowGoogleIntegration(false);
         }}
       />
-      {showDeepResearch && <DeepResearchPanel isOpen={showDeepResearch} onClose={() => setShowDeepResearch(false)} onInsertToChat={(c) => setMessages(prev => [...prev, { id: crypto.randomUUID(), type: 'ai', content: c, timestamp: new Date() }])} />}
+      {showDeepResearch && <DeepResearchPanel isOpen={showDeepResearch} onClose={() => setShowDeepResearch(false)} onInsertToChat={(c) => setMessages(prev => [...prev, { id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })), type: 'ai', content: c, timestamp: new Date() }])} />}
       {showCognitiveLoop && (
         <CognitiveLoopPanel
           isOpen={showCognitiveLoop}
@@ -2432,7 +2282,7 @@ const ChatbotPage = () => {
             setMessages((prev) => [
               ...prev,
               {
-                id: crypto.randomUUID(),
+                id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })),
                 type: "ai",
                 content: result,
                 timestamp: new Date(),
@@ -2567,25 +2417,13 @@ const ChatbotPage = () => {
           />
         </Suspense>
       )}
-      <ByokProviderKeyDialog
-        open={byokDialogOpen}
-        onOpenChange={setByokDialogOpen}
-        provider={pendingByokProvider}
-        onSaved={handleByokSaved}
-      />
+
 
       <ShadowSpectrePanel
         open={showShadowSpectrePanel}
         onClose={() => setShowShadowSpectrePanel(false)}
       />
-      <ShadowSpectreTermsDialog
-        open={showShadowSpectreTerms}
-        onAccepted={() => setShowShadowSpectreTerms(false)}
-        onDecline={() => {
-          setShowShadowSpectreTerms(false);
-          if (chatMode === "shadowspectre") setChatMode("general");
-        }}
-      />
+
       <AgenticTaskRunner
         isOpen={showAgenticRunner}
         onClose={() => setShowAgenticRunner(false)}
@@ -2639,21 +2477,7 @@ const ChatbotPage = () => {
         usedCount={guestUsage.usage?.chats}
         limitCount={GUEST_LIMITS.chats}
       />
-      <InterimCloudConsentDialog
-        open={showInterimCloudConsent}
-        onOpenChange={setShowInterimCloudConsent}
-        isDownloading={!localModelReady}
-        onUseCloudUntilReady={() => {
-          setInterimCloudConsent(true);
-          setShowInterimCloudConsent(false);
-          toast({ title: "Cloud AI enabled", description: "Temporary until your on-device model is ready." });
-        }}
-        onGoToDownload={() => {
-          setShowInterimCloudConsent(false);
-          navigate("/settings");
-        }}
-        onStayDeviceOnly={() => setShowInterimCloudConsent(false)}
-      />
+
       </motion.div>
       <FounderCrawlStrip />
     </div>

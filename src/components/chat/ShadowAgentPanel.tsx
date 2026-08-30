@@ -246,34 +246,34 @@ const ShadowAgentPanel: React.FC<ShadowAgentPanelProps> = ({ onExecuteTask, isEx
     switch (type) {
       case 'compliance_scan':
         subtasks.push(
-          { id: crypto.randomUUID(), description: '🔍 Identify applicable regulations', status: 'pending', tool: 'regulation_scanner' },
-          { id: crypto.randomUUID(), description: '📋 Generate compliance checklist', status: 'pending', tool: 'checklist_generator' },
-          { id: crypto.randomUUID(), description: '⚠️ Assess gaps & violations', status: 'pending', tool: 'gap_analyzer' },
-          { id: crypto.randomUUID(), description: '📊 Produce compliance scorecard', status: 'pending', tool: 'scorecard_builder' }
+          { id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })), description: '🔍 Identify applicable regulations', status: 'pending', tool: 'regulation_scanner' },
+          { id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })), description: '📋 Generate compliance checklist', status: 'pending', tool: 'checklist_generator' },
+          { id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })), description: '⚠️ Assess gaps & violations', status: 'pending', tool: 'gap_analyzer' },
+          { id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })), description: '📊 Produce compliance scorecard', status: 'pending', tool: 'scorecard_builder' }
         );
         break;
       case 'risk_assess':
         subtasks.push(
-          { id: crypto.randomUUID(), description: '🧠 Analyze threat landscape', status: 'pending', tool: 'threat_analyzer' },
-          { id: crypto.randomUUID(), description: '📊 Calculate risk scores', status: 'pending', tool: 'risk_calculator' },
-          { id: crypto.randomUUID(), description: '🛡️ Recommend mitigations', status: 'pending', tool: 'mitigation_engine' },
-          { id: crypto.randomUUID(), description: '📝 Generate risk report', status: 'pending', tool: 'risk_reporter' }
+          { id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })), description: '🧠 Analyze threat landscape', status: 'pending', tool: 'threat_analyzer' },
+          { id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })), description: '📊 Calculate risk scores', status: 'pending', tool: 'risk_calculator' },
+          { id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })), description: '🛡️ Recommend mitigations', status: 'pending', tool: 'mitigation_engine' },
+          { id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })), description: '📝 Generate risk report', status: 'pending', tool: 'risk_reporter' }
         );
         break;
       case 'audit_report':
         subtasks.push(
-          { id: crypto.randomUUID(), description: '📄 Collect evidence & data', status: 'pending', tool: 'evidence_collector' },
-          { id: crypto.randomUUID(), description: '✅ Validate against standards', status: 'pending', tool: 'standards_validator' },
-          { id: crypto.randomUUID(), description: '📊 Score compliance posture', status: 'pending', tool: 'posture_scorer' },
-          { id: crypto.randomUUID(), description: '📋 Generate audit-ready report', status: 'pending', tool: 'audit_generator' }
+          { id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })), description: '📄 Collect evidence & data', status: 'pending', tool: 'evidence_collector' },
+          { id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })), description: '✅ Validate against standards', status: 'pending', tool: 'standards_validator' },
+          { id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })), description: '📊 Score compliance posture', status: 'pending', tool: 'posture_scorer' },
+          { id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })), description: '📋 Generate audit-ready report', status: 'pending', tool: 'audit_generator' }
         );
         break;
       default:
         subtasks.push(
-          { id: crypto.randomUUID(), description: '🧠 Analyze requirements', status: 'pending', tool: 'llm_reasoning' },
-          { id: crypto.randomUUID(), description: '📋 Create plan', status: 'pending', tool: 'planning' },
-          { id: crypto.randomUUID(), description: '⚡ Execute', status: 'pending', tool: 'execution' },
-          { id: crypto.randomUUID(), description: '✅ Verify', status: 'pending', tool: 'verification' }
+          { id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })), description: '🧠 Analyze requirements', status: 'pending', tool: 'llm_reasoning' },
+          { id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })), description: '📋 Create plan', status: 'pending', tool: 'planning' },
+          { id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })), description: '⚡ Execute', status: 'pending', tool: 'execution' },
+          { id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })), description: '✅ Verify', status: 'pending', tool: 'verification' }
         );
     }
     return subtasks;
@@ -301,7 +301,7 @@ const ShadowAgentPanel: React.FC<ShadowAgentPanelProps> = ({ onExecuteTask, isEx
     const riskLevel = assessRiskLevel(taskInput);
     const subtasks = decomposeTask(taskInput, taskType);
     const newTask: AgentTask = {
-      id: crypto.randomUUID(), type: taskType, description: taskInput,
+      id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })), type: taskType, description: taskInput,
       status: humanInLoop && riskLevel !== 'low' ? 'awaiting_approval' : 'planning',
       startedAt: new Date(), subtasks, requiresApproval: humanInLoop && riskLevel !== 'low', riskLevel
     };
@@ -425,7 +425,7 @@ const ShadowAgentPanel: React.FC<ShadowAgentPanelProps> = ({ onExecuteTask, isEx
         industry.regulations.forEach((reg, i) => {
           const region = REGIONS.find(r => r.id === regionId);
           items.push({
-            id: crypto.randomUUID(),
+            id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })),
             regulation: reg,
             category: region?.label || regionId.toUpperCase(),
             requirement: `${reg} compliance requirements for ${industry.label} operations in ${region?.label || regionId}`,
@@ -441,7 +441,7 @@ const ShadowAgentPanel: React.FC<ShadowAgentPanelProps> = ({ onExecuteTask, isEx
       const industryRegs = regionData.regulations[industryId] || [];
       industryRegs.forEach((reg) => {
         items.push({
-          id: crypto.randomUUID(),
+          id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })),
           regulation: industry.regulations[0] || 'General',
           category: regionData.name,
           requirement: reg.requirement,
@@ -488,7 +488,7 @@ const ShadowAgentPanel: React.FC<ShadowAgentPanelProps> = ({ onExecuteTask, isEx
           const jsonMatch = fullContent.match(/\[[\s\S]*\]/);
           if (jsonMatch) {
             const parsed = JSON.parse(jsonMatch[0]) as ComplianceItem[];
-            const items = parsed.map(item => ({ ...item, id: crypto.randomUUID() }));
+            const items = parsed.map(item => ({ ...item, id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })) }));
             setComplianceItems(items);
             const critical = items.filter(i => i.status === 'non_compliant').length;
             const partial = items.filter(i => i.status === 'partial').length;

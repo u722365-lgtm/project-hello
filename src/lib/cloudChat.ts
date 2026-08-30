@@ -54,25 +54,44 @@ export async function streamCloudChat(
 
   const anonKey = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string) || "";
 
-  const resp = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      apikey: anonKey,
-      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-    },
-    body: JSON.stringify({
-      messages,
-      ...(opts.model ? { model: opts.model } : {}),
-      ...(typeof opts.temperature === "number" ? { temperature: opts.temperature } : {}),
-    }),
-    signal: opts.signal,
-  });
-
-  if (!resp.ok) {
-    let message = `AI request failed (${resp.status})`;
+  const maxRetries = 3;
+  let attempt = 0;
+  let resp: Response | null = null;
+  
+  while (attempt <= maxRetries) {
     try {
-      const body = await resp.json();
+      resp = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: anonKey,
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        },
+        body: JSON.stringify({
+          messages,
+          ...(opts.model ? { model: opts.model } : {}),
+          ...(typeof opts.temperature === "number" ? { temperature: opts.temperature } : {}),
+        }),
+        signal: opts.signal,
+      });
+      
+      if (resp.ok || (resp.status !== 502 && resp.status !== 503 && resp.status !== 504)) {
+        break; // Success or a non-retriable error
+      }
+    } catch (err) {
+      if (attempt === maxRetries) throw err;
+    }
+    
+    attempt++;
+    if (attempt <= maxRetries) {
+      await new Promise(r => setTimeout(r, Math.min(1000 * Math.pow(2, attempt), 10000)));
+    }
+  }
+
+  if (!resp || !resp.ok) {
+    let message = `AI request failed (${resp?.status || 'Network Error'})`;
+    try {
+      const body = await resp?.json();
       message = body?.error || message;
     } catch {
       /* keep default */

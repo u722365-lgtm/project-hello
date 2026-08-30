@@ -218,7 +218,7 @@
      if (!input.trim() || isProcessing) return;
      
      const userMessage: AgentMessage = {
-       id: crypto.randomUUID(),
+       id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })),
        role: "user",
        content: input,
        timestamp: new Date()
@@ -367,7 +367,7 @@
        
        // Add agent response
        const agentMessage: AgentMessage = {
-         id: crypto.randomUUID(),
+         id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })),
          role: "agent",
          content: summary,
          timestamp: new Date(),
@@ -381,7 +381,7 @@
      } catch (error) {
        console.error("Agent error:", error);
        setMessages(prev => [...prev, {
-         id: crypto.randomUUID(),
+         id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })),
          role: "agent",
          content: "Sorry, I encountered an error. Please try again.",
          timestamp: new Date()

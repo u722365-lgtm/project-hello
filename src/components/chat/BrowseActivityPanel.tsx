@@ -414,7 +414,7 @@ export function useAutoBrowse() {
 
   const startBrowseSession = useCallback(async (query: string): Promise<BrowseSession> => {
     const session: BrowseSession = {
-      id: crypto.randomUUID(),
+      id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })),
       query,
       actions: [],
       status: "active",
@@ -426,7 +426,7 @@ export function useAutoBrowse() {
     const addAction = (action: Omit<BrowseAction, "id" | "timestamp">) => {
       const newAction: BrowseAction = {
         ...action,
-        id: crypto.randomUUID(),
+        id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })),
         timestamp: new Date(),
       };
       setBrowseSession(prev => prev ? { ...prev, actions: [...prev.actions, newAction] } : null);

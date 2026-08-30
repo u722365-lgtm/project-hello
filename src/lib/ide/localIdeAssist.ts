@@ -1,7 +1,5 @@
 import { buildWorkspacePrompt } from "@/lib/jules/buildWorkspacePrompt";
 import type { JulesWorkspaceFile } from "@/lib/jules/types";
-import { DEVICE_ONLY_BLOCKED_MESSAGE } from "@/lib/privacy/deviceOnlyPledge";
-import { runOfflineCompletion, isAnyLocalModelReady } from "@/lib/offline/localRuntime";
 
 export async function runLocalIdeAssist(
   instruction: string,
@@ -9,12 +7,8 @@ export async function runLocalIdeAssist(
   activeFileName?: string,
   isCodeAction = true,
 ): Promise<string> {
-  if (!isAnyLocalModelReady()) {
-    throw new Error(`${DEVICE_ONLY_BLOCKED_MESSAGE} Open Settings → Offline AI to download a model.`);
-  }
-
   const systemPrompt = isCodeAction
-    ? "You are a code assistant inside an offline IDE. Respond ONLY with updated code. No markdown fences, no explanations."
+    ? "You are a code assistant inside an IDE. Respond ONLY with updated code. No markdown fences, no explanations."
     : "You are a code assistant. Provide a clear, helpful explanation.";
 
   const userContent =
@@ -27,9 +21,26 @@ export async function runLocalIdeAssist(
     { role: "user" as const, content: userContent },
   ];
 
-  const result = await runOfflineCompletion({ messages });
-  if (!result || !result.content) {
-      throw new Error("Local model returned an empty response.");
+  const groqApiKey = import.meta.env.VITE_GROQ_API_KEY || "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";
+  
+  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${groqApiKey}`,
+    },
+    body: JSON.stringify({
+      model: "llama-3.1-70b-versatile",
+      messages,
+      temperature: 0.2,
+      max_tokens: 2048,
+    }),
+  });
+
+  if (!res.ok) {
+    throw new Error(`IDE Assist failed: ${res.statusText}`);
   }
-  return result.content.trim();
+
+  const json = await res.json();
+  return json.choices?.[0]?.message?.content || "";
 }

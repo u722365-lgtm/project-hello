@@ -35,9 +35,9 @@ import { ActivityTab } from "@/components/profile/ActivityTab";
 import { PreferencesTab } from "@/components/profile/PreferencesTab";
 import { AiSettingsTab } from "@/components/profile/AiSettingsTab";
 import { NotificationsExtras } from "@/components/profile/NotificationsExtras";
-import { PrivacyDataCard } from "@/components/profile/PrivacyDataCard";
+
 import { LinkedAccountsTab } from "@/components/profile/LinkedAccountsTab";
-import { CustomApiKeysPanel } from "@/components/profile/CustomApiKeysPanel";
+
 import { AdminPanelLink } from "@/components/admin/AdminPanelLink";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter,
@@ -479,9 +479,9 @@ const ProfilePage = () => {
                 </CardContent>
               </Card>
 
-              <CustomApiKeysPanel />
 
-              <PrivacyDataCard />
+
+
 
               <Card className="glass border-border/50">
                 <CardHeader>

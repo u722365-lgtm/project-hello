@@ -139,7 +139,7 @@ export const usePrivacyScore = () => {
 
   const logLocalProcessing = useCallback(() => {
     addEvent({
-      id: crypto.randomUUID(),
+      id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })),
       type: 'local_processing',
       source: 'ShadowTalk AI',
       timestamp: new Date(),

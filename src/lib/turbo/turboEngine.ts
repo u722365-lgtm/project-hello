@@ -20,6 +20,7 @@ import { localComplete, isWebGPUSupported, WEBGPU_MODEL } from '@/lib/webgpu/loc
 import { isAnyLocalModelReady } from '@/lib/offline/localRuntime';
 import { trackAiMetrics, estimateTokens } from '@/lib/telemetry/agenticMetrics';
 import { streamCloudChat } from '@/lib/cloudChat';
+import { routeTask } from './modelRouter';
 
 // ---- Public Types ----
 
@@ -90,27 +91,46 @@ async function streamGroq(
   const controller = new AbortController();
   if (opts.signal) opts.signal.addEventListener('abort', () => controller.abort(), { once: true });
 
-  const modelToUse = opts.model || (opts.taskComplexity === 'low' ? TURBO_MODEL_CHAT : TURBO_MODEL_GROQ);
+  const modelToUse = opts.model || TURBO_MODEL_GROQ;
 
-  const resp = await fetch(GROQ_API_URL, {
-    method: 'POST',
-    headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: modelToUse,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userContent },
-      ],
-      max_tokens: opts.maxTokens || 4096,
-      temperature: opts.temperature ?? 0.5,
-      stream: true,
-    }),
-    signal: controller.signal,
-  });
+  const maxRetries = 3;
+  let attempt = 0;
+  let resp: Response | null = null;
 
-  if (!resp.ok) {
-    const errText = await resp.text().catch(() => '');
-    throw new Error(`Groq ${resp.status}: ${errText.slice(0, 200)}`);
+  while (attempt <= maxRetries) {
+    try {
+      resp = await fetch(GROQ_API_URL, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: modelToUse,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userContent },
+          ],
+          max_tokens: opts.maxTokens || 4096,
+          temperature: opts.temperature ?? 0.5,
+          stream: true,
+        }),
+        signal: controller.signal,
+      });
+
+      if (resp.ok || (resp.status !== 502 && resp.status !== 503 && resp.status !== 504)) {
+        break;
+      }
+    } catch (err) {
+      if (attempt === maxRetries) throw err;
+    }
+    
+    attempt++;
+    if (attempt <= maxRetries) {
+      await new Promise(r => setTimeout(r, Math.min(1000 * Math.pow(2, attempt), 10000)));
+    }
+  }
+
+  if (!resp || !resp.ok) {
+    const errText = await resp?.text().catch(() => '') || 'Network Error';
+    throw new Error(`Groq ${resp?.status || 'Unknown'}: ${errText.slice(0, 200)}`);
   }
 
   const reader = resp.body?.getReader();
@@ -217,53 +237,53 @@ export async function turboComplete(
   const startMs = performance.now();
   const apiKey = resolveTurboKey();
 
-  // WebGPU Local Fallback Strategy
-  // If Sovereign Agents is enabled, and we don't have a specific API key (or we do and want to force local),
-  // we try local WebGPU first if supported.
-  // Only use the local model when it is ALREADY loaded — otherwise the first
-  // message would block on a multi-minute model download.
-  if (isSovereignAgentsEnabled() && isWebGPUSupported() && isAnyLocalModelReady()) {
+  const routing = routeTask(opts.taskComplexity, !!apiKey);
+  
+  if (routing.target === 'local') {
     try {
       const content = await localComplete(systemPrompt, userContent, opts.onDelta);
       const totalMs = performance.now() - startMs;
       trackAiMetrics('llm_completion', {
         source: 'webgpu-local',
-        model: WEBGPU_MODEL,
+        model: routing.model,
         totalMs,
         inputTokens: estimateTokens(systemPrompt + userContent),
         outputTokens: estimateTokens(content),
       });
-      return { content, source: 'webgpu-local', modelUsed: WEBGPU_MODEL, totalMs };
+      return { content, source: 'webgpu-local', modelUsed: routing.model, totalMs };
     } catch (localErr) {
       console.warn('[TurboEngine] WebGPU local execution failed:', localErr);
     }
   }
 
-  if (!apiKey) {
+  if (routing.target === 'cloud' || !apiKey) {
     return cloudFallback(systemPrompt, userContent, opts, startMs);
   }
 
   prewarmGroqConnection(apiKey);
 
-  // Try Groq
-  try {
-    const result = await streamGroq(apiKey, systemPrompt, userContent, opts);
-    trackAiMetrics('llm_completion', {
-      source: 'turbo-groq',
-      model: result.modelUsed,
-      ttftMs: result.ttftMs,
-      totalMs: result.totalMs,
-      inputTokens: estimateTokens(systemPrompt + userContent),
-      outputTokens: estimateTokens(result.content),
-    });
-    return result;
-  } catch (groqErr) {
-    console.warn('[TurboEngine] Groq failed:', groqErr);
+  if (routing.target === 'groq') {
+    try {
+      opts.model = routing.model;
+      const result = await streamGroq(apiKey, systemPrompt, userContent, opts);
+      trackAiMetrics('llm_completion', {
+        source: 'turbo-groq',
+        model: result.modelUsed,
+        ttftMs: result.ttftMs,
+        totalMs: result.totalMs,
+        inputTokens: estimateTokens(systemPrompt + userContent),
+        outputTokens: estimateTokens(result.content),
+      });
+      return result;
+    } catch (groqErr) {
+      console.warn('[TurboEngine] Groq failed, falling back to openrouter:', groqErr);
+    }
   }
 
   // Try OpenRouter fallback
-  if (apiKey.startsWith('sk-or-')) {
+  if (apiKey.startsWith('sk-or-') || routing.target === 'openrouter') {
     try {
+      opts.model = routing.model || TURBO_MODEL_OPENROUTER;
       const result = await streamOpenRouter(apiKey, systemPrompt, userContent, opts);
       trackAiMetrics('llm_completion', {
         source: 'turbo-openrouter',

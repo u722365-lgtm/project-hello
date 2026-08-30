@@ -60,7 +60,7 @@ export const useCollaborativeAI = ({ roomId, enabled = true }: UseCollaborativeA
 
     // Broadcast user message
     const userMsg: SharedAIMessage = {
-      id: crypto.randomUUID(),
+      id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })),
       userId: user.id,
       userName,
       content: query,
@@ -94,7 +94,7 @@ export const useCollaborativeAI = ({ roomId, enabled = true }: UseCollaborativeA
         : data?.choices?.[0]?.message?.content || data?.response || "No response.";
 
       const aiMsg: SharedAIMessage = {
-        id: crypto.randomUUID(),
+        id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })),
         userId: "ai",
         userName: `ShadowTalk (via ${userName})`,
         content: responseText,

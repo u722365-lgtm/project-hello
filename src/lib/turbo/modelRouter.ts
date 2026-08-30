@@ -1,5 +1,9 @@
 export type TaskComplexity = 'low' | 'medium' | 'high';
 
+import { TURBO_MODEL_GROQ, TURBO_MODEL_CHAT, TURBO_MODEL_OPENROUTER } from './turboProviders';
+import { WEBGPU_MODEL, isWebGPUSupported } from '@/lib/webgpu/localEngine';
+import { isAnyLocalModelReady } from '@/lib/offline/localRuntime';
+import { isSovereignAgentsEnabled } from '@/lib/desktop/sovereignAgentMode';
 export interface ChatMessage {
   role: string;
   content: string;
@@ -51,4 +55,46 @@ export function analyzeComplexity(messages: ChatMessage[]): TaskComplexity {
 
   // Default to medium
   return 'medium';
+}
+
+/**
+ * Intelligent Model Router
+ * 
+ * Routes a task to the most appropriate model based on its complexity.
+ * This ensures we don't spend expensive tokens on simple summarization tasks.
+ */
+export function routeTask(
+  complexity: TaskComplexity = 'medium',
+  hasApiKey: boolean = false
+): { target: 'local' | 'groq' | 'openrouter' | 'cloud', model: string } {
+  
+  // 1. Sovereign AI (WebGPU) - Always prefer if enabled and available for low/med tasks
+  if (isSovereignAgentsEnabled() && isWebGPUSupported() && isAnyLocalModelReady()) {
+    if (complexity === 'low' || complexity === 'medium') {
+      return { target: 'local', model: WEBGPU_MODEL };
+    }
+  }
+
+  // 2. High Complexity (Strategy, Research)
+  if (complexity === 'high') {
+    if (hasApiKey) {
+      return { target: 'openrouter', model: TURBO_MODEL_OPENROUTER }; // e.g. Claude 3.5 or GPT-4o
+    }
+    return { target: 'cloud', model: 'default' }; // Cloud edge fallback
+  }
+
+  // 3. Low Complexity (UI generation, title summarization, simple chat)
+  if (complexity === 'low') {
+    if (hasApiKey) {
+      return { target: 'groq', model: TURBO_MODEL_CHAT }; // Llama-3-8B (fast & cheap)
+    }
+    return { target: 'cloud', model: 'default' };
+  }
+
+  // 4. Medium Complexity (Standard chat logic)
+  if (hasApiKey) {
+    return { target: 'groq', model: TURBO_MODEL_GROQ }; // Llama-3-70B
+  }
+  
+  return { target: 'cloud', model: 'default' };
 }

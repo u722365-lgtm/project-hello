@@ -1,10 +1,22 @@
+// Polyfill crypto.randomUUID for non-secure contexts (e.g., testing on local network IP)
+if (typeof crypto === 'undefined') {
+  (window as any).crypto = {} as Crypto;
+}
+if (!crypto.randomUUID) {
+  crypto.randomUUID = () => {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    }) as `${string}-${string}-${string}-${string}-${string}`;
+  };
+}
+
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { HelmetProvider } from "react-helmet-async";
 import App from "./App.tsx";
 import "./index.css";
 import { initPerformanceMonitoring, deferNonCritical } from "./lib/performance";
-import { configureTransformersEnv, warmWebGPUProbe } from "./lib/webgpuRuntime";
 import { warmHardwareProfile, prewarmFastestLocalPath } from "./lib/hardwareIntelligence";
 import { installViteChunkRecovery, clearViteChunkRecoveryFlag } from "./lib/viteChunkRecovery";
 import { applyAnonymousAutonomousDefaults } from "./lib/anonymousAutonomousMode";
@@ -28,8 +40,6 @@ applyAnonymousAutonomousDefaults();
  
 // Warm WebGPU + configure on-device inference runtimes (idle, non-blocking)
 deferNonCritical(() => {
-  void configureTransformersEnv();
-  warmWebGPUProbe();
   warmHardwareProfile();
   prewarmFastestLocalPath();
 });

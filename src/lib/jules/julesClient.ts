@@ -1,9 +1,7 @@
-import { assertCloudAllowed } from "@/lib/privacy/deviceOnlyPledge";
 import type { JulesActivity, JulesSession, JulesSource } from "./types";
 
 async function julesRequest<T>(_body: Record<string, unknown>): Promise<T> {
-  assertCloudAllowed("Jules cloud agent");
-  throw new Error("Jules cloud agent is disabled under the device-only pledge");
+  throw new Error("Jules cloud agent is disabled");
 }
 
 export async function verifyJulesApiKey(apiKey: string): Promise<boolean> {

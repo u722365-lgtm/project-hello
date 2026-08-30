@@ -74,7 +74,7 @@ export const RealTimeUserFlow: React.FC = () => {
       .on('presence', { event: 'join' }, ({ key, newPresences }) => {
         const presence = newPresences[0] as Record<string, unknown>;
         const activity: UserActivity = {
-          id: crypto.randomUUID(),
+          id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })),
           userId: key,
           email: presence.email as string | undefined,
           action: 'joined',
@@ -86,7 +86,7 @@ export const RealTimeUserFlow: React.FC = () => {
       .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
         const presence = leftPresences[0] as Record<string, unknown>;
         const activity: UserActivity = {
-          id: crypto.randomUUID(),
+          id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })),
           userId: key,
           email: presence.email as string | undefined,
           action: 'left',
