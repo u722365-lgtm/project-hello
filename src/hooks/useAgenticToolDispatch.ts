@@ -288,7 +288,18 @@ export function useAgenticToolDispatch() {
     [runCritic, dispatchFromDetection],
   );
 
+  /** Navigate to Mission Control execute view for a goal. */
+  const goToExecute = useCallback(
+    (goal: string, deliverable?: string) => {
+      const params = new URLSearchParams({ goal });
+      if (deliverable) params.set("deliverable", deliverable);
+      navigate(`/mission-control?${params.toString()}`);
+    },
+    [navigate],
+  );
+
   return {
+    goToExecute,
     dispatchDetection,
     dispatchDetectionAsync,
     continueFromCritic,

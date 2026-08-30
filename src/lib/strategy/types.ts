@@ -20,10 +20,10 @@ export interface SWOTData {
 
 export interface Competitor {
   name: string;
+  marketShare: number;
+  pricing: string;
   strengths?: string;
   weaknesses?: string;
-  marketShare?: number;
-  [key: string]: unknown;
 }
 
 export interface CostItem {
@@ -75,4 +75,11 @@ export interface StrategyPlanStep {
   proof?: { sources?: StrategySource[] } | null;
 }
 
-export type StrategyPhase = "idle" | "planning" | "executing" | "synthesizing" | "complete" | "error";
+export type StrategyPhase =
+  | "idle"
+  | "planning"
+  | "executing"
+  | "synthesizing"
+  | "complete"
+  | "failed"
+  | "error";
