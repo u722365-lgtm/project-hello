@@ -14,11 +14,13 @@ export interface ToolDispatchUI {
   openDeepResearch: (query?: string) => void;
   openImageGenerator: () => void;
   openMusicGenerator?: (prompt?: string) => void;
-  openAgenticRunner: (goal: string) => void;
-  openBrowser: () => void;
-  openShadowLive: () => void;
+  openAgenticRunner?: (goal: string) => void;
+  openBrowser?: () => void;
+  openShadowLive?: () => void;
+  openMissionControl?: (goal?: string) => void;
 
   openShadowExecution?: (goal: string, mode?: string) => void;
+
   setPendingMessage: (text: string) => void;
   appendAssistantMessage: (content: string, toolExecution?: {
     tool: string;
