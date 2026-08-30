@@ -90,31 +90,11 @@ const Navigation = ({ landingAnimated = false }: NavigationProps) => {
   }, [deferredPrompt]);
 
   const primaryNavItems = [
-    { name: t("nav.pricing"), href: "/pricing", icon: Shield, isLink: true },
-
-    { name: "Shadow Workspace", href: "/workspace", icon: Sparkles, isLink: true },
-    { name: "Code IDE", href: "/ide", icon: Code, isLink: true },
+    { name: "Shadow DreamState", href: "/chatbot", icon: Sparkles, isLink: true },
+    { name: "Shadow Twin", href: "/shadow-memory", icon: Brain, isLink: true },
   ];
 
   const secondaryNavItems = [
-    { name: "Chatbot", href: "/chatbot", icon: MessageSquare, isLink: true },
-    { name: "UI Templates", href: "/templates", icon: LayoutGrid, isLink: true },
-    { name: "Marketplace", href: "/marketplace", icon: Store, isLink: true },
-    { name: "Developers", href: "/developers", icon: Terminal, isLink: true },
-    { name: "Download app", href: "/downloads", icon: Download, isLink: true },
-    { name: "Security Center", href: "/security", icon: ShieldCheck, isLink: true },
-    { name: t("nav.docs"), href: "/docs", icon: BookOpen, isLink: true },
-    { name: t("nav.changelog"), href: "/changelog", icon: History, isLink: true },
-    { name: t("nav.rooms"), href: "/rooms", icon: Users, isLink: true },
-    { name: t("nav.api"), href: "/api", icon: Code, isLink: true },
-    { name: "Shadow Insights", href: "/insights", icon: BarChart3, isLink: true },
-    { name: "Shadow Research", href: "/research", icon: Globe, isLink: true },
-    { name: "Enterprise", href: "/enterprise", icon: Building2, isLink: true },
-    { name: "About", href: "/about", icon: UserCircle, isLink: true },
-    { name: "Agents", href: "/agents", icon: Bot, isLink: true },
-    { name: "Compliance", href: "/compliance", icon: ShieldCheck, isLink: true },
-    { name: "Competitive", href: "/competitive", icon: BarChart3, isLink: true },
-    { name: "Admin", href: "/admin", icon: Settings, isLink: true },
     { name: "Settings", href: "/settings", icon: Settings, isLink: true },
     { name: t("nav.profile"), href: "/profile", icon: User, isLink: true },
   ];
