@@ -1,4 +1,3 @@
-import type { RouterMessage } from "@/lib/offline/localRuntime";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
@@ -33,7 +32,7 @@ import { toast } from "sonner";
 import { backend } from "@/integrations/local/client";
 import { parseVCard } from "@/lib/whatsapp/vcardParser";
 import { useNavigate } from "react-router-dom";
-import { canUseCloudAI } from "@/lib/privacy/deviceOnlyPledge";
+import { publishAutoImproveEvent } from "@/lib/autoImprove/eventBus";
 
 
 
@@ -197,7 +196,7 @@ export default function WhatsAppContactsPage() {
     if (!aiPrompt.trim() || !draftTarget) return;
     setAiBusy(true);
     try {
-      const messages: RouterMessage[] = [
+      const messages: { role: string; content: string }[] = [
         {
           role: "system",
           content:
@@ -209,25 +208,26 @@ export default function WhatsAppContactsPage() {
         },
       ];
 
-      let txt = "";
-      if (canUseCloudAI()) {
-        const { data, error } = await backend.functions.invoke("chat", {
-          body: { messages, personality: "professional" },
-        });
-        if (error) throw error;
-        txt =
-          typeof data === "string"
-            ? data
-            : (data as { content?: string; message?: string; text?: string; choices?: Array<{ message?: { content?: string } }> })
-                ?.content ??
-              (data as { choices?: Array<{ message?: { content?: string } }> })?.choices?.[0]?.message
-                ?.content ??
-              (data as { message?: string })?.message ??
-              (data as { text?: string })?.text ??
-              "";
-      } else {
-        throw new Error("inference is disabled. Please configure a cloud AI provider.");
+      const payload = {
+        messages,
+        model: "llama-3.1-8b-instant",
+        temperature: 0.7,
+      };
+
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_GROQ_API_KEY || ""}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to generate response.");
       }
+      const data = await res.json();
+      let txt = data.choices[0]?.message?.content || "";
 
       if (txt) setDraftMsg(String(txt).trim());
       else toast.error("AI returned empty draft");
