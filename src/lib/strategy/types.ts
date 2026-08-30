@@ -40,7 +40,7 @@ export interface FinancialProjection {
 }
 
 export interface StrategySource {
-  title?: string;
+  title: string;
   url: string;
 }
 
