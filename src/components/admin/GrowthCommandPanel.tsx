@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { backend } from "@/integrations/local/client";
 import { backendLoose } from "@/integrations/local/loose";
-import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -96,7 +95,7 @@ export function GrowthCommandPanel() {
   };
 
   const runWorker = async () => {
-    const { error } = await supabase.functions.invoke("shadow-scale-orchestrator", {
+    const { error } = await backend.functions.invoke("shadow-scale-orchestrator", {
       body: { run_worker_only: true },
     });
     if (error) toast.error(error.message);
@@ -115,7 +114,7 @@ export function GrowthCommandPanel() {
   };
 
   const runOrchestrator = async () => {
-    const { data, error } = await supabase.functions.invoke("shadow-scale-orchestrator", {
+    const { data, error } = await backend.functions.invoke("shadow-scale-orchestrator", {
       body: { source: "admin_manual" },
     });
     if (error) toast.error(error.message);
@@ -124,7 +123,7 @@ export function GrowthCommandPanel() {
   };
 
   const runFreeBlogSync = async () => {
-    const { data, error } = await supabase.functions.invoke("changelog-to-blog");
+    const { data, error } = await backend.functions.invoke("changelog-to-blog");
     if (error) toast.error(error.message);
     else toast.success(`Changelog → blog (free): ${JSON.stringify(data ?? "ok")}`);
   };
