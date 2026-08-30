@@ -8,7 +8,6 @@ import {
   SHADOWSCALE_TICK_MS,
 } from "./shadowScaleConfig";
 import { refreshShadowScaleSignals, subscribeShadowScaleSignals } from "./shadowScaleSignals";
-import { supabase } from "@/integrations/supabase/client";
 
 async function sendHeartbeat(route: string, userId: string | null): Promise<void> {
   const events = drainGrowthEvents();
@@ -24,7 +23,7 @@ async function sendHeartbeat(route: string, userId: string | null): Promise<void
   }
 
   try {
-    const { data, error } = await supabase.functions.invoke("shadow-scale-orchestrator", {
+    const { data, error } = await backend.functions.invoke("shadow-scale-orchestrator", {
       body: {
         client_id: getShadowScaleClientId(),
         user_id: userId,

@@ -14,11 +14,13 @@ export interface ToolDispatchUI {
   openDeepResearch: (query?: string) => void;
   openImageGenerator: () => void;
   openMusicGenerator?: (prompt?: string) => void;
-  openAgenticRunner: (goal: string) => void;
-  openBrowser: () => void;
-  openShadowLive: () => void;
+  openAgenticRunner?: (goal: string) => void;
+  openBrowser?: () => void;
+  openShadowLive?: () => void;
+  openMissionControl?: (goal?: string) => void;
 
   openShadowExecution?: (goal: string, mode?: string) => void;
+
   setPendingMessage: (text: string) => void;
   appendAssistantMessage: (content: string, toolExecution?: {
     tool: string;
@@ -286,7 +288,18 @@ export function useAgenticToolDispatch() {
     [runCritic, dispatchFromDetection],
   );
 
+  /** Navigate to Mission Control execute view for a goal. */
+  const goToExecute = useCallback(
+    (goal: string, deliverable?: string) => {
+      const params = new URLSearchParams({ goal });
+      if (deliverable) params.set("deliverable", deliverable);
+      navigate(`/mission-control?${params.toString()}`);
+    },
+    [navigate],
+  );
+
   return {
+    goToExecute,
     dispatchDetection,
     dispatchDetectionAsync,
     continueFromCritic,
