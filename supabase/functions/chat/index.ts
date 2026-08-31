@@ -66,7 +66,8 @@ Deno.serve(async (req) => {
             },
           });
         }
-        console.error('[chat] Groq failed, falling back to Lovable AI:', groq.status);
+        const errText = await groq.text().catch(() => '');
+        console.error('[chat] Groq failed, falling back to Lovable AI:', groq.status, errText.slice(0, 300));
       } catch (err) {
         console.error('[chat] Groq error, falling back to Lovable AI:', err);
       }
