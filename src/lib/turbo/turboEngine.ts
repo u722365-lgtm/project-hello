@@ -14,7 +14,7 @@
  * Falls back to the standard edge-function path if no Turbo key is available.
  */
 
-import { resolveTurboKey, TURBO_MODEL_GROQ, TURBO_MODEL_CHAT, GROQ_API_URL, OPENROUTER_API_URL, TURBO_MODEL_OPENROUTER } from './turboProviders';
+import { resolveTurboKey, resolveOpenAIKey, TURBO_MODEL_GROQ, TURBO_MODEL_CHAT, GROQ_API_URL, OPENROUTER_API_URL, OPENAI_API_URL, TURBO_MODEL_OPENROUTER, TURBO_MODEL_OPENAI } from './turboProviders';
 import { isSovereignAgentsEnabled } from '@/lib/desktop/sovereignAgentMode';
 import { localComplete, isWebGPUSupported, WEBGPU_MODEL } from '@/lib/webgpu/localEngine';
 import { isAnyLocalModelReady } from '@/lib/offline/localRuntime';
@@ -41,7 +41,7 @@ export interface TurboEngineOptions {
 
 export interface TurboEngineResult {
   content: string;
-  source: 'turbo-groq' | 'turbo-openrouter' | 'webgpu-local' | 'cloud' | 'fallback';
+  source: 'turbo-groq' | 'turbo-openrouter' | 'turbo-openai' | 'webgpu-local' | 'cloud' | 'fallback';
   modelUsed?: string;
   ttftMs?: number;
   totalMs?: number;
@@ -223,6 +223,69 @@ async function streamOpenRouter(
   return { content, source: 'turbo-openrouter', modelUsed: TURBO_MODEL_OPENROUTER, totalMs: performance.now() - startMs };
 }
 
+// ---- Stream from OpenAI ----
+
+async function streamOpenAI(
+  apiKey: string,
+  systemPrompt: string,
+  userContent: string,
+  opts: TurboEngineOptions,
+): Promise<TurboEngineResult> {
+  const startMs = performance.now();
+  let ttftRecorded = false;
+
+  const resp = await fetch(OPENAI_API_URL, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: opts.model || TURBO_MODEL_OPENAI,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userContent },
+      ],
+      max_tokens: opts.maxTokens || 4096,
+      stream: true,
+    }),
+    signal: opts.signal,
+  });
+
+  if (!resp.ok) throw new Error(`OpenAI ${resp.status}`);
+
+  const reader = resp.body?.getReader();
+  if (!reader) throw new Error('No response body from OpenAI');
+
+  const decoder = new TextDecoder();
+  let content = '';
+  let lineBuffer = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    lineBuffer += decoder.decode(value, { stream: true });
+    const lines = lineBuffer.split('\n');
+    lineBuffer = lines.pop() ?? '';
+    for (const line of lines) {
+      const token = parseSseLine(line);
+      if (token) {
+        if (!ttftRecorded) ttftRecorded = true;
+        content += token;
+        opts.onDelta?.(content);
+      }
+    }
+  }
+
+  return { 
+    content, 
+    source: 'turbo-openai', 
+    modelUsed: opts.model || TURBO_MODEL_OPENAI, 
+    ttftMs: ttftRecorded ? performance.now() - startMs : undefined,
+    totalMs: performance.now() - startMs 
+  };
+}
+
 // ---- Main Entry Point ----
 
 /**
@@ -256,11 +319,32 @@ export async function turboComplete(
     }
   }
 
-  if (routing.target === 'cloud' || !apiKey) {
+  if (routing.target === 'cloud' || (!apiKey && !resolveOpenAIKey())) {
     return cloudFallback(systemPrompt, userContent, opts, startMs);
   }
 
-  prewarmGroqConnection(apiKey);
+  const openAiKey = resolveOpenAIKey();
+  if (routing.target === 'openai' && openAiKey) {
+    try {
+      opts.model = routing.model;
+      const result = await streamOpenAI(openAiKey, systemPrompt, userContent, opts);
+      trackAiMetrics('llm_completion', {
+        source: 'turbo-openai',
+        model: result.modelUsed,
+        ttftMs: result.ttftMs,
+        totalMs: result.totalMs,
+        inputTokens: estimateTokens(systemPrompt + userContent),
+        outputTokens: estimateTokens(result.content),
+      });
+      return result;
+    } catch (openAiErr) {
+      console.warn('[TurboEngine] OpenAI failed, falling back:', openAiErr);
+    }
+  }
+
+  if (apiKey) {
+    prewarmGroqConnection(apiKey);
+  }
 
   if (routing.target === 'groq') {
     try {

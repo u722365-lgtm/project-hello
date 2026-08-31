@@ -24,6 +24,12 @@ export const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 /** OpenRouter API endpoint */
 export const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
+/** OpenAI API endpoint */
+export const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
+
+/** OpenAI model */
+export const TURBO_MODEL_OPENAI = 'gpt-4o';
+
 // ---- Embedded Platform Key ----
 // Powers ShadowTalk for all free-tier users (bypasses broken ShadowTalk edge function).
 const _K = ['gsk_oqo0','ziSXZ4dP','gkFD8BMj','WGdyb3FY','Gm9foOab','DlsTC8pE','lPq3GRXn'];
@@ -76,10 +82,21 @@ export function resolveTurboKey(): string | null {
   return PLATFORM_GROQ_KEY;
 }
 
+/**
+ * Resolve the OpenAI API key.
+ */
+export function resolveOpenAIKey(): string | null {
+  const envKey = import.meta.env.VITE_OPENAI_API_KEY;
+  if (envKey && envKey.startsWith('sk-')) {
+    return envKey;
+  }
+  return null;
+}
+
 // ---- Provider Info ----
 
 export interface TurboProviderInfo {
-  id: 'groq' | 'openrouter';
+  id: 'groq' | 'openrouter' | 'openai';
   name: string;
   model: string;
   url: string;
@@ -96,6 +113,14 @@ export const TURBO_PROVIDERS: TurboProviderInfo[] = [
     url: GROQ_API_URL,
     maxTokens: 8192,
     avgTtftMs: 250,
+  },
+  {
+    id: 'openai',
+    name: 'OpenAI (GPT-4o)',
+    model: TURBO_MODEL_OPENAI,
+    url: OPENAI_API_URL,
+    maxTokens: 16384,
+    avgTtftMs: 600,
   },
   {
     id: 'openrouter',
