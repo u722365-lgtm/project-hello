@@ -1,6 +1,7 @@
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 
 const DEFAULT_MODEL = 'openai/gpt-5.6-sol';
+const GROQ_MODEL = 'llama-3.3-70b-versatile';
 
 type Msg = { role: 'system' | 'user' | 'assistant'; content: string };
 
@@ -36,6 +37,42 @@ Deno.serve(async (req) => {
     }
 
     const model = typeof body?.model === 'string' && body.model ? body.model : DEFAULT_MODEL;
+
+    // ---- Fast path: Groq (BYOK server-side). Already speaks chat-completions SSE. ----
+    const groqKey = Deno.env.get('GROQ_API_KEY');
+    if (groqKey) {
+      try {
+        const groq = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${groqKey}`,
+          },
+          body: JSON.stringify({
+            model: GROQ_MODEL,
+            messages: messages.map((m) => ({ role: m.role, content: m.content })),
+            stream: true,
+            temperature: typeof body?.temperature === 'number' ? body.temperature : 0.7,
+          }),
+        });
+
+        if (groq.ok && groq.body) {
+          return new Response(groq.body, {
+            headers: {
+              ...corsHeaders,
+              'Content-Type': 'text/event-stream',
+              'Cache-Control': 'no-cache',
+              'Connection': 'keep-alive',
+            },
+          });
+        }
+        console.error('[chat] Groq failed, falling back to Lovable AI:', groq.status);
+      } catch (err) {
+        console.error('[chat] Groq error, falling back to Lovable AI:', err);
+      }
+    }
+
+
 
     // Responses API input items (assistant turns use output_text parts).
     const input = messages.map((m) => ({
