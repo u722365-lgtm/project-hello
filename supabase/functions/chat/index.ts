@@ -1,6 +1,7 @@
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 
 const DEFAULT_MODEL = 'openai/gpt-5.6-sol';
+const GROQ_MODEL = 'llama-3.3-70b-versatile';
 
 type Msg = { role: 'system' | 'user' | 'assistant'; content: string };
 
