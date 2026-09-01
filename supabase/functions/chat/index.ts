@@ -38,26 +38,26 @@ Deno.serve(async (req) => {
 
     const model = typeof body?.model === 'string' && body.model ? body.model : DEFAULT_MODEL;
 
-    // ---- Fast path: Groq (BYOK server-side). Already speaks chat-completions SSE. ----
-    const groqKey = Deno.env.get('GROQ_API_KEY');
-    if (groqKey) {
+    // ---- Fast path: OpenAI (user-provided key). Already speaks chat-completions SSE. ----
+    const openaiKey = Deno.env.get('OPENAI_API_KEY');
+    if (openaiKey) {
       try {
-        const groq = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        const openai = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${groqKey}`,
+            Authorization: `Bearer ${openaiKey}`,
           },
           body: JSON.stringify({
-            model: GROQ_MODEL,
+            model: OPENAI_MODEL,
             messages: messages.map((m) => ({ role: m.role, content: m.content })),
             stream: true,
             temperature: typeof body?.temperature === 'number' ? body.temperature : 0.7,
           }),
         });
 
-        if (groq.ok && groq.body) {
-          return new Response(groq.body, {
+        if (openai.ok && openai.body) {
+          return new Response(openai.body, {
             headers: {
               ...corsHeaders,
               'Content-Type': 'text/event-stream',
@@ -66,10 +66,10 @@ Deno.serve(async (req) => {
             },
           });
         }
-        const errText = await groq.text().catch(() => '');
-        console.error('[chat] Groq failed, falling back to Lovable AI:', groq.status, errText.slice(0, 300));
+        const errText = await openai.text().catch(() => '');
+        console.error('[chat] OpenAI failed, falling back to Lovable AI:', openai.status, errText.slice(0, 300));
       } catch (err) {
-        console.error('[chat] Groq error, falling back to Lovable AI:', err);
+        console.error('[chat] OpenAI error, falling back to Lovable AI:', err);
       }
     }
 
