@@ -40,6 +40,7 @@ interface SettingsSectionPanelsProps {
   sections: readonly SettingsNavSection[];
   onSelectSection: (id: string) => void;
   learningEnabled: boolean;
+  onLearningChange?: (value: boolean) => void;
 }
 
 const ACCOUNT_LINKS = [
