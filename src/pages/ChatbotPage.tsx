@@ -37,6 +37,7 @@ import { useDailyLimits } from "@/hooks/useDailyLimits";
 import { useToolOrchestrator } from "@/hooks/useToolOrchestrator";
 import { useAgenticToolDispatch } from "@/hooks/useAgenticToolDispatch";
 
+import { streamCloudChat, type CloudChatMessage } from "@/lib/cloudChat";
 import { stringifyChatBody } from "@/lib/chatRequest";
 import { buildChatProviderPayload } from "@/lib/chatProviderBridge";
 
@@ -1107,57 +1108,28 @@ const ChatbotPage = () => {
         if (pendingContent !== null) flushAssistant();
       };
 
-      const turboKey = resolveTurboKey();
-      if (!turboKey) {
-        throw new Error("No Groq API key found. Please configure VITE_GROQ_API_KEY in your .env file.");
-      }
-
-      const groqMessages = [
-        { role: 'system', content: `You are ShadowTalk AI. Be ${personality || 'friendly'} and helpful. Use markdown formatting. Current date: ${new Date().toISOString().split('T')[0]}.` },
-        ...routerMessages.map(m => ({ role: m.role, content: m.content }))
+      const cloudMessages: CloudChatMessage[] = [
+        {
+          role: 'system',
+          content: `You are ShadowTalk AI. Be ${personality || 'friendly'} and helpful. Use markdown formatting. Current date: ${new Date().toISOString().split('T')[0]}.`,
+        },
+        ...routerMessages.map((m) => ({
+          role: (m.role === 'assistant' ? 'assistant' : m.role === 'system' ? 'system' : 'user') as CloudChatMessage['role'],
+          content: typeof m.content === 'string' ? m.content : String(m.content ?? ''),
+        })),
       ];
 
-      const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${turboKey}`
-        },
+      const { content: streamedContent, error: cloudError } = await streamCloudChat(cloudMessages, {
         signal: controller.signal,
-        body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
-          messages: groqMessages,
-          stream: true,
-          temperature: 0.7,
-        })
+        temperature: 0.7,
+        onDelta: (accumulated) => pushAssistant(accumulated),
       });
 
-      if (!resp.ok) {
-        const cloudFailed = new Error((await resp.text().catch(() => "")) || "Groq chat failed");
-        await raiseChatHttpError(resp.status, cloudFailed.message);
+      if (cloudError && !streamedContent) {
+        throw new Error(cloudError);
       }
-
-      const reader = resp.body?.getReader();
-      const decoder = new TextDecoder();
-      let lineBuffer = "";
-
-      while (reader) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        lineBuffer += decoder.decode(value, { stream: true });
-        const lines = lineBuffer.split("\n");
-        lineBuffer = lines.pop() ?? "";
-        
-        for (const line of lines) {
-          if (!line.startsWith('data: ') || line === 'data: [DONE]') continue;
-          try {
-            const data = JSON.parse(line.slice(6));
-            const delta = data.choices?.[0]?.delta?.content;
-            if (delta) {
-              pushAssistant(assistantContent + delta);
-            }
-          } catch {}
-        }
+      if (streamedContent) {
+        pushAssistant(streamedContent);
       }
 
       finalizeAssistant();
