@@ -7,7 +7,11 @@ import {
   hasActiveCustomKey,
 } from "@/lib/customApiKeys";
 import { isTurboAvailable } from "@/lib/turbo";
-import type { UserProviderKeyRow } from "@/hooks/useCustomApiKeys";
+export interface UserProviderKeyRow {
+  id?: string;
+  provider: string;
+  has_key?: boolean;
+}
 
 /**
  * Turbo is handled client-side via direct Groq/OpenRouter fetch.
