@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/components/AuthProvider';
 import { useToast } from '@/hooks/use-toast';
 import { PageTransition } from '@/components/PageTransition';
-import { EnterpriseAppShell } from '@/components/enterprise/EnterpriseAppShell';
 
 export default function ShadowTwinSettingsPage() {
   const { user } = useAuth();
@@ -36,7 +35,7 @@ export default function ShadowTwinSettingsPage() {
   };
 
   return (
-    <EnterpriseAppShell>
+    <div className="min-h-screen bg-background text-foreground">
       <PageTransition>
         <div className="max-w-5xl mx-auto py-12 px-6">
           
@@ -164,6 +163,6 @@ export default function ShadowTwinSettingsPage() {
           </div>
         </div>
       </PageTransition>
-    </EnterpriseAppShell>
+    </div>
   );
 }

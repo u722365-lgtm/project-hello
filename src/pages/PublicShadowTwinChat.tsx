@@ -5,7 +5,6 @@ import { Send, Bot, Sparkles, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { PageTransition } from '@/components/PageTransition';
-import { EnterpriseAppShell } from '@/components/enterprise/EnterpriseAppShell';
 import { streamCloudChat } from '@/lib/cloudChat';
 
 interface Message {
@@ -92,7 +91,7 @@ export default function PublicShadowTwinChat() {
   };
 
   return (
-    <EnterpriseAppShell>
+    <div className="min-h-screen bg-background text-foreground">
       <PageTransition>
         <div className="flex flex-col h-[calc(100vh-4rem)] max-w-4xl mx-auto px-4 py-6">
           
@@ -183,6 +182,6 @@ export default function PublicShadowTwinChat() {
 
         </div>
       </PageTransition>
-    </EnterpriseAppShell>
+    </div>
   );
 }
