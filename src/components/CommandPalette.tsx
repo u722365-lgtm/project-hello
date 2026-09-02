@@ -81,6 +81,12 @@ const pages: PageEntry[] = [
   { name: "Sovereign Data", href: "/sovereign-data", icon: Database, desc: "Data sovereignty controls", group: "Account" },
   { name: "Privacy Score", href: "/privacy-score", icon: Award, desc: "Your privacy posture", group: "Account" },
   { name: "Self-Healing", href: "/self-healing", icon: Activity, desc: "Diagnostics & auto-repair", group: "Account" },
+  
+  // === Enterprise ===
+  { name: "Developer Portal", href: "/developers", icon: Terminal, desc: "API keys & usage", group: "Account" },
+  { name: "Integrations Hub", href: "/integrations", icon: Network, desc: "Connect external apps", group: "Account" },
+  { name: "Audit Logs", href: "/audit-logs", icon: ClipboardList, desc: "Security & compliance logs", group: "Account" },
+  { name: "Model Studio", href: "/studio", icon: Settings, desc: "Playground & fine-tuning", group: "Tools" },
 
   // === Company ===
   { name: "About", href: "/about", icon: UserCircle, desc: "About ShadowTalk", group: "Company" },

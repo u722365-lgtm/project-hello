@@ -60,6 +60,12 @@ const SettingsPage = lazy(() => import("./pages/SettingsPage"));
  const PrivateAiHubPage = lazy(() => import("./pages/PrivateAiHubPage"));
  // const StrategyAgentPage = lazy(() => import("./pages/StrategyAgentPage"));
 const TemplatesPage = lazy(() => import("./pages/TemplatesPage"));
+const DeveloperPortalPage = lazy(() => import("./pages/DeveloperPortalPage"));
+const OrgAdminPage = lazy(() => import("./pages/OrgAdminPage"));
+const IntegrationsHubPage = lazy(() => import("./pages/IntegrationsHubPage"));
+const BillingDashboardPage = lazy(() => import("./pages/BillingDashboardPage"));
+const AuditLogsPage = lazy(() => import("./pages/AuditLogsPage"));
+const ModelPlaygroundPage = lazy(() => import("./pages/ModelPlaygroundPage"));
 
 const AutoImproveEngine = lazy(() => import("@/components/autoImprove/AutoImproveEngine"));
 const PWABanner = lazy(() => import("./components/PWABanner"));
@@ -142,6 +148,14 @@ const AnimatedRoutes = () => {
           <Route path="/business-memory" element={<Navigate to="/workspace?tab=explore" replace />} />
           <Route path="/sessions" element={<PageTransition><SessionsPage /></PageTransition>} />
           <Route path="/private-ai" element={<PageTransition><PrivateAiHubPage /></PageTransition>} />
+          
+          {/* Enterprise SaaS Routes */}
+          <Route path="/developers" element={<PageTransition><DeveloperPortalPage /></PageTransition>} />
+          <Route path="/admin" element={<PageTransition><OrgAdminPage /></PageTransition>} />
+          <Route path="/integrations" element={<PageTransition><IntegrationsHubPage /></PageTransition>} />
+          <Route path="/billing" element={<PageTransition><BillingDashboardPage /></PageTransition>} />
+          <Route path="/audit-logs" element={<PageTransition><AuditLogsPage /></PageTransition>} />
+          <Route path="/studio" element={<PageTransition><ModelPlaygroundPage /></PageTransition>} />
           <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
         </Routes>
       </AnimatePresence>
