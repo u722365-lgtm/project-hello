@@ -66,6 +66,32 @@ export type Database = {
           initial?: string
         }
       }
+      shadow_twins: {
+        Row: {
+          id: string
+          user_id: string
+          twin_name: string
+          system_prompt: string
+          is_active: boolean
+          greeting_message: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          twin_name: string
+          system_prompt: string
+          is_active: boolean
+          greeting_message: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          twin_name?: string
+          system_prompt?: string
+          is_active?: boolean
+          greeting_message?: string
+        }
+      }
       integrations: {
         Row: {
           id: string

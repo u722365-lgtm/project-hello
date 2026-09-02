@@ -66,6 +66,8 @@ const IntegrationsHubPage = lazy(() => import("./pages/IntegrationsHubPage"));
 const BillingDashboardPage = lazy(() => import("./pages/BillingDashboardPage"));
 const AuditLogsPage = lazy(() => import("./pages/AuditLogsPage"));
 const ModelPlaygroundPage = lazy(() => import("./pages/ModelPlaygroundPage"));
+const ShadowTwinSettingsPage = lazy(() => import("./pages/ShadowTwinSettingsPage"));
+const PublicShadowTwinChat = lazy(() => import("./pages/PublicShadowTwinChat"));
 
 const AutoImproveEngine = lazy(() => import("@/components/autoImprove/AutoImproveEngine"));
 const PWABanner = lazy(() => import("./components/PWABanner"));
@@ -137,6 +139,8 @@ const AnimatedRoutes = () => {
           <Route path="/profile" element={<PageTransition><ProfilePage /></PageTransition>} />
           <Route path="/settings" element={<PageTransition><SettingsPage /></PageTransition>} />
           <Route path="/templates" element={<PageTransition><TemplatesPage /></PageTransition>} />
+          <Route path="/shadow-twin" element={<PageTransition><ShadowTwinSettingsPage /></PageTransition>} />
+          <Route path="/t/:username" element={<Suspense fallback={<PageLoader />}><PublicShadowTwinChat /></Suspense>} />
           
           <Route path="/auth/designs" element={<PageTransition><AuthDesignGalleryPage /></PageTransition>} />
           <Route path="/auth/preview/:designId" element={<PageTransition><AuthDesignPreviewPage /></PageTransition>} />

@@ -101,14 +101,10 @@ export default function IntegrationsHubPage() {
                       onCheckedChange={() => toggleConnection(integration.id, integration.connected)} 
                       disabled={toggleMutation.isPending}
                     />
-              </Card>
-            </motion.div>
-          ))}
-          
-          {filtered.length === 0 && (
-            <div className="col-span-full py-12 text-center text-muted-foreground">
-              No integrations found matching "{search}".
-            </div>
+                  </CardFooter>
+                </Card>
+              </motion.div>
+            ))
           )}
         </div>
 

@@ -954,6 +954,19 @@ const ChatbotPage = () => {
           : (m.content.find((p) => p.type === "text") as { text?: string } | undefined)?.text ?? "",
       }));
 
+      const shadowMatchInitial = lastUser.match(/@([a-zA-Z0-9_-]+)-shadow/i);
+      if (shadowMatchInitial) {
+        const shadowName = shadowMatchInitial[1];
+        routerMessages.unshift({
+          role: "system",
+          content: `You are acting as the Shadow Twin for ${shadowName}. You must speak and act entirely on their behalf based on their specific context, tone, and knowledge. Do not break character. Do not say you are an AI.`
+        });
+        augmented.unshift({
+          role: "system",
+          content: `You are acting as the Shadow Twin for ${shadowName}. You must speak and act entirely on their behalf based on their specific context, tone, and knowledge. Do not break character. Do not say you are an AI.`
+        });
+      }
+
       if (chatMode === "shadowspectre") {
         if (!user || isAnonymous) {
           throw new Error("Sign in required to use ShadowSpectre.");
@@ -967,6 +980,10 @@ const ChatbotPage = () => {
         setShadowSpectreHead(head);
         const aiMessageId = (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); }));
         let assistantContent = "";
+        const shadowMatch = lastUser.match(/@([a-zA-Z0-9_-]+)-shadow/i);
+        const isShadowTwin = !!shadowMatch;
+        const shadowTwinName = shadowMatch ? `${shadowMatch[1]}-shadow` : undefined;
+        
         const streamToken = (token: string) => {
           assistantContent += token;
           setMessages((prev) => {
@@ -978,7 +995,7 @@ const ChatbotPage = () => {
             }
             return [
               ...prev,
-              { id: aiMessageId, type: "ai", content: assistantContent, timestamp: new Date() },
+              { id: aiMessageId, type: "ai", content: assistantContent, timestamp: new Date(), isShadowTwin, shadowTwinName },
             ];
           });
         };
@@ -1072,6 +1089,10 @@ const ChatbotPage = () => {
       // doesn't trigger a full React reconcile on every SSE chunk.
       let pendingContent: string | null = null;
       let rafId: number | null = null;
+      const shadowMatch = lastUser.match(/@([a-zA-Z0-9_-]+)-shadow/i);
+      const isShadowTwin = !!shadowMatch;
+      const shadowTwinName = shadowMatch ? `${shadowMatch[1]}-shadow` : undefined;
+
       const flushAssistant = () => {
         rafId = null;
         if (pendingContent === null) return;
@@ -1086,7 +1107,7 @@ const ChatbotPage = () => {
           }
           return [
             ...prev,
-            { id: aiMessageId, type: "ai", content, timestamp: new Date() },
+            { id: aiMessageId, type: "ai", content, timestamp: new Date(), isShadowTwin, shadowTwinName },
           ];
         });
       };

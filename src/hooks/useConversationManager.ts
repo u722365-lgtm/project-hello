@@ -32,6 +32,8 @@ export interface Message {
     result?: string;
     params?: Record<string, string>;
   };
+  isShadowTwin?: boolean;
+  shadowTwinName?: string;
 }
 
 /** A conversation row returned from the backend. */
