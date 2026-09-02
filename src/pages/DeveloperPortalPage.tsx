@@ -8,15 +8,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import { motion } from "framer-motion";
 
-const MOCK_KEYS = [
-  { id: "key_1", name: "Production API Key", prefix: "sk_live_...", created: "2024-01-15", lastUsed: "Today at 10:24 AM", status: "active" },
-  { id: "key_2", name: "Development Env", prefix: "sk_test_...", created: "2024-02-01", lastUsed: "Yesterday", status: "active" },
-];
+import { useApiKeys } from "@/hooks/useEnterpriseData";
 
 export default function DeveloperPortalPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const { data: keys = [], isLoading } = useApiKeys();
 
   const handleCopy = (id: string) => {
     setCopiedId(id);
@@ -61,7 +59,9 @@ export default function DeveloperPortalPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {MOCK_KEYS.map((key) => (
+                {isLoading ? (
+                  <div className="p-4 text-center text-muted-foreground">Loading API Keys...</div>
+                ) : keys.map((key) => (
                   <motion.div 
                     key={key.id}
                     initial={{ opacity: 0, y: 10 }}

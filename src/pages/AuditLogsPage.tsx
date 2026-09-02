@@ -7,20 +7,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-const MOCK_LOGS = [
-  { id: "log_1", time: "2024-04-15 14:23:01", user: "alice@company.com", event: "API Key Created", ip: "192.168.1.100", resource: "sk_live_..." },
-  { id: "log_2", time: "2024-04-15 13:10:45", user: "bob@company.com", event: "Settings Updated", ip: "10.0.0.55", resource: "Org Settings: Web Search" },
-  { id: "log_3", time: "2024-04-14 09:15:22", user: "charlie@company.com", event: "Login Successful", ip: "172.16.0.4", resource: "Auth System" },
-  { id: "log_4", time: "2024-04-13 16:44:11", user: "diana@company.com", event: "Integration Added", ip: "192.168.1.102", resource: "GitHub" },
-  { id: "log_5", time: "2024-04-13 11:05:00", user: "alice@company.com", event: "User Invited", ip: "192.168.1.100", resource: "charlie@company.com" },
-];
+import { useAuditLogs } from "@/hooks/useEnterpriseData";
 
 export default function AuditLogsPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
+  const { data: logs = [], isLoading } = useAuditLogs();
   
-  const filtered = MOCK_LOGS.filter(log => 
-    Object.values(log).some(val => val.toLowerCase().includes(search.toLowerCase()))
+  const filtered = logs.filter(log => 
+    Object.values(log).some(val => typeof val === 'string' && val.toLowerCase().includes(search.toLowerCase()))
   );
 
   return (
@@ -84,26 +79,31 @@ export default function AuditLogsPage() {
                 <TableHead className="text-right">IP Address</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
-              {filtered.map((log) => (
-                <TableRow key={log.id} className="hover:bg-muted/30 border-border/50">
-                  <TableCell className="font-mono text-xs text-muted-foreground whitespace-nowrap">{log.time}</TableCell>
-                  <TableCell className="font-medium text-sm">{log.user}</TableCell>
-                  <TableCell>
-                    <Badge variant="secondary" className="font-normal text-xs bg-muted/50">{log.event}</Badge>
-                  </TableCell>
-                  <TableCell className="text-sm">{log.resource}</TableCell>
-                  <TableCell className="text-right font-mono text-xs text-muted-foreground">{log.ip}</TableCell>
-                </TableRow>
-              ))}
-              {filtered.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
-                    No logs found.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
+              <TableBody>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center text-muted-foreground">Loading audit logs...</TableCell>
+                  </TableRow>
+                ) : filtered.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center text-muted-foreground">No logs found matching "{search}"</TableCell>
+                  </TableRow>
+                ) : (
+                  filtered.map((log) => (
+                    <TableRow key={log.id} className="hover:bg-muted/30 border-border/50">
+                      <TableCell className="font-mono text-xs text-muted-foreground whitespace-nowrap">{log.time}</TableCell>
+                      <TableCell className="font-medium text-sm">{log.user}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="bg-muted/50 font-normal">
+                          {log.event}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="font-mono text-xs">{log.resource}</TableCell>
+                      <TableCell className="text-muted-foreground text-xs">{log.ip}</TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
           </Table>
         </div>
 

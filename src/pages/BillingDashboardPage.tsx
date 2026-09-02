@@ -8,14 +8,11 @@ import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-const MOCK_INVOICES = [
-  { id: "INV-2024-004", date: "Apr 01, 2024", amount: "$299.00", status: "Paid" },
-  { id: "INV-2024-003", date: "Mar 01, 2024", amount: "$299.00", status: "Paid" },
-  { id: "INV-2024-002", date: "Feb 01, 2024", amount: "$299.00", status: "Paid" },
-];
+import { useInvoices } from "@/hooks/useEnterpriseData";
 
 export default function BillingDashboardPage() {
   const navigate = useNavigate();
+  const { data: invoices = [], isLoading } = useInvoices();
 
   return (
     <div className="min-h-screen bg-background/50 text-foreground overflow-y-auto pb-12">
@@ -89,17 +86,24 @@ export default function BillingDashboardPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {MOCK_INVOICES.map((invoice) => (
-                      <TableRow key={invoice.id} className="hover:bg-muted/30 border-border/50">
-                        <TableCell className="font-medium">{invoice.id}</TableCell>
-                        <TableCell>{invoice.date}</TableCell>
+                    {isLoading ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center text-muted-foreground">Loading invoices...</TableCell>
+                      </TableRow>
+                    ) : invoices.map((invoice) => (
+                      <TableRow key={invoice.id}>
+                        <TableCell className="font-medium text-sm">{invoice.id}</TableCell>
+                        <TableCell className="text-muted-foreground">{invoice.date}</TableCell>
                         <TableCell>{invoice.amount}</TableCell>
                         <TableCell>
-                          <Badge variant="outline" className="text-xs bg-green-500/10 text-green-500 border-green-500/20">{invoice.status}</Badge>
+                          <Badge variant="secondary" className="bg-green-500/10 text-green-500 hover:bg-green-500/20 text-xs font-normal">
+                            {invoice.status}
+                          </Badge>
                         </TableCell>
                         <TableCell className="text-right">
                           <Button variant="ghost" size="sm" className="h-8">
-                            <Download className="h-4 w-4 mr-2" /> PDF
+                            <Download className="h-4 w-4 mr-2" />
+                            PDF
                           </Button>
                         </TableCell>
                       </TableRow>

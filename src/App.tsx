@@ -32,7 +32,7 @@ import WorkspacePathRemember from "@/components/WorkspacePathRemember";
 import { GrowthBanners } from "@/components/GrowthBanners";
 import { OAuthReturnHandler } from "@/components/OAuthReturnHandler";
 import { OAuthRedirectHandler } from "@/components/OAuthRedirectHandler";
-
+import { seedEnterpriseData } from "@/lib/seedEnterpriseData";
 
 export const CommandPaletteContext = createContext<{ open: () => void }>({ open: () => {} });
 // Critical path pages - loaded immediately
@@ -173,6 +173,9 @@ const App = () => {
   useEffect(() => {
     import("@/lib/shadowMode").then(({ initShadowMode }) => initShadowMode());
     import("@/lib/profilePreferences").then(({ initProfileUiPreferences }) => initProfileUiPreferences());
+    
+    // Seed enterprise data if tables are empty
+    seedEnterpriseData();
 
     const hasSeenBoot = sessionStorage.getItem('shadowtalk-booted');
     if (hasSeenBoot || shouldSkipBootScreen()) {

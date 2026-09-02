@@ -14,7 +14,130 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      api_keys: {
+        Row: {
+          id: string
+          name: string
+          prefix: string
+          created: string
+          lastUsed: string
+          status: string
+        }
+        Insert: {
+          id: string
+          name: string
+          prefix: string
+          created: string
+          lastUsed: string
+          status: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          prefix?: string
+          created?: string
+          lastUsed?: string
+          status?: string
+        }
+      }
+      org_users: {
+        Row: {
+          id: string
+          name: string
+          email: string
+          role: string
+          status: string
+          initial: string
+        }
+        Insert: {
+          id: string
+          name: string
+          email: string
+          role: string
+          status: string
+          initial: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          email?: string
+          role?: string
+          status?: string
+          initial?: string
+        }
+      }
+      integrations: {
+        Row: {
+          id: string
+          name: string
+          desc: string
+          category: string
+          connected: boolean
+          icon: string
+        }
+        Insert: {
+          id: string
+          name: string
+          desc: string
+          category: string
+          connected: boolean
+          icon: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          desc?: string
+          category?: string
+          connected?: boolean
+          icon?: string
+        }
+      }
+      invoices: {
+        Row: {
+          id: string
+          date: string
+          amount: string
+          status: string
+        }
+        Insert: {
+          id: string
+          date: string
+          amount: string
+          status: string
+        }
+        Update: {
+          id?: string
+          date?: string
+          amount?: string
+          status?: string
+        }
+      }
+      audit_logs: {
+        Row: {
+          id: string
+          time: string
+          user: string
+          event: string
+          ip: string
+          resource: string
+        }
+        Insert: {
+          id: string
+          time: string
+          user: string
+          event: string
+          ip: string
+          resource: string
+        }
+        Update: {
+          id?: string
+          time?: string
+          user?: string
+          event?: string
+          ip?: string
+          resource?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never

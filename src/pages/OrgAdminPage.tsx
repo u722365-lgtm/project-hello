@@ -10,15 +10,11 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-const MOCK_USERS = [
-  { id: "1", name: "Alice Admin", email: "alice@company.com", role: "Owner", status: "Active", initial: "AA" },
-  { id: "2", name: "Bob Builder", email: "bob@company.com", role: "Admin", status: "Active", initial: "BB" },
-  { id: "3", name: "Charlie Chaplin", email: "charlie@company.com", role: "Member", status: "Invited", initial: "CC" },
-  { id: "4", name: "Diana Prince", email: "diana@company.com", role: "Member", status: "Active", initial: "DP" },
-];
+import { useOrgUsers } from "@/hooks/useEnterpriseData";
 
 export default function OrgAdminPage() {
   const navigate = useNavigate();
+  const { data: users = [], isLoading } = useOrgUsers();
 
   return (
     <div className="min-h-screen bg-background/50 text-foreground overflow-y-auto pb-12">
@@ -69,23 +65,25 @@ export default function OrgAdminPage() {
                           <Avatar className="h-8 w-8 border border-border/50">
                             <AvatarFallback className="bg-primary/10 text-xs">{user.initial}</AvatarFallback>
                           </Avatar>
-                          <div className="flex flex-col">
-                            <span className="font-medium text-sm">{user.name}</span>
-                            <span className="text-xs text-muted-foreground">{user.email}</span>
+                          <div>
+                            <div className="font-medium text-sm">{user.name}</div>
+                            <div className="text-xs text-muted-foreground">{user.email}</div>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline" className="font-normal text-xs">{user.role}</Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="secondary" className={`font-normal text-xs ${user.status === 'Active' ? 'bg-green-500/10 text-green-500 hover:bg-green-500/20' : 'bg-amber-500/10 text-amber-500 hover:bg-amber-500/20'}`}>
-                            {user.status}
+                          <Badge variant="outline" className="text-xs bg-muted/50">
+                            {user.role}
                           </Badge>
                         </TableCell>
                         <TableCell>
+                          <Badge variant={user.status === "Active" ? "default" : "secondary"} className={user.status === "Active" ? "bg-green-500/10 text-green-500 hover:bg-green-500/20 text-xs" : "text-xs"}>
+                            {user.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" className="h-8 w-8 p-0">
+                              <Button variant="ghost" size="icon" className="h-8 w-8">
                                 <span className="sr-only">Open menu</span>
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
