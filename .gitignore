@@ -63,3 +63,4 @@ dev-dist/
 .env
 
 artifacts/
+dist_electron/

@@ -37,6 +37,9 @@ import { useDailyLimits } from "@/hooks/useDailyLimits";
 import { useToolOrchestrator } from "@/hooks/useToolOrchestrator";
 import { useAgenticToolDispatch } from "@/hooks/useAgenticToolDispatch";
 
+import { stringifyChatBody } from "@/lib/chatRequest";
+import { buildChatProviderPayload } from "@/lib/chatProviderBridge";
+
 import { ChatAmbientBackground } from "@/components/chat/ChatAmbientBackground";
 import { ChatEmptyState } from "@/components/chat/ChatEmptyState";
 import { ChatMainPanel } from "@/components/chat/ChatMainPanel";
@@ -50,7 +53,7 @@ import { useIntelligenceHub } from "@/hooks/useIntelligenceHub";
 import { useAutoImproveContext } from "@/contexts/AutoImproveContext";
 
 import { trackAgenticEvent } from "@/lib/agenticMetrics";
-import { upsertGoalsFromMessage, syncGoalToAiMemories } from "@/lib/autonomy/goalPersistence";
+
 import { detectChatImageIntent } from "@/lib/chatImageIntent";
 import {
   buildVisionUserMessage,
@@ -100,7 +103,7 @@ import { VisualReasoning } from "@/components/chat/VisualReasoning";
 import { ImageDecoder } from "@/components/chat/ImageDecoder";
 import { DailyPlanner } from "@/components/chat/DailyPlanner";
 import { IntelligenceHub } from "@/components/chat/IntelligenceHub";
-import { KnowledgeVault } from "@/components/chat/KnowledgeVault";
+
 import { ChatUpgradeNudge } from "@/components/monetization/ChatUpgradeNudge";
 import { UpgradePrompt } from "@/components/monetization/UpgradePrompt";
 import { useSubscriptionNudge } from "@/hooks/useSubscriptionNudge";
@@ -134,7 +137,7 @@ import { ShareWinBanner } from "@/components/growth/ShareWinBanner";
 import { recordSuccessfulChatSession, getSuccessfulSessionCount } from "@/lib/growth/sessionMilestones";
 import { markHasChatted, completeQuickPrompt, hasChattedBefore } from "@/lib/growth/firstVisit";
 import { recordFunnelEvent, recordChatbotView } from "@/lib/growth/funnelEvents";
-import { isAnonymousAutonomousEnabled } from "@/lib/anonymousAutonomousMode";
+
 import {
   buildChatShareSubtitle,
   buildChatShareTitle,
@@ -264,7 +267,7 @@ const ChatbotPage = () => {
   const [chatMode, setChatMode] = useState<ChatMode>("general");
   const [aiProvider, setAiProvider] = useState<AIProvider>('turbo');
   const aiConfig = { useCustomKey: false, preferredProvider: null };
-  const keys = {};
+  const keys: any[] = [];
   const { preferences: chatPreferences, isLoading: chatPrefsLoading } = useChatSettings();
   const [localModelReady, setLocalModelReady] = useState(false);
   const hasLocalDesktop = typeof window !== 'undefined' && (window as any).__TAURI__ && localModelReady;
@@ -314,7 +317,7 @@ const ChatbotPage = () => {
   const [showScreenAgent, setShowScreenAgent] = useState(false);
   const [showVisionAgent, setShowVisionAgent] = useState(false);
   const [showIntelligenceHub, setShowIntelligenceHub] = useState(false);
-  const [showKnowledgeVault, setShowKnowledgeVault] = useState(false);
+
   const [showAgenticRunner, setShowAgenticRunner] = useState(false);
   const [showAgentWorkflows, setShowAgentWorkflows] = useState(false);
   const [showGeminiAnalytics, setShowGeminiAnalytics] = useState(false);
@@ -1237,7 +1240,7 @@ const ChatbotPage = () => {
     if ((!msgContent && !selectedFile) || isLoading) return;
 
     const isGuestLike = !user || isAnonymous;
-    if (isGuestLike && !isAnonymousAutonomousEnabled()) {
+    if (isGuestLike) {
       if (guestUsage.isLoaded && !guestUsage.canPerform("chats")) {
         toast({ title: "Guest chat limit", description: "Sign in later to lift limits; continuing now." });
       }
@@ -1246,11 +1249,11 @@ const ChatbotPage = () => {
       }
     }
 
-    if (!isProOrHigher && dailyLimits.isLoaded && !dailyLimits.canPerform("messages") && !isAnonymousAutonomousEnabled()) {
+    if (!isProOrHigher && dailyLimits.isLoaded && !dailyLimits.canPerform("messages")) {
       // Soft downgrade: keep chat flowing for anonymous users.
     }
 
-    if (!isProOrHigher && nudge.shouldBlockSend && !isAnonymousAutonomousEnabled()) {
+    if (!isProOrHigher && nudge.shouldBlockSend) {
       // Soft downgrade: do not interrupt sends for anonymous users.
     }
 
@@ -1324,12 +1327,6 @@ const ChatbotPage = () => {
 
 
     void captureChatSend(msgContent, chatMode, personality, Boolean(userMessage.attachment));
-
-    if (user) {
-      for (const g of upsertGoalsFromMessage(msgContent)) {
-        void syncGoalToAiMemories(user.id, g);
-      }
-    }
 
     const imageAttachment =
       userMessage.attachment?.type === "image" ? userMessage.attachment : null;
@@ -1465,7 +1462,7 @@ const ChatbotPage = () => {
       },
     };
 
-    const { outcome: toolOutcome, executedStep } = await dispatchDetectionAsync(
+    const { outcome: toolOutcome } = await dispatchDetectionAsync(
       msgContent,
       toolDispatchUi,
     );
@@ -1506,28 +1503,7 @@ const ChatbotPage = () => {
             recordChatShareBannerShown();
           }
 
-          if (executedStep && assistantReply) {
-            const criticFollowUp = await continueFromCritic(
-              msgContent,
-              executedStep,
-              assistantReply,
-              toolDispatchUi,
-            );
-            if (criticFollowUp?.outcome.handled && criticFollowUp.outcome.cognitiveLoop) {
-              setCognitiveQuery(criticFollowUp.outcome.query ?? msgContent);
-              setShowCognitiveLoop(true);
-              setIsLoading(false);
-              return;
-            }
-            const followFlags =
-              criticFollowUp && !criticFollowUp.outcome.handled
-                ? criticFollowUp.outcome.chatFlags
-                : undefined;
-            if (followFlags?.webSearch || followFlags?.deepResearch) {
-              const followReply = await runChatCompletion(chatMessages, conversationId, followFlags);
-              learnFromTurn(msgContent, followReply, conversationId);
-            }
-          }
+
         } catch (err) {
           if (!(err instanceof DOMException && err.name === "AbortError")) {
             const msg = formatChatFetchError(err);
@@ -1844,9 +1820,7 @@ const ChatbotPage = () => {
       case "organize":
         setShowDataOrganizer(true);
         return;
-      case "knowledge-vault":
-      case "knowledge-vault-modal":
-        setShowKnowledgeVault(true);
+
         return;
       case "uncensored-arena":
         setShowUncensoredArena(true);
@@ -1943,7 +1917,7 @@ const ChatbotPage = () => {
     layout: "composer" as const,
     aiProvider,
     onProviderChange: setAiProvider,
-    hasKeyForProvider: true,
+    hasKeyForProvider: () => true,
     promptSuggestion,
     onPromptAccept: setMessage,
     onPromptClear: () => setPromptSuggestion(""),
@@ -2006,12 +1980,12 @@ const ChatbotPage = () => {
                 if (isMobile) setShowMobileNav(!showMobileNav);
                 else toggleSidebar();
               }}
+              onOpenStealthVault={() => navigate("/vault")}
               onExport={handleExport}
               onManageSubscription={() => navigate("/billing")}
               onSignOut={signOut}
               onOpenAnalytics={() => setShowAnalytics(true)}
               onOpenScriptAutomation={() => navigate("/workspace?tab=automate")}
-              onOpenStealthVault={() => navigate("/security?tab=vault")}
               onOpenAgentWorkflows={() => setShowAgentWorkflows(true)}
               onOpenModelFineTuning={() => navigate("/personal-llm")}
               onOpenWhiteLabelBranding={() => navigate("/enterprise")}
@@ -2032,7 +2006,7 @@ const ChatbotPage = () => {
               onOpenBrowser={() => setShowShadowBrowser(true)}
               aiProvider={aiProvider}
               onProviderChange={setAiProvider}
-              hasKeyForProvider={true}
+              hasKeyForProvider={() => true}
               maxChats="∞"
               dailyChats={messageCount}
               toolsMenuOpen={toolsMenuOpen}
@@ -2379,9 +2353,6 @@ const ChatbotPage = () => {
       />
       {showIntelligenceHub && (
         <IntelligenceHub isOpen={showIntelligenceHub} onClose={() => setShowIntelligenceHub(false)} />
-      )}
-      {showKnowledgeVault && (
-        <KnowledgeVault isOpen={showKnowledgeVault} onClose={() => setShowKnowledgeVault(false)} />
       )}
       {showBrowseActivity && browseSession && (
         <BrowseActivityPanel

@@ -2,7 +2,7 @@
  * Force-offline session — when active, chat runs on-device only (cloud disabled).
  */
 
-import { setRoutingMode } from "@/lib/offline/localRuntime";
+
 
 const ACTIVE_KEY = "shadowtalk_force_offline_active";
 const MODEL_KEY = "shadowtalk_force_offline_model";
@@ -27,7 +27,7 @@ export function activateForceOfflineSession(modelId: string): void {
   if (typeof localStorage === "undefined") return;
   localStorage.setItem(ACTIVE_KEY, "1");
   localStorage.setItem(MODEL_KEY, modelId);
-  setRoutingMode("local-only");
+
   notify();
 }
 
@@ -35,6 +35,6 @@ export function deactivateForceOfflineSession(): void {
   if (typeof localStorage === "undefined") return;
   localStorage.removeItem(ACTIVE_KEY);
   localStorage.removeItem(MODEL_KEY);
-  setRoutingMode("auto");
+
   notify();
 }

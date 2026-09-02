@@ -19,7 +19,7 @@ import "./index.css";
 import { initPerformanceMonitoring, deferNonCritical } from "./lib/performance";
 import { warmHardwareProfile, prewarmFastestLocalPath } from "./lib/hardwareIntelligence";
 import { installViteChunkRecovery, clearViteChunkRecoveryFlag } from "./lib/viteChunkRecovery";
-import { applyAnonymousAutonomousDefaults } from "./lib/anonymousAutonomousMode";
+
 import { applyPerfProfile } from "./lib/perf/devicePerfTier";
 import { setupGlobalErrorHandling } from "./lib/globalErrorHandler";
 
@@ -34,7 +34,7 @@ installViteChunkRecovery();
 // Initialize performance monitoring
 initPerformanceMonitoring();
 
-applyAnonymousAutonomousDefaults();
+
  
 // Global error listeners have been moved to setupGlobalErrorHandling
  

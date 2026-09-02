@@ -2,7 +2,7 @@ export type TaskComplexity = 'low' | 'medium' | 'high';
 
 import { TURBO_MODEL_GROQ, TURBO_MODEL_CHAT, TURBO_MODEL_OPENROUTER, TURBO_MODEL_OPENAI, resolveOpenAIKey } from './turboProviders';
 import { WEBGPU_MODEL, isWebGPUSupported } from '@/lib/webgpu/localEngine';
-import { isAnyLocalModelReady } from '@/lib/offline/localRuntime';
+
 import { isSovereignAgentsEnabled } from '@/lib/desktop/sovereignAgentMode';
 export interface ChatMessage {
   role: string;
@@ -68,12 +68,6 @@ export function routeTask(
   hasApiKey: boolean = false
 ): { target: 'local' | 'groq' | 'openrouter' | 'openai' | 'cloud', model: string } {
   
-  // 1. Sovereign AI (WebGPU) - Always prefer if enabled and available for low/med tasks
-  if (isSovereignAgentsEnabled() && isWebGPUSupported() && isAnyLocalModelReady()) {
-    if (complexity === 'low' || complexity === 'medium') {
-      return { target: 'local', model: WEBGPU_MODEL };
-    }
-  }
 
   // 2. High Complexity (Strategy, Research)
   if (complexity === 'high') {

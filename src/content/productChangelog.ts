@@ -17,6 +17,19 @@ export interface ProductChangelogEntry {
 /** Built-in release notes — shown on /changelog (merged with CMS entries). */
 export const PRODUCT_CHANGELOG: ProductChangelogEntry[] = [
   {
+    version: "3.0.0",
+    title: "The Agentic Pivot: Less Bloat, More Power",
+    summary: "Integrated OpenAI GPT-4o as a first-class citizen, and stripped away 40+ legacy pages to focus strictly on Shadow DreamState, Omniscience, and Twin.",
+    publishedAt: "2026-08-31",
+    tags: ["OpenAI", "Turbo Engine", "UX", "Agents"],
+    changes: [
+      { type: "feature", text: "OpenAI GPT-4o integration: Native SSE streaming support and complexity routing to handle the hardest tasks." },
+      { type: "feature", text: "Focused exclusively on the 'Big Three': Shadow DreamState (background autonomous tasks), Omniscience (knowing everything contextually), and Twin (your digital clone)." },
+      { type: "improvement", text: "Massive UI cleanup: Removed 40+ legacy hubs, marketplaces, and unnecessary pages to declutter the workspace." },
+      { type: "security", text: "Secure environment variable handling for OpenAI and Groq keys, wired deeply into the Turbo Engine." },
+    ],
+  },
+  {
     version: "2.6.0",
     title: "Workspace-first experience",
     summary: "Open ShadowTalk straight into chat — faster entry, persistent sessions, cleaner composer.",

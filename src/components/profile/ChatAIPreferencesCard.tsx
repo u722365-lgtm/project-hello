@@ -1,4 +1,3 @@
-import { getRoutingMode, setRoutingMode, type RoutingMode } from "@/lib/offline/localRuntime";
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -28,7 +27,6 @@ import {
 
 export function ChatAIPreferencesCard() {
   const [acceleration, setAcceleration] = useState<AccelerationMode>(() => getAccelerationPreference());
-  const [routing, setRouting] = useState<RoutingMode>(() => "auto");
   const [shadowMode, setShadowMode] = useState(() => getShadowModeEnabled());
   const [enterToSend, setEnterToSend] = useState(() => getChatEnterToSend());
   const [showTimestamps, setShowTimestamps] = useState(() => getChatShowTimestamps());
@@ -82,33 +80,7 @@ export function ChatAIPreferencesCard() {
           </Select>
         </div>
 
-        <div className="flex items-center justify-between gap-4 p-4 rounded-xl hover:bg-muted/30 transition-colors">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="p-2 rounded-lg bg-primary/10 shrink-0">
-              <Gauge className="h-4 w-4 text-primary" />
-            </div>
-            <div className="min-w-0">
-              <Label className="text-sm font-medium">Inference routing</Label>
-              <p className="text-xs text-muted-foreground">Prefer local Gemma, cloud API, or automatic</p>
-            </div>
-          </div>
-          <Select
-            value={routing}
-            onValueChange={(v) => {
-              const mode = v as RoutingMode;
-              setRouting(mode);
-            }}
-          >
-            <SelectTrigger className="w-[120px] shrink-0 bg-muted/30">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="auto">Auto</SelectItem>
-              <SelectItem value="local-only">Local only</SelectItem>
-              <SelectItem value="cloud-only">Cloud only</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+
 
         <div className="flex items-center justify-between p-4 rounded-xl hover:bg-muted/30 transition-colors">
           <div className="flex items-center gap-3">

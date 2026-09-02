@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import type { StrategyResult } from "@/hooks/useStrategyRunner";
+import type { StrategyResult } from "@/lib/strategy/types";
 import { CheckCircle, AlertTriangle, Target, TrendingUp, Lightbulb, ShieldAlert } from "lucide-react";
 
 export function StrategyResultView({ result }: { result: StrategyResult }) {
@@ -106,7 +106,7 @@ export function StrategyResultView({ result }: { result: StrategyResult }) {
             <h4 className="text-sm font-semibold mb-2">Estimated Costs</h4>
             <ul className="space-y-1">
               {result.research?.costs?.map((c, i) => (
-                <li key={i} className="text-sm text-muted-foreground">- {c}</li>
+                <li key={i} className="text-sm text-muted-foreground">- {c.item}: ${c.cost} {c.notes && `(${c.notes})`}</li>
               ))}
             </ul>
           </div>
@@ -125,8 +125,7 @@ export function StrategyResultView({ result }: { result: StrategyResult }) {
                   <CheckCircle className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <h4 className="font-medium text-sm">{step.phase}</h4>
-                  <p className="text-sm text-muted-foreground">{step.description}</p>
+                  <p className="text-sm text-muted-foreground">{step}</p>
                 </div>
               </div>
             ))}

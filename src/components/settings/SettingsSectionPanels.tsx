@@ -28,8 +28,7 @@ import { DesktopAppSettings } from "@/components/desktop/DesktopAppSettings";
 import { useSettingsMotion } from "@/hooks/useSettingsMotion";
 import { SettingsHomeGrid } from "@/components/settings/SettingsHomeGrid";
 import { SettingsShellCard } from "@/components/settings/SettingsShellCard";
-import { StrategyRunnerPanel } from "@/components/strategy/StrategyRunnerPanel";
-import { GrowthCommandPanel } from "@/components/admin/GrowthCommandPanel";
+
 import type { SettingsNavSection } from "@/components/settings/SettingsNav";
 import type { SettingsSectionId } from "@/lib/settingsTypes";
 import { Brain } from "lucide-react";
@@ -41,13 +40,6 @@ interface SettingsSectionPanelsProps {
   sections: readonly SettingsNavSection[];
   onSelectSection: (id: string) => void;
   learningEnabled: boolean;
-  onLearningChange: (enabled: boolean) => void;
-  autonomyEnabled: boolean;
-  onAutonomyChange: (enabled: boolean) => void;
-  anonymousAutonomous: boolean;
-  onAnonymousAutonomousChange: (enabled: boolean) => void;
-  autoApproveMissions: boolean;
-  onAutoApproveMissionsChange: (enabled: boolean) => void;
 }
 
 const ACCOUNT_LINKS = [
@@ -57,7 +49,6 @@ const ACCOUNT_LINKS = [
   { label: "Active sessions", href: "/sessions", desc: "Signed-in devices & revoke" },
   { label: "Billing & plan", href: "/profile?tab=billing", desc: "Subscription & credits" },
   { label: "Activity history", href: "/profile?tab=activity", desc: "Past conversations" },
-  { label: "Self-healing diagnostics", href: "/self-healing", desc: "Captured errors & auto-fix proposals" },
 ] as const;
 
 function AnimatedCard({
@@ -86,12 +77,6 @@ export function SettingsSectionPanels({
   onSelectSection,
   learningEnabled,
   onLearningChange,
-  autonomyEnabled,
-  onAutonomyChange,
-  anonymousAutonomous,
-  onAnonymousAutonomousChange,
-  autoApproveMissions,
-  onAutoApproveMissionsChange,
 }: SettingsSectionPanelsProps) {
   if (section === "home") {
     return <SettingsHomeGrid sections={sections} onSelect={onSelectSection} />;
@@ -197,104 +182,11 @@ export function SettingsSectionPanels({
             </SettingsShellCard>
           </AnimatedCard>
         </SettingsStaggerItem>
-        <SettingsStaggerItem>
-          <AnimatedCard>
-            <SettingsShellCard
-              title="Autonomous agent"
-              description="In-chat missions, scheduled runs, goal pursuit, and proactive signals"
-              icon={Sparkles}
-            >
-              <motion.div
-                className="flex items-center justify-between p-4 rounded-xl bg-muted/20 border border-border/40"
-                whileTap={{ scale: 0.995 }}
-              >
-                <p className="text-sm font-medium">Enable autonomous mode</p>
-                <Switch checked={autonomyEnabled} onCheckedChange={onAutonomyChange} />
-              </motion.div>
-              <motion.div
-                className="flex items-center justify-between p-4 rounded-xl bg-muted/20 border border-border/40"
-                whileTap={{ scale: 0.995 }}
-              >
-                <div>
-                  <p className="text-sm font-medium">Anonymous & autonomous</p>
-                  <p className="text-xs text-muted-foreground">No sign-in required; missions stay on-device</p>
-                </div>
-                <Switch checked={anonymousAutonomous} onCheckedChange={onAnonymousAutonomousChange} />
-              </motion.div>
-              <motion.div
-                className="flex items-center justify-between p-4 rounded-xl bg-muted/20 border border-border/40"
-                whileTap={{ scale: 0.995 }}
-              >
-                <div>
-                  <p className="text-sm font-medium">Auto-run missions</p>
-                  <p className="text-xs text-muted-foreground">Skip approval prompts for agent steps</p>
-                </div>
-                <Switch checked={autoApproveMissions} onCheckedChange={onAutoApproveMissionsChange} />
-              </motion.div>
-            </SettingsShellCard>
-          </AnimatedCard>
-        </SettingsStaggerItem>
-        <SettingsStaggerItem>
-          <AnimatedCard>
 
-          </AnimatedCard>
-        </SettingsStaggerItem>
       </SettingsStagger>
     );
   }
 
-  if (section === "growth") {
-    return (
-      <SettingsStagger className="space-y-6">
-        <SettingsSectionHeader
-          icon={TrendingUp}
-          title="Growth Engine"
-          description="AI-powered strategy, market mapping, and autonomous scale plays"
-        />
-        <SettingsStaggerItem>
-          <AnimatedCard>
-            <StrategyRunnerPanel />
-          </AnimatedCard>
-        </SettingsStaggerItem>
-        <SettingsStaggerItem>
-          <AnimatedCard>
-            <GrowthCommandPanel />
-          </AnimatedCard>
-        </SettingsStaggerItem>
-      </SettingsStagger>
-    );
-  }
-
-  if (section === "connections") {
-    return (
-      <SettingsStagger className="space-y-6">
-        <SettingsSectionHeader
-          icon={Link2}
-          title="Connections"
-          description="API keys and linked services (Google, GitHub, Slack, WhatsApp)"
-        />
-        <SettingsStaggerItem>
-          <AnimatedCard>
-
-          </AnimatedCard>
-        </SettingsStaggerItem>
-        <SettingsStaggerItem>
-          <AnimatedCard>
-            <Card className="glass border-border/50 card-glass">
-              <CardContent className="pt-6 flex flex-wrap gap-3">
-                <Button asChild variant="secondary" className="btn-glow">
-                  <Link to="/profile?tab=linked">Manage linked accounts</Link>
-                </Button>
-                <Button asChild variant="outline">
-                  <Link to="/developers">Developer integrations</Link>
-                </Button>
-              </CardContent>
-            </Card>
-          </AnimatedCard>
-        </SettingsStaggerItem>
-      </SettingsStagger>
-    );
-  }
 
   return (
     <SettingsStagger className="space-y-6">

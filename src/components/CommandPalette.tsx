@@ -67,7 +67,7 @@ const pages: PageEntry[] = [
   { name: "Private AI Chat", href: "/private-ai", icon: Shield, desc: "No login, no tracking — private ChatGPT alternative", group: "Core" },
   // === Account ===
   { name: "Profile", href: "/profile", icon: User, desc: "Your profile", group: "Account" },
-  { name: "Settings", href: "/settings", icon: Settings, desc: "App settings & autonomy", group: "Account" },
+  { name: "Settings", href: "/settings", icon: Settings, desc: "App settings", group: "Account" },
   { name: "Billing", href: "/billing", icon: CreditCard, desc: "Manage billing", group: "Account" },
   { name: "Sovereign Wallet", href: "/wallet", icon: Wallet, desc: "Credit wallet", group: "Account" },
   { name: "Active Sessions", href: "/sessions", icon: Monitor, desc: "Manage signed-in devices", group: "Account" },

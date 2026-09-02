@@ -1,140 +1,63 @@
 # ShadowTalk AI
 
-**Think AI. Think ShadowTalk.**
+**The AI workspace that doesn't just answer—it acts.**
 
-**The AI workspace that doesn't own you.**
+ShadowTalk is an elite, minimal agentic AI workspace focused entirely on doing three things exceptionally well: background automation, deep contextual reasoning, and hyper-personalized execution. Powered by the proprietary **Turbo Engine** (intelligently routing between OpenAI GPT-4o and Groq), ShadowTalk is designed for users who want a distraction-free, powerful AI that gets things done.
 
-ShadowTalk is the **agentic AI workspace** for people who are tired of chatbots that only talk. Plan missions, run 30+ tools from one sentence, approve agent steps when it matters, and ship real work — on **web, PWA, or desktop** — while **you** stay in control of your keys, data, and pace.
-
-> *ChatGPT answers. ShadowTalk executes.*
-
-**[Launch workspace →](https://www.shadowtalk-ai.com/chatbot)** · **[Marketing site](https://www.shadowtalk-ai.com/home)** · [Repository](https://github.com/zain836/shadowtalk-ai-903ca615)
-
-**Full documentation index:** [DOCUMENTATION.md](./DOCUMENTATION.md)
+**[Launch workspace →](https://shadowtalk-ai-7a513.web.app/chatbot)** · **[Marketing site](https://shadowtalk-ai-7a513.web.app/home)**
 
 ---
 
-## Why people switch
+## What is ShadowTalk?
 
-| Others | ShadowTalk |
-|--------|------------|
-| Single-thread chat | **Mission Control** — multi-step autonomous runs |
-| Manual tool hopping | **30+ tools** from natural language |
-| Cloud-only | **Vault, BYOK, optional on-device Gemma** |
-| Browser tab | **Desktop app** with native files & notifications |
-| Platform credits only | **Your API keys** — Gemini, , Kimi |
+Unlike bloated AI platforms with dozens of confusing hubs and marketplaces, ShadowTalk focuses on the "Big Three" autonomous capabilities:
 
-| You get | What that means |
-|--------|------------------|
-| **Workspace-first** | Opening the site goes straight to **`/chatbot`** — no boot splash |
-| **Persistent session** | Return visits stay signed in (anonymous or linked account) |
-| **One workspace** | Chat, research, code, images, presentations, missions |
-| **Privacy by design** | BYOK, optional local inference, stealth tooling |
+1. **Shadow DreamState**: Autonomous background processing. While you are away, your AI continues to work—researching, monitoring data, and synthesizing reports for when you return.
+2. **Shadow Omniscience**: Total contextual awareness. An AI that connects the dots across all your uploaded documents, past conversations, and data silos to give you answers based on *your* reality.
+3. **Shadow Twin**: Your digital clone. An AI fine-tuned to your exact writing style, logic, and operational preferences that can act on your behalf.
+
+### The Turbo Engine Architecture
+
+Under the hood, ShadowTalk uses a proprietary routing engine to optimize for speed and intelligence:
+- **Low Complexity Tasks**: Routed to Groq (Llama-3) for blazing fast, low-latency chat.
+- **High Complexity Tasks**: Seamlessly routed to OpenAI (GPT-4o) for deep reasoning, complex coding, and strategic analysis.
 
 ---
 
-## URLs (current)
+## How to use it
 
-| URL | Purpose |
-|-----|---------|
-| `/` | Redirects to `/chatbot` |
-| `/chatbot` | **Main AI workspace** |
-| `/home` | Marketing landing |
-| `/pricing` | Plans & billing |
-| `/docs` | User documentation |
-| `/ide` | Personal IDE + App Builder output |
-
-See [Detailed Documentation/11-complete-route-reference.md](./Detailed%20Documentation/11-complete-route-reference.md) for every route.
+1. **Launch the app**: Navigate to [shadowtalk-ai-7a513.web.app/chatbot](https://shadowtalk-ai-7a513.web.app/chatbot).
+2. **Authenticate**: Sign in via the `/auth` page to ensure your history and sessions are saved.
+3. **Chat**: Use the main composer to ask questions or trigger tasks. The Turbo Engine will automatically route your request to the best model.
+4. **Leverage the Big Three**:
+   - Ask the AI to run a long-term research task to trigger **DreamState**.
+   - Upload documents and ask complex synthesized questions to leverage **Omniscience**.
+   - Ask the AI to write an email or document in your exact tone to utilize your **Twin**.
 
 ---
 
-## What ShadowTalk is
+## For Developers
 
-- **Neural chat** — personalities, modes, tool orchestration, marketplace agents.
-- **Mission Control** — autonomous workflows with human approval gates.
-- **IDE & App Builder** — multi-file projects from chat (`/ide`).
-- **BYOK** — route chat through your providers when configured.
-- **Offline paths** — SmolLM / Gemma + hardware-aware local vs cloud routing.
-
-**Stack:** React · Vite · TypeScript · ShadowTalk backend · Tailwind · shadcn/ui · PWA · Electron (desktop).
-
----
-
-## Start in 60 seconds
+To run ShadowTalk locally:
 
 ```bash
-git clone https://github.com/zain836/shadowtalk-ai-903ca615.git
-cd shadowtalk-ai-903ca615
+git clone https://github.com/u722365-lgtm/project-hello.git
+cd project-hello
 npm install
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173) — you land on **`/chatbot`**. Marketing page: [http://localhost:5173/home](http://localhost:5173/home).
+### Environment Variables
 
-### Environment
-
-`.env` / `.env.local`:
+You must supply your API keys in a `.env` file at the root of the project to utilize the Turbo Engine:
 
 ```env
-VITE_API_BASE_URL=
-VITE_API_KEY=
+VITE_GROQ_API_KEY="your_groq_api_key"
+VITE_OPENAI_API_KEY="your_openai_api_key"
 ```
 
-Enable **Anonymous sign-ins** in ShadowTalk backend Auth for Gemini-style auto session on first visit.
-
-### Desktop
-
-```bash
-npm run build
-npm run desktop:make
-```
-
-See [DESKTOP.md](./DESKTOP.md). Offline models: [OFFLINE.md](./OFFLINE.md).
-
-Desktop does **not** require ShadowTalk local runtime. Run with `VITE_LOCAL_FIRST=1` to build/run in standalone/offline-first mode.
+Open [http://localhost:5173](http://localhost:5173) to see the app running locally.
 
 ---
 
-## For developers
-
-```bash
-npm run build
-npm test
-```
-
-| Area | Path |
-|------|------|
-| Routes | `src/App.tsx` |
-| Chat | `src/pages/ChatbotPage.tsx` |
-| Auth | `src/lib/persistentAuth.ts`, `src/components/AuthProvider.tsx` |
-| Edge functions | `backend/functions/` |
-| Engineering docs | `Detailed Documentation/` |
-| Doc hub | [DOCUMENTATION.md](./DOCUMENTATION.md) |
-
-**Deploy:** run migrations, deploy `chat` and related functions; set secrets in ShadowTalk backend — never commit keys.
-
----
-
-## Documentation
-
-| Doc | Description |
-|-----|-------------|
-| [DOCUMENTATION.md](./DOCUMENTATION.md) | Master index |
-| [Detailed Documentation/](./Detailed%20Documentation/README.md) | Engineering series (performance, WebGPU, marketplace, IDE, UX) |
-| [RELEASE.md](./RELEASE.md) | Release checklist |
-| [OFFLINE.md](./OFFLINE.md) | Offline tiers A/B/C |
-| [DESKTOP.md](./DESKTOP.md) | Native desktop |
-
----
-
-## Links
-
-- **Workspace:** https://www.shadowtalk-ai.com/chatbot
-- **Home:** https://www.shadowtalk-ai.com/home
-- **Docs:** https://www.shadowtalk-ai.com/docs
-
----
-
-*ShadowTalk AI · Private repo. Contact the maintainer for licensing.*
-
-**Think AI. Think ShadowTalk.**
+*Note: ShadowTalk recently underwent a massive architecture pivot (v3.0.0) to strip away 40+ legacy pages and focus exclusively on the core agentic features described above.*

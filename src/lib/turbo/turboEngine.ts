@@ -17,7 +17,7 @@
 import { resolveTurboKey, resolveOpenAIKey, TURBO_MODEL_GROQ, TURBO_MODEL_CHAT, GROQ_API_URL, OPENROUTER_API_URL, OPENAI_API_URL, TURBO_MODEL_OPENROUTER, TURBO_MODEL_OPENAI } from './turboProviders';
 import { isSovereignAgentsEnabled } from '@/lib/desktop/sovereignAgentMode';
 import { localComplete, isWebGPUSupported, WEBGPU_MODEL } from '@/lib/webgpu/localEngine';
-import { isAnyLocalModelReady } from '@/lib/offline/localRuntime';
+
 import { trackAiMetrics, estimateTokens } from '@/lib/telemetry/agenticMetrics';
 import { streamCloudChat } from '@/lib/cloudChat';
 import { routeTask } from './modelRouter';

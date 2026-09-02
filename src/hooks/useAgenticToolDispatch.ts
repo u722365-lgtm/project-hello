@@ -2,12 +2,7 @@ import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import type { ToolDetectionResult } from "@/hooks/useToolOrchestrator";
 import { useToolOrchestrator } from "@/hooks/useToolOrchestrator";
-import { useAutonomousPlanner } from "@/hooks/useAutonomousPlanner";
-import {
-  plannerStepToDetection,
-  type PlannerPlan,
-  type PlannerStep,
-} from "@/lib/autonomy/llmToolPlanner";
+
 import { executeShadowTool } from "@/lib/shadowTools/executeShadowTool";
 
 export interface ToolDispatchUI {
@@ -47,8 +42,6 @@ export type ToolDispatchOutcome = {
 
 export interface AsyncDispatchResult {
   outcome: ToolDispatchOutcome;
-  plan: PlannerPlan | null;
-  executedStep: PlannerStep | null;
 }
 
 const MIN_CONFIDENCE = 50;
@@ -56,7 +49,6 @@ const MIN_CONFIDENCE = 50;
 export function useAgenticToolDispatch() {
   const navigate = useNavigate();
   const { detectTool, executeCalculator } = useToolOrchestrator();
-  const { resolveDetection, runCritic } = useAutonomousPlanner();
 
   const dispatchFromDetection = useCallback(
     (detection: ToolDetectionResult, message: string, ui: ToolDispatchUI): ToolDispatchOutcome => {
@@ -248,44 +240,20 @@ export function useAgenticToolDispatch() {
     [detectTool, dispatchFromDetection],
   );
 
-  /** LLM planner first, regex fallback; returns plan + step for critic chain */
   const dispatchDetectionAsync = useCallback(
     async (message: string, ui: ToolDispatchUI, signal?: AbortSignal): Promise<AsyncDispatchResult> => {
-      const { detection, plan } = await resolveDetection(message, signal);
+      const detection = detectTool(message);
       const outcome = dispatchFromDetection(detection, message, ui);
-      const executedStep = plan?.steps?.[0] ?? null;
-      return { outcome, plan, executedStep };
+      return { outcome };
     },
-    [resolveDetection, dispatchFromDetection],
+    [detectTool, dispatchFromDetection],
   );
 
-  /** Critic phase — if unsatisfied, dispatch the suggested next tool step */
   const continueFromCritic = useCallback(
-    async (
-      message: string,
-      executedStep: PlannerStep,
-      outcomeSummary: string,
-      ui: ToolDispatchUI,
-      signal?: AbortSignal,
-    ): Promise<AsyncDispatchResult | null> => {
-      const verdict = await runCritic(message, executedStep, outcomeSummary, signal);
-      if (verdict.satisfied) {
-        if (verdict.summary) {
-          ui.appendAssistantMessage(`**Planner review:** ${verdict.summary}`, {
-            tool: executedStep.tool,
-            status: "complete",
-          });
-        }
-        return null;
-      }
-
-      const next = verdict.nextStep ?? null;
-      if (!next) return null;
-
-      const outcome = dispatchFromDetection(plannerStepToDetection(next, message), message, ui);
-      return { outcome, plan: null, executedStep: next };
+    async () => {
+      return null;
     },
-    [runCritic, dispatchFromDetection],
+    [],
   );
 
   /** Navigate to Mission Control execute view for a goal. */
