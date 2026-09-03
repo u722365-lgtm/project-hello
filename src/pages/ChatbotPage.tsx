@@ -37,7 +37,7 @@ import { useDailyLimits } from "@/hooks/useDailyLimits";
 import { useToolOrchestrator } from "@/hooks/useToolOrchestrator";
 import { useAgenticToolDispatch } from "@/hooks/useAgenticToolDispatch";
 
-import { streamCloudChat, type CloudChatMessage } from "@/lib/cloudChat";
+import { streamCloudChat, isCloudChatConfigured, type CloudChatMessage } from "@/lib/cloudChat";
 import { stringifyChatBody } from "@/lib/chatRequest";
 import { buildChatProviderPayload } from "@/lib/chatProviderBridge";
 
@@ -1017,8 +1017,7 @@ const ChatbotPage = () => {
 
       const hasMultimodalImage = chatMessages.some((m) => Array.isArray(m.content));
 
-      const chatUrl = getChatFunctionUrl();
-      if (!chatUrl || !isCloudConfigured()) {
+      if (!isCloudChatConfigured()) {
         throw new Error(
           `Chat is not configured for this build. ${DESKTOP_ENV_SETUP_HINT}`,
         );

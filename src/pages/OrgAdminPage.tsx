@@ -59,7 +59,7 @@ export default function OrgAdminPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {MOCK_USERS.map((user) => (
+                    {users.map((user) => (
                       <TableRow key={user.id} className="border-border/50 hover:bg-muted/30">
                         <TableCell className="flex items-center gap-3">
                           <Avatar className="h-8 w-8 border border-border/50">

@@ -1,76 +1,84 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { backend } from "@/integrations/local/client";
 
-// API Keys
-export const useApiKeys = () => {
-  return useQuery({
-    queryKey: ['enterprise_api_keys'],
-    queryFn: async () => {
-      const { data, error } = await supabase.from('api_keys').select('*');
-      if (error) throw error;
-      return data;
-    },
-  });
-};
+/**
+ * Enterprise data lives in Firestore (the main backend). No mock/seed data —
+ * these hooks read exactly what the backend holds.
+ */
+async function fetchCollection<T>(name: string): Promise<T[]> {
+  const { data, error } = await backend.from(name).select('*');
+  if (error) throw error;
+  return (data ?? []) as T[];
+}
 
-// Org Users
-export const useOrgUsers = () => {
-  return useQuery({
-    queryKey: ['enterprise_org_users'],
-    queryFn: async () => {
-      const { data, error } = await supabase.from('org_users').select('*');
-      if (error) throw error;
-      return data;
-    },
-  });
-};
+export interface ApiKeyRecord {
+  id: string;
+  name: string;
+  prefix?: string;
+  created?: string;
+  lastUsed?: string;
+  status?: string;
+}
 
-// Integrations
-export const useIntegrations = () => {
-  return useQuery({
-    queryKey: ['enterprise_integrations'],
-    queryFn: async () => {
-      const { data, error } = await supabase.from('integrations').select('*');
-      if (error) throw error;
-      return data;
-    },
-  });
-};
+export interface OrgUserRecord {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  status: string;
+  initial?: string;
+}
+
+export interface IntegrationRecord {
+  id: string;
+  name: string;
+  desc?: string;
+  category?: string;
+  connected: boolean;
+  icon?: string;
+}
+
+export interface InvoiceRecord {
+  id: string;
+  date: string;
+  amount: string;
+  status: string;
+}
+
+export interface AuditLogRecord {
+  id: string;
+  time: string;
+  user: string;
+  event: string;
+  ip?: string;
+  resource?: string;
+}
+
+export const useApiKeys = () =>
+  useQuery({ queryKey: ['enterprise_api_keys'], queryFn: () => fetchCollection<ApiKeyRecord>('api_keys') });
+
+export const useOrgUsers = () =>
+  useQuery({ queryKey: ['enterprise_org_users'], queryFn: () => fetchCollection<OrgUserRecord>('org_users') });
+
+export const useIntegrations = () =>
+  useQuery({ queryKey: ['enterprise_integrations'], queryFn: () => fetchCollection<IntegrationRecord>('integrations') });
+
+export const useInvoices = () =>
+  useQuery({ queryKey: ['enterprise_invoices'], queryFn: () => fetchCollection<InvoiceRecord>('invoices') });
+
+export const useAuditLogs = () =>
+  useQuery({ queryKey: ['enterprise_audit_logs'], queryFn: () => fetchCollection<AuditLogRecord>('audit_logs') });
 
 export const useToggleIntegration = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, connected }: { id: string, connected: boolean }) => {
-      const { data, error } = await supabase.from('integrations').update({ connected }).eq('id', id).select();
+    mutationFn: async ({ id, connected }: { id: string; connected: boolean }) => {
+      const { data, error } = await backend.from('integrations').update({ connected }).eq('id', id).select();
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['enterprise_integrations'] });
-    }
-  });
-};
-
-// Invoices
-export const useInvoices = () => {
-  return useQuery({
-    queryKey: ['enterprise_invoices'],
-    queryFn: async () => {
-      const { data, error } = await supabase.from('invoices').select('*');
-      if (error) throw error;
-      return data;
-    },
-  });
-};
-
-// Audit Logs
-export const useAuditLogs = () => {
-  return useQuery({
-    queryKey: ['enterprise_audit_logs'],
-    queryFn: async () => {
-      const { data, error } = await supabase.from('audit_logs').select('*');
-      if (error) throw error;
-      return data;
     },
   });
 };

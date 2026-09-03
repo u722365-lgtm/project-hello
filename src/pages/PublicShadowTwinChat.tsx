@@ -61,18 +61,16 @@ export default function PublicShadowTwinChat() {
         ...chatMessages
       ];
       
-      const onToken = (token: string) => {
-        assistantContent += token;
-        setMessages((prev) =>
-          prev.map((m) => (m.id === aiMessageId ? { ...m, content: assistantContent } : m))
-        );
-      };
 
       const abortController = new AbortController();
       
-      await streamCloudChat({
-        messages: augmented,
-        onToken,
+      await streamCloudChat(augmented, {
+        onDelta: (accumulated) => {
+          assistantContent = accumulated;
+          setMessages((prev) =>
+            prev.map((m) => (m.id === aiMessageId ? { ...m, content: accumulated } : m)),
+          );
+        },
         signal: abortController.signal,
       });
 
