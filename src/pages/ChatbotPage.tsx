@@ -1140,6 +1140,7 @@ const ChatbotPage = () => {
         })),
       ];
 
+      console.log('[trace] calling streamCloudChat');
       const { content: streamedContent, error: cloudError } = await streamCloudChat(cloudMessages, {
         signal: controller.signal,
         temperature: 0.7,
@@ -1455,6 +1456,7 @@ const ChatbotPage = () => {
       },
     };
 
+    console.log('[trace] before dispatchDetectionAsync');
     const { outcome: toolOutcome } = await dispatchDetectionAsync(
       msgContent,
       toolDispatchUi,
@@ -1508,6 +1510,7 @@ const ChatbotPage = () => {
       return;
     }
 
+    console.log('[trace] after dispatch', toolOutcome.handled);
     const toolDetection = toolOrchestrator.detectTool(msgContent);
     const appIntent =
       detectAppBuilderIntent(msgContent) ??
