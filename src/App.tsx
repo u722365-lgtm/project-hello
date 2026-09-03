@@ -35,9 +35,8 @@ import { OAuthRedirectHandler } from "@/components/OAuthRedirectHandler";
 
 export const CommandPaletteContext = createContext<{ open: () => void }>({ open: () => {} });
 // Critical path pages - loaded immediately
-import Index from "./pages/Index";
-import RootRoute from "@/components/RootRoute";
-import AuthPage from "./pages/AuthPage";
+const RootRoute = lazy(() => import("@/components/RootRoute"));
+const AuthPage = lazy(() => import("./pages/AuthPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 import { NotificationPermissionRequester } from "@/components/notifications/NotificationPermissionRequester";
@@ -49,10 +48,10 @@ import { PushIntelligencePanel } from "@/components/chat/PushIntelligencePanel";
 const ChatbotPage = lazy(() => import("./pages/ChatbotPage"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
- import AuthDesignGalleryPage from "./pages/AuthDesignGalleryPage";
- import AuthDesignPreviewPage from "./pages/AuthDesignPreviewPage";
+ const AuthDesignGalleryPage = lazy(() => import("./pages/AuthDesignGalleryPage"));
+ const AuthDesignPreviewPage = lazy(() => import("./pages/AuthDesignPreviewPage"));
  const SharedAnswerPage = lazy(() => import("./pages/SharedAnswerPage"));
- import SessionsPage from "./pages/SessionsPage";
+ const SessionsPage = lazy(() => import("./pages/SessionsPage"));
  const PricingPage = lazy(() => import("./pages/PricingPage"));
  const DocsPage = lazy(() => import("./pages/DocsPage"));
  const ChangelogPage = lazy(() => import("./pages/ChangelogPage"));
@@ -130,8 +129,8 @@ const AnimatedRoutes = () => {
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<Navigate to="/home" replace />} />
-          <Route path="/home" element={<PageTransition><RootRoute /></PageTransition>} />
-          <Route path="/auth" element={<PageTransition><AuthPage /></PageTransition>} />
+          <Route path="/home" element={<Suspense fallback={<PageLoader />}><PageTransition><RootRoute /></PageTransition></Suspense>} />
+          <Route path="/auth" element={<Suspense fallback={<PageLoader />}><PageTransition><AuthPage /></PageTransition></Suspense>} />
           
           {/* Core App Routes */}
           <Route path="/chatbot" element={<Suspense fallback={<PageLoader />}><ChatbotPage /></Suspense>} />
@@ -141,15 +140,15 @@ const AnimatedRoutes = () => {
           <Route path="/shadow-twin" element={<PageTransition><ShadowTwinSettingsPage /></PageTransition>} />
           <Route path="/t/:username" element={<Suspense fallback={<PageLoader />}><PublicShadowTwinChat /></Suspense>} />
           
-          <Route path="/auth/designs" element={<PageTransition><AuthDesignGalleryPage /></PageTransition>} />
-          <Route path="/auth/preview/:designId" element={<PageTransition><AuthDesignPreviewPage /></PageTransition>} />
+          <Route path="/auth/designs" element={<Suspense fallback={<PageLoader />}><PageTransition><AuthDesignGalleryPage /></PageTransition></Suspense>} />
+          <Route path="/auth/preview/:designId" element={<Suspense fallback={<PageLoader />}><PageTransition><AuthDesignPreviewPage /></PageTransition></Suspense>} />
           <Route path="/pricing" element={<PageTransition><PricingPage /></PageTransition>} />
           <Route path="/s/:slug" element={<Suspense fallback={<PageLoader />}><SharedAnswerPage /></Suspense>} />
           <Route path="/docs" element={<PageTransition><DocsPage /></PageTransition>} />
           <Route path="/changelog" element={<PageTransition><ChangelogPage /></PageTransition>} />
           <Route path="/shadow-memory" element={<Navigate to="/insights?tab=activity" replace />} />
           <Route path="/business-memory" element={<Navigate to="/workspace?tab=explore" replace />} />
-          <Route path="/sessions" element={<PageTransition><SessionsPage /></PageTransition>} />
+          <Route path="/sessions" element={<Suspense fallback={<PageLoader />}><PageTransition><SessionsPage /></PageTransition></Suspense>} />
           <Route path="/private-ai" element={<PageTransition><PrivateAiHubPage /></PageTransition>} />
           
           {/* Enterprise SaaS Routes */}
