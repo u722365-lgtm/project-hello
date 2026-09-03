@@ -41,6 +41,8 @@ interface Message {
   attachment?: { type: 'image' | 'file'; data: string; name: string; mimeType: string };
   imageUrl?: string;
   toolExecution?: { tool: string; status: 'pending' | 'running' | 'complete' | 'error' | 'confirm'; params?: Record<string, string>; result?: string };
+  isShadowTwin?: boolean;
+  shadowTwinName?: string;
 }
 
 interface MessageBubbleProps {
