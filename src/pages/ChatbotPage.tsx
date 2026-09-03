@@ -940,7 +940,9 @@ const ChatbotPage = () => {
             ? (lastUserMsg.content.find((p) => p.type === "text") as { text?: string } | undefined)?.text?.trim() ?? ""
             : "";
 
+      console.log('[trace] before memory');
       const userMemoryContext = await buildMemoryContextForUser(user);
+      console.log('[trace] after memory');
       if (userMemoryContext) {
         augmented = [{ role: "system", content: userMemoryContext }, ...augmented];
       }
@@ -1017,6 +1019,7 @@ const ChatbotPage = () => {
 
       const hasMultimodalImage = chatMessages.some((m) => Array.isArray(m.content));
 
+      console.log('[trace] before chatUrl');
       const chatUrl = getChatFunctionUrl();
       if (!chatUrl || !isCloudConfigured()) {
         throw new Error(
@@ -1024,7 +1027,9 @@ const ChatbotPage = () => {
         );
       }
 
+      console.log('[trace] before getSession');
       const { data: { session } } = await backend.auth.getSession();
+      console.log('[trace] after getSession');
       const learnedHint = getChatDefaults()?.systemHintAddon;
       const memoryContext = getMemoryContext();
       const businessMemory = [learnedHint, memoryContext].filter(Boolean).join("\n").trim();
