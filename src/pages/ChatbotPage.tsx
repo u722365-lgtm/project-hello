@@ -37,7 +37,7 @@ import { useDailyLimits } from "@/hooks/useDailyLimits";
 import { useToolOrchestrator } from "@/hooks/useToolOrchestrator";
 import { useAgenticToolDispatch } from "@/hooks/useAgenticToolDispatch";
 
-import { streamCloudChat, type CloudChatMessage } from "@/lib/cloudChat";
+import { streamCloudChat, isCloudChatConfigured, type CloudChatMessage } from "@/lib/cloudChat";
 import { stringifyChatBody } from "@/lib/chatRequest";
 import { buildChatProviderPayload } from "@/lib/chatProviderBridge";
 
@@ -940,9 +940,7 @@ const ChatbotPage = () => {
             ? (lastUserMsg.content.find((p) => p.type === "text") as { text?: string } | undefined)?.text?.trim() ?? ""
             : "";
 
-      console.log('[trace] before memory');
       const userMemoryContext = await buildMemoryContextForUser(user);
-      console.log('[trace] after memory');
       if (userMemoryContext) {
         augmented = [{ role: "system", content: userMemoryContext }, ...augmented];
       }
@@ -1019,17 +1017,13 @@ const ChatbotPage = () => {
 
       const hasMultimodalImage = chatMessages.some((m) => Array.isArray(m.content));
 
-      console.log('[trace] before chatUrl');
-      const chatUrl = getChatFunctionUrl();
-      if (!chatUrl || !isCloudConfigured()) {
+      if (!isCloudChatConfigured()) {
         throw new Error(
           `Chat is not configured for this build. ${DESKTOP_ENV_SETUP_HINT}`,
         );
       }
 
-      console.log('[trace] before getSession');
       const { data: { session } } = await backend.auth.getSession();
-      console.log('[trace] after getSession');
       const learnedHint = getChatDefaults()?.systemHintAddon;
       const memoryContext = getMemoryContext();
       const businessMemory = [learnedHint, memoryContext].filter(Boolean).join("\n").trim();
@@ -1145,7 +1139,6 @@ const ChatbotPage = () => {
         })),
       ];
 
-      console.log('[trace] calling streamCloudChat');
       const { content: streamedContent, error: cloudError } = await streamCloudChat(cloudMessages, {
         signal: controller.signal,
         temperature: 0.7,
@@ -1461,7 +1454,6 @@ const ChatbotPage = () => {
       },
     };
 
-    console.log('[trace] before dispatchDetectionAsync');
     const { outcome: toolOutcome } = await dispatchDetectionAsync(
       msgContent,
       toolDispatchUi,
@@ -1515,7 +1507,6 @@ const ChatbotPage = () => {
       return;
     }
 
-    console.log('[trace] after dispatch', toolOutcome.handled);
     const toolDetection = toolOrchestrator.detectTool(msgContent);
     const appIntent =
       detectAppBuilderIntent(msgContent) ??
