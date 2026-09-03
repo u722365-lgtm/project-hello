@@ -65,7 +65,7 @@ export async function streamCloudChat(
         headers: {
           "Content-Type": "application/json",
           apikey: anonKey,
-          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+          Authorization: `Bearer ${accessToken || anonKey}`,
         },
         body: JSON.stringify({
           messages,
