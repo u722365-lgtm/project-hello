@@ -61,12 +61,6 @@ export default function PublicShadowTwinChat() {
         ...chatMessages
       ];
       
-      const onToken = (token: string) => {
-        assistantContent += token;
-        setMessages((prev) =>
-          prev.map((m) => (m.id === aiMessageId ? { ...m, content: assistantContent } : m))
-        );
-      };
 
       const abortController = new AbortController();
       
