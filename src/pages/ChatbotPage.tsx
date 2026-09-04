@@ -1092,16 +1092,23 @@ const ChatbotPage = () => {
         if (pendingContent !== null) flushAssistant();
       };
 
+      // SPEED: only the recent turns are sent — long histories slow the model's
+      // first token dramatically without improving answers.
+      const trimmedRouterMessages = routerMessages.slice(-14);
+
       const cloudMessages: CloudChatMessage[] = [
         {
           role: 'system',
-          content: `You are ShadowTalk AI. Be ${personality || 'friendly'} and helpful. Use markdown formatting. Current date: ${new Date().toISOString().split('T')[0]}.`,
+          content:
+            `You are ShadowTalk AI. Be ${personality || 'friendly'} and helpful. Use markdown formatting. Current date: ${new Date().toISOString().split('T')[0]}.` +
+            (businessMemory ? `\n\nUser context:\n${businessMemory.slice(0, 1200)}` : ''),
         },
-        ...routerMessages.map((m) => ({
+        ...trimmedRouterMessages.map((m) => ({
           role: (m.role === 'assistant' ? 'assistant' : m.role === 'system' ? 'system' : 'user') as CloudChatMessage['role'],
           content: typeof m.content === 'string' ? m.content : String(m.content ?? ''),
         })),
       ];
+
 
       const { content: streamedContent, error: cloudError } = await streamCloudChat(cloudMessages, {
         signal: controller.signal,
