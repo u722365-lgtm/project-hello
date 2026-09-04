@@ -1023,46 +1023,10 @@ const ChatbotPage = () => {
         );
       }
 
-      const { data: { session } } = await backend.auth.getSession();
       const learnedHint = getChatDefaults()?.systemHintAddon;
       const memoryContext = getMemoryContext();
       const businessMemory = [learnedHint, memoryContext].filter(Boolean).join("\n").trim();
-      const hasUserContext = Boolean(
-        userContext.country ||
-          userContext.city ||
-          userContext.incomeRange ||
-          userContext.employmentStatus ||
-          userContext.familyStatus ||
-          userContext.recentLifeEvents.length,
-      );
 
-      const requestBody = stringifyChatBody({
-        messages: augmented,
-        personality,
-        mode: chatMode,
-        ...buildChatProviderPayload(aiProvider, aiConfig, keys),
-        ...(businessMemory ? { businessMemory } : {}),
-        ...(hasUserContext
-          ? {
-              userContext: {
-                country: userContext.country || undefined,
-                city: userContext.city || undefined,
-                incomeRange: userContext.incomeRange || undefined,
-                employmentStatus: userContext.employmentStatus || undefined,
-                familyStatus: userContext.familyStatus || undefined,
-                recentLifeEvents: userContext.recentLifeEvents.length
-                  ? userContext.recentLifeEvents
-                  : undefined,
-              },
-            }
-          : {}),
-        ...(chatFlags?.webSearch
-          ? { webSearch: true, searchQuery: chatFlags.searchQuery }
-          : {}),
-        ...(chatFlags?.deepResearch
-          ? { deepResearch: true, researchQuery: chatFlags.researchQuery }
-          : {}),
-      });
 
       const raiseChatHttpError = async (status: number, rawBody: string) => {
         let detail = "Chat request failed";
@@ -1128,16 +1092,23 @@ const ChatbotPage = () => {
         if (pendingContent !== null) flushAssistant();
       };
 
+      // SPEED: only the recent turns are sent — long histories slow the model's
+      // first token dramatically without improving answers.
+      const trimmedRouterMessages = routerMessages.slice(-14);
+
       const cloudMessages: CloudChatMessage[] = [
         {
           role: 'system',
-          content: `You are ShadowTalk AI. Be ${personality || 'friendly'} and helpful. Use markdown formatting. Current date: ${new Date().toISOString().split('T')[0]}.`,
+          content:
+            `You are ShadowTalk AI. Be ${personality || 'friendly'} and helpful. Use markdown formatting. Current date: ${new Date().toISOString().split('T')[0]}.` +
+            (businessMemory ? `\n\nUser context:\n${businessMemory.slice(0, 1200)}` : ''),
         },
-        ...routerMessages.map((m) => ({
+        ...trimmedRouterMessages.map((m) => ({
           role: (m.role === 'assistant' ? 'assistant' : m.role === 'system' ? 'system' : 'user') as CloudChatMessage['role'],
           content: typeof m.content === 'string' ? m.content : String(m.content ?? ''),
         })),
       ];
+
 
       const { content: streamedContent, error: cloudError } = await streamCloudChat(cloudMessages, {
         signal: controller.signal,
