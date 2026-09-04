@@ -1610,8 +1610,11 @@ const ChatbotPage = () => {
 
       recordFunnelEvent("send_error", msg.slice(0, 80));
       toast({ title: "Message failed", description: msg, variant: "destructive" });
+    } finally {
+      setIsLoading(false);
     }
   };
+
 
   const handleSwarmComplete = async (finalAnswer: string) => {
     setShowSwarmMode(false);
