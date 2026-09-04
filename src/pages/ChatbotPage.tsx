@@ -1023,46 +1023,10 @@ const ChatbotPage = () => {
         );
       }
 
-      const { data: { session } } = await backend.auth.getSession();
       const learnedHint = getChatDefaults()?.systemHintAddon;
       const memoryContext = getMemoryContext();
       const businessMemory = [learnedHint, memoryContext].filter(Boolean).join("\n").trim();
-      const hasUserContext = Boolean(
-        userContext.country ||
-          userContext.city ||
-          userContext.incomeRange ||
-          userContext.employmentStatus ||
-          userContext.familyStatus ||
-          userContext.recentLifeEvents.length,
-      );
 
-      const requestBody = stringifyChatBody({
-        messages: augmented,
-        personality,
-        mode: chatMode,
-        ...buildChatProviderPayload(aiProvider, aiConfig, keys),
-        ...(businessMemory ? { businessMemory } : {}),
-        ...(hasUserContext
-          ? {
-              userContext: {
-                country: userContext.country || undefined,
-                city: userContext.city || undefined,
-                incomeRange: userContext.incomeRange || undefined,
-                employmentStatus: userContext.employmentStatus || undefined,
-                familyStatus: userContext.familyStatus || undefined,
-                recentLifeEvents: userContext.recentLifeEvents.length
-                  ? userContext.recentLifeEvents
-                  : undefined,
-              },
-            }
-          : {}),
-        ...(chatFlags?.webSearch
-          ? { webSearch: true, searchQuery: chatFlags.searchQuery }
-          : {}),
-        ...(chatFlags?.deepResearch
-          ? { deepResearch: true, researchQuery: chatFlags.researchQuery }
-          : {}),
-      });
 
       const raiseChatHttpError = async (status: number, rawBody: string) => {
         let detail = "Chat request failed";
