@@ -44,17 +44,11 @@ export async function streamCloudChat(
     return { content: "", error: "Lovable Cloud AI is not configured." };
   }
 
-  let accessToken: string | undefined;
-  try {
-    const { data } = await supabase.auth.getSession();
-    accessToken = data?.session?.access_token;
-  } catch {
-    /* ignore session lookup failure */
-  }
-
+  // Auth is handled outside Lovable Cloud, so there is never a Cloud session to
+  // look up — skip the lookup entirely and authorize with the publishable key.
   const anonKey = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string) || "";
 
-  const maxRetries = 3;
+  const maxRetries = 1;
   let attempt = 0;
   let resp: Response | null = null;
   
