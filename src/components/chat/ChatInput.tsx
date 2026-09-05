@@ -1,5 +1,5 @@
 import { getChatEnterToSend } from "@/lib/profilePreferences";
-import { useEffect, useRef, useMemo } from "react";
+import { useEffect, useRef, useMemo, useState } from "react";
 import { Send, Mic, MicOff, Square, Plus, Sparkles, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -76,6 +76,20 @@ export const ChatInput = ({
 }: ChatInputProps) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { play } = useSoundEffects();
+
+  const [isMultiLine, setIsMultiLine] = useState(false);
+
+  // Auto-resize the composer textarea to dynamically fit typed lines without clipping
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    textarea.style.height = "auto";
+    const scrollHeight = textarea.scrollHeight;
+    const multiline = message.includes("\n") || scrollHeight > 46;
+    setIsMultiLine(multiline);
+    const newHeight = Math.min(Math.max(scrollHeight, 38), 200);
+    textarea.style.height = `${newHeight}px`;
+  }, [message]);
 
   // Auto-focus the composer on mount so users can start typing immediately.
   // Skip on touch devices so the mobile keyboard doesn't pop up unprompted.
@@ -184,41 +198,31 @@ export const ChatInput = ({
             </div>
           )}
 
-          <div className="shadowtalk-composer group">
+          <div className={`shadowtalk-composer group ${isMultiLine ? "shadowtalk-composer--multiline" : ""}`}>
             {!selectedFile && (
-              <FileUpload
-                onFileSelect={onFileSelect}
-                selectedFile={selectedFile}
-                onClear={() => onFileSelect(null)}
-                disabled={isLoading}
-                variant="composer"
-              />
+              <div className="shadowtalk-composer__attach-wrap shrink-0">
+                <FileUpload
+                  onFileSelect={onFileSelect}
+                  selectedFile={selectedFile}
+                  onClear={() => onFileSelect(null)}
+                  disabled={isLoading}
+                  variant="composer"
+                />
+              </div>
             )}
 
-            <div className="relative">
+            <div className="relative flex-1 min-w-0">
               <Textarea
                 ref={textareaRef}
                 value={message}
                 onChange={(e) => onMessageChange(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={isListening ? "Listening..." : "Ask ShadowTalk"}
-                className="shadowtalk-composer__textarea flex-1 min-h-[40px] max-h-[200px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 py-2.5 pl-2 pr-2 text-base sm:text-[15px] placeholder:text-muted-foreground/50 leading-relaxed overflow-y-auto custom-scrollbar"
+                className="shadowtalk-composer__textarea w-full resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 py-2 pl-2 text-base sm:text-[15px] placeholder:text-muted-foreground/50 leading-relaxed overflow-y-auto custom-scrollbar"
                 disabled={isLoading}
                 rows={1}
                 aria-label="Chat message"
               />
-
-              {hasComposerGhost ? (
-                <div
-                  className="pointer-events-none absolute inset-0 flex items-center px-2 overflow-hidden select-none"
-                  aria-hidden
-                >
-                  <span className="whitespace-pre text-base sm:text-[15px] leading-relaxed text-muted-foreground/40">
-                    {message}
-                    <span className="text-muted-foreground/30">{promptSuggestion}</span>
-                  </span>
-                </div>
-              ) : null}
             </div>
 
             <div className="shadowtalk-composer__actions">

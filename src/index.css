@@ -709,37 +709,50 @@
 
   /* ShadowTalk Composer — single pill input (approved) */
   .shadowtalk-composer {
-    @apply relative flex items-center gap-2 min-h-[56px] w-full rounded-full border border-[#2a3548] bg-[#141a24] pl-2 pr-1.5 py-1.5 transition-all duration-200 overflow-hidden;
+    @apply relative flex items-center gap-2 min-h-[56px] w-full rounded-full border border-[#2a3548] bg-[#141a24] pl-2.5 pr-2 py-1.5 transition-all duration-200 overflow-hidden;
     box-shadow: 0 4px 24px rgb(0 0 0 / 0.35);
+  }
+
+  .shadowtalk-composer.shadowtalk-composer--multiline {
+    @apply items-end rounded-[24px] py-2.5 pl-3 pr-2;
   }
 
   .shadowtalk-composer__textarea {
     min-width: 0;
-    padding-right: 0.5rem;
+    line-height: 1.5;
+    padding-right: 7.75rem;
   }
 
   @media (min-width: 640px) {
     .shadowtalk-composer__textarea {
-      padding-right: 10.5rem;
+      padding-right: 8rem;
     }
   }
 
   @media (max-width: 639px) {
     .shadowtalk-composer__textarea {
-      padding-right: 8.75rem;
+      padding-right: 7.5rem;
     }
   }
 
   .shadowtalk-composer__actions {
-    @apply absolute right-1.5 top-1/2 z-10 flex items-center gap-1 -translate-y-1/2 shrink-0;
+    @apply absolute right-2 top-1/2 z-10 flex items-center gap-1 -translate-y-1/2 shrink-0 transition-all duration-150;
     max-width: calc(100% - 3.5rem);
+  }
+
+  .shadowtalk-composer--multiline .shadowtalk-composer__actions {
+    @apply top-auto bottom-2 translate-y-0;
+  }
+
+  .shadowtalk-composer--multiline .shadowtalk-composer__attach-wrap {
+    @apply mb-0.5;
   }
 
   .shadowtalk-composer::before {
     content: "";
     position: absolute;
     inset: -1px;
-    border-radius: 9999px;
+    border-radius: inherit;
     padding: 1px;
     background: linear-gradient(135deg, rgb(34 211 238 / 0), rgb(99 102 241 / 0));
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
