@@ -303,7 +303,73 @@ const DocsPage = () => {
     }).includes(q);
   }, [q, activeTab]);
 
-  const apiEndpoints: { method: string; endpoint: string; description: string; example: string | null }[] = [];
+  const apiEndpoints = [
+    {
+      method: "POST",
+      endpoint: "/api/v1/chat/completions",
+      description: "Dispatches a chat completion prompt to the Turbo Engine with low-latency streaming response.",
+      example: JSON.stringify(
+        {
+          model: "llama-3.3-70b-versatile",
+          messages: [
+            { role: "system", content: "You are ShadowTalk AI with Business Memory active." },
+            { role: "user", content: "Synthesize our quarterly strategy roadmap." },
+          ],
+          stream: true,
+          temperature: 0.7,
+        },
+        null,
+        2
+      ),
+    },
+    {
+      method: "GET",
+      endpoint: "/api/v1/workspace/memories",
+      description: "Retrieves active business context memory items for the authenticated user or organization.",
+      example: null,
+    },
+    {
+      method: "POST",
+      endpoint: "/api/v1/workspace/memories",
+      description: "Creates or updates an active business memory item in your organization context.",
+      example: JSON.stringify(
+        {
+          category: "voice",
+          title: "Executive Tone Guardrails",
+          content: "Be concise, authoritative, deeply technical, and avoid boilerplate filler.",
+          priority: 9,
+          is_active: true,
+        },
+        null,
+        2
+      ),
+    },
+    {
+      method: "GET",
+      endpoint: "/api/v1/analytics/usage",
+      description: "Returns aggregated message volumes, token metrics, and response latencies.",
+      example: null,
+    },
+    {
+      method: "GET",
+      endpoint: "/api/v1/shadow-twin/:username",
+      description: "Fetches public metadata and knowledge parameters for a published Shadow Twin.",
+      example: null,
+    },
+    {
+      method: "POST",
+      endpoint: "/api/v1/tools/search",
+      description: "Executes a private web intelligence search query with scrubbed referrers.",
+      example: JSON.stringify(
+        {
+          query: "zero trust confidential LLM execution 2026",
+          limit: 5,
+        },
+        null,
+        2
+      ),
+    },
+  ];
 
   const chatModes = [
     { name: "General", icon: MessageSquare, description: "All-purpose assistant for any topic.", color: "from-primary to-primary/60" },
@@ -365,22 +431,31 @@ const DocsPage = () => {
                 <Input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search documentation..."
+                  placeholder="Search documentation (e.g., workspace, analytics, API, memory)..."
                   className="relative pl-10 rounded-xl glass-subtle border-border/30 focus:border-primary/50"
                 />
               </div>
             </motion.div>
             
             {/* Quick Links */}
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="flex flex-wrap justify-center gap-3 mt-8">
-              <Button variant="outline" size="sm" className="rounded-full glass-subtle border-border/30 hover:border-primary/40" onClick={() => navigate('/chatbot')}>
-                <MessageSquare className="h-4 w-4 mr-2" /> Try Chatbot
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="flex flex-wrap justify-center gap-2 mt-8">
+              <Button variant="outline" size="sm" className="rounded-full glass-subtle border-border/30 hover:border-primary/40 text-xs" onClick={() => navigate('/chatbot')}>
+                <MessageSquare className="h-3.5 w-3.5 mr-1.5 text-primary" /> Chatbot
               </Button>
-              <Button variant="outline" size="sm" className="rounded-full glass-subtle border-border/30 hover:border-primary/40" onClick={() => navigate('/changelog')}>
-                <History className="h-4 w-4 mr-2" /> Changelog
+              <Button variant="outline" size="sm" className="rounded-full glass-subtle border-border/30 hover:border-primary/40 text-xs" onClick={() => navigate('/workspace')}>
+                <Brain className="h-3.5 w-3.5 mr-1.5 text-secondary" /> Business Memory
               </Button>
-              <Button variant="outline" size="sm" className="rounded-full glass-subtle border-border/30 hover:border-primary/40" onClick={() => navigate('/pricing')}>
-                <Crown className="h-4 w-4 mr-2" /> Pricing
+              <Button variant="outline" size="sm" className="rounded-full glass-subtle border-border/30 hover:border-primary/40 text-xs" onClick={() => navigate('/analytics')}>
+                <TrendingUp className="h-3.5 w-3.5 mr-1.5 text-emerald-400" /> Analytics
+              </Button>
+              <Button variant="outline" size="sm" className="rounded-full glass-subtle border-border/30 hover:border-primary/40 text-xs" onClick={() => navigate('/shadow-memory')}>
+                <Shield className="h-3.5 w-3.5 mr-1.5 text-amber-400" /> Shadow Memory
+              </Button>
+              <Button variant="outline" size="sm" className="rounded-full glass-subtle border-border/30 hover:border-primary/40 text-xs" onClick={() => navigate('/developers')}>
+                <Code className="h-3.5 w-3.5 mr-1.5 text-violet-400" /> Developers API
+              </Button>
+              <Button variant="outline" size="sm" className="rounded-full glass-subtle border-border/30 hover:border-primary/40 text-xs" onClick={() => navigate('/pricing')}>
+                <Crown className="h-3.5 w-3.5 mr-1.5 text-pink-400" /> Pricing
               </Button>
             </motion.div>
           </div>
@@ -441,12 +516,12 @@ const DocsPage = () => {
               <DocSection title="Tech stack (summary)">
                 <Card className="card-glass">
                   <CardContent className="pt-6 grid gap-3 md:grid-cols-2 text-sm text-muted-foreground">
-                    <p><strong className="text-foreground">Frontend:</strong> React 18, Vite, TypeScript, Tailwind, Framer Motion, shadcn/ui</p>
-                    <p><strong className="text-foreground">Backend:</strong> ShadowTalk backend (Auth, Postgres, RLS, Edge Functions)</p>
-                    <p><strong className="text-foreground">AI routing:</strong> Edge functions → Gemini / Kimi / local WebGPU</p>
-                    <p><strong className="text-foreground">IDE sandbox:</strong> Monaco + WebContainer (Computer Mode)</p>
-                    <p><strong className="text-foreground">Offline:</strong> SmolLM / Gemma via WebGPU + WASM transformers</p>
-                    <p><strong className="text-foreground">Desktop:</strong> Electron + Capacitor builds at /downloads</p>
+                    <p><strong className="text-foreground">Frontend:</strong> React 18, Vite, TypeScript, Tailwind CSS, Framer Motion, shadcn/ui, Recharts</p>
+                    <p><strong className="text-foreground">AI Intelligence:</strong> Multi-Model Turbo Engine (Groq Llama-3.3 70B, DeepSeek R1, OpenAI GPT-4o)</p>
+                    <p><strong className="text-foreground">Edge & Offline:</strong> In-browser WebGPU runtime + Transformers.js zero-network execution</p>
+                    <p><strong className="text-foreground">Data Resilience:</strong> Dual-layer offline-first (IndexedDB + localized storage cache + cloud sync)</p>
+                    <p><strong className="text-foreground">Telemetry & Audit:</strong> On-device tamper-evident cryptographic ledger + downloadable JSON reports</p>
+                    <p><strong className="text-foreground">Platform:</strong> Desktop PWA, mobile-responsive layout, and developer REST APIs</p>
                   </CardContent>
                 </Card>
               </DocSection>
@@ -582,8 +657,8 @@ const DocsPage = () => {
                   ))}
                 </div>
                 <div className="mt-4">
-                  <Button variant="outline" className="rounded-xl" onClick={() => navigate("/downloads")}>
-                    <Download className="h-4 w-4 mr-2" /> Desktop downloads
+                  <Button variant="outline" className="rounded-xl" onClick={() => navigate("/chatbot")}>
+                    <Rocket className="h-4 w-4 mr-2" /> Launch Web App
                   </Button>
                 </div>
               </DocSection>
@@ -591,9 +666,9 @@ const DocsPage = () => {
 
             {/* Workspace */}
             <TabsContent value="workspace" className="space-y-8">
-              <DocSection title="Using the /chatbot workspace">
+              <DocSection title="Enterprise Workspace & Business Intelligence">
                 <p className="text-muted-foreground mb-6">
-                  The main product workspace at /chatbot — streaming chat, tools, missions, and history. Returning users land here automatically.
+                  ShadowTalk provides a complete four-part workspace ecosystem: AI Chatbot, persistent Business Memory, production Analytics, and zero-cloud on-device Shadow Memory.
                 </p>
                 <div className="grid gap-5 md:grid-cols-2">
                   {workspaceGuide.map((section, idx) => (
@@ -627,11 +702,11 @@ const DocsPage = () => {
                 <SpotlightCard>
                 <Card className="card-glass">
                   <CardContent className="pt-6 space-y-3 text-sm text-muted-foreground">
-                    <p><strong className="text-foreground">+ Attach</strong> — images or files before sending.</p>
-                    <p><strong className="text-foreground">Provider chip</strong> — (platform) or your BYOK provider when keys are saved.</p>
-                    <p><strong className="text-foreground">Mic</strong> — voice input / ShadowTalk Live.</p>
-                    <p><strong className="text-foreground">Send</strong> — gradient button inside the pill; Enter to send, Shift+Enter for new line.</p>
-                    <p className="text-xs pt-2">Hardware speed routing is automatic — there is no Turbo toggle in the UI.</p>
+                    <p><strong className="text-foreground">+ Attach</strong> — Attach documents, code snippets, or images prior to dispatch.</p>
+                    <p><strong className="text-foreground">Provider chip</strong> — Displays active Turbo Engine routing (Groq, DeepSeek, or OpenAI).</p>
+                    <p><strong className="text-foreground">Mic</strong> — Instant voice input transcription powered by Whisper.</p>
+                    <p><strong className="text-foreground">Send</strong> — Gradient action button; press Enter to send, Shift+Enter for newline.</p>
+                    <p className="text-xs pt-2 text-muted-foreground/70">Hardware speed routing dynamically balances latency and reasoning depth.</p>
                   </CardContent>
                 </Card>
                 </SpotlightCard>
@@ -639,10 +714,16 @@ const DocsPage = () => {
 
               <div className="flex flex-wrap gap-3">
                 <Button className="btn-glow rounded-xl" onClick={() => navigate("/chatbot")}>
-                  <Rocket className="h-4 w-4 mr-2" /> Open workspace
+                  <MessageSquare className="h-4 w-4 mr-2" /> Open Chatbot
                 </Button>
-                <Button variant="outline" className="rounded-xl" onClick={() => navigate("/changelog")}>
-                  <History className="h-4 w-4 mr-2" /> View changelog
+                <Button variant="outline" className="rounded-xl" onClick={() => navigate("/workspace")}>
+                  <Brain className="h-4 w-4 mr-2" /> Business Memory
+                </Button>
+                <Button variant="outline" className="rounded-xl" onClick={() => navigate("/analytics")}>
+                  <TrendingUp className="h-4 w-4 mr-2" /> Analytics Dashboard
+                </Button>
+                <Button variant="outline" className="rounded-xl" onClick={() => navigate("/shadow-memory")}>
+                  <Shield className="h-4 w-4 mr-2" /> Shadow Memory Journal
                 </Button>
               </div>
             </TabsContent>
@@ -810,8 +891,11 @@ const DocsPage = () => {
                 </div>
               </DocSection>
               <div className="flex flex-wrap gap-3">
-                <Button className="btn-glow rounded-xl" onClick={() => navigate("/missioncontrol")}>
-                  <Rocket className="h-4 w-4 mr-2" /> Open Mission Control
+                <Button className="btn-glow rounded-xl" onClick={() => navigate("/studio")}>
+                  <Rocket className="h-4 w-4 mr-2" /> Open Model Studio
+                </Button>
+                <Button variant="outline" className="rounded-xl" onClick={() => navigate("/templates")}>
+                  <Sparkles className="h-4 w-4 mr-2" /> Prompt Templates
                 </Button>
               </div>
             </TabsContent>
@@ -930,9 +1014,9 @@ const DocsPage = () => {
                 </div>
               </DocSection>
               <div className="flex flex-wrap gap-3">
-                <Button variant="outline" className="rounded-xl" onClick={() => navigate("/privacy")}>Privacy policy</Button>
-                <Button variant="outline" className="rounded-xl" onClick={() => navigate("/transparency")}>Transparency</Button>
-                <Button variant="outline" className="rounded-xl" onClick={() => navigate("/security")}>Security hub</Button>
+                <Button variant="outline" className="rounded-xl" onClick={() => navigate("/private-ai")}>Private AI Hub</Button>
+                <Button variant="outline" className="rounded-xl" onClick={() => navigate("/shadow-memory")}>Shadow Memory Journal</Button>
+                <Button variant="outline" className="rounded-xl" onClick={() => navigate("/about")}>Ethics & Privacy</Button>
               </div>
             </TabsContent>
 
@@ -1110,8 +1194,8 @@ const DocsPage = () => {
                     <Button variant="outline" className="rounded-xl glass-subtle border-border/30 hover:border-primary/40" onClick={() => navigate('/chatbot')}>
                       <MessageSquare className="h-4 w-4 mr-2" /> Open workspace
                     </Button>
-                    <Button variant="outline" className="rounded-xl glass-subtle border-border/30 hover:border-primary/40" onClick={() => navigate('/contact')}>
-                      <ExternalLink className="h-4 w-4 mr-2" /> Contact support
+                    <Button variant="outline" className="rounded-xl glass-subtle border-border/30 hover:border-primary/40" onClick={() => navigate('/about')}>
+                      <Users className="h-4 w-4 mr-2" /> About & Contact
                     </Button>
                   </div>
                 </div>

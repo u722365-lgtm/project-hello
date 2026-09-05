@@ -80,235 +80,429 @@ export interface DocMissionStep {
 }
 
 export const DOC_TAGLINE =
-  "ShadowTalk is an elite, minimal agentic AI workspace focused entirely on three core pillars: Shadow DreamState, Omniscience, and Twin.";
+  "ShadowTalk AI is an elite agentic intelligence platform combining ultra-fast cloud models, on-device private WebGPU execution, persistent Business Memory, real-time analytics, and client-side cryptographic audit ledgers.";
 
 export const DOC_OVERVIEW: DocOverviewSection[] = [
   {
-    title: "What is ShadowTalk?",
+    title: "What is ShadowTalk AI?",
     paragraphs: [
-      "ShadowTalk is a highly-focused, next-generation AI workspace powered by OpenAI GPT-4o and Groq's Turbo Engine. We believe in doing a few things exceptionally well.",
-      "Instead of cluttering the UI with endless hubs and marketplaces, we have stripped the application down to its three most powerful autonomous capabilities: Shadow DreamState, Shadow Omniscience, and Shadow Twin.",
+      "ShadowTalk AI is a production-grade, privacy-first agentic workspace designed for engineers, researchers, founders, and enterprises. It unifies low-latency cloud inference, local edge intelligence, and deep operational customization into a distraction-free environment.",
+      "Rather than treating AI as a disposable chat session, ShadowTalk maintains your business context through dedicated Business Memory, tracks execution metrics via interactive Analytics, and writes an encrypted activity ledger directly to your device via Shadow Memory.",
     ],
   },
   {
-    title: "The Big Three",
+    title: "Core Architectural Foundations",
     paragraphs: [
-      "1. Shadow DreamState: While you are away, your workspace continues to work. Autonomous agents run deep research, monitor data, and synthesize reports in the background.",
-      "2. Shadow Omniscience: An AI that doesn't just answer questions, but understands your entire contextual footprint across files, previous chats, and connected knowledge bases.",
-      "3. Shadow Twin: A hyper-personalized digital clone that learns your writing style, decision-making frameworks, and preferences to act on your behalf.",
+      "1. Multi-Tier Turbo Engine: Dynamically routes prompts between ultra-fast Groq Llama-3.3 70B (600+ tok/s), DeepSeek R1 reasoning, OpenAI GPT-4o multimodal, and in-browser WebGPU runtimes.",
+      "2. AI Workspace & Business Memory (/workspace): Seamlessly injects company identity, brand voice rules, customer parameters, and architectural guardrails into every conversation.",
+      "3. Real-Time Telemetry & Analytics (/analytics): Live Recharts dashboard reporting message volume, token synthesis rates, feature utilization, and model distribution with downloadable audit reports.",
+      "4. Zero-Cloud Shadow Memory (/shadow-memory): An on-device cryptographic ledger built on IndexedDB with automatic local storage fallback, guaranteeing zero telemetry leakage to external servers.",
+      "5. Enterprise SaaS & Governance: Organization administration (/admin), developer APIs (/developers), integrations directory (/integrations), and immutable compliance trails (/audit-logs).",
     ],
   },
   {
-    title: "Turbo Engine Architecture",
+    title: "Privacy & Zero-Knowledge Architecture",
     paragraphs: [
-      "ShadowTalk uses a proprietary Turbo Engine to intelligently route your prompts. High-complexity reasoning tasks are seamlessly routed to OpenAI's GPT-4o, while low-latency chat uses Groq's blazing fast Llama 3 models.",
+      "ShadowTalk enforces a strict client-side privacy perimeter. User API keys, prompt injection filters, and on-device memory ledgers remain in your browser sandbox. We never train public foundation models on your proprietary business conversations.",
     ],
   },
 ];
 
 export const DOC_PRODUCT_PILLARS: DocFeatureItem[] = [
   {
-    icon: "brain",
-    title: "Shadow DreamState",
-    description: "Autonomous background processing. Your AI works while you sleep, researching and synthesizing data for when you return.",
-    badge: "Core",
-  },
-  {
-    icon: "search",
-    title: "Shadow Omniscience",
-    description: "Total contextual awareness. The AI connects dots across all your uploaded documents, past conversations, and data silos.",
-    badge: "Core",
-  },
-  {
-    icon: "users",
-    title: "Shadow Twin",
-    description: "Your digital clone. An AI fine-tuned to your exact writing style, logic, and operational preferences.",
-    badge: "Core",
-  },
-  {
     icon: "zap",
-    title: "Turbo Engine",
-    description: "Intelligent model routing between OpenAI (GPT-4o) and Groq (Llama-3) based on task complexity.",
-    badge: "Engine",
+    title: "Multi-Model Turbo Engine",
+    description: "Intelligent high-speed routing across Groq Llama-3.3 70B, DeepSeek R1, GPT-4o, and on-device WebGPU models.",
+    badge: "Core Engine",
+  },
+  {
+    icon: "brain",
+    title: "Business Memory Workspace",
+    description: "Persistent organization knowledge base that personalizes AI responses across sessions (/workspace).",
+    badge: "Context",
+  },
+  {
+    icon: "lock",
+    title: "Shadow Memory Journal",
+    description: "100% on-device IndexedDB activity ledger with parameter inspection and multi-format exports (/shadow-memory).",
+    badge: "Privacy",
+  },
+  {
+    icon: "shield",
+    title: "Real-Time Telemetry & Analytics",
+    description: "Production Recharts dashboard measuring tokens, response latency, and feature usage (/analytics).",
+    badge: "Intelligence",
   },
 ];
 
 export const DOC_QUICK_START: DocStep[] = [
   {
     step: 1,
-    title: "Open the workspace",
+    title: "Launch the AI Workspace",
     description:
-      "Go to shadowtalk-ai.com/chatbot. Anonymous sessions start automatically; link email from Profile to save history.",
+      "Navigate to /chatbot. Anonymous sessions begin immediately. Sign in via /auth to synchronize your sessions and organization seats.",
   },
   {
     step: 2,
-    title: "Use the composer",
+    title: "Configure Business Memory",
     description:
-      "Type your prompt. The Turbo Engine will automatically route it to OpenAI GPT-4o for complex tasks, or Groq for fast chatting.",
+      "Visit /workspace to define your Company Profile, Brand Voice, and Guardrails, or click 'Load Starter Templates' to populate instant business context.",
   },
   {
     step: 3,
-    title: "Activate DreamState",
+    title: "Engage with Multi-Model AI",
     description:
-      "Ask the AI to monitor a topic or perform a long-running research task, then step away. The agent will execute autonomously in the background.",
+      "Send prompts in /chatbot using Turbo Engine speed routing. Use voice input, attach technical files, or test complex reasoning with DeepSeek R1.",
   },
   {
     step: 4,
-    title: "Configure your Twin",
+    title: "Inspect Telemetry & Audit Logs",
     description:
-      "Provide documents, past emails, and instructions to fine-tune your Shadow Twin. It will adopt your tone seamlessly.",
+      "Review your performance metrics in /analytics and inspect your on-device cryptographic activity trail in /shadow-memory.",
   },
 ];
 
 export const DOC_ROUTES: DocRouteLink[] = [
-  { path: "/", label: "Marketing home", desc: "Hero, features, pricing, use-case wedges", group: "Entry" },
-  { path: "/chatbot", label: "AI workspace", desc: "Main product — streaming chat, DreamState, Omniscience, Twin", group: "Entry" },
-  { path: "/auth", label: "Sign in", desc: "Authenticate to save history across devices", group: "Entry" },
-  { path: "/docs", label: "Documentation", desc: "This page — product guides, FAQ", group: "Help" },
-  { path: "/changelog", label: "Changelog", desc: "Release notes and shipped features", group: "Help" },
+  // Core AI & Chat
+  { path: "/chatbot", label: "AI Chatbot Workspace", desc: "Main product — streaming chat, multi-model selection, prompt injection defense, and voice input", group: "Core AI" },
+  { path: "/workspace", label: "Business Memory Workspace", desc: "Define company profiles, brand voice, customer context, and active AI context injection rules", group: "Core AI" },
+  { path: "/analytics", label: "Production Analytics", desc: "Interactive charts for message volume, token synthesis, model distribution, and downloadable reports", group: "Core AI" },
+  { path: "/shadow-memory", label: "Shadow Memory Journal", desc: "100% on-device IndexedDB cryptographic ledger with parameter inspection and CSV/JSON/Log export", group: "Core AI" },
+  { path: "/sessions", label: "Session History", desc: "Browse, restore, search, and manage archived chat sessions across devices", group: "Core AI" },
+  { path: "/templates", label: "Prompt Templates", desc: "Curated library of high-impact engineering, marketing, and strategic prompts", group: "Core AI" },
+  { path: "/studio", label: "Model Playground", desc: "Fine-tune AI hyperparameters (temperature, top_p, frequency penalty) across providers", group: "Core AI" },
+  { path: "/private-ai", label: "Private AI Hub", desc: "Edge AI architecture featuring in-browser WebGPU execution and zero cloud telemetry", group: "Core AI" },
+
+  // Digital Twin & Sharing
+  { path: "/shadow-twin", label: "Shadow Twin Studio", desc: "Configure your personal AI twin, tone settings, and custom public persona", group: "Shadow Twin" },
+  { path: "/t/:username", label: "Public Twin Chat", desc: "Interactive public chat URL allowing others to interact with your published Shadow Twin", group: "Shadow Twin" },
+  { path: "/s/:slug", label: "Shared Answer Viewer", desc: "Clean, read-only public viewer for shared chat solutions and code artifacts", group: "Shadow Twin" },
+
+  // Enterprise & Developers
+  { path: "/developers", label: "Developer Portal", desc: "REST API keys, webhook endpoints, rate limit quotas, and SDK documentation", group: "Enterprise" },
+  { path: "/admin", label: "Organization Admin", desc: "Manage team members, seat allocation, role-based access control, and workspace domains", group: "Enterprise" },
+  { path: "/integrations", label: "Integrations Hub", desc: "Pre-built connectors for Slack, GitHub, Notion, webhooks, and cloud storage", group: "Enterprise" },
+  { path: "/audit-logs", label: "Compliance Audit Trail", desc: "Tamper-evident logs of logins, role changes, key generations, and security events", group: "Enterprise" },
+  { path: "/billing", label: "Billing & Subscriptions", desc: "Manage usage tiers, token allowances, invoices, and enterprise billing contracts", group: "Enterprise" },
+
+  // Public & Portal
+  { path: "/home", label: "Marketing Home", desc: "Feature showcases, speed benchmarks, use-case wedges, and product tour", group: "Public" },
+  { path: "/pricing", label: "Pricing & Plans", desc: "Transparent tier comparisons: Free, Pro, and Enterprise SaaS plans", group: "Public" },
+  { path: "/docs", label: "System Documentation", desc: "Complete reference guides, API specifications, and troubleshooting playbooks", group: "Public" },
+  { path: "/about", label: "About ShadowTalk", desc: "Our team, privacy philosophy, architectural principles, and leadership", group: "Public" },
+  { path: "/changelog", label: "Product Changelog", desc: "Release notes, deployed optimizations, and platform version milestones", group: "Public" },
+  { path: "/auth", label: "Authentication Portal", desc: "Sign in, account creation, password recovery, and enterprise OAuth", group: "Public" },
 ];
 
 export const DOC_WORKSPACE_GUIDE: DocWorkspaceTopic[] = [
   {
-    title: "Chat layout",
+    title: "AI Chatbot Workspace (/chatbot)",
     items: [
-      "Center — Messages and the core conversational interface.",
-      "Bottom — The composer pill to send prompts.",
-      "Intelligence Hub — Context about your Twin and Omniscience state.",
+      "Center Feed: High-speed streaming AI responses with syntax-highlighted code blocks, copy actions, and markdown rendering.",
+      "Composer Controls: Dynamic input supporting text, file attachments (+ Attach), voice transcription (Mic), and model toggling.",
+      "Prompt Injection Shield: Real-time client-side heuristics that detect and neutralize prompt hacking attempts before reaching the LLM.",
+      "Multi-Model Switching: Seamlessly swap between Groq Llama-3.3 70B Turbo, DeepSeek R1, and OpenAI GPT-4o.",
     ],
   },
   {
-    title: "Providers & routing",
+    title: "Business Memory Workspace (/workspace)",
     items: [
-      "The Turbo Engine uses AI heuristics to determine if your task requires GPT-4o's reasoning or Groq's speed.",
-      "Routing is entirely automatic. Simply type your prompt.",
+      "Category Management: Organize knowledge into Business Profile, Brand Voice, Customer Context, and Custom Facts.",
+      "Context Preview: Inspect the exact formatted Markdown context block injected into the AI system prompt.",
+      "Starter Templates: Instantly seed 4 ready-to-use business rules with one click.",
+      "Dual-Layer Persistence: Edits write immediately to local device storage and automatically synchronize to your user profile when signed in.",
+    ],
+  },
+  {
+    title: "Production Analytics (/analytics)",
+    items: [
+      "KPI Metric Cards: Live count of Total Messages, Total Tokens Processed, Average Response Latency (620ms), and Privacy Score (100%).",
+      "Interactive Visualizations: Daily message volume AreaChart, token usage LineChart, feature breakdown BarChart, and model distribution Donut PieChart.",
+      "Report Export: Download a timestamped .json telemetry snapshot for compliance and reporting.",
+    ],
+  },
+  {
+    title: "On-Device Shadow Memory (/shadow-memory)",
+    items: [
+      "100% Client Isolation: All activities are stored in IndexedDB on your device — never transmitted to cloud servers.",
+      "Detailed Activity Journal: Logs chat sessions, vault operations, web searches, code generation, voice queries, and system events.",
+      "Parameters Inspector: Expandable JSON viewer for event metadata and execution parameters.",
+      "Multi-Format Export: Download your full activity history as JSON, CSV, or raw plaintext .log files.",
     ],
   },
 ];
 
 export const DOC_FEATURES: DocFeatureItem[] = [
   {
-    icon: "brain",
-    title: "Shadow DreamState",
-    description: "Asynchronous agent execution.",
-    badge: "Core",
+    icon: "zap",
+    title: "Multi-Model Turbo Engine",
+    description: "Blazing fast streaming through Groq Llama-3.3 70B (600+ tok/s), DeepSeek R1, and GPT-4o.",
+    badge: "Engine",
   },
   {
-    icon: "search",
-    title: "Shadow Omniscience",
-    description: "Deep contextual integration.",
-    badge: "Core",
+    icon: "brain",
+    title: "Business Memory Engine",
+    description: "Persistent organization knowledge base that personalizes every AI interaction (/workspace).",
+    badge: "Context",
+  },
+  {
+    icon: "lock",
+    title: "Shadow Memory Ledger",
+    description: "Tamper-evident on-device IndexedDB activity journal with zero cloud telemetry leakage (/shadow-memory).",
+    badge: "Privacy",
+  },
+  {
+    icon: "shield",
+    title: "Live Production Analytics",
+    description: "Real-time token synthesis tracking, latency monitoring, and exportable JSON reports (/analytics).",
+    badge: "Metrics",
   },
   {
     icon: "users",
-    title: "Shadow Twin",
-    description: "Hyper-personalized digital clone.",
-    badge: "Core",
+    title: "Shadow Twin Clones",
+    description: "Train an AI digital twin matching your writing style and publish shareable chat links (/t/:username).",
+    badge: "Persona",
+  },
+  {
+    icon: "wifi-off",
+    title: "Private AI WebGPU",
+    description: "Run quantized LLMs directly inside your browser GPU with zero external network connectivity.",
+    badge: "Offline",
+  },
+  {
+    icon: "code",
+    title: "Developer REST API",
+    description: "Programmatic API key generation, webhooks, and SDK quickstarts for enterprise automation (/developers).",
+    badge: "API",
+  },
+  {
+    icon: "compass",
+    title: "Enterprise Administration",
+    description: "Manage team seats, organizational governance, and compliance audit logs (/admin & /audit-logs).",
+    badge: "Enterprise",
   },
 ];
 
 export const DOC_TOOLS: DocToolItem[] = [
   {
-    name: "Omniscience Indexing",
-    trigger: "Upload file or paste link",
-    description: "Automatically indexes data for the Omniscience engine.",
-  }
+    name: "Business Memory Injector",
+    trigger: "Automatic in /chatbot or configure in /workspace",
+    description: "Injects active company profile, brand voice rules, and customer parameters directly into the LLM system prompt.",
+    plan: "All Plans",
+  },
+  {
+    name: "Shadow Memory Tracker",
+    trigger: "Automatic background client logging",
+    description: "Records user actions, navigation, searches, and vault events into on-device IndexedDB storage.",
+    plan: "All Plans",
+  },
+  {
+    name: "Voice Transcription (Whisper)",
+    trigger: "Composer Microphone button",
+    description: "Transcribes voice queries in real-time with high-accuracy speech-to-text recognition.",
+    plan: "All Plans",
+  },
+  {
+    name: "Prompt Injection Filter",
+    trigger: "Pre-flight message verification",
+    description: "Sanitizes malicious prompt override and jailbreak attempts before dispatching to model endpoints.",
+    plan: "All Plans",
+  },
+  {
+    name: "Deep Web Search",
+    trigger: "Natural language query or Search mode",
+    description: "Fetches grounded, up-to-date web intelligence with source citations.",
+    plan: "Pro / Elite",
+  },
+  {
+    name: "Analytics Report Generator",
+    trigger: "Click 'Export Report' in /analytics",
+    description: "Generates an audit-ready JSON payload documenting token volumes, latency, and model metrics.",
+    plan: "All Plans",
+  },
 ];
 
 export const DOC_MISSION_CONTROL: DocMissionStep[] = [
   {
     step: 1,
-    title: "Initiate DreamState",
-    description: "Command the AI to perform a background task.",
+    title: "Initiate Autonomous Mission",
+    description: "Define an objective in /studio or /chatbot specifying target deliverables, tools, and constraints.",
   },
   {
     step: 2,
-    title: "Autonomous execution",
-    description: "The AI plans and executes the task using Turbo Engine.",
+    title: "Multi-Agent Synthesis",
+    description: "The AI breaks the objective into subtasks, queries external sources, and executes step-by-step reasoning.",
   },
   {
     step: 3,
-    title: "Review results",
-    description: "View the synthesized report upon your return.",
-  }
+    title: "Review & Audit Output",
+    description: "Inspect generated code, reports, or data artifacts, with all actions logged to your local Shadow Memory.",
+  },
 ];
 
 export const DOC_PRIVACY_SECTIONS: DocWorkspaceTopic[] = [
   {
-    title: "Data Security",
+    title: "Zero Cloud Training Guarantee",
     items: [
-      "Your API keys (OpenAI, Groq) remain securely stored in your local .env or client-side storage.",
-      "We do not train on your chats.",
+      "ShadowTalk AI does not use your proprietary prompts, business memories, or file attachments to train foundation models.",
+      "All on-device memory entries are restricted to local IndexedDB and never mirrored to external logging servers.",
     ],
-  }
+  },
+  {
+    title: "Bring Your Own Key (BYOK)",
+    items: [
+      "Configure your personal Groq, OpenAI, or Anthropic API keys in /settings.",
+      "Keys are stored in encrypted client-side browser storage and dispatched directly to provider endpoints.",
+    ],
+  },
+  {
+    title: "Client-Side Isolation & Kill Switch",
+    items: [
+      "Immediate session wiping through the Stealth Kill Switch in the navigation bar.",
+      "One-click 'Erase All' in /shadow-memory instantly purges all local cryptographic records.",
+    ],
+  },
 ];
 
 export const DOC_PRICING_TIERS: DocPricingTier[] = [
   {
-    name: "Free",
+    name: "Free Tier",
     price: "$0",
-    tagline: "Experience the Big Three",
-    highlights: ["Basic DreamState", "Turbo Engine Standard", "1 Twin Profile"],
+    tagline: "Full access to Core AI & Memory features",
+    highlights: [
+      "50 high-speed messages per day",
+      "Full access to /workspace (Business Memory)",
+      "Full access to /analytics & /shadow-memory",
+      "Groq Llama-3.3 70B Turbo Engine",
+      "1 Shadow Twin Profile",
+    ],
   },
   {
-    name: "Elite",
+    name: "Pro Plan",
     price: "$20/mo",
-    tagline: "Full Autonomous Power",
-    highlights: ["Unlimited DreamState", "GPT-4o Priority", "Unlimited Twin Profiles"],
-  }
+    tagline: "For professional builders & power users",
+    highlights: [
+      "Unlimited daily chat messages",
+      "DeepSeek R1 reasoning & GPT-4o priority routing",
+      "Unlimited Business Memory context cards",
+      "Deep web search & document file uploads",
+      "Up to 5 Shadow Twin personas",
+      "Advanced analytics report downloads",
+    ],
+  },
+  {
+    name: "Enterprise SaaS",
+    price: "Custom",
+    tagline: "Team governance & developer APIs",
+    highlights: [
+      "Dedicated REST API keys & Webhook access (/developers)",
+      "Organization Admin & Seat Management (/admin)",
+      "Pre-built integrations (Slack, GitHub, Notion) (/integrations)",
+      "Tamper-evident compliance audit trail (/audit-logs)",
+      "Custom SLA & 24/7 dedicated support",
+    ],
+  },
 ];
 
 export const DOC_DESKTOP: DocWorkspaceTopic[] = [
   {
-    title: "PWA Support",
+    title: "Progressive Web App (PWA)",
     items: [
-      "Install ShadowTalk as a PWA from your browser to get a native desktop experience.",
+      "Install ShadowTalk directly from your browser (Chrome, Edge, Safari) for a native window experience.",
+      "Supports offline launch with cached credentials and on-device WebGPU model execution.",
     ],
-  }
+  },
+  {
+    title: "Hardware Acceleration",
+    items: [
+      "Leverages WebGPU for hardware-accelerated on-device neural processing.",
+      "Requires modern Chromium or Safari with WebGPU support enabled.",
+    ],
+  },
 ];
 
 export const DOC_GLOSSARY: DocGlossaryItem[] = [
   {
     term: "Turbo Engine",
-    definition: "The core intelligence router that switches between OpenAI and Groq.",
+    definition: "ShadowTalk's dynamic routing mechanism that balances lightning-fast Groq Llama-3.3 70B with DeepSeek R1 and OpenAI GPT-4o.",
   },
   {
-    term: "DreamState",
-    definition: "Background asynchronous task execution.",
+    term: "Business Memory",
+    definition: "Persistent organizational context items (Profile, Voice, Customers, Facts) injected into AI prompts via /workspace.",
   },
   {
-    term: "Omniscience",
-    definition: "Total workspace contextual awareness.",
+    term: "Shadow Memory",
+    definition: "An encrypted on-device activity journal stored in IndexedDB that records user events with zero cloud sync via /shadow-memory.",
   },
   {
-    term: "Twin",
-    definition: "Personalized digital clone.",
-  }
+    term: "Shadow Twin",
+    definition: "A personalized AI clone trained on your tone and preferences with a public shareable interface (/t/:username).",
+  },
+  {
+    term: "WebGPU Runtime",
+    definition: "In-browser neural inference allowing local LLMs to execute directly on your graphics hardware without an internet connection.",
+  },
+  {
+    term: "Prompt Injection Shield",
+    definition: "Real-time client-side heuristic filters that inspect incoming inputs to prevent adversarial jailbreaks or unauthorized system overrides.",
+  },
+  {
+    term: "Developer Portal",
+    definition: "The developer workspace at /developers providing REST API tokens, usage quotas, webhooks, and code examples.",
+  },
 ];
 
 export const DOC_FAQ: DocFaqItem[] = [
   {
-    q: "What is ShadowTalk?",
-    a: "ShadowTalk is an agentic AI workspace focused on DreamState, Omniscience, and Twin capabilities.",
+    q: "What makes ShadowTalk different from standard chat tools?",
+    a: "ShadowTalk combines multi-model cloud intelligence (Groq Llama-3.3, DeepSeek R1, GPT-4o) with on-device WebGPU privacy, persistent Business Memory (/workspace), and a zero-cloud encrypted telemetry journal (/shadow-memory).",
   },
   {
-    q: "How do I use it?",
-    a: "Simply navigate to /chatbot and type your prompt. The Turbo Engine will handle the rest.",
+    q: "How does Business Memory work?",
+    a: "Business Memory lets you record company facts, voice parameters, customer profiles, and custom rules in /workspace. When active, these memories are automatically formatted and injected into your chatbot system prompt so the AI always knows your exact context.",
   },
   {
-    q: "What models are used?",
-    a: "ShadowTalk intelligently routes between OpenAI GPT-4o and Groq Llama-3 depending on task complexity.",
-  }
+    q: "Where is Shadow Memory stored?",
+    a: "Shadow Memory is stored 100% locally on your device inside your browser's IndexedDB engine (with local storage fallback). No activity telemetry is ever dispatched to our servers.",
+  },
+  {
+    q: "Which AI models can I use?",
+    a: "ShadowTalk natively routes between Groq Llama-3.3 70B Turbo, DeepSeek R1 reasoning, OpenAI GPT-4o, and on-device WebGPU edge models. You can also supply your own BYOK API keys in /settings.",
+  },
+  {
+    q: "How do I access the Developer API?",
+    a: "Navigate to /developers to generate your Bearer API tokens, view rate limits, configure webhooks, and read endpoint specifications.",
+  },
+  {
+    q: "How does authentication and session persistence work?",
+    a: "When you sign in at /auth, you are redirected directly to /chatbot. Your session remains securely authenticated until you explicitly choose to log out.",
+  },
 ];
 
 export const DOC_TROUBLESHOOTING: DocTroubleshootItem[] = [
   {
-    issue: "Messages not sending",
+    issue: "Messages not streaming or sending",
     solutions: [
       "Check your internet connection.",
-      "Ensure your VITE_OPENAI_API_KEY and VITE_GROQ_API_KEY are properly configured.",
+      "Verify your API keys in .env or /settings (OpenAI, Groq).",
+      "If using a private window where IndexedDB is blocked, ShadowTalk automatically uses local storage fallback.",
     ],
-  }
+  },
+  {
+    issue: "Business Memory not appearing in AI answers",
+    solutions: [
+      "Navigate to /workspace and ensure the memory toggle is switched to 'Active'.",
+      "Click 'Preview AI Context' in /workspace to verify the formatted context block contains your rules.",
+      "Refresh the chat session or start a new conversation to apply context updates.",
+    ],
+  },
+  {
+    issue: "Shadow Memory ledger appears empty",
+    solutions: [
+      "Click 'Seed Demo Logs' in /shadow-memory to populate baseline security and telemetry activities.",
+      "Ensure browser storage permissions are granted for IndexedDB.",
+    ],
+  },
 ];
 
 export function docSearchBlob(parts: {
