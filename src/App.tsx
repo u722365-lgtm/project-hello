@@ -70,6 +70,13 @@ const PublicShadowTwinChat = lazy(() => import("./pages/PublicShadowTwinChat"));
 const WorkspacePage = lazy(() => import("./pages/WorkspacePage"));
 const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
 const ShadowMemoryPage = lazy(() => import("./pages/ShadowMemoryPage"));
+const CyberCommandPage = lazy(() => import("./pages/CyberCommandPage"));
+const PrivacyScorePage = lazy(() => import("./pages/PrivacyScorePage"));
+const TrustPage = lazy(() => import("./pages/TrustPage"));
+const KnowledgeGraphPage = lazy(() => import("./pages/KnowledgeGraphPage"));
+const SecurityAuditPage = lazy(() => import("./pages/SecurityAuditPage"));
+const DataInsightsPage = lazy(() => import("./pages/DataInsightsPage"));
+const DeepResearchPage = lazy(() => import("./pages/DeepResearchPage"));
 
 const AutoImproveEngine = lazy(() => import("@/components/autoImprove/AutoImproveEngine"));
 const PWABanner = lazy(() => import("./components/PWABanner"));
@@ -166,6 +173,13 @@ const AnimatedRoutes = () => {
           <Route path="/billing" element={<PageTransition><BillingDashboardPage /></PageTransition>} />
           <Route path="/audit-logs" element={<PageTransition><AuditLogsPage /></PageTransition>} />
           <Route path="/studio" element={<PageTransition><ModelPlaygroundPage /></PageTransition>} />
+          <Route path="/cyber" element={<PageTransition><CyberCommandPage /></PageTransition>} />
+          <Route path="/privacy-score" element={<PageTransition><PrivacyScorePage /></PageTransition>} />
+          <Route path="/trust" element={<PageTransition><TrustPage /></PageTransition>} />
+          <Route path="/knowledge-graph" element={<PageTransition><KnowledgeGraphPage /></PageTransition>} />
+          <Route path="/security-audit" element={<PageTransition><SecurityAuditPage /></PageTransition>} />
+          <Route path="/data-insights" element={<PageTransition><DataInsightsPage /></PageTransition>} />
+          <Route path="/deep-research" element={<PageTransition><DeepResearchPage /></PageTransition>} />
           <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
         </Routes>
       </AnimatePresence>

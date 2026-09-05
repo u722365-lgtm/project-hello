@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { Menu, X, Bot, Shield, BookOpen, Users, History, User, Code, BarChart3, Building2, Settings, UserCircle, Brain, Sparkles, ChevronDown, MoreHorizontal, Download, Share, Smartphone, MessageSquare, CreditCard, Rocket, Tag, ShieldCheck, Presentation, Target, Store, Terminal, Eye, LayoutGrid, Globe, Clapperboard } from "lucide-react";
+import React, { useState, useEffect, useCallback, useContext } from "react";
+import { Menu, X, Bot, Shield, BookOpen, Users, History, User, Code, BarChart3, Building2, Settings, UserCircle, Brain, Sparkles, ChevronDown, MoreHorizontal, Download, Share, Smartphone, MessageSquare, CreditCard, Rocket, Tag, ShieldCheck, Presentation, Target, Store, Terminal, Eye, LayoutGrid, Globe, Clapperboard, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { CommandPaletteContext } from "@/App";
 import { FeedbackForm } from "@/components/FeedbackForm";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import WorkspaceSwitcher from "@/components/WorkspaceSwitcher";
@@ -34,6 +35,7 @@ const Navigation = ({ landingAnimated = false }: NavigationProps) => {
   const [isInstalled, setIsInstalled] = useState(false);
   const [showIOSGuide, setShowIOSGuide] = useState(false);
   const navigate = useNavigate();
+  const { open: openCommandPalette } = useContext(CommandPaletteContext);
   const { t } = useTranslation();
   const { user } = useAuth();
   const landingMotion = useLandingMotionContext();
@@ -218,6 +220,23 @@ const Navigation = ({ landingAnimated = false }: NavigationProps) => {
                 <Button
                   variant="outline"
                   size="sm"
+                  onClick={openCommandPalette}
+                  className="border-border/60 hover:border-primary/40 hover:bg-muted/30 transition-all duration-200 gap-1.5 text-muted-foreground hover:text-foreground h-8 px-2.5"
+                  title="Search all pages (Ctrl+K)"
+                >
+                  <Search className="h-3.5 w-3.5 text-primary" />
+                  <span className="text-xs hidden xl:inline">Search</span>
+                  <kbd className="hidden sm:inline-flex items-center text-[10px] bg-muted/80 text-muted-foreground px-1 py-0.2 rounded border border-border/40 font-mono">
+                    ⌘K
+                  </kbd>
+                </Button>
+              </motion.div>
+            </LandingAnimate>
+            <LandingAnimate preset="fadeUp" inView={false} as="div">
+              <motion.div whileHover={animate ? hoverLift : undefined}>
+                <Button
+                  variant="outline"
+                  size="sm"
                   className="border-border/60 hover:border-primary/40 hover:bg-muted/30 transition-all duration-200"
                   onClick={() => navigate("/auth")}
                 >
@@ -234,8 +253,16 @@ const Navigation = ({ landingAnimated = false }: NavigationProps) => {
             </LandingAnimate>
           </LandingStagger>
 
-          <motion.button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          <div className="flex items-center gap-1 lg:hidden">
+            <button
+              onClick={openCommandPalette}
+              className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted/40 rounded-lg transition-colors"
+              aria-label="Search pages"
+            >
+              <Search className="h-5 w-5" />
+            </button>
+            <motion.button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="lg:hidden p-2 text-foreground hover:bg-muted/40 rounded-lg transition-colors"
             aria-label="Toggle menu"
             whileTap={animate ? { scale: 0.92 } : undefined}
@@ -252,6 +279,7 @@ const Navigation = ({ landingAnimated = false }: NavigationProps) => {
               )}
             </AnimatePresence>
           </motion.button>
+          </div>
         </div>
 
         <AnimatePresence>
