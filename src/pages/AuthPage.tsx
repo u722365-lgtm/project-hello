@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { saveLocalUser } from "@/lib/persistentAuth";
 import { clearExplicitSignOut, consumeReturnPath, hasExplicitSignOut } from "@/lib/persistentAuth";
 import { backend, isConfigured } from "@/integrations/local/client";
+import { useAuth } from "@/components/AuthProvider";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -68,6 +69,13 @@ const AuthPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user) {
+      navigate(consumeReturnPath());
+    }
+  }, [user, navigate]);
 
   useEffect(() => {
     const oauthError = searchParams.get("error");
@@ -218,20 +226,27 @@ const AuthPage = () => {
   };
 
 
-  // Supabase Cloud OAuth handler
+  // Cloud OAuth handler
   const handleFirebaseOAuth = async (provider: 'google' | 'apple' | 'github' | 'twitter') => {
     setLoading(true);
     try {
-      const { error } = await backend.auth.signInWithOAuth({
+      const { data, error } = await backend.auth.signInWithOAuth({
         provider,
         options: {
           redirectTo: `${window.location.origin}/auth`,
         },
       });
       if (error) throw error;
-      // Browser is redirected to the provider; session lands back on /auth.
+      if (data?.user) {
+        saveLocalUser(data.user.email || '', data.user.id);
+        clearExplicitSignOut();
+        toast({ title: 'Success', description: 'Logged in successfully!' });
+        await playWelcomeVoice(data.user.email || 'User');
+        navigate(consumeReturnPath());
+      }
     } catch (err: any) {
       toast({ title: 'Authentication Failed', description: err?.message || 'Unknown error', variant: 'destructive' });
+    } finally {
       setLoading(false);
     }
   };

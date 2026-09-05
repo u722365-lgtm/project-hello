@@ -6,10 +6,12 @@ import {
   GoogleAuthProvider,
   OAuthProvider,
   createUserWithEmailAndPassword,
+  getRedirectResult,
   onAuthStateChanged,
   sendPasswordResetEmail,
   signInAnonymously as fbSignInAnonymously,
   signInWithEmailAndPassword,
+  signInWithPopup,
   signInWithRedirect,
   signOut as fbSignOut,
   updateEmail,
@@ -50,7 +52,12 @@ function friendlyError(err: any): Error {
     'auth/too-many-requests': 'Too many attempts. Please try again in a few minutes.',
     'auth/operation-not-allowed':
       'This sign-in method is not enabled for the project yet.',
-    'auth/popup-closed-by-user': 'Sign-in was cancelled.',
+    'auth/unauthorized-domain':
+      'This domain is not authorized for authentication. (Configured in Firebase Auth Authorized Domains).',
+    'auth/popup-blocked':
+      'Sign-in popup was blocked by your browser. Please allow popups for this site or try again.',
+    'auth/popup-closed-by-user': 'Sign-in popup was closed before completing.',
+    'auth/cancelled-popup-request': 'Sign-in was cancelled.',
     'auth/network-request-failed': 'Network error. Check your connection and try again.',
   };
   const e = new Error(map[code] || err?.message || 'Authentication failed.');
@@ -198,6 +205,7 @@ export function createAuthAdapter() {
         let p: GoogleAuthProvider | OAuthProvider;
         if (provider === 'google') {
           p = new GoogleAuthProvider();
+          p.setCustomParameters({ prompt: 'select_account' });
         } else if (provider === 'apple') {
           p = new OAuthProvider('apple.com');
           p.addScope('email');
@@ -205,10 +213,31 @@ export function createAuthAdapter() {
         } else {
           p = new OAuthProvider(provider.includes('.') ? provider : `${provider}.com`);
         }
-        await signInWithRedirect(fbAuth(), p as any);
-        return { data: { provider, url: window.location.href }, error: null };
+
+        try {
+          const cred = await signInWithPopup(fbAuth(), p as any);
+          return {
+            data: {
+              provider,
+              url: window.location.href,
+              user: toAdapterUser(cred.user),
+              session: await toAdapterSession(cred.user),
+            },
+            error: null,
+          };
+        } catch (popupErr: any) {
+          if (
+            popupErr?.code === 'auth/popup-blocked' ||
+            popupErr?.code === 'auth/cancelled-popup-request' ||
+            popupErr?.code === 'auth/popup-closed-by-user'
+          ) {
+            await signInWithRedirect(fbAuth(), p as any);
+            return { data: { provider, url: window.location.href, user: null, session: null }, error: null };
+          }
+          throw popupErr;
+        }
       } catch (error: any) {
-        return { data: { provider, url: '' }, error: friendlyError(error) };
+        return { data: { provider, url: '', user: null, session: null }, error: friendlyError(error) };
       }
     },
 
@@ -263,6 +292,9 @@ export function createAuthAdapter() {
     },
 
     onAuthStateChange(callback: (event: string, session: AdapterSession | null) => void) {
+      if (typeof window !== 'undefined') {
+        getRedirectResult(fbAuth()).catch(() => null);
+      }
       let first = true;
       const unsub = onAuthStateChanged(fbAuth(), async (u) => {
         const session = await toAdapterSession(u);
