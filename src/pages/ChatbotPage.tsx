@@ -1304,8 +1304,16 @@ const ChatbotPage = () => {
     const imageAttachment =
       userMessage.attachment?.type === "image" ? userMessage.attachment : null;
 
-    if (imageAttachment) {
-      const imageIntent = detectChatImageIntent(msgContent);
+    // Support editing uploaded images as well as follow-up edits on previous conversation images (like ChatGPT / Gemini)
+    const previousImageMsg = !imageAttachment
+      ? [...messages].reverse().find((m) => (m.type === "ai" && m.imageUrl) || (m.type === "user" && m.attachment?.type === "image" && m.attachment.data))
+      : null;
+    const previousImageData = previousImageMsg?.type === "ai" ? previousImageMsg.imageUrl : previousImageMsg?.attachment?.data;
+
+    const targetImage = imageAttachment ? imageAttachment.data : (previousImageData && detectChatImageIntent(msgContent) === "edit" ? previousImageData : null);
+
+    if (targetImage) {
+      const imageIntent = imageAttachment ? detectChatImageIntent(msgContent) : "edit";
 
       if (imageIntent === "edit" || imageIntent === "analyze") {
         const statusId = (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); }));
@@ -1315,7 +1323,7 @@ const ChatbotPage = () => {
           {
             id: statusId,
             type: "ai",
-            content: isEdit ? "✏️ Editing your image…" : "🔍 Analyzing your image…",
+            content: isEdit ? "🎨 Analyzing your image and crafting edits…" : "🔍 Analyzing your image in detail…",
             timestamp: new Date(),
             toolExecution: {
               tool: isEdit ? "image_edit" : "image_decoder",
@@ -1327,10 +1335,10 @@ const ChatbotPage = () => {
         try {
           const result = isEdit
             ? await callChatImageEdit(
-                imageAttachment.data,
-                msgContent.trim() || "Enhance this image",
+                targetImage,
+                msgContent.trim() || "Enhance and stylize this image",
               )
-            : await callChatImageAnalyze(imageAttachment.data);
+            : await callChatImageAnalyze(targetImage);
 
           const reply =
             result.content ||
@@ -1377,24 +1385,25 @@ const ChatbotPage = () => {
         return;
       }
 
-      chatMessages[chatMessages.length - 1] = buildVisionUserMessage(
-        msgContent,
-        imageAttachment.data,
-      );
+      if (imageAttachment) {
+        chatMessages[chatMessages.length - 1] = buildVisionUserMessage(
+          msgContent,
+          imageAttachment.data,
+        );
 
-      try {
-        const assistantReply = await runChatCompletion(chatMessages, conversationId);
-
-        learnFromTurn(msgContent || "[image]", assistantReply ?? "", conversationId);
-      } catch (err) {
-        if (!(err instanceof DOMException && err.name === "AbortError")) {
-          const errMsg = formatChatFetchError(err);
-          toast({ title: "Message failed", description: errMsg, variant: "destructive" });
+        try {
+          const assistantReply = await runChatCompletion(chatMessages, conversationId);
+          learnFromTurn(msgContent || "[image]", assistantReply ?? "", conversationId);
+        } catch (err) {
+          if (!(err instanceof DOMException && err.name === "AbortError")) {
+            const errMsg = formatChatFetchError(err);
+            toast({ title: "Message failed", description: errMsg, variant: "destructive" });
+          }
+        } finally {
+          setIsLoading(false);
         }
-      } finally {
-        setIsLoading(false);
+        return;
       }
-      return;
     }
 
 

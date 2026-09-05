@@ -79,18 +79,45 @@ export async function executeShadowTool(
       };
     }
 
-    case "image_decoder":
-    case "visual_reasoning": {
-      if (ctx.attachment?.type === "image" && ctx.attachment.data) {
-        const analysisResp = await turboComplete(
-          "You are an expert visual reasoning assistant.",
-          message || "Analyze this image in detail."
+    case "image_editor":
+    case "image_edit" as any: {
+      const imgData =
+        (p.image as string) ||
+        (ctx.attachment?.type === "image" && ctx.attachment.data
+          ? `data:${ctx.attachment.mimeType};base64,${ctx.attachment.data}`
+          : null);
+      if (imgData) {
+        const { callChatImageEdit } = await import("@/lib/chatImageApi");
+        const editResp = await callChatImageEdit(
+          imgData,
+          message || (p.prompt as string) || "Enhance and stylize this image",
         );
-        const analysis = analysisResp.content;
         return {
           kind: "inline",
           tool,
-          content: analysis || "Analysis complete.",
+          content: editResp.content,
+          imageUrl: editResp.imageUrl,
+        };
+      }
+      return {
+        kind: "ui",
+        tool,
+        message: "Please attach an image to edit.",
+        path: "/chatbot",
+      };
+    }
+
+    case "image_decoder":
+    case "visual_reasoning": {
+      if (ctx.attachment?.type === "image" && ctx.attachment.data) {
+        const { callChatImageAnalyze } = await import("@/lib/chatImageApi");
+        const decodeResp = await callChatImageAnalyze(
+          `data:${ctx.attachment.mimeType};base64,${ctx.attachment.data}`,
+        );
+        return {
+          kind: "inline",
+          tool,
+          content: decodeResp.content,
           imageUrl: `data:${ctx.attachment.mimeType};base64,${ctx.attachment.data}`,
         };
       }

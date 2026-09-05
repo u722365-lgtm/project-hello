@@ -61,24 +61,18 @@ import { turboComplete } from "@/lib/turbo/turboEngine";
      try {
        const { data: { session } } = await backend.auth.getSession();
  
-       // Step 1: Analyze the image professionally
-       const analysisResp = await turboComplete(
-         "You are an expert visual reasoning assistant. Analyze the provided image.",
-         "Please describe this image in detail."
-       );
- 
-       const analysisText = analysisResp.content || "";
+       // Step 1: Analyze the image with ShadowTalk visual reasoning
+       const { callChatImageAnalyze, callChatImageEdit } = await import("@/lib/chatImageApi");
+       const decodeResult = await callChatImageAnalyze(imageData);
+       const analysisText = decodeResult.content || "Image analysis complete.";
        setAnalysis(analysisText);
  
        // Step 2: Generate enhanced/decoded version of the image
-       const imgPrompt = `Based on this analysis, recreate this image with enhanced clarity, higher quality, and photorealistic detail: ${analysisText.substring(0, 500)}`;
-       const encoded = encodeURIComponent(`${imgPrompt}, high quality, detailed, 4k`);
-       const seed = Math.floor(Math.random() * 999999);
-       const newImageUrl = `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=1024&seed=${seed}&nologo=true&model=flux`;
-       
+       const editResult = await callChatImageEdit(imageData, "Enhance clarity, photorealistic detail and lighting");
+       const newImageUrl = editResult.imageUrl || "";
        setEnhancedImage(newImageUrl);
  
-       onDecoded(analysisText, enhancedImage);
+       onDecoded(analysisText, newImageUrl);
        toast({ title: "Image decoded successfully!" });
  
      } catch (error) {

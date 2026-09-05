@@ -714,24 +714,6 @@ export const PAGE_SEO: Record<string, PageMeta> = {
     keywords: ['API keys', 'API management', 'integration', 'developer'],
     canonical: 'https://www.shadowtalk-ai.com/api',
   },
-  blog: {
-    title: 'Blog',
-    description: 'Latest news, updates, and insights from the ShadowTalk AI team. AI trends, product updates, and tutorials.',
-    keywords: ['AI blog', 'AI news', 'product updates', 'tutorials'],
-    canonical: 'https://www.shadowtalk-ai.com/blog',
-  },
-  faq: {
-    title: 'Frequently Asked Questions',
-    description: 'Find answers to common questions about ShadowTalk AI features, pricing, privacy, and more.',
-    keywords: ['FAQ', 'help', 'questions', 'support'],
-    canonical: 'https://www.shadowtalk-ai.com/faq',
-  },
-  help: {
-    title: 'Help Center',
-    description: 'Get help with ShadowTalk AI. Guides, tutorials, troubleshooting, and support resources.',
-    keywords: ['help center', 'support', 'guides', 'troubleshooting'],
-    canonical: 'https://www.shadowtalk-ai.com/help',
-  },
   careers: {
     title: 'Careers',
     description: 'Join the ShadowTalk AI team. View open positions and help build the future of AI.',
@@ -774,28 +756,10 @@ export const PAGE_SEO: Record<string, PageMeta> = {
     keywords: ['ShadowTalk integrations', 'AI partnerships', 'enterprise AI', 'Slack AI'],
     canonical: 'https://www.shadowtalk-ai.com/partnerships',
   },
-  caseStudies: {
-    title: 'Case Studies — ShadowTalk AI (PSOF)',
-    description: 'Problem-Solution-Outcome-Framework case studies: founder GTM, anonymous research, multilingual ops. Try ShadowTalk free.',
-    keywords: ['ShadowTalk case study', 'AI strategy outcomes', 'PSOF', 'enterprise AI benchmarks', 'ROI proof'],
-    canonical: 'https://www.shadowtalk-ai.com/case-studies',
-  },
   aiStrategyConsultant: {
     title: 'AI Strategy Consultant — CEO Playbooks | ShadowTalk',
     description: 'Free AI strategy consultant: CEO playbooks, marketing plans, competitive analysis. Mission Control executes multi-step strategy.',
     keywords: ['AI strategy consultant', 'best AI for business strategy', 'CEO playbook AI', 'AI business workflows'],
     canonical: 'https://www.shadowtalk-ai.com/ai-strategy-consultant',
-  },
-  cookies: {
-    title: 'Cookie Policy',
-    description: 'Learn about how ShadowTalk AI uses cookies, local storage, and tracking technologies.',
-    keywords: ['cookie policy', 'cookies', 'tracking', 'local storage', 'privacy preferences'],
-    canonical: 'https://www.shadowtalk-ai.com/cookies',
-  },
-  gdpr: {
-    title: 'GDPR Compliance',
-    description: 'Learn about our GDPR compliance practices and your data rights as a user.',
-    keywords: ['GDPR', 'data rights', 'compliance', 'data protection', 'right to erasure', 'data export'],
-    canonical: 'https://www.shadowtalk-ai.com/gdpr',
   },
 };
