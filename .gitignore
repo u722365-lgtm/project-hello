@@ -64,3 +64,4 @@ dev-dist/
 
 artifacts/
 dist_electron/
+.firebase/
