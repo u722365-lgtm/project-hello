@@ -73,7 +73,7 @@ const AuthPage = () => {
 
   useEffect(() => {
     if (user) {
-      navigate(consumeReturnPath());
+      navigate('/chatbot', { replace: true });
     }
   }, [user, navigate]);
 
@@ -206,7 +206,7 @@ const AuthPage = () => {
         toast({ title: "Success", description: "Logged in successfully!" });
         setLoading(false);
         await playWelcomeVoice(cleanEmail);
-        navigate(consumeReturnPath());
+        navigate('/chatbot', { replace: true });
       } else {
         const { data, error } = await backend.auth.signUp({
           email: cleanEmail,
@@ -218,7 +218,7 @@ const AuthPage = () => {
         toast({ title: "Success", description: "Account created successfully!" });
         setLoading(false);
         await playWelcomeVoice(cleanEmail);
-        navigate(consumeReturnPath());
+        navigate('/chatbot', { replace: true });
       }
     } catch (error: any) {
       toast({ title: "Authentication Failed", description: error?.message || 'Unknown error', variant: "destructive" });
@@ -233,7 +233,7 @@ const AuthPage = () => {
       const { data, error } = await backend.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/auth`,
+          redirectTo: `${window.location.origin}/chatbot`,
         },
       });
       if (error) throw error;
@@ -242,7 +242,7 @@ const AuthPage = () => {
         clearExplicitSignOut();
         toast({ title: 'Success', description: 'Logged in successfully!' });
         await playWelcomeVoice(data.user.email || 'User');
-        navigate(consumeReturnPath());
+        navigate('/chatbot', { replace: true });
       }
     } catch (err: any) {
       toast({ title: 'Authentication Failed', description: err?.message || 'Unknown error', variant: 'destructive' });

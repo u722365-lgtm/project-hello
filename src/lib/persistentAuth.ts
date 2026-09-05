@@ -36,7 +36,7 @@ export function consumeReturnPath(): string {
   if (typeof localStorage === "undefined") return DEFAULT_WORKSPACE;
   const path = localStorage.getItem(RETURN_TO_KEY) || DEFAULT_WORKSPACE;
   localStorage.removeItem(RETURN_TO_KEY);
-  if (!path.startsWith("/") || path.includes(":") || path.includes("index.html")) {
+  if (!path.startsWith("/") || path.includes(":") || path.includes("index.html") || path === "/" || path === "/home" || path === "/auth" || path.startsWith("/auth/")) {
     return DEFAULT_WORKSPACE;
   }
   return path;

@@ -26,10 +26,10 @@ const PersistedAuthRedirect = () => {
 
     const path = location.pathname;
 
-    // Case 1: On the auth page with a real session → go to workspace
-    if (path === "/auth") {
+    // Case 1: On the auth page with a real session → go to /chatbot
+    if (path === "/auth" || path === "/auth/") {
       hasRedirected.current = true;
-      navigate(consumeReturnPath(), { replace: true });
+      navigate('/chatbot', { replace: true });
       return;
     }
 
