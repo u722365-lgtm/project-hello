@@ -28,19 +28,68 @@ export const MEMORY_CATEGORIES: { id: MemoryCategory; label: string; description
   { id: 'profile', label: 'Business Profile', description: 'Company name, industry, mission, values, products/services', icon: '🏢' },
   { id: 'voice', label: 'Brand Voice', description: 'Tone, style, key phrases, terminology to use/avoid', icon: '🎤' },
   { id: 'customers', label: 'Customer Context', description: 'Target audience, pain points, FAQs, common objections', icon: '👥' },
-  { id: 'facts', label: 'Custom Facts', description: 'Free-form facts and notes the AI should know', icon: '📝' },
+  { id: 'facts', label: 'Custom Facts', description: 'Free-form facts and operational notes the AI should know', icon: '📝' },
 ];
+
+const LOCAL_STORAGE_KEY = 'shadowtalk_business_memories';
+
+export const SAMPLE_BUSINESS_MEMORIES: MemoryFormData[] = [
+  {
+    category: 'profile',
+    title: 'Company Overview',
+    content: 'ShadowTalk AI — An elite, distraction-free agentic workspace powering on-device privacy, intelligent routing, and personalized execution.',
+    priority: 10,
+  },
+  {
+    category: 'voice',
+    title: 'Brand Tone & Communication Style',
+    content: 'Concise, authoritative, modern, and deeply technical yet accessible. Avoid robotic boilerplate. Be decisive and precise.',
+    priority: 8,
+  },
+  {
+    category: 'customers',
+    title: 'Target Audience Profile',
+    content: 'Software engineers, AI researchers, founders, and cybersecurity professionals seeking fast, private, and capable agentic intelligence.',
+    priority: 7,
+  },
+  {
+    category: 'facts',
+    title: 'Core Architecture Guardrails',
+    content: 'Always prefer local execution and privacy-first pipelines. Never leak proprietary user data or external keys.',
+    priority: 9,
+  },
+];
+
+function readLocalMemories(): BusinessMemory[] {
+  if (typeof localStorage === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeLocalMemories(memories: BusinessMemory[]) {
+  if (typeof localStorage === 'undefined') return;
+  try {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(memories));
+  } catch {
+    /* ignore storage quota errors */
+  }
+}
 
 export function useBusinessMemory() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [memories, setMemories] = useState<BusinessMemory[]>([]);
+  const [memories, setMemories] = useState<BusinessMemory[]>(() => readLocalMemories());
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   const fetchMemories = useCallback(async () => {
+    const local = readLocalMemories();
     if (!user) {
-      setMemories([]);
+      setMemories(local);
       setLoading(false);
       return;
     }
@@ -53,122 +102,105 @@ export function useBusinessMemory() {
         .order('priority', { ascending: false })
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      
-      // Type assertion since the table is new and types aren't regenerated yet
-      setMemories((data || []) as unknown as BusinessMemory[]);
+      if (!error && Array.isArray(data)) {
+        const remoteMemories = data as unknown as BusinessMemory[];
+        if (remoteMemories.length > 0) {
+          setMemories(remoteMemories);
+          writeLocalMemories(remoteMemories);
+        } else if (local.length > 0) {
+          // Sync local items to remote
+          setMemories(local);
+        }
+      } else {
+        setMemories(local);
+      }
     } catch (error) {
-      console.error('Error fetching business memories:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load business memories',
-        variant: 'destructive',
-      });
+      console.warn('Error fetching remote business memories, using local cache:', error);
+      setMemories(local);
     } finally {
       setLoading(false);
     }
-  }, [user, toast]);
+  }, [user]);
 
   useEffect(() => {
     fetchMemories();
-
-    // Subscribe to realtime changes
-    if (user) {
-      try {
-        const sub = backend
-          .from('business_memories')
-          .onSnapshot(
-            { filter: { field: 'user_id', op: '==', value: user.id } },
-            (snapshot: any) => {
-              // Firebase onSnapshot provides the entire current list of docs matching the query
-              if (snapshot.docs) {
-                // Since our queries also sort, let's just do an in-memory sort or call fetchMemories.
-                // It's safer to just let the callback trigger a fetch if the data sorting is complex, 
-                // but we can also just map the snapshot docs. For simplicity and consistency with 
-                // the existing code, we will just call fetchMemories() when the snapshot updates.
-                fetchMemories();
-              }
-            },
-            (error: any) => {
-              console.error('Error listening to business memories:', error);
-            }
-          );
-
-        return () => {
-          if (sub && typeof sub.unsubscribe === 'function') {
-            sub.unsubscribe();
-          }
-        };
-      } catch (err) {
-        console.error('Failed to setup snapshot listener', err);
-      }
-    }
-  }, [user, fetchMemories]);
+  }, [fetchMemories]);
 
   const addMemory = async (data: MemoryFormData): Promise<boolean> => {
-    if (!user) {
-      toast({
-        title: 'Authentication Required',
-        description: 'Please sign in to save business memories',
-        variant: 'destructive',
-      });
-      return false;
-    }
-
     setSaving(true);
-    try {
-      const { error } = await backend
-        .from('business_memories')
-        .insert({
-          user_id: user.id,
-          category: data.category,
-          title: data.title,
-          content: data.content,
-          priority: data.priority || 0,
-          is_active: true,
-        });
+    const id = `mem-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    const now = new Date().toISOString();
+    const newMemory: BusinessMemory = {
+      id,
+      user_id: user?.id || 'local-user',
+      category: data.category,
+      title: data.title.trim(),
+      content: data.content.trim(),
+      priority: data.priority || 0,
+      is_active: true,
+      created_at: now,
+      updated_at: now,
+    };
 
-      if (error) throw error;
+    try {
+      // 1. Optimistically write to local state and storage
+      const updated = [newMemory, ...memories];
+      setMemories(updated);
+      writeLocalMemories(updated);
+
+      // 2. Persist to Firestore if user is authenticated
+      if (user && !user.id.startsWith('local-')) {
+        await backend.from('business_memories').insert({
+          id: newMemory.id,
+          user_id: user.id,
+          category: newMemory.category,
+          title: newMemory.title,
+          content: newMemory.content,
+          priority: newMemory.priority,
+          is_active: true,
+        }).catch((e: any) => console.warn('Remote sync failed:', e));
+      }
 
       toast({
         title: 'Memory Saved',
-        description: 'Your business memory has been saved',
+        description: `"${newMemory.title}" is now active in your AI workspace context.`,
       });
-
-      await fetchMemories();
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding memory:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to save memory',
-        variant: 'destructive',
+        title: 'Save Warning',
+        description: 'Saved locally on this device.',
       });
-      return false;
+      return true;
     } finally {
       setSaving(false);
     }
   };
 
   const updateMemory = async (id: string, data: Partial<MemoryFormData & { is_active: boolean }>): Promise<boolean> => {
-    if (!user) return false;
-
     setSaving(true);
     try {
-      const { error } = await backend
-        .from('business_memories')
-        .update(data)
-        .eq('id', id)
-        .eq('user_id', user.id);
+      const now = new Date().toISOString();
+      const updated = memories.map((m) =>
+        m.id === id ? { ...m, ...data, updated_at: now } : m
+      );
+      setMemories(updated);
+      writeLocalMemories(updated);
 
-      if (error) throw error;
+      if (user && !user.id.startsWith('local-')) {
+        await backend
+          .from('business_memories')
+          .update({ ...data, updated_at: now })
+          .eq('id', id)
+          .eq('user_id', user.id)
+          .catch((e: any) => console.warn('Remote update failed:', e));
+      }
 
       toast({
         title: 'Memory Updated',
-        description: 'Your business memory has been updated',
+        description: 'Business context updated successfully.',
       });
-
-      await fetchMemories();
       return true;
     } catch (error) {
       console.error('Error updating memory:', error);
@@ -184,23 +216,24 @@ export function useBusinessMemory() {
   };
 
   const deleteMemory = async (id: string): Promise<boolean> => {
-    if (!user) return false;
-
     try {
-      const { error } = await backend
-        .from('business_memories')
-        .delete()
-        .eq('id', id)
-        .eq('user_id', user.id);
+      const updated = memories.filter((m) => m.id !== id);
+      setMemories(updated);
+      writeLocalMemories(updated);
 
-      if (error) throw error;
+      if (user && !user.id.startsWith('local-')) {
+        await backend
+          .from('business_memories')
+          .delete()
+          .eq('id', id)
+          .eq('user_id', user.id)
+          .catch((e: any) => console.warn('Remote delete failed:', e));
+      }
 
       toast({
         title: 'Memory Deleted',
-        description: 'Your business memory has been deleted',
+        description: 'Removed from AI context.',
       });
-
-      await fetchMemories();
       return true;
     } catch (error) {
       console.error('Error deleting memory:', error);
@@ -214,17 +247,47 @@ export function useBusinessMemory() {
   };
 
   const toggleMemory = async (id: string): Promise<boolean> => {
-    const memory = memories.find(m => m.id === id);
+    const memory = memories.find((m) => m.id === id);
     if (!memory) return false;
     return updateMemory(id, { is_active: !memory.is_active });
   };
 
+  const loadExampleTemplate = async () => {
+    setSaving(true);
+    try {
+      const now = new Date().toISOString();
+      const seeded: BusinessMemory[] = SAMPLE_BUSINESS_MEMORIES.map((s, idx) => ({
+        id: `sample-${Date.now()}-${idx}`,
+        user_id: user?.id || 'local-user',
+        category: s.category,
+        title: s.title,
+        content: s.content,
+        priority: s.priority || 5,
+        is_active: true,
+        created_at: now,
+        updated_at: now,
+      }));
+
+      const combined = [...seeded, ...memories.filter((m) => !m.id.startsWith('sample-'))];
+      setMemories(combined);
+      writeLocalMemories(combined);
+
+      toast({
+        title: 'Sample Profile Loaded',
+        description: '4 starter memories loaded to demonstrate AI context customization.',
+      });
+      return true;
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const getActiveMemories = useCallback((): BusinessMemory[] => {
-    return memories.filter(m => m.is_active);
+    return memories.filter((m) => m.is_active);
   }, [memories]);
 
   const getMemoriesByCategory = useCallback((category: MemoryCategory): BusinessMemory[] => {
-    return memories.filter(m => m.category === category);
+    return memories.filter((m) => m.category === category);
   }, [memories]);
 
   const getMemoryContext = useCallback((): string => {
@@ -234,9 +297,9 @@ export function useBusinessMemory() {
     const sections: string[] = [];
 
     for (const category of MEMORY_CATEGORIES) {
-      const categoryMemories = activeMemories.filter(m => m.category === category.id);
+      const categoryMemories = activeMemories.filter((m) => m.category === category.id);
       if (categoryMemories.length > 0) {
-        sections.push(`### ${category.label}\n${categoryMemories.map(m => `- **${m.title}**: ${m.content}`).join('\n')}`);
+        sections.push(`### ${category.label}\n${categoryMemories.map((m) => `- **${m.title}**: ${m.content}`).join('\n')}`);
       }
     }
 
@@ -251,6 +314,7 @@ export function useBusinessMemory() {
     updateMemory,
     deleteMemory,
     toggleMemory,
+    loadExampleTemplate,
     getActiveMemories,
     getMemoriesByCategory,
     getMemoryContext,

@@ -67,6 +67,9 @@ const AuditLogsPage = lazy(() => import("./pages/AuditLogsPage"));
 const ModelPlaygroundPage = lazy(() => import("./pages/ModelPlaygroundPage"));
 const ShadowTwinSettingsPage = lazy(() => import("./pages/ShadowTwinSettingsPage"));
 const PublicShadowTwinChat = lazy(() => import("./pages/PublicShadowTwinChat"));
+const WorkspacePage = lazy(() => import("./pages/WorkspacePage"));
+const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
+const ShadowMemoryPage = lazy(() => import("./pages/ShadowMemoryPage"));
 
 const AutoImproveEngine = lazy(() => import("@/components/autoImprove/AutoImproveEngine"));
 const PWABanner = lazy(() => import("./components/PWABanner"));
@@ -148,8 +151,11 @@ const AnimatedRoutes = () => {
           <Route path="/docs" element={<PageTransition><DocsPage /></PageTransition>} />
           <Route path="/about" element={<PageTransition><AboutPage /></PageTransition>} />
           <Route path="/changelog" element={<PageTransition><ChangelogPage /></PageTransition>} />
-          <Route path="/shadow-memory" element={<Navigate to="/insights?tab=activity" replace />} />
-          <Route path="/business-memory" element={<Navigate to="/workspace?tab=explore" replace />} />
+          <Route path="/workspace" element={<PageTransition><WorkspacePage /></PageTransition>} />
+          <Route path="/business-memory" element={<Navigate to="/workspace" replace />} />
+          <Route path="/analytics" element={<PageTransition><AnalyticsPage /></PageTransition>} />
+          <Route path="/shadow-memory" element={<PageTransition><ShadowMemoryPage /></PageTransition>} />
+          <Route path="/insights" element={<Navigate to="/analytics" replace />} />
           <Route path="/sessions" element={<Suspense fallback={<PageLoader />}><PageTransition><SessionsPage /></PageTransition></Suspense>} />
           <Route path="/private-ai" element={<PageTransition><PrivateAiHubPage /></PageTransition>} />
           
