@@ -78,7 +78,7 @@ export async function streamCloudChat(
     
     attempt++;
     if (attempt <= maxRetries) {
-      await new Promise(r => setTimeout(r, Math.min(1000 * Math.pow(2, attempt), 10000)));
+      await new Promise(r => setTimeout(r, 250));
     }
   }
 
