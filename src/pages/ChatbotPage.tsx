@@ -790,59 +790,64 @@ const ChatbotPage = () => {
   };
 
   const ensureConversation = async (): Promise<string | null> => {
-    if (!user) return currentConversationId;
     if (currentConversationId) return currentConversationId;
 
-  if (!user || isAnonymous) {
-    const localId = `local-${(typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); }))}`;
-    setCurrentConversationId(localId);
-    setConversations((prev) => [
-      { id: localId, title: "Private Chat", created_at: new Date().toISOString() },
-      ...prev,
-    ]);
-    return localId;
-  }
+    if (!user || isAnonymous) {
+      const localId = `local-${(typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); }))}`;
+      setCurrentConversationId(localId);
+      setConversations((prev) => [
+        { id: localId, title: "Private Chat", created_at: new Date().toISOString() },
+        ...prev,
+      ]);
+      return localId;
+    }
 
     const titleToSave = chatPrivate.active
       ? await chatPrivate.wrapForStorage("New Chat")
       : "New Chat";
-    const { data, error } = await backend
-      .from('conversations')
-      .insert({ user_id: user.id, title: titleToSave })
-      .select()
-      .single();
 
-    if (error || !data) {
-      toast({ title: "Could not start chat", description: "Try again in a moment.", variant: "destructive" });
-      return null;
+    try {
+      const { data, error } = await backend
+        .from('conversations')
+        .insert({ user_id: user.id, title: titleToSave })
+        .select()
+        .single();
+
+      if (!error && data?.id) {
+        setCurrentConversationId(data.id);
+        const displayTitle = chatPrivate.active
+          ? "Private Chat"
+          : (await chatPrivate.resolveDisplayText(data.title || "New Chat")) || "New Chat";
+        setConversations((prev) => [
+          { id: data.id, title: displayTitle, created_at: data.created_at },
+          ...prev,
+        ]);
+        return data.id;
+      }
+      if (error) {
+        console.warn("[chat] remote conversation insert failed, using fallback:", error);
+      }
+    } catch (err) {
+      console.warn("[chat] exception creating remote conversation, using fallback:", err);
     }
 
-    setCurrentConversationId(data.id);
-    const displayTitle = chatPrivate.active
-      ? "Private Chat"
-      : (await chatPrivate.resolveDisplayText(data.title || "New Chat")) || "New Chat";
+    // Resilient fallback: never block the user from chatting if backend database write is unavailable
+    const fallbackId = `conv-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    setCurrentConversationId(fallbackId);
     setConversations((prev) => [
-      { id: data.id, title: displayTitle, created_at: data.created_at },
+      { id: fallbackId, title: "New Chat", created_at: new Date().toISOString() },
       ...prev,
     ]);
-    return data.id;
+    return fallbackId;
   };
 
-  const resolveConversationId = async (): Promise<string | null> => {
+  const resolveConversationId = async (): Promise<string> => {
+    if (currentConversationId) return currentConversationId;
     const hasRealUser = user && !isAnonymous;
     if (hasRealUser) {
       const id = await ensureConversation();
-      if (!id) {
-        toast({
-          title: "Could not start chat",
-          description: "Check your connection and try again.",
-          variant: "destructive",
-        });
-        recordFunnelEvent("send_blocked", "ensure_conversation_failed");
-      }
-      return id;
+      if (id) return id;
     }
-    if (currentConversationId) return currentConversationId;
     const guestConvId = `guest-${Date.now()}`;
     setCurrentConversationId(guestConvId);
     setConversations((prev) => [
@@ -855,22 +860,27 @@ const ChatbotPage = () => {
   const saveMessage = async (content: string, role: 'user' | 'assistant', conversationId: string) => {
     if (!user || !conversationId) return null;
 
-    const contentToSave = await chatPrivate.wrapForStorage(content);
-    const { data } = await backend
-      .from('messages')
-      .insert({ conversation_id: conversationId, user_id: user.id, content: contentToSave, role, personality })
-      .select().single();
-    
-    if (role === 'user' && messages.length <= 1) {
-      const titlePlain = content.trim().split(/\s+/).slice(0, 3).join(' ').slice(0, 25) || 'New Chat';
-      const title = await chatPrivate.wrapForStorage(titlePlain);
-      await backend.from('conversations').update({ title, updated_at: new Date().toISOString() }).eq('id', conversationId);
-      const displayTitle = chatPrivate.active
-        ? "Private Chat"
-        : titlePlain;
-      setConversations(prev => prev.map(c => c.id === conversationId ? { ...c, title: displayTitle } : c));
+    try {
+      const contentToSave = await chatPrivate.wrapForStorage(content);
+      const { data } = await backend
+        .from('messages')
+        .insert({ conversation_id: conversationId, user_id: user.id, content: contentToSave, role, personality })
+        .select().single();
+      
+      if (role === 'user' && messages.length <= 1) {
+        const titlePlain = content.trim().split(/\s+/).slice(0, 3).join(' ').slice(0, 25) || 'New Chat';
+        const title = await chatPrivate.wrapForStorage(titlePlain);
+        await backend.from('conversations').update({ title, updated_at: new Date().toISOString() }).eq('id', conversationId);
+        const displayTitle = chatPrivate.active
+          ? "Private Chat"
+          : titlePlain;
+        setConversations(prev => prev.map(c => c.id === conversationId ? { ...c, title: displayTitle } : c));
+      }
+      return data;
+    } catch (err) {
+      console.warn("[chat] saveMessage background persistence error:", err);
+      return null;
     }
-    return data;
   };
 
   const handleEnableChatEncryption = async () => {
