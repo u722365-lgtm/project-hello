@@ -51,9 +51,9 @@ const CompetitiveComparison = () => {
     },
     {
       competitor: "Manus",
-      weaknesses: ["Sandbox-only execution model", "No optional on-device privacy mode", "Premium agent pricing"],
-      shadowAdvantages: ["Human-in-the-loop safety controls", "Multi-model consensus + tool graph", "Optional local AI when privacy matters"],
-      priceDiff: "Agents + privacy choice",
+      weaknesses: ["Sandbox-only execution model", "No multi-model flexibility", "Premium agent pricing"],
+      shadowAdvantages: ["Human-in-the-loop safety controls", "Multi-model consensus + tool graph", "Frontier speed + deep agent stack"],
+      priceDiff: "Agents + model freedom",
     },
     {
       competitor: "Claude",
@@ -85,9 +85,9 @@ const CompetitiveComparison = () => {
       competitors: { label: "Single vendor stack", icon: Server },
     },
     {
-      feature: "Privacy Model",
-      shadowtalk: { label: "Vault + optional on-device AI", icon: Lock, advantage: true },
-      competitors: { label: "Cloud-only by default", icon: Eye },
+      feature: "Security & Control",
+      shadowtalk: { label: "Granular controls + BYOK support", icon: Lock, advantage: true },
+      competitors: { label: "Locked proprietary silos", icon: Eye },
     },
     {
       feature: "Offline Option",
@@ -288,7 +288,7 @@ const CompetitiveComparison = () => {
                 </motion.div>
                 <div className="text-left">
                   <p className="font-semibold text-foreground">Agentic AI is the next wave</p>
-                  <p className="text-sm text-muted-foreground">ShadowTalk combines autonomous agents, tool orchestration, and optional on-device privacy — not just another chat box.</p>
+                  <p className="text-sm text-muted-foreground">ShadowTalk combines autonomous agents, tool orchestration, and multi-model intelligence — not just another chat box.</p>
                 </div>
               </CardContent>
             </Card>

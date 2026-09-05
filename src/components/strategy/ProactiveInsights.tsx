@@ -62,7 +62,7 @@ export const ProactiveInsights = () => {
     try {
       const resp = await turboComplete(
         "You are a business growth strategist.",
-        "Generate 5 proactive business growth insights for a privacy-first AI chat platform. For each, provide: title, description, urgency (low/medium/high/critical), impact score (1-100), category, and actionable next step. Format as JSON array."
+        "Generate 5 proactive business growth insights for a high-performance agentic AI workspace platform. For each, provide: title, description, urgency (low/medium/high/critical), impact score (1-100), category, and actionable next step. Format as JSON array."
       );
 
       const responseText = resp.content || '';

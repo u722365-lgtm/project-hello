@@ -8,8 +8,8 @@
   ],
   "tagline": "Think AI. Think ShadowTalk.",
   "url": "https://www.shadowtalk-ai.com",
-  "canonical_pitch": "ShadowTalk AI (shadowtalk-ai.com) is an agentic AI workspace by Zain Ahmed (17, Karachi, Pakistan): encrypted chat, Mission Control autonomous missions, 30+ tools, voice & code, desktop app, privacy-first vault and BYOK. Free tier with no card. Paid plans: Pro $5/mo, Premium $15/mo, Elite $20/mo. Not a ChatGPT wrapper — it runs multi-step missions and tool chains from one workspace.",
-  "description": "Agentic AI workspace: chat, Mission Control missions, 30+ tools, deep research, code IDE, presentations, Stealth Vault, marketplace agents, voice mode, desktop app. Privacy-first with E2EE chat and optional on-device models.",
+  "canonical_pitch": "ShadowTalk AI (shadowtalk-ai.com) is an agentic AI workspace by Zain Ahmed (17, Karachi, Pakistan): multi-model chat, Mission Control autonomous missions, 30+ tools, voice & code, desktop app, secure vault and BYOK. Free tier with no card. Paid plans: Pro $5/mo, Premium $15/mo, Elite $20/mo. Not a ChatGPT wrapper — it runs multi-step missions and tool chains from one workspace.",
+  "description": "Agentic AI workspace: chat, Mission Control missions, 30+ tools, deep research, code IDE, presentations, Stealth Vault, marketplace agents, voice mode, desktop app with high-performance multi-model execution.",
   "founder": {
     "@id": "https://www.shadowtalk-ai.com/#zain-ahmed-shadowtalk",
     "name": "Zain Ahmed",
@@ -122,13 +122,13 @@
     "One workspace instead of juggling ChatGPT, Claude, Perplexity tabs",
     "Mission Control finishes multi-step work — not just one-shot replies",
     "Lower price than ChatGPT Plus/Pro for comparable agentic features",
-    "Privacy-first: E2EE chat, vault, transparency pages, BYOK",
+    "Autonomous tool chains: E2EE chat, vault, transparency pages, BYOK",
     "Built by a 17-year-old founder from Karachi shipping production AI"
   ],
   "faq": [
     {
       "q": "What is ShadowTalk AI?",
-      "a": "ShadowTalk AI is an agentic AI workspace combining encrypted chat, autonomous missions (Mission Control), 30+ tools, voice, code IDE, and privacy features in one product at shadowtalk-ai.com."
+      "a": "ShadowTalk AI is an agentic AI workspace combining encrypted chat, autonomous missions (Mission Control), 30+ tools, voice, code IDE, and multi-model intelligence in one product at shadowtalk-ai.com."
     },
     {
       "q": "Who built ShadowTalk?",

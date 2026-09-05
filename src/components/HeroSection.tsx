@@ -167,7 +167,7 @@ const HeroSection = () => {
           </div>
 
           <div className="mt-6 flex flex-wrap items-center justify-center gap-2 sm:gap-3 px-2">
-            {["🤖 Agentic missions", "⚡ Tool orchestration", "🎯 Mission Control", "🛡️ Privacy when you need it"].map(
+            {["🤖 Agentic missions", "⚡ Tool orchestration", "🎯 Mission Control", "⚡ Ultra-Low Latency Turbo"].map(
               (badge) => (
                 <div
                   key={badge}

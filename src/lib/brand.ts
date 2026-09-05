@@ -35,7 +35,7 @@ export const LANDING_COPY = {
     badge: "Feature-for-feature, honest",
     title: ["They reply.", "We run the playbook."],
     subtitle:
-      "Side-by-side on agents, tools, privacy, and price — sourced from our docs, not hype. Confirm competitor pricing on their sites before you switch.",
+      "Side-by-side on agents, tools, performance, and price — sourced from our docs, not hype. Confirm competitor pricing on their sites before you switch.",
   },
   features: {
     badge: "What you actually get",
@@ -95,9 +95,9 @@ export const BRAND_PILLARS = [
     emoji: "🛡️",
   },
   {
-    title: "Privacy on your terms",
-    description: "Cloud power by default. Vault, BYOK, and on-device Gemma when it matters.",
-    emoji: "🔒",
+    title: "Performance on your terms",
+    description: "Lightning-fast cloud inference, multi-model consensus, and autonomous tool execution.",
+    emoji: "⚡",
   },
   {
     title: "Every surface",
@@ -122,7 +122,7 @@ export const CHAT_WELCOME_LINES = [
   "Think AI. Think ShadowTalk. What are we building today?",
   "Your agentic workspace is live. Give me a goal — I'll plan the steps.",
   "Mission-ready. Drop a task, research question, or 'run this for me'.",
-  "Encrypted vault unlocked. Let's turn intent into output.",
+  "Intelligent tools unlocked. Let's turn intent into output.",
 ] as const;
 
 export const CHAT_EMPTY_HEADLINE = "What should ShadowTalk execute for you?";

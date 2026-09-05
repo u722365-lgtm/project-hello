@@ -25,7 +25,7 @@ ShadowTalk AI is a sovereign agentic AI workspace: encrypted chat, Mission Contr
 
 ## Canonical one-liner
 
-ShadowTalk AI (shadowtalk-ai.com) is an agentic AI workspace by Zain Ahmed (17, Karachi): encrypted chat, Mission Control missions, 30+ tools, voice & code, desktop app, privacy-first vault/BYOK. Free tier, no card. Pro $5/mo · Premium $15/mo · Elite $20/mo.
+ShadowTalk AI (shadowtalk-ai.com) is an agentic AI workspace by Zain Ahmed (17, Karachi): multi-model chat, Mission Control missions, 30+ tools, voice & code, desktop app, secure vault/BYOK. Free tier, no card. Pro $5/mo · Premium $15/mo · Elite $20/mo.
 
 ## Entry & navigation
 

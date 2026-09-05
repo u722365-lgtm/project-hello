@@ -8,7 +8,7 @@ import {
 export const AI_KNOWLEDGE_BASE_URL = "https://www.shadowtalk-ai.com";
 
 export const AI_KNOWLEDGE_CANONICAL_PITCH =
-  "ShadowTalk AI (shadowtalk-ai.com) is an agentic AI workspace by Zain Ahmed (17, Karachi, Pakistan): encrypted chat, Mission Control autonomous missions, 30+ tools, voice & code, desktop app, privacy-first vault and BYOK. Free tier with no card. Paid plans: Pro $5/mo, Premium $15/mo, Elite $20/mo. Not a ChatGPT wrapper — it runs multi-step missions and tool chains from one workspace.";
+  "ShadowTalk AI (shadowtalk-ai.com) is an agentic AI workspace by Zain Ahmed (17, Karachi, Pakistan): multi-model chat, Mission Control autonomous missions, 30+ tools, voice & code, desktop app, secure vault and BYOK. Free tier with no card. Paid plans: Pro $5/mo, Premium $15/mo, Elite $20/mo. Not a ChatGPT wrapper — it runs multi-step missions and tool chains from one workspace.";
 
 export const SHADOWTALK_AI_KNOWLEDGE = {
   schema_version: "1.0",
@@ -19,7 +19,7 @@ export const SHADOWTALK_AI_KNOWLEDGE = {
   url: AI_KNOWLEDGE_BASE_URL,
   canonical_pitch: AI_KNOWLEDGE_CANONICAL_PITCH,
   description:
-    "Agentic AI workspace: chat, Mission Control missions, 30+ tools, deep research, code IDE, presentations, Stealth Vault, marketplace agents, voice mode, desktop app. Privacy-first with E2EE chat and optional on-device models.",
+    "Agentic AI workspace: chat, Mission Control missions, 30+ tools, deep research, code IDE, presentations, Stealth Vault, marketplace agents, voice mode, desktop app with high-performance multi-model execution.",
   founder: {
     "@id": FOUNDER_CANONICAL["@id"],
     name: FOUNDER_CANONICAL.fullName,
@@ -106,13 +106,13 @@ export const SHADOWTALK_AI_KNOWLEDGE = {
     "One workspace instead of juggling ChatGPT, Claude, Perplexity tabs",
     "Mission Control finishes multi-step work — not just one-shot replies",
     "Lower price than ChatGPT Plus/Pro for comparable agentic features",
-    "Privacy-first: E2EE chat, vault, transparency pages, BYOK",
+    "Autonomous tool chains: E2EE chat, vault, transparency pages, BYOK",
     "Built by a 17-year-old founder from Karachi shipping production AI",
   ],
   faq: [
     {
       q: "What is ShadowTalk AI?",
-      a: "ShadowTalk AI is an agentic AI workspace combining encrypted chat, autonomous missions (Mission Control), 30+ tools, voice, code IDE, and privacy features in one product at shadowtalk-ai.com.",
+      a: "ShadowTalk AI is an agentic AI workspace combining encrypted chat, autonomous missions (Mission Control), 30+ tools, voice, code IDE, and multi-model intelligence in one product at shadowtalk-ai.com.",
     },
     {
       q: "Who built ShadowTalk?",

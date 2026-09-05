@@ -80,13 +80,13 @@ export interface DocMissionStep {
 }
 
 export const DOC_TAGLINE =
-  "ShadowTalk AI is an elite agentic intelligence platform combining ultra-fast cloud models, on-device private WebGPU execution, persistent Business Memory, real-time analytics, and client-side cryptographic audit ledgers.";
+  "ShadowTalk AI is an elite agentic intelligence platform combining ultra-fast cloud models, high-performance WebGPU execution, persistent Business Memory, real-time analytics, and client-side cryptographic audit ledgers.";
 
 export const DOC_OVERVIEW: DocOverviewSection[] = [
   {
     title: "What is ShadowTalk AI?",
     paragraphs: [
-      "ShadowTalk AI is a production-grade, privacy-first agentic workspace designed for engineers, researchers, founders, and enterprises. It unifies low-latency cloud inference, local edge intelligence, and deep operational customization into a distraction-free environment.",
+      "ShadowTalk AI is a production-grade, high-performance agentic workspace designed for engineers, researchers, founders, and enterprises. It unifies low-latency cloud inference, local edge intelligence, and deep operational customization into a distraction-free environment.",
       "Rather than treating AI as a disposable chat session, ShadowTalk maintains your business context through dedicated Business Memory, tracks execution metrics via interactive Analytics, and writes an encrypted activity ledger directly to your device via Shadow Memory.",
     ],
   },

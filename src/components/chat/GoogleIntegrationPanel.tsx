@@ -225,10 +225,9 @@ export const GoogleIntegrationPanel: React.FC<GoogleIntegrationPanelProps> = ({
             <div className="flex items-start gap-2">
               <Lock className="w-4 h-4 text-green-500 mt-0.5" />
               <div>
-                <p className="text-xs font-medium text-green-500">Privacy-First Integration</p>
+                <p className="text-xs font-medium text-green-500">Secure Direct Integration</p>
                 <p className="text-xs text-muted-foreground">
-                  Unlike Gemini, ShadowTalk never stores or analyzes your Google data. 
-                  All processing happens locally and data is discarded after use.
+                  Direct API integration with granular scope control. Access Google services seamlessly without third-party data broker storage.
                 </p>
               </div>
             </div>

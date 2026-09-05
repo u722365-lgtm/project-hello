@@ -1,4 +1,4 @@
-import { Code, Wifi, Brain, Shield, Zap, Download, ArrowUpRight, Bot, Target } from "lucide-react";
+import { Code, Wifi, Brain, Shield, Zap, Download, ArrowUpRight, Bot, Target, Layers } from "lucide-react";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
@@ -91,12 +91,12 @@ const FeaturesSection = () => {
       span: "",
     },
     {
-      icon: Shield,
-      title: "Privacy-Aware by Design",
-      href: "/vault",
-      description: "Encrypted vault, privacy score, and optional on-device Gemma inference when you need data to stay local.",
-      gradient: "from-success/20 to-success/5",
-      iconColor: "text-success",
+      icon: Layers,
+      title: "Multi-Model Intelligence & Control",
+      href: "/workspace",
+      description: "Seamlessly route prompts across top frontier models with speed, code execution, and autonomous tool chains.",
+      gradient: "from-cyan-500/20 to-blue-500/5",
+      iconColor: "text-cyan-400",
       span: "",
     },
     {
@@ -207,7 +207,7 @@ const FeaturesSection = () => {
             { value: "30+", label: "Integrated Tools", sub: "Natural-language triggers", subColor: "text-primary" },
             { value: "24/7", label: "Mission Control", sub: "Autonomous workflows", subColor: "text-secondary" },
             { value: "HITL", label: "Human-in-the-Loop", sub: "Approve agent actions", subColor: "text-success" },
-            { value: "Opt-in", label: "On-Device AI", sub: "Privacy when you need it", subColor: "text-warning" },
+            { value: "Edge AI", label: "On-Device Engine", sub: "WebGPU local acceleration", subColor: "text-warning" },
           ].map((stat, i) => (
             <LandingInteractiveCard
               key={i}
@@ -227,7 +227,7 @@ const FeaturesSection = () => {
             "🤖 Agentic Task Runner",
             "⚡ Tool Orchestration",
             "🎯 Mission Control",
-            "🛡️ Privacy-Aware Controls",
+            "⚡ Intelligent Multi-Model Execution",
           ].map((badge, i) => (
             <motion.div
               key={i}

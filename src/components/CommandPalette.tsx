@@ -69,7 +69,7 @@ export const pages: PageEntry[] = [
     name: "Home / Landing Page",
     href: "/home",
     icon: LayoutGrid,
-    desc: "AI platform overview, privacy guarantees & interactive demo",
+    desc: "AI platform overview, intelligent agents & interactive demo",
     group: "Core Products",
     keywords: ["landing", "main", "start", "showcase", "intro"],
   },

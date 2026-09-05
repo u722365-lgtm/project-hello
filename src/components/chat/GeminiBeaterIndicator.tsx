@@ -155,7 +155,7 @@ export const GeminiBeaterIndicator: React.FC = () => {
               </Badge>
             </div>
             <p className="text-xs text-muted-foreground">
-              Privacy-first AI that beats Google's data collection
+              Agentic AI workspace with autonomous tools and execution
             </p>
           </div>
         </div>

@@ -134,7 +134,7 @@ const SharedAnswerPage = () => {
             <Card className="p-6 md:p-8 bg-gradient-to-br from-violet-500/10 via-transparent to-cyan-500/10 border-violet-500/30 text-center space-y-4">
               <h2 className="text-2xl font-bold">Get your own answer in seconds</h2>
               <p className="text-muted-foreground max-w-xl mx-auto">
-                ShadowTalk is a free, privacy-first AI chatbot. No login required to start.
+                ShadowTalk is a free, intelligent multi-model AI assistant. Fast, powerful, and ready to build.
               </p>
               <Button asChild size="lg" className="bg-gradient-to-r from-violet-500 to-cyan-500 text-white">
                 <Link to="/chatbot?utm_source=shared_answer&utm_medium=viral">
