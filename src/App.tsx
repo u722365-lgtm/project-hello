@@ -78,6 +78,18 @@ const SecurityAuditPage = lazy(() => import("./pages/SecurityAuditPage"));
 const DataInsightsPage = lazy(() => import("./pages/DataInsightsPage"));
 const DeepResearchPage = lazy(() => import("./pages/DeepResearchPage"));
 
+// Production Company, Support & Legal Pages
+const ContactPage = lazy(() => import("./pages/ContactPage"));
+const HelpCenterPage = lazy(() => import("./pages/HelpCenterPage"));
+const FAQPage = lazy(() => import("./pages/FAQPage"));
+const BlogPage = lazy(() => import("./pages/BlogPage"));
+const CaseStudiesPage = lazy(() => import("./pages/CaseStudiesPage"));
+const StatusPage = lazy(() => import("./pages/StatusPage"));
+const GDPRPage = lazy(() => import("./pages/GDPRPage"));
+const CookiePolicyPage = lazy(() => import("./pages/CookiePolicyPage"));
+const TermsOfServicePage = lazy(() => import("./pages/TermsOfServicePage"));
+const PrivacyPolicyPage = lazy(() => import("./pages/PrivacyPolicyPage"));
+
 const AutoImproveEngine = lazy(() => import("@/components/autoImprove/AutoImproveEngine"));
 const PWABanner = lazy(() => import("./components/PWABanner"));
 const CookieConsent = lazy(() => import("./components/CookieConsent"));
@@ -180,6 +192,19 @@ const AnimatedRoutes = () => {
           <Route path="/security-audit" element={<PageTransition><SecurityAuditPage /></PageTransition>} />
           <Route path="/data-insights" element={<PageTransition><DataInsightsPage /></PageTransition>} />
           <Route path="/deep-research" element={<PageTransition><DeepResearchPage /></PageTransition>} />
+
+          {/* Company, Support, Legal & Status Pages */}
+          <Route path="/contact" element={<PageTransition><ContactPage /></PageTransition>} />
+          <Route path="/help" element={<PageTransition><HelpCenterPage /></PageTransition>} />
+          <Route path="/faq" element={<PageTransition><FAQPage /></PageTransition>} />
+          <Route path="/blog" element={<PageTransition><BlogPage /></PageTransition>} />
+          <Route path="/case-studies" element={<PageTransition><CaseStudiesPage /></PageTransition>} />
+          <Route path="/status" element={<PageTransition><StatusPage /></PageTransition>} />
+          <Route path="/gdpr" element={<PageTransition><GDPRPage /></PageTransition>} />
+          <Route path="/cookies" element={<PageTransition><CookiePolicyPage /></PageTransition>} />
+          <Route path="/terms" element={<PageTransition><TermsOfServicePage /></PageTransition>} />
+          <Route path="/privacy" element={<PageTransition><PrivacyPolicyPage /></PageTransition>} />
+
           <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
         </Routes>
       </AnimatePresence>

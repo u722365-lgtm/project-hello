@@ -62,6 +62,7 @@ const Footer = () => {
       links: [
         { name: "Google SEO Hub", href: "/google-seo" },
         { name: "GEO Docs", href: "/docs/geos" },
+        { name: "Case Studies", href: "/case-studies" },
         { name: "Case Study: AI Strategy PSF", href: "/case-study-ai-strategy-psf" },
         { name: "Blog", href: "/blog" },
         { name: "Discover", href: "/discover" },
