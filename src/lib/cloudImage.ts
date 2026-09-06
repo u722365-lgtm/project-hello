@@ -7,6 +7,7 @@
  */
 
 import { flushSync } from "react-dom";
+import { cloudAuthHeaders, cloudFunctionUrl } from "@/lib/cloudConfig";
 
 export interface GenerateImageOptions {
   model?: string;
@@ -18,21 +19,15 @@ export interface GenerateImageOptions {
 }
 
 export function isCloudImageConfigured(): boolean {
-  return Boolean(import.meta.env.VITE_SUPABASE_URL);
+  return Boolean(cloudFunctionUrl("generate-image"));
 }
 
 function getFunctionUrl(): string {
-  const base = (import.meta.env.VITE_SUPABASE_URL as string | undefined)?.replace(/\/+$/, "") || "";
-  return base ? `${base}/functions/v1/generate-image` : "";
+  return cloudFunctionUrl("generate-image");
 }
 
 function authHeaders() {
-  const anonKey = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string) || "";
-  return {
-    "Content-Type": "application/json",
-    apikey: anonKey,
-    Authorization: `Bearer ${anonKey}`,
-  };
+  return cloudAuthHeaders();
 }
 
 type Frame =
