@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import { motion } from "framer-motion";
 import {
   Sparkles,
@@ -117,7 +117,7 @@ interface ChatEmptyStateProps {
   onOpenLiveVoice?: () => void;
 }
 
-export function ChatEmptyState({
+function ChatEmptyStateInner({
   userDisplayName,
   onSelectPrompt,
   apiConnectedLabel,
@@ -332,3 +332,6 @@ export function ChatEmptyState({
     </motion.div>
   );
 }
+
+export const ChatEmptyState = React.memo(ChatEmptyStateInner);
+

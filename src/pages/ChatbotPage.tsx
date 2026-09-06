@@ -13,23 +13,38 @@ import { EnterpriseWelcomeBanner } from "@/components/chat/EnterpriseWelcomeBann
 import { ChatShadowSidebar } from "@/components/chat/ChatShadowSidebar";
 import { ChatInput } from "@/components/chat/ChatInput";
 import { ChatMessages } from "@/components/chat/ChatMessages";
-import { ImageGenerator } from "@/components/chat/ImageGenerator";
-import { MusicGenerator } from "@/components/chat/MusicGenerator";
-import { WordleGame } from "@/components/chat/WordleGame";
-import { GoogleIntegrationPanel } from "@/components/chat/GoogleIntegrationPanel";
-import { PerceptionDashboard } from "@/components/chat/PerceptionDashboard";
-import { UserContextPanel, type UserContext } from "@/components/chat/UserContextPanel";
-import { DeepResearchPanel } from "@/components/chat/DeepResearchPanel";
-import { DocumentGenerator } from "@/components/chat/DocumentGenerator";
+import type { UserContext } from "@/components/chat/UserContextPanel";
 import { inferDocumentTypeFromMessage } from "@/lib/kimiDocumentGeneration";
-import { CommandPalette } from "@/components/chat/CommandPalette";
 
+// Lazy-loaded modal dialogs to eliminate massive initial bundle parsing
+const ImageGenerator = lazy(() =>
+  import("@/components/chat/ImageGenerator").then((m) => ({ default: m.ImageGenerator })),
+);
+const MusicGenerator = lazy(() =>
+  import("@/components/chat/MusicGenerator").then((m) => ({ default: m.MusicGenerator })),
+);
+const WordleGame = lazy(() =>
+  import("@/components/chat/WordleGame").then((m) => ({ default: m.WordleGame })),
+);
+const GoogleIntegrationPanel = lazy(() =>
+  import("@/components/chat/GoogleIntegrationPanel").then((m) => ({ default: m.GoogleIntegrationPanel })),
+);
+const DeepResearchPanel = lazy(() =>
+  import("@/components/chat/DeepResearchPanel").then((m) => ({ default: m.DeepResearchPanel })),
+);
+const DocumentGenerator = lazy(() =>
+  import("@/components/chat/DocumentGenerator").then((m) => ({ default: m.DocumentGenerator })),
+);
+const CommandPalette = lazy(() =>
+  import("@/components/chat/CommandPalette").then((m) => ({ default: m.CommandPalette })),
+);
 const ShadowTalkLive = lazy(() =>
   import("@/components/chat/ShadowTalkLive").then((m) => ({ default: m.ShadowTalkLive })),
 );
 const ShadowBrowser = lazy(() =>
   import("@/components/chat/ShadowBrowser").then((m) => ({ default: m.ShadowBrowser })),
 );
+
 import { useFeatureGating } from "@/hooks/useFeatureGating";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { useUsageTracking } from "@/hooks/useUsageTracking";
@@ -58,12 +73,20 @@ import { useAutoImproveContext } from "@/contexts/AutoImproveContext";
 import { trackAgenticEvent } from "@/lib/agenticMetrics";
 
 import { detectChatImageIntent } from "@/lib/chatImageIntent";
-import {
-  buildVisionUserMessage,
-  callChatImageAnalyze,
-  callChatImageEdit,
-} from "@/lib/chatImageApi";
-import { CognitiveLoopPanel } from "@/components/chat/CognitiveLoopPanel";
+function buildVisionUserMessage(text: string, base64Data: string, mimeType = "image/png") {
+  const url = base64Data.startsWith("data:") ? base64Data : `data:${mimeType};base64,${base64Data}`;
+  return {
+    role: "user",
+    content: [
+      { type: "text", text: text || "Please analyze this image." },
+      { type: "image_url", image_url: { url } },
+    ],
+  };
+}
+
+const CognitiveLoopPanel = lazy(() =>
+  import("@/components/chat/CognitiveLoopPanel").then((m) => ({ default: m.CognitiveLoopPanel })),
+);
 
 import { useMarketplace } from "@/hooks/useMarketplace";
 import { resolveAgentRuntime } from "@/lib/marketplace/resolveAgentConfig";
@@ -86,7 +109,9 @@ import {
   streamShadowSpectre,
 } from "@/lib/cyber/shadowspectre";
 import { ShadowSpectreScopeBar } from "@/components/cyber/ShadowSpectreScopeBar";
-import { ShadowSpectrePanel } from "@/components/cyber/ShadowSpectrePanel";
+const ShadowSpectrePanel = lazy(() =>
+  import("@/components/cyber/ShadowSpectrePanel").then((m) => ({ default: m.ShadowSpectrePanel })),
+);
 import { useUserSettings } from "@/hooks/useUserSettings";
 import { loadCustomAiConfig, saveCustomAiConfig } from "@/lib/customApiKeys";
 import { turboComplete, resolveTurboKey } from "@/lib/turbo";
@@ -99,13 +124,30 @@ import { CHAT_COMMAND_MODAL_ACTIONS, CHAT_COMMAND_NAV_ROUTES } from "@/lib/chatC
 import { consumePendingChatInsert } from "@/lib/pendingChatInsert";
 import { useChatSpeech } from "@/hooks/useChatSpeech";
 
-import { BrowseActivityPanel, useAutoBrowse } from "@/components/chat/BrowseActivityPanel";
-import { MultiModelOrchestrator } from "@/components/chat/MultiModelOrchestrator";
-import { CreativeSynthesis } from "@/components/chat/CreativeSynthesis";
-import { VisualReasoning } from "@/components/chat/VisualReasoning";
-import { ImageDecoder } from "@/components/chat/ImageDecoder";
-import { DailyPlanner } from "@/components/chat/DailyPlanner";
-import { IntelligenceHub } from "@/components/chat/IntelligenceHub";
+import { useAutoBrowse } from "@/components/chat/BrowseActivityPanel";
+
+const BrowseActivityPanel = lazy(() =>
+  import("@/components/chat/BrowseActivityPanel").then((m) => ({ default: m.BrowseActivityPanel })),
+);
+const MultiModelOrchestrator = lazy(() =>
+  import("@/components/chat/MultiModelOrchestrator").then((m) => ({ default: m.MultiModelOrchestrator })),
+);
+const CreativeSynthesis = lazy(() =>
+  import("@/components/chat/CreativeSynthesis").then((m) => ({ default: m.CreativeSynthesis })),
+);
+const VisualReasoning = lazy(() =>
+  import("@/components/chat/VisualReasoning").then((m) => ({ default: m.VisualReasoning })),
+);
+const ImageDecoder = lazy(() =>
+  import("@/components/chat/ImageDecoder").then((m) => ({ default: m.ImageDecoder })),
+);
+const DailyPlanner = lazy(() =>
+  import("@/components/chat/DailyPlanner").then((m) => ({ default: m.DailyPlanner })),
+);
+const IntelligenceHub = lazy(() =>
+  import("@/components/chat/IntelligenceHub").then((m) => ({ default: m.IntelligenceHub })),
+);
+
 
 import { ChatUpgradeNudge } from "@/components/monetization/ChatUpgradeNudge";
 import { UpgradePrompt } from "@/components/monetization/UpgradePrompt";
@@ -119,18 +161,43 @@ import { SEOHead } from "@/components/SEOHead";
 import { PAGE_SEO, getFounderHomeStructuredData, getChatbotFAQSchema, getSpeakableSchema, getWebSiteWithSearchSchema } from "@/lib/seo";
 import { FounderCrawlStrip } from "@/components/founder/FounderCrawlStrip";
 import { UsageLimitBanner } from "@/components/monetization/UsageLimitBanner";
-import { PlanetaryActionModal } from "@/components/chat/PlanetaryActionModal";
-import { ScreenAgent } from "@/components/chat/ScreenAgent";
-import { VisionAgentModal } from "@/components/chat/VisionAgentModal";
-import { AgenticTaskRunner } from "@/components/chat/AgenticTaskRunner";
-import { AIAgentWorkflows } from "@/components/chat/AIAgentWorkflows";
-import { AnalyticsDashboard } from "@/components/chat/AnalyticsDashboard";
-import { GeminiKeyAnalytics } from "@/components/chat/GeminiKeyAnalytics";
-import { DataOrganizer } from "@/components/chat/DataOrganizer";
-import { UncensoredArena } from "@/components/chat/UncensoredArena";
-import { ShadowCowork } from "@/components/chat/ShadowCowork";
-import { SwarmMode } from "@/components/chat/SwarmMode";
-import { NeuralCanvasMode } from "@/components/chat/NeuralCanvasMode";
+const PlanetaryActionModal = lazy(() =>
+  import("@/components/chat/PlanetaryActionModal").then((m) => ({ default: m.PlanetaryActionModal })),
+);
+const ScreenAgent = lazy(() =>
+  import("@/components/chat/ScreenAgent").then((m) => ({ default: m.ScreenAgent })),
+);
+const VisionAgentModal = lazy(() =>
+  import("@/components/chat/VisionAgentModal").then((m) => ({ default: m.VisionAgentModal })),
+);
+const AgenticTaskRunner = lazy(() =>
+  import("@/components/chat/AgenticTaskRunner").then((m) => ({ default: m.AgenticTaskRunner })),
+);
+const AIAgentWorkflows = lazy(() =>
+  import("@/components/chat/AIAgentWorkflows").then((m) => ({ default: m.AIAgentWorkflows })),
+);
+const AnalyticsDashboard = lazy(() =>
+  import("@/components/chat/AnalyticsDashboard").then((m) => ({ default: m.AnalyticsDashboard })),
+);
+const GeminiKeyAnalytics = lazy(() =>
+  import("@/components/chat/GeminiKeyAnalytics").then((m) => ({ default: m.GeminiKeyAnalytics })),
+);
+const DataOrganizer = lazy(() =>
+  import("@/components/chat/DataOrganizer").then((m) => ({ default: m.DataOrganizer })),
+);
+const UncensoredArena = lazy(() =>
+  import("@/components/chat/UncensoredArena").then((m) => ({ default: m.UncensoredArena })),
+);
+const ShadowCowork = lazy(() =>
+  import("@/components/chat/ShadowCowork").then((m) => ({ default: m.ShadowCowork })),
+);
+const SwarmMode = lazy(() =>
+  import("@/components/chat/SwarmMode").then((m) => ({ default: m.SwarmMode })),
+);
+const NeuralCanvasMode = lazy(() =>
+  import("@/components/chat/NeuralCanvasMode").then((m) => ({ default: m.NeuralCanvasMode })),
+);
+
 import { SignInPrompt } from "@/components/chat/SignInPrompt";
 import { AdBanner } from "@/components/chat/AdBanner";
 import { BRAND } from "@/lib/brand";
@@ -1360,12 +1427,14 @@ Structure and Content Guidelines:
         ]);
 
         try {
+          const { callChatImageEdit, callChatImageAnalyze } = await import("@/lib/chatImageApi");
           const result = isEdit
             ? await callChatImageEdit(
                 targetImage,
                 msgContent.trim() || "Enhance and stylize this image",
               )
             : await callChatImageAnalyze(targetImage);
+
 
           const reply =
             result.content ||
@@ -1928,15 +1997,36 @@ Structure and Content Guidelines:
   };
 
   const [promptSuggestion, setPromptSuggestion] = useState("");
-  const chatInputProps = {
+
+  const handleInputSend = useCallback(() => {
+    void handleSendMessage();
+  }, [handleSendMessage]);
+
+  const handleInputKeyPress = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === "Enter") void handleSendMessage();
+  }, [handleSendMessage]);
+
+  const handleToggleLiveVoice = useCallback(() => {
+    setShowShadowTalkLive(true);
+  }, []);
+
+  const handleOpenImageGen = useCallback(() => {
+    setShowImageGenerator(true);
+  }, []);
+
+  const handlePromptClear = useCallback(() => {
+    setPromptSuggestion("");
+  }, []);
+
+  const chatInputProps = useMemo(() => ({
     message,
     onMessageChange: setMessage,
-    onSend: () => void handleSendMessage(),
-    onKeyPress: (e: React.KeyboardEvent) => e.key === "Enter" && void handleSendMessage(),
+    onSend: handleInputSend,
+    onKeyPress: handleInputKeyPress,
     isLoading,
     isListening,
-    onToggleVoice: () => setShowShadowTalkLive(true),
-    onOpenImageGenerator: () => setShowImageGenerator(true),
+    onToggleVoice: handleToggleLiveVoice,
+    onOpenImageGenerator: handleOpenImageGen,
     onStopGeneration: handleStopGeneration,
     selectedFile,
     onFileSelect: setSelectedFile,
@@ -1949,8 +2039,24 @@ Structure and Content Guidelines:
     hasKeyForProvider: () => true,
     promptSuggestion,
     onPromptAccept: setMessage,
-    onPromptClear: () => setPromptSuggestion(""),
-  };
+    onPromptClear: handlePromptClear,
+  }), [
+    message,
+    handleInputSend,
+    handleInputKeyPress,
+    isLoading,
+    isListening,
+    handleToggleLiveVoice,
+    handleOpenImageGen,
+    handleStopGeneration,
+    selectedFile,
+    chatMode,
+    personality,
+    aiProvider,
+    promptSuggestion,
+    handlePromptClear,
+  ]);
+
 
 
 
@@ -2160,7 +2266,9 @@ Structure and Content Guidelines:
                     />
                   )}
                   {chatMode === "neural" ? (
-                    <NeuralCanvasMode messages={messages} />
+                    <Suspense fallback={<div className="flex-1 flex items-center justify-center text-xs text-muted-foreground">Loading 3D Canvas...</div>}>
+                      <NeuralCanvasMode messages={messages} />
+                    </Suspense>
                   ) : (
                     <ChatMessages
                       messages={messages}
@@ -2205,13 +2313,16 @@ Structure and Content Guidelines:
 
           <AnimatePresence>
             {showSwarmMode && (
-              <SwarmMode
-                prompt={swarmPrompt}
-                onClose={() => setShowSwarmMode(false)}
-                onComplete={handleSwarmComplete}
-              />
+              <Suspense fallback={null}>
+                <SwarmMode
+                  prompt={swarmPrompt}
+                  onClose={() => setShowSwarmMode(false)}
+                  onComplete={handleSwarmComplete}
+                />
+              </Suspense>
             )}
           </AnimatePresence>
+
 
           {!isEmptyChat && (
             <>
@@ -2259,7 +2370,9 @@ Structure and Content Guidelines:
             customLink={chatShareCustomLink ?? undefined}
           />
         </ChatMainPanel>
+      <Suspense fallback={null}>
       {showImageGenerator && <ImageGenerator onClose={() => setShowImageGenerator(false)} onImageGenerated={(url) => setMessages(prev => [...prev, { id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })), type: 'ai', content: '🎨 Generated image', timestamp: new Date(), imageUrl: url }])} />}
+
       <MusicGenerator
         isOpen={showMusicGenerator}
         onClose={() => {
@@ -2488,6 +2601,8 @@ Structure and Content Guidelines:
           setShowShadowCowork(false);
         }}
       />
+      </Suspense>
+
       <SignInPrompt
         open={showSignInPrompt}
         onOpenChange={setShowSignInPrompt}

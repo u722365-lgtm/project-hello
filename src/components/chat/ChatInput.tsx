@@ -1,5 +1,5 @@
+import React, { useEffect, useRef, useMemo, useState } from "react";
 import { getChatEnterToSend } from "@/lib/profilePreferences";
-import { useEffect, useRef, useMemo, useState } from "react";
 import { Send, Mic, MicOff, Square, Plus, Sparkles, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -49,7 +49,7 @@ interface ChatInputProps {
   onSuggestionChange?: (suggestion: string) => void;
 }
 
-export const ChatInput = ({
+const ChatInputInner = ({
   message,
   onMessageChange,
   onSend,
@@ -80,10 +80,15 @@ export const ChatInput = ({
 
   const [isMultiLine, setIsMultiLine] = useState(false);
 
-  // Auto-resize the composer textarea to dynamically fit typed lines without clipping
+  // Fast auto-resize for composer textarea without layout thrashing
   useEffect(() => {
     const textarea = textareaRef.current;
     if (!textarea) return;
+    if (!message) {
+      textarea.style.height = "38px";
+      setIsMultiLine(false);
+      return;
+    }
     textarea.style.height = "auto";
     const scrollHeight = textarea.scrollHeight;
     const multiline = message.includes("\n") || scrollHeight > 46;
@@ -474,10 +479,13 @@ export const ChatInput = ({
 
         {!isComposer && !isShadowPulse && (
           <p className="text-[10px] text-muted-foreground/25 font-medium text-center mt-4 select-none tracking-widest uppercase">
-            ShadowTalk Neural OS • Enterprise Grade Privacy
+            ShadowTalk Studio • Multi-Model Intelligence
           </p>
         )}
       </div>
     </div>
   );
 };
+
+export const ChatInput = React.memo(ChatInputInner);
+

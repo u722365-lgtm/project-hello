@@ -10,7 +10,7 @@ import {
   Sparkles,
   Command,
 } from "lucide-react";
-import { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { useSettingsMotion } from "@/hooks/useSettingsMotion";
 import { settingsHapticTick } from "@/lib/settingsFeedback";
@@ -58,7 +58,7 @@ function cleanProfileName(raw: string): string {
   return target.charAt(0).toUpperCase() + target.slice(1);
 }
 
-export function ChatShadowSidebar({
+function ChatShadowSidebarInner({
   userInitials,
   userDisplayName,
   onNewChat,
@@ -376,3 +376,6 @@ export function ChatShadowSidebar({
     </TooltipProvider>
   );
 }
+
+export const ChatShadowSidebar = React.memo(ChatShadowSidebarInner);
+

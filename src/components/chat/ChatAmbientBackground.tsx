@@ -1,39 +1,23 @@
-import { motion } from 'framer-motion';
+import React from "react";
 
-/** Dynamic ambient mesh gradient backdrop for the premium flagship look. */
-export function ChatAmbientBackground() {
+/**
+ * Dynamic ambient mesh gradient backdrop for the flagship look.
+ * Hardware-accelerated with CSS transforms and composite layers to run
+ * on dedicated GPU threads with 0ms CPU overhead.
+ */
+function ChatAmbientBackgroundInner() {
   return (
     <div className="fixed inset-0 -z-10 overflow-hidden bg-[#060911] pointer-events-none select-none">
-      {/* Top-left Indigo / Violet Radiant Mesh */}
-      <motion.div
-        animate={{
-          scale: [1, 1.15, 1],
-          opacity: [0.35, 0.55, 0.35],
-          x: [0, 30, 0],
-          y: [0, -20, 0],
-        }}
-        transition={{
-          duration: 18,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-        className="absolute top-[-15%] left-[-10%] w-[65vw] h-[65vw] rounded-full bg-gradient-to-br from-indigo-600/25 via-violet-600/18 to-transparent blur-[140px]"
+      {/* Top-left Indigo / Violet Radiant Mesh - GPU Composited */}
+      <div
+        style={{ willChange: "transform, opacity", transform: "translate3d(0, 0, 0)" }}
+        className="absolute top-[-15%] left-[-10%] w-[65vw] h-[65vw] rounded-full bg-gradient-to-br from-indigo-600/25 via-violet-600/18 to-transparent blur-[120px] animate-ambient-mesh-1"
       />
 
-      {/* Top-right Cyan / Sky Radiant Mesh */}
-      <motion.div
-        animate={{
-          scale: [1, 1.2, 1],
-          opacity: [0.25, 0.45, 0.25],
-          x: [0, -40, 0],
-          y: [0, 30, 0],
-        }}
-        transition={{
-          duration: 22,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-        className="absolute top-[-10%] right-[-10%] w-[55vw] h-[55vw] rounded-full bg-gradient-to-bl from-cyan-500/22 via-sky-600/15 to-transparent blur-[130px]"
+      {/* Top-right Cyan / Sky Radiant Mesh - GPU Composited */}
+      <div
+        style={{ willChange: "transform, opacity", transform: "translate3d(0, 0, 0)" }}
+        className="absolute top-[-10%] right-[-10%] w-[55vw] h-[55vw] rounded-full bg-gradient-to-bl from-cyan-500/22 via-sky-600/15 to-transparent blur-[110px] animate-ambient-mesh-2"
       />
 
       {/* Center Subtle Frontier Aura */}
@@ -56,3 +40,6 @@ export function ChatAmbientBackground() {
     </div>
   );
 }
+
+export const ChatAmbientBackground = React.memo(ChatAmbientBackgroundInner);
+

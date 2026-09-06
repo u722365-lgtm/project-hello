@@ -1856,4 +1856,35 @@ html.lean-motion *::after {
   scroll-behavior: auto !important;
 }
 
+/* ===== GPU-Composited Hardware Accelerated Ambient Mesh ===== */
+@keyframes ambientMeshFloat1 {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.35;
+  }
+  50% {
+    transform: translate3d(24px, -16px, 0) scale(1.12);
+    opacity: 0.52;
+  }
+}
+
+@keyframes ambientMeshFloat2 {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.25;
+  }
+  50% {
+    transform: translate3d(-28px, 20px, 0) scale(1.16);
+    opacity: 0.42;
+  }
+}
+
+.animate-ambient-mesh-1 {
+  animation: ambientMeshFloat1 20s ease-in-out infinite;
+}
+
+.animate-ambient-mesh-2 {
+  animation: ambientMeshFloat2 24s ease-in-out infinite;
+}
+
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { 
@@ -217,7 +217,7 @@ const ToolsHubMenu = ({
   );
 };
 
-export const ChatHeader = ({
+const ChatHeaderInner = ({
   userPlan,
   personality,
   onPersonalityChange,
@@ -463,3 +463,6 @@ export const ChatHeader = ({
     </div>
   );
 };
+
+export const ChatHeader = React.memo(ChatHeaderInner);
+

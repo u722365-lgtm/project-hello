@@ -1,8 +1,7 @@
+import React from "react";
 import { motion } from "framer-motion";
 import { MessageSquarePlus, History, Eraser, Trash2, Settings } from "lucide-react";
 import { ChatEncryptionToggle } from "@/components/chat/ChatEncryptionToggle";
-
-
 
 import { HardwareTurboBadge } from "@/components/chat/HardwareTurboBadge";
 import { useNavigate } from "react-router-dom";
@@ -39,7 +38,7 @@ interface ChatToolbarProps {
   className?: string;
 }
 
-export function ChatToolbar({
+function ChatToolbarInner({
   hasActiveChat,
   conversationCount,
   onNewChat,
@@ -184,3 +183,6 @@ export function ChatToolbar({
     </TooltipProvider>
   );
 }
+
+export const ChatToolbar = React.memo(ChatToolbarInner);
+
