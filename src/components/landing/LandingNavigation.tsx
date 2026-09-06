@@ -139,7 +139,7 @@ const LandingNavigation = ({ children }: LandingNavigationProps) => {
               </span>
             </Link>
 
-            {/* Minimalist Glass Icon Button */}
+            {/* Minimalist Glass Icon Button (Clean 3-line animated hamburger, no text label) */}
             <button
               type="button"
               onClick={() => setDrawerOpen(true)}
@@ -162,7 +162,7 @@ const LandingNavigation = ({ children }: LandingNavigationProps) => {
         </div>
       </header>
 
-      {/* Right-Side Luxury Navigation Drawer for Desktops, Laptops, Tablets & Mobile */}
+      {/* Sleek Minimalist Right-Side Navigation Blade (Apple & Linear Aesthetic) */}
       <AnimatePresence>
         {drawerOpen && (
           <div className="fixed inset-0 z-[99999] flex justify-end">
@@ -177,27 +177,31 @@ const LandingNavigation = ({ children }: LandingNavigationProps) => {
               aria-hidden="true"
             />
 
-            {/* Responsive Right-Side Sliding Panel */}
+            {/* Right-Side Solid Luxury Blade */}
             <motion.aside
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+              transition={{ type: 'spring', damping: 32, stiffness: 320 }}
               style={{ backgroundColor: '#020617' }}
-              className="relative w-full sm:w-[460px] md:w-[500px] lg:w-[540px] h-full flex flex-col z-10 border-l border-white/10 shadow-[-25px_0_60px_rgba(0,0,0,0.85)] text-slate-100 overflow-hidden"
+              className="relative w-full sm:w-[480px] md:w-[540px] lg:w-[600px] h-full flex flex-col z-10 border-l border-white/10 shadow-[-25px_0_70px_rgba(0,0,0,0.9)] text-slate-100 overflow-hidden"
               role="dialog"
               aria-label="Site Navigation"
               aria-modal="true"
             >
-              {/* Drawer Sticky Top Header */}
-              <div className="px-5 sm:px-6 py-4 sm:py-5 border-b border-white/10 flex items-center justify-between bg-slate-950/90 backdrop-blur-xl shrink-0">
+              {/* Ambient Glows Inside Solid Canvas */}
+              <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-[140px] pointer-events-none" />
+              <div className="absolute bottom-20 left-0 w-80 h-80 bg-purple-500/10 rounded-full blur-[130px] pointer-events-none" />
+
+              {/* Minimalist Top Bar */}
+              <div className="px-6 sm:px-8 py-5 border-b border-white/10 flex items-center justify-between bg-slate-950/80 backdrop-blur-xl shrink-0 relative z-10">
                 <Link to="/" onClick={closeDrawer} className="flex items-center gap-3 select-none group">
                   <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900 border border-white/15 shadow-[0_0_15px_rgba(6,182,212,0.25)] group-hover:scale-105 transition-transform">
                     <ChatbotLogo size={20} />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold tracking-wider text-white uppercase font-sans">
+                      <span className="text-sm font-bold tracking-widest text-white uppercase font-sans">
                         ShadowTalk AI
                       </span>
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-[9px] font-mono text-cyan-300">
@@ -205,290 +209,282 @@ const LandingNavigation = ({ children }: LandingNavigationProps) => {
                         Online
                       </span>
                     </div>
-                    <p className="text-[11px] text-slate-400">Navigation & Workspaces</p>
+                    <p className="text-[11px] text-slate-400">Sovereign Intelligence Engine</p>
                   </div>
                 </Link>
 
-                <div className="flex items-center gap-2.5">
-                  <span className="hidden sm:inline-block text-[10px] text-slate-400 font-mono">
-                    <kbd className="px-1.5 py-0.5 rounded bg-slate-800 border border-white/10 text-slate-300">ESC</kbd>
+                <div className="flex items-center gap-3">
+                  <span className="hidden sm:inline-block text-[11px] text-slate-400 font-mono">
+                    <kbd className="px-2 py-0.5 rounded-md bg-slate-800/90 border border-white/15 text-slate-300 text-[10px]">ESC</kbd>
                   </span>
                   <button
                     type="button"
                     onClick={closeDrawer}
-                    className="h-9 w-9 rounded-full bg-slate-900 hover:bg-slate-800 border border-white/15 hover:border-white/30 flex items-center justify-center text-slate-300 hover:text-white transition-all cursor-pointer shadow-md"
+                    className="h-9 w-9 rounded-full bg-white/5 hover:bg-white/10 border border-white/15 hover:border-white/30 flex items-center justify-center text-slate-300 hover:text-white transition-all cursor-pointer group shadow-sm"
                     aria-label="Close navigation menu"
                   >
-                    <X className="h-4 w-4" />
+                    <X className="h-4 w-4 transition-transform duration-300 group-hover:rotate-90 text-slate-200 group-hover:text-white" />
                   </button>
                 </div>
               </div>
 
-              {/* Drawer Scrollable Body (Native Scrollbars Completely Hidden) */}
-              <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-5 space-y-6 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              {/* Airy Typographic Scroll Area (No Browser Scrollbars) */}
+              <div className="flex-1 overflow-y-auto px-6 sm:px-8 py-6 space-y-8 relative z-10 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                 
-                {/* 1. SERVICES & AI TOOLS */}
+                {/* 01. SERVICES & AI TOOLS */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between pb-2 border-b border-cyan-500/25">
                     <div className="flex items-center gap-2">
-                      <div className="p-1 rounded bg-cyan-500/15 text-cyan-400">
-                        <Zap className="h-3.5 w-3.5" />
-                      </div>
-                      <span className="text-xs font-mono font-bold tracking-wider text-cyan-400 uppercase">
+                      <Zap className="h-3.5 w-3.5 text-cyan-400" />
+                      <span className="text-xs font-mono font-bold tracking-[0.2em] text-cyan-400 uppercase">
                         Services & AI Tools
                       </span>
                     </div>
-                    <span className="text-[10px] font-mono text-cyan-300 bg-cyan-950/80 px-2 py-0.5 rounded-full border border-cyan-500/30">
-                      5 Engines
+                    <span className="text-[10px] font-mono text-cyan-300/80 bg-cyan-950/60 px-2 py-0.5 rounded-full border border-cyan-500/30">
+                      01
                     </span>
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="divide-y divide-white/[0.06]">
                     <Link
                       to="/chatbot"
                       onClick={closeDrawer}
-                      className="group p-3 rounded-xl bg-slate-900/80 hover:bg-slate-850 border border-white/10 hover:border-cyan-500/40 transition-all block shadow-sm"
+                      className="group py-3.5 flex items-start justify-between transition-all block hover:pl-1.5"
                     >
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs sm:text-sm font-semibold text-white group-hover:text-cyan-300 transition-colors flex items-center gap-2">
-                          <Bot className="h-4 w-4 text-cyan-400 shrink-0" />
-                          Autonomous Chatbot
-                        </span>
-                        <ChevronRight className="h-3.5 w-3.5 text-slate-500 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all" />
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <Bot className="h-4 w-4 text-cyan-400" />
+                          <span className="text-sm sm:text-base font-medium text-white group-hover:text-cyan-300 transition-colors">
+                            Autonomous Chatbot
+                          </span>
+                          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/20">
+                            30+ Tools
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-400 group-hover:text-slate-300 mt-1 pl-6">
+                          Multi-model reasoning (Claude 3.5, GPT-4o, DeepSeek R1).
+                        </p>
                       </div>
-                      <p className="text-[11px] text-slate-400 group-hover:text-slate-300 mt-1 pl-6">
-                        Multi-model reasoning (Claude, GPT, DeepSeek) with 30+ native tools.
-                      </p>
+                      <ChevronRight className="h-4 w-4 text-slate-500 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all mt-1 shrink-0" />
                     </Link>
 
                     <Link
                       to="/workspace"
                       onClick={closeDrawer}
-                      className="group p-3 rounded-xl bg-slate-900/80 hover:bg-slate-850 border border-white/10 hover:border-purple-500/40 transition-all block shadow-sm"
+                      className="group py-3.5 flex items-start justify-between transition-all block hover:pl-1.5"
                     >
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs sm:text-sm font-semibold text-white group-hover:text-purple-300 transition-colors flex items-center gap-2">
-                          <Sparkles className="h-4 w-4 text-purple-400 shrink-0" />
-                          Mission Control
-                        </span>
-                        <ChevronRight className="h-3.5 w-3.5 text-slate-500 group-hover:text-purple-400 group-hover:translate-x-1 transition-all" />
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <Sparkles className="h-4 w-4 text-purple-400" />
+                          <span className="text-sm sm:text-base font-medium text-white group-hover:text-purple-300 transition-colors">
+                            Mission Control
+                          </span>
+                          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/20">
+                            Agent Loops
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-400 group-hover:text-slate-300 mt-1 pl-6">
+                          Autonomous goal planner executing code & browser tasks.
+                        </p>
                       </div>
-                      <p className="text-[11px] text-slate-400 group-hover:text-slate-300 mt-1 pl-6">
-                        Autonomous goal planner running multi-step browser & code loops.
-                      </p>
+                      <ChevronRight className="h-4 w-4 text-slate-500 group-hover:text-purple-400 group-hover:translate-x-1 transition-all mt-1 shrink-0" />
                     </Link>
 
                     <Link
                       to="/deep-research"
                       onClick={closeDrawer}
-                      className="group p-3 rounded-xl bg-slate-900/80 hover:bg-slate-850 border border-white/10 hover:border-blue-500/40 transition-all block shadow-sm"
+                      className="group py-3.5 flex items-start justify-between transition-all block hover:pl-1.5"
                     >
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs sm:text-sm font-semibold text-white group-hover:text-blue-300 transition-colors flex items-center gap-2">
-                          <Brain className="h-4 w-4 text-blue-400 shrink-0" />
-                          Deep Research Engine
-                        </span>
-                        <ChevronRight className="h-3.5 w-3.5 text-slate-500 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <Brain className="h-4 w-4 text-blue-400" />
+                          <span className="text-sm sm:text-base font-medium text-white group-hover:text-blue-300 transition-colors">
+                            Deep Research Engine
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-400 group-hover:text-slate-300 mt-1 pl-6">
+                          Multi-source web synthesis, academic extraction & citations.
+                        </p>
                       </div>
-                      <p className="text-[11px] text-slate-400 group-hover:text-slate-300 mt-1 pl-6">
-                        Multi-source web synthesis, academic extraction & cited reports.
-                      </p>
+                      <ChevronRight className="h-4 w-4 text-slate-500 group-hover:text-blue-400 group-hover:translate-x-1 transition-all mt-1 shrink-0" />
                     </Link>
 
                     <Link
                       to="/private-ai"
                       onClick={closeDrawer}
-                      className="group p-3 rounded-xl bg-slate-900/80 hover:bg-slate-850 border border-white/10 hover:border-emerald-500/40 transition-all block shadow-sm"
+                      className="group py-3.5 flex items-start justify-between transition-all block hover:pl-1.5"
                     >
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs sm:text-sm font-semibold text-white group-hover:text-emerald-300 transition-colors flex items-center gap-2">
-                          <Shield className="h-4 w-4 text-emerald-400 shrink-0" />
-                          Private AI & Vault
-                        </span>
-                        <ChevronRight className="h-3.5 w-3.5 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <Shield className="h-4 w-4 text-emerald-400" />
+                          <span className="text-sm sm:text-base font-medium text-white group-hover:text-emerald-300 transition-colors">
+                            Private AI & Vault
+                          </span>
+                          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
+                            WebGPU
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-400 group-hover:text-slate-300 mt-1 pl-6">
+                          100% on-device local models with zero cloud telemetry.
+                        </p>
                       </div>
-                      <p className="text-[11px] text-slate-400 group-hover:text-slate-300 mt-1 pl-6">
-                        100% on-device WebGPU models with zero cloud telemetry.
-                      </p>
+                      <ChevronRight className="h-4 w-4 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all mt-1 shrink-0" />
                     </Link>
 
                     <Link
                       to="/studio"
                       onClick={closeDrawer}
-                      className="group p-2.5 rounded-xl bg-slate-900/50 hover:bg-slate-850 border border-white/5 hover:border-amber-500/30 transition-all flex items-center justify-between text-xs text-slate-300 hover:text-white"
+                      className="group py-3 flex items-center justify-between text-xs text-slate-300 hover:text-white transition-all pl-6"
                     >
-                      <span className="pl-1">Model Studio & Playground</span>
-                      <ChevronRight className="h-3 w-3 text-slate-500" />
+                      <span>Model Studio & Code Playground</span>
+                      <ChevronRight className="h-3.5 w-3.5 text-slate-500 group-hover:text-white group-hover:translate-x-0.5 transition-transform" />
                     </Link>
                   </div>
                 </div>
 
-                {/* 2. ABOUT US / FOUNDERS */}
-                <div className="space-y-3">
+                {/* 02. ABOUT US / FOUNDERS */}
+                <div className="space-y-3.5">
                   <div className="flex items-center justify-between pb-2 border-b border-purple-500/25">
                     <div className="flex items-center gap-2">
-                      <div className="p-1 rounded bg-purple-500/15 text-purple-400">
-                        <Users className="h-3.5 w-3.5" />
-                      </div>
-                      <span className="text-xs font-mono font-bold tracking-wider text-purple-400 uppercase">
+                      <Users className="h-3.5 w-3.5 text-purple-400" />
+                      <span className="text-xs font-mono font-bold tracking-[0.2em] text-purple-400 uppercase">
                         About Us / Founders
                       </span>
                     </div>
-                    <span className="text-[10px] font-mono text-purple-300 bg-purple-950/80 px-2 py-0.5 rounded-full border border-purple-500/30">
-                      Karachi, PK
+                    <span className="text-[10px] font-mono text-purple-300/80 bg-purple-950/60 px-2 py-0.5 rounded-full border border-purple-500/30">
+                      02 · Karachi
                     </span>
                   </div>
 
-                  <div className="space-y-2.5">
-                    {/* Zain Ahmed Card */}
+                  <div className="space-y-3">
+                    {/* Zain Ahmed */}
                     <Link
                       to="/founder"
                       onClick={closeDrawer}
-                      className="group p-3 rounded-2xl bg-slate-900/80 hover:bg-slate-850 border border-white/10 hover:border-cyan-500/40 transition-all block relative shadow-sm"
+                      className="group p-4 rounded-2xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 hover:border-cyan-500/40 transition-all block relative"
                     >
-                      <div className="flex items-center justify-between text-[10px] mb-1">
-                        <span className="font-mono text-cyan-300 font-semibold px-2 py-0.5 rounded bg-cyan-950/80 border border-cyan-500/30">
+                      <div className="flex items-center justify-between text-[11px] mb-1.5">
+                        <span className="font-mono text-cyan-300 font-semibold px-2 py-0.5 rounded-full bg-cyan-950/80 border border-cyan-500/30">
                           Founder & Lead Architect
                         </span>
                         <span className="text-slate-400 font-mono">Age 17</span>
                       </div>
-                      <h4 className="text-xs sm:text-sm font-bold text-white group-hover:text-cyan-300 transition-colors mt-1.5">
+                      <h4 className="text-base font-semibold text-white group-hover:text-cyan-300 transition-colors">
                         {FOUNDER_CANONICAL.fullName}
                       </h4>
-                      <p className="text-[11px] text-slate-400 mt-1 line-clamp-2">
+                      <p className="text-xs text-slate-400 mt-1 line-clamp-2">
                         Creator of ShadowTalk AI. Architect of offline model loops and sovereign systems.
                       </p>
-                      <div className="mt-2 text-[10px] font-medium text-cyan-400 flex items-center gap-1">
-                        <span>View Founder Story</span>
-                        <ChevronRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
+                      <div className="mt-2.5 text-xs font-medium text-cyan-400 flex items-center gap-1">
+                        <span>Read Founder Story</span>
+                        <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
                       </div>
                     </Link>
 
-                    {/* Fatima Card */}
+                    {/* Fatima */}
                     <Link
                       to="/fatima"
                       onClick={closeDrawer}
-                      className="group p-3 rounded-2xl bg-slate-900/80 hover:bg-slate-850 border border-white/10 hover:border-purple-500/40 transition-all block relative shadow-sm"
+                      className="group p-4 rounded-2xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 hover:border-purple-500/40 transition-all block relative"
                     >
-                      <div className="flex items-center justify-between text-[10px] mb-1">
-                        <span className="font-mono text-purple-300 font-semibold px-2 py-0.5 rounded bg-purple-950/80 border border-purple-500/30">
+                      <div className="flex items-center justify-between text-[11px] mb-1.5">
+                        <span className="font-mono text-purple-300 font-semibold px-2 py-0.5 rounded-full bg-purple-950/80 border border-purple-500/30">
                           Co-Founder & Systems Architect
                         </span>
                         <span className="text-purple-400 font-mono">2nd Dev</span>
                       </div>
-                      <div className="flex items-center gap-2 mt-1.5">
+                      <div className="flex items-center gap-2">
                         <div className="h-6 w-6 rounded-md bg-purple-950/90 border border-purple-500/50 flex items-center justify-center font-mono font-bold text-[10px] text-purple-300 shrink-0">
                           FT
                         </div>
-                        <h4 className="text-xs sm:text-sm font-bold text-white group-hover:text-purple-300 transition-colors">
+                        <h4 className="text-base font-semibold text-white group-hover:text-purple-300 transition-colors">
                           {COFOUNDER_CANONICAL.fullName}
                         </h4>
                       </div>
-                      <p className="text-[11px] text-slate-400 mt-1 line-clamp-2">
+                      <p className="text-xs text-slate-400 mt-1 line-clamp-2">
                         120fps UI state machine, client-side memory ledger & zero-leak telemetry.
                       </p>
-                      <div className="mt-2 text-[10px] font-medium text-purple-400 flex items-center gap-1">
-                        <span>View Co-Founder Story</span>
-                        <ChevronRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
+                      <div className="mt-2.5 text-xs font-medium text-purple-400 flex items-center gap-1">
+                        <span>Read Co-Founder Story</span>
+                        <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
                       </div>
                     </Link>
 
-                    {/* Company Vision & Trust Quick Links */}
+                    {/* Quick Vision & Trust Links */}
                     <div className="grid grid-cols-2 gap-2 pt-0.5">
                       <Link
                         to="/about"
                         onClick={closeDrawer}
-                        className="p-2.5 rounded-xl bg-slate-900/70 hover:bg-slate-850 border border-white/10 transition-all text-center"
+                        className="p-3 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 transition-all text-xs text-slate-300 hover:text-white"
                       >
-                        <p className="text-xs font-semibold text-white">Company Vision</p>
-                        <p className="text-[10px] text-slate-400">Roadmap & story</p>
+                        <p className="font-semibold text-white">Company Vision</p>
+                        <p className="text-[10px] text-slate-400">Roadmap & principles</p>
                       </Link>
                       <Link
                         to="/trust"
                         onClick={closeDrawer}
-                        className="p-2.5 rounded-xl bg-slate-900/70 hover:bg-slate-850 border border-white/10 transition-all text-center"
+                        className="p-3 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 transition-all text-xs text-slate-300 hover:text-white"
                       >
-                        <p className="text-xs font-semibold text-white">Security & Trust</p>
+                        <p className="font-semibold text-white">Security & Trust</p>
                         <p className="text-[10px] text-slate-400">Audits & zero cloud</p>
                       </Link>
                     </div>
                   </div>
                 </div>
 
-                {/* 3. PRICING & ACCESS */}
-                <div className="space-y-3">
+                {/* 03. PRICING & ACCESS */}
+                <div className="space-y-3.5">
                   <div className="flex items-center justify-between pb-2 border-b border-emerald-500/25">
                     <div className="flex items-center gap-2">
-                      <div className="p-1 rounded bg-emerald-500/15 text-emerald-400">
-                        <CreditCard className="h-3.5 w-3.5" />
-                      </div>
-                      <span className="text-xs font-mono font-bold tracking-wider text-emerald-400 uppercase">
+                      <CreditCard className="h-3.5 w-3.5 text-emerald-400" />
+                      <span className="text-xs font-mono font-bold tracking-[0.2em] text-emerald-400 uppercase">
                         Pricing & Access
                       </span>
                     </div>
-                    <span className="text-[10px] font-mono text-emerald-300 bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-500/30">
-                      Transparent
+                    <span className="text-[10px] font-mono text-emerald-300/80 bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-500/30">
+                      03
                     </span>
                   </div>
 
                   <Link
                     to="/pricing"
                     onClick={closeDrawer}
-                    className="group p-3.5 rounded-2xl bg-slate-900/80 hover:bg-slate-850 border border-white/10 hover:border-emerald-500/40 transition-all block shadow-sm"
+                    className="group p-4 rounded-2xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 hover:border-emerald-500/40 transition-all block"
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs sm:text-sm font-bold text-white group-hover:text-emerald-300 transition-colors">
+                      <span className="text-sm sm:text-base font-semibold text-white group-hover:text-emerald-300 transition-colors">
                         Membership Plans & Pricing
                       </span>
-                      <ChevronRight className="h-3.5 w-3.5 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
+                      <ChevronRight className="h-4 w-4 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
                     </div>
-                    <p className="text-[11px] text-slate-400 mt-1">
-                      Free starter ($0), Pro Sovereign ($19/mo), and Founder Lifetime Tier.
+                    <p className="text-xs text-slate-400 mt-1">
+                      Transparent tiers: Free Starter ($0), Pro Sovereign ($19/mo), and Founder Lifetime.
                     </p>
-                    <div className="mt-3 pt-2.5 border-t border-white/5 space-y-1.5 text-xs">
-                      <div className="flex items-center justify-between text-slate-300">
-                        <span>Free Starter</span>
-                        <span className="font-mono text-emerald-400 font-semibold">$0 / forever</span>
-                      </div>
-                      <div className="flex items-center justify-between text-slate-300">
-                        <span>Pro Sovereign</span>
-                        <span className="font-mono text-emerald-400 font-semibold">$19 / mo</span>
-                      </div>
-                      <div className="flex items-center justify-between text-slate-300">
-                        <span>Lifetime Tier</span>
-                        <span className="font-mono text-purple-400 font-semibold">One-time</span>
-                      </div>
+                    <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between text-xs font-mono">
+                      <span className="text-slate-400">Starter Tier</span>
+                      <span className="text-emerald-400 font-semibold">$0 / No card required</span>
                     </div>
                   </Link>
-
-                  <div className="p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-xs text-emerald-300">
-                    <p className="font-semibold text-emerald-200 text-[11px]">No Credit Card Required</p>
-                    <p className="text-[10px] text-emerald-400/90 mt-0.5">
-                      Start testing models locally on your GPU right away.
-                    </p>
-                  </div>
                 </div>
 
-                {/* 4. CONTACT DETAILS & SUPPORT */}
-                <div className="space-y-3">
+                {/* 04. CONTACT DETAILS & SUPPORT */}
+                <div className="space-y-3.5">
                   <div className="flex items-center justify-between pb-2 border-b border-pink-500/25">
                     <div className="flex items-center gap-2">
-                      <div className="p-1 rounded bg-pink-500/15 text-pink-400">
-                        <Mail className="h-3.5 w-3.5" />
-                      </div>
-                      <span className="text-xs font-mono font-bold tracking-wider text-pink-400 uppercase">
+                      <Mail className="h-3.5 w-3.5 text-pink-400" />
+                      <span className="text-xs font-mono font-bold tracking-[0.2em] text-pink-400 uppercase">
                         Contact Details & Support
                       </span>
                     </div>
-                    <span className="text-[10px] font-mono text-pink-300 bg-pink-950/80 px-2 py-0.5 rounded-full border border-pink-500/30">
-                      Direct Desk
+                    <span className="text-[10px] font-mono text-pink-300/80 bg-pink-950/60 px-2 py-0.5 rounded-full border border-pink-500/30">
+                      04
                     </span>
                   </div>
 
                   {/* Official Business Email Card */}
-                  <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-pink-500/30 space-y-2 shadow-sm">
+                  <div className="p-4 rounded-2xl bg-white/[0.02] border border-pink-500/25 space-y-2">
                     <div className="flex items-center justify-between text-xs text-slate-400">
-                      <span className="text-[11px]">Official Business Email:</span>
+                      <span>Official Inquiries:</span>
                       <button
                         type="button"
                         onClick={copyBusinessEmail}
@@ -515,12 +511,12 @@ const LandingNavigation = ({ children }: LandingNavigationProps) => {
                     </a>
                   </div>
 
-                  {/* Support Quick 2x2 Channels */}
+                  {/* Support Channels 2x2 Grid */}
                   <div className="grid grid-cols-2 gap-2">
                     <Link
                       to="/contact"
                       onClick={closeDrawer}
-                      className="p-2.5 rounded-xl bg-slate-900/70 hover:bg-slate-850 border border-white/10 transition-all text-center group"
+                      className="p-3 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 transition-all text-center group"
                     >
                       <MessageSquare className="h-3.5 w-3.5 mx-auto mb-1 text-pink-400 group-hover:scale-110 transition-transform" />
                       <p className="text-xs font-semibold text-white">Contact Form</p>
@@ -530,7 +526,7 @@ const LandingNavigation = ({ children }: LandingNavigationProps) => {
                     <Link
                       to="/status"
                       onClick={closeDrawer}
-                      className="p-2.5 rounded-xl bg-slate-900/70 hover:bg-slate-850 border border-white/10 transition-all text-center group"
+                      className="p-3 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 transition-all text-center group"
                     >
                       <Activity className="h-3.5 w-3.5 mx-auto mb-1 text-cyan-400 group-hover:scale-110 transition-transform" />
                       <p className="text-xs font-semibold text-white">Live Status</p>
@@ -540,7 +536,7 @@ const LandingNavigation = ({ children }: LandingNavigationProps) => {
                     <Link
                       to="/faq"
                       onClick={closeDrawer}
-                      className="p-2.5 rounded-xl bg-slate-900/70 hover:bg-slate-850 border border-white/10 transition-all text-center group"
+                      className="p-3 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 transition-all text-center group"
                     >
                       <HelpCircle className="h-3.5 w-3.5 mx-auto mb-1 text-purple-400 group-hover:scale-110 transition-transform" />
                       <p className="text-xs font-semibold text-white">FAQ</p>
@@ -550,7 +546,7 @@ const LandingNavigation = ({ children }: LandingNavigationProps) => {
                     <Link
                       to="/help"
                       onClick={closeDrawer}
-                      className="p-2.5 rounded-xl bg-slate-900/70 hover:bg-slate-850 border border-white/10 transition-all text-center group"
+                      className="p-3 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 transition-all text-center group"
                     >
                       <Shield className="h-3.5 w-3.5 mx-auto mb-1 text-emerald-400 group-hover:scale-110 transition-transform" />
                       <p className="text-xs font-semibold text-white">Help Center</p>
@@ -561,23 +557,28 @@ const LandingNavigation = ({ children }: LandingNavigationProps) => {
 
               </div>
 
-              {/* Drawer Bottom Sticky Action Bar */}
-              <div className="p-4 sm:p-5 border-t border-white/10 bg-slate-950/95 backdrop-blur-xl flex items-center gap-3 shrink-0">
-                <Link
-                  to="/contact"
-                  onClick={closeDrawer}
-                  className="py-2.5 px-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-semibold border border-white/15 text-center transition-colors shrink-0"
-                >
-                  Contact Founders
-                </Link>
-                <Link
-                  to="/chatbot"
-                  onClick={closeDrawer}
-                  className="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-cyan-500 via-purple-600 to-pink-600 hover:from-cyan-400 hover:to-pink-500 text-white text-xs font-semibold shadow-[0_0_20px_rgba(6,182,212,0.3)] flex items-center justify-center gap-2 transition-all"
-                >
-                  <span>Launch Workspace</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </Link>
+              {/* Minimalist Bottom Bar */}
+              <div className="px-6 sm:px-8 py-4 border-t border-white/10 bg-slate-950/80 backdrop-blur-xl flex items-center justify-between gap-3 shrink-0 relative z-10">
+                <div className="text-xs text-slate-400 font-mono hidden sm:block">
+                  <span>Karachi, PK · 256-bit AES</span>
+                </div>
+                <div className="flex items-center gap-2.5 w-full sm:w-auto">
+                  <Link
+                    to="/contact"
+                    onClick={closeDrawer}
+                    className="py-2 px-3.5 rounded-full bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white text-xs font-medium border border-white/10 transition-colors text-center"
+                  >
+                    Contact Founders
+                  </Link>
+                  <Link
+                    to="/chatbot"
+                    onClick={closeDrawer}
+                    className="flex-1 sm:flex-none py-2 px-4 rounded-full bg-gradient-to-r from-cyan-500 via-purple-600 to-pink-600 hover:from-cyan-400 hover:to-pink-500 text-white text-xs font-semibold shadow-[0_0_20px_rgba(6,182,212,0.3)] flex items-center justify-center gap-1.5 transition-all group"
+                  >
+                    <span>Launch Workspace</span>
+                    <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+                  </Link>
+                </div>
               </div>
             </motion.aside>
           </div>
