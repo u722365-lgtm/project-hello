@@ -34,11 +34,6 @@ const team = [
   },
 ];
 
-const advisors = [
-  { name: "Sir Zia Khan", role: "Mentor — Governor Sindh IT Initiative" },
-  { name: "Open Source Community", role: "Guidance & Code Reviews" },
-];
-
 const AboutTeam = () => {
   return (
     <section className="py-20 px-4 relative overflow-hidden">
@@ -64,7 +59,7 @@ const AboutTeam = () => {
           </motion.p>
         </div>
 
-        <div className="grid sm:grid-cols-3 gap-5 mb-12">
+        <div className="grid sm:grid-cols-3 gap-5">
           {team.map((member, i) => (
             <motion.div
               key={i}
@@ -112,29 +107,6 @@ const AboutTeam = () => {
             </motion.div>
           ))}
         </div>
-
-        {/* Advisors */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="glass-subtle rounded-xl p-6"
-        >
-          <h3 className="font-bold text-sm mb-4 text-center text-muted-foreground uppercase tracking-wider">Advisors & Mentors</h3>
-          <div className="flex flex-wrap justify-center gap-4">
-            {advisors.map((a, i) => (
-              <div key={i} className="flex items-center gap-3 glass-subtle rounded-lg px-4 py-2.5">
-                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <span className="text-xs font-bold text-primary">{a.name[0]}</span>
-                </div>
-                <div>
-                  <p className="text-sm font-semibold">{a.name}</p>
-                  <p className="text-xs text-muted-foreground">{a.role}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </motion.div>
       </div>
     </section>
   );
