@@ -2047,14 +2047,16 @@ Structure and Content Guidelines:
               </div>
             )}
           </div>
-          <motion.p
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, ...SETTINGS_SPRING }}
-            className="shadowtalk-chat-top-label hidden md:block"
-          >
-            {BRAND.tagline}
-          </motion.p>
+          {hasActiveChat && (
+            <motion.p
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, ...SETTINGS_SPRING }}
+              className="shadowtalk-chat-top-label hidden md:block"
+            >
+              {BRAND.tagline}
+            </motion.p>
+          )}
           <EnterpriseWelcomeBanner email={user?.email} displayName={userDisplayName} />
           {!isProOrHigher && dailyLimits.isLoaded && (
             <div className="px-3 pt-2 max-w-3xl mx-auto w-full">
@@ -2131,6 +2133,11 @@ Structure and Content Guidelines:
                     onSelectPrompt={handleQuickPrompt}
                     apiConnectedLabel={null}
                     composerDockStyle={inputDockStyle}
+                    onOpenDocumentStudio={() => setShowDocumentGenerator(true)}
+                    onOpenImageStudio={() => setShowImageGenerator(true)}
+                    onOpenDeepResearch={() => setShowDeepResearch(true)}
+                    onOpenAppIde={() => navigate("/ide")}
+                    onOpenLiveVoice={() => setShowShadowTalkLive(true)}
                   >
                     <ChatInput {...chatInputProps} isEmptyState />
                   </ChatEmptyState>

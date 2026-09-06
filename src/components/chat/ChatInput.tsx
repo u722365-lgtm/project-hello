@@ -217,7 +217,7 @@ export const ChatInput = ({
                 value={message}
                 onChange={(e) => onMessageChange(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder={isListening ? "Listening..." : "Ask ShadowTalk"}
+                placeholder={isListening ? "Listening..." : "Message ShadowTalk, draft a document, or generate code..."}
                 className="shadowtalk-composer__textarea w-full resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 py-2 pl-2 text-base sm:text-[15px] placeholder:text-muted-foreground/50 leading-relaxed overflow-y-auto custom-scrollbar"
                 disabled={isLoading}
                 rows={1}

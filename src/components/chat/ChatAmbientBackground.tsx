@@ -1,37 +1,58 @@
 import { motion } from 'framer-motion';
 
-/** Dynamic ambient mesh gradient backdrop for the premium look. */
+/** Dynamic ambient mesh gradient backdrop for the premium flagship look. */
 export function ChatAmbientBackground() {
   return (
-    <div className="fixed inset-0 -z-10 overflow-hidden bg-black pointer-events-none">
+    <div className="fixed inset-0 -z-10 overflow-hidden bg-[#060911] pointer-events-none select-none">
+      {/* Top-left Indigo / Violet Radiant Mesh */}
+      <motion.div
+        animate={{
+          scale: [1, 1.15, 1],
+          opacity: [0.35, 0.55, 0.35],
+          x: [0, 30, 0],
+          y: [0, -20, 0],
+        }}
+        transition={{
+          duration: 18,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
+        className="absolute top-[-15%] left-[-10%] w-[65vw] h-[65vw] rounded-full bg-gradient-to-br from-indigo-600/25 via-violet-600/18 to-transparent blur-[140px]"
+      />
+
+      {/* Top-right Cyan / Sky Radiant Mesh */}
       <motion.div
         animate={{
           scale: [1, 1.2, 1],
-          opacity: [0.3, 0.5, 0.3],
-          rotate: [0, 90, 0]
+          opacity: [0.25, 0.45, 0.25],
+          x: [0, -40, 0],
+          y: [0, 30, 0],
         }}
         transition={{
-          duration: 20,
+          duration: 22,
           repeat: Infinity,
-          ease: "linear"
+          ease: "easeInOut",
         }}
-        className="absolute top-[-20%] left-[-10%] w-[70vw] h-[70vw] rounded-full bg-indigo-900/40 blur-[120px]"
+        className="absolute top-[-10%] right-[-10%] w-[55vw] h-[55vw] rounded-full bg-gradient-to-bl from-cyan-500/22 via-sky-600/15 to-transparent blur-[130px]"
       />
-      <motion.div
-        animate={{
-          scale: [1, 1.5, 1],
-          opacity: [0.2, 0.4, 0.2],
-          rotate: [0, -90, 0]
+
+      {/* Center Subtle Frontier Aura */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(circle at 50% 38%, rgba(99, 102, 241, 0.08) 0%, rgba(6, 182, 212, 0.04) 40%, transparent 70%)",
         }}
-        transition={{
-          duration: 25,
-          repeat: Infinity,
-          ease: "linear"
-        }}
-        className="absolute bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-cyan-900/30 blur-[100px]"
+        aria-hidden
       />
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-3xl" aria-hidden />
-      <div className="fixed inset-0 settings-grain opacity-20" aria-hidden />
+
+      {/* Micro-grid constellation texture */}
+      <div
+        className="fixed inset-0 bg-[radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:32px_32px] opacity-40"
+        aria-hidden
+      />
+
+      <div className="fixed inset-0 settings-grain opacity-15" aria-hidden />
     </div>
   );
 }
