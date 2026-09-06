@@ -55,4 +55,45 @@ describe("Dedicated Founder Page Verification", () => {
     const cmdSource = fs.readFileSync(cmdPalettePath, "utf-8");
     expect(cmdSource).toContain('href: "/founder"');
   });
+
+  it("FatimaPage.tsx exists and contains comprehensive production content", () => {
+    const filePath = path.join(pagesDir, "FatimaPage.tsx");
+    expect(fs.existsSync(filePath), "FatimaPage.tsx should exist").toBe(true);
+
+    const content = fs.readFileSync(filePath, "utf-8");
+    expect(content.length).toBeGreaterThan(3000);
+    expect(content).toContain("SEOHead");
+    expect(content).toContain("Navigation");
+    expect(content).toContain("Footer");
+    expect(content).toContain("COFOUNDER_FULL_NAME");
+    expect(content).toContain("Fatima");
+    expect(content).toContain("Sadaf Tayyaba");
+    expect(content).toContain("sadaftayyaba655@gmail.com");
+    expect(content).toContain("Karachi, Pakistan");
+  });
+
+  it("App.tsx registers /fatima and alias routes", () => {
+    const appSource = fs.readFileSync(appTsxPath, "utf-8");
+    expect(appSource).toContain('path="/fatima"');
+    expect(appSource).toContain('path="/co-founder"');
+    expect(appSource).toContain('path="/sadaf-tayyaba"');
+    expect(appSource).toContain("FatimaPage");
+  });
+
+  it("PAGE_SEO has complete metadata for fatima co-founder page", () => {
+    const seo = (PAGE_SEO as Record<string, any>)["fatima"];
+    expect(seo, "PAGE_SEO.fatima should exist").toBeDefined();
+    expect(seo.title).toContain("Fatima");
+    expect(seo.description).toContain("Co-Founder");
+    expect(seo.canonical).toBe("https://www.shadowtalk-ai.com/fatima");
+    expect(seo.keywords?.length).toBeGreaterThan(4);
+  });
+
+  it("Footer and CommandPalette link to /fatima", () => {
+    const footerSource = fs.readFileSync(footerPath, "utf-8");
+    expect(footerSource).toContain('href: "/fatima"');
+
+    const cmdSource = fs.readFileSync(cmdPalettePath, "utf-8");
+    expect(cmdSource).toContain('href: "/fatima"');
+  });
 });

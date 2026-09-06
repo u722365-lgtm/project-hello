@@ -73,6 +73,7 @@ const Footer = () => {
       links: [
         { name: "About", href: "/about" },
         { name: "Founder (Zain Ahmed)", href: "/founder" },
+        { name: "Co-Founder (Fatima)", href: "/fatima" },
         { name: "Press", href: "/press" },
         { name: "Careers", href: "/careers" },
         { name: "Founder Access", href: "/founder-access" },

@@ -1,6 +1,7 @@
- import { SOCIAL_SAME_AS, FOUNDER_SOCIAL } from "@/lib/socialLinks";
- import { AI_KNOWLEDGE_CANONICAL_PITCH } from "@/lib/aiPublicKnowledge";
- import { FOUNDER_CANONICAL, FOUNDER_SAME_AS } from "@/lib/founderIdentity";
+import { SOCIAL_SAME_AS, FOUNDER_SOCIAL } from "@/lib/socialLinks";
+import { AI_KNOWLEDGE_CANONICAL_PITCH } from "@/lib/aiPublicKnowledge";
+import { FOUNDER_CANONICAL, FOUNDER_SAME_AS } from "@/lib/founderIdentity";
+import { COFOUNDER_CANONICAL } from "@/lib/cofounderIdentity";
 
   // SEO utilities and structured data helpers
 
@@ -259,6 +260,33 @@ export const FOUNDER_HOME_FAQ = [
      ],
    };
  }
+
+export function getCofounderPersonSchema() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    '@id': COFOUNDER_CANONICAL['@id'],
+    name: COFOUNDER_CANONICAL.fullName,
+    givenName: COFOUNDER_CANONICAL.givenName,
+    familyName: COFOUNDER_CANONICAL.familyName,
+    jobTitle: COFOUNDER_CANONICAL.jobTitle,
+    description: COFOUNDER_CANONICAL.description,
+    url: COFOUNDER_CANONICAL.canonicalProfileUrl,
+    image: {
+      '@type': 'ImageObject',
+      url: 'https://www.shadowtalk-ai.com/fatima-cofounder.jpg',
+      contentUrl: 'https://www.shadowtalk-ai.com/fatima-cofounder.jpg',
+      caption: 'Fatima (Sadaf Tayyaba) — Co-Founder of ShadowTalk AI',
+    },
+    email: COFOUNDER_CANONICAL.email,
+    worksFor: COFOUNDER_CANONICAL.worksFor,
+    knowsAbout: [...COFOUNDER_CANONICAL.knowsAbout],
+    homeLocation: {
+      '@type': 'Place',
+      name: `${COFOUNDER_CANONICAL.location.city}, ${COFOUNDER_CANONICAL.location.country}`,
+    },
+  };
+}
 
 export function getFounderHomeStructuredData() {
   return [getPersonSchema(), getFAQSchema([...FOUNDER_HOME_FAQ])];
@@ -545,6 +573,28 @@ export const PAGE_SEO: Record<string, PageMeta> = {
     canonical: 'https://www.shadowtalk-ai.com/founder',
     ogType: 'profile',
     ogImage: FOUNDER_IMAGE_URL,
+  },
+  fatima: {
+    title: 'Fatima (Sadaf Tayyaba) — Co-Founder & Systems Architect | ShadowTalk AI',
+    description:
+      'Official profile: Fatima (Sadaf Tayyaba), Co-Founder and Lead Systems Architect of ShadowTalk AI. Second developer building sovereign, local-first AI from Karachi, Pakistan.',
+    socialDescription:
+      'Meet Fatima (Sadaf Tayyaba), co-founder and second developer of ShadowTalk AI. Architecting 120fps UI, client-side memory, and sovereign pipelines in Karachi, Pakistan.',
+    keywords: [
+      'Fatima',
+      'Fatima ShadowTalk',
+      'Fatima co-founder',
+      'Sadaf Tayyaba',
+      'Sadaf Tayyaba ShadowTalk',
+      'Fatima developer ShadowTalk AI',
+      'ShadowTalk AI co-founder',
+      'ShadowTalk second developer',
+      'Karachi AI software architect',
+      'sadaftayyaba655@gmail.com',
+    ],
+    canonical: 'https://www.shadowtalk-ai.com/fatima',
+    ogType: 'profile',
+    ogImage: 'https://www.shadowtalk-ai.com/fatima-cofounder.jpg',
   },
   computer: {
     title: 'Computer Mode — In-Browser Shell',

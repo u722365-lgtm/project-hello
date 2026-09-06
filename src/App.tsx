@@ -64,6 +64,7 @@ const IntegrationsHubPage = lazy(() => import("./pages/IntegrationsHubPage"));
 const BillingDashboardPage = lazy(() => import("./pages/BillingDashboardPage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
 const FounderPage = lazy(() => import("./pages/FounderPage"));
+const FatimaPage = lazy(() => import("./pages/FatimaPage"));
 const AuditLogsPage = lazy(() => import("./pages/AuditLogsPage"));
 const ModelPlaygroundPage = lazy(() => import("./pages/ModelPlaygroundPage"));
 const ShadowTwinSettingsPage = lazy(() => import("./pages/ShadowTwinSettingsPage"));
@@ -173,6 +174,9 @@ const AnimatedRoutes = () => {
           <Route path="/founder" element={<PageTransition><FounderPage /></PageTransition>} />
           <Route path="/zain-ahmed" element={<PageTransition><FounderPage /></PageTransition>} />
           <Route path="/zain-ahmed-fahad-patel" element={<PageTransition><FounderPage /></PageTransition>} />
+          <Route path="/fatima" element={<PageTransition><FatimaPage /></PageTransition>} />
+          <Route path="/co-founder" element={<PageTransition><FatimaPage /></PageTransition>} />
+          <Route path="/sadaf-tayyaba" element={<PageTransition><FatimaPage /></PageTransition>} />
           <Route path="/changelog" element={<PageTransition><ChangelogPage /></PageTransition>} />
           <Route path="/workspace" element={<PageTransition><WorkspacePage /></PageTransition>} />
           <Route path="/business-memory" element={<Navigate to="/workspace" replace />} />

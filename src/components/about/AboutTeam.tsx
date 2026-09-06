@@ -12,22 +12,25 @@ const team = [
     desc: "17-year-old AI Architect building sovereign intelligence infrastructure from Karachi.",
     tags: ["AI Architecture", "Full-Stack", "Vision"],
     gradient: "from-primary to-secondary",
+    link: "/founder",
   },
   {
-    name: "ShadowTalk AI",
-    role: "Core AI Engine",
-    avatar: "ST",
-    desc: "The sovereign AI assistant powering offline-first intelligence across all ShadowTalk products.",
-    tags: ["LLM", "Offline", "Multi-Model"],
-    gradient: "from-secondary to-accent",
+    name: "Fatima (Sadaf Tayyaba)",
+    role: "Co-Founder & Systems Architect",
+    avatar: "FT",
+    desc: "Second developer of ShadowTalk. Engineered client-side memory ledger, 120fps UI state, and offline pipelines.",
+    tags: ["Co-Founder", "2nd Developer", "Memory Ledger", "120fps UI"],
+    gradient: "from-accent to-primary",
+    link: "/fatima",
+    email: "sadaftayyaba655@gmail.com",
   },
   {
     name: "Community Contributors",
-    role: "Open Source",
+    role: "Open Source Builders",
     avatar: "OS",
     desc: "A growing network of developers, testers, and advocates contributing to the sovereign AI mission.",
     tags: ["Global", "Open Source", "Builders"],
-    gradient: "from-accent to-primary",
+    gradient: "from-secondary to-accent",
   },
 ];
 
@@ -93,6 +96,16 @@ const AboutTeam = () => {
                       iconClassName="h-4 w-4"
                       linkClassName="p-2 rounded-lg border border-border/40"
                     />
+                  )}
+                  {member.link && (
+                    <div className="mt-3">
+                      <a
+                        href={member.link}
+                        className="text-xs font-semibold text-primary hover:underline inline-flex items-center gap-1"
+                      >
+                        View Profile →
+                      </a>
+                    </div>
                   )}
                 </CardContent>
               </Card>

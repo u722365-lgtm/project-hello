@@ -342,6 +342,15 @@ export const pages: PageEntry[] = [
     keywords: ["founder", "zain", "ahmed", "patel", "story", "karachi", "giaic", "zia khan", "creator", "architect"],
   },
   {
+    name: "Co-Founder: Fatima",
+    href: "/fatima",
+    icon: User,
+    desc: "Fatima (Sadaf Tayyaba) — Co-founder & second developer, systems architecture, memory ledger & contacts",
+    group: "Resources & Company",
+    badge: "Co-Founder",
+    keywords: ["cofounder", "co-founder", "fatima", "sadaf", "tayyaba", "second developer", "systems", "architect", "karachi"],
+  },
+  {
     name: "Product Changelog",
     href: "/changelog",
     icon: History,

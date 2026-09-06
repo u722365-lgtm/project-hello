@@ -593,6 +593,44 @@ const FounderPage = () => {
         </div>
       </section>
 
+      {/* Co-Founder Section on Founder Page */}
+      <section className="py-16 px-4 border-t border-border/40">
+        <div className="container mx-auto max-w-4xl">
+          <div className="glass-strong border border-accent/30 rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center gap-8">
+            <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-2xl overflow-hidden border-2 border-accent/40 shrink-0 shadow-lg relative group">
+              <img
+                src="/fatima-cofounder.jpg"
+                alt="Fatima (Sadaf Tayyaba) — Co-Founder of ShadowTalk AI"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+            </div>
+            <div className="flex-1 text-center md:text-left">
+              <Badge variant="outline" className="mb-2 border-accent/40 text-accent text-xs font-semibold">
+                Co-Founder &amp; Second Developer
+              </Badge>
+              <h3 className="text-2xl sm:text-3xl font-extrabold mb-2 text-foreground">
+                Fatima (Sadaf Tayyaba)
+              </h3>
+              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed mb-4">
+                The second developer behind ShadowTalk AI. Fatima co-architected the client-side memory ledger,
+                120fps UI state machine, and offline resilience pipeline alongside Zain Ahmed.
+              </p>
+              <div className="flex flex-wrap gap-3 justify-center md:justify-start">
+                <Button size="sm" className="btn-glow gap-1.5 font-semibold" onClick={() => navigate("/fatima")}>
+                  Meet Co-Founder Fatima <ArrowRight className="h-3.5 w-3.5" />
+                </Button>
+                <Button variant="outline" size="sm" asChild>
+                  <a href="mailto:sadaftayyaba655@gmail.com">
+                    <Mail className="h-3.5 w-3.5 mr-1 text-accent" />
+                    sadaftayyaba655@gmail.com
+                  </a>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Founder FAQ Accordion */}
       <section className="py-20 px-4 border-t border-border/40">
         <div className="container mx-auto max-w-4xl">
