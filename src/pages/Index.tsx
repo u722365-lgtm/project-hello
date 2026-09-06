@@ -1,6 +1,8 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useState } from "react";
 import LandingNavigation from "@/components/landing/LandingNavigation";
 import HeroSection from "@/components/HeroSection";
+import LandingSectionHub, { SectionHubTab } from "@/components/landing/LandingSectionHub";
+import LandingContactSection from "@/components/landing/LandingContactSection";
 import { SEOHead } from "@/components/SEOHead";
 import {
   PAGE_SEO,
@@ -13,6 +15,8 @@ import {
 import LandingPageShell from "@/components/landing/LandingPageShell";
 import { PlatformMetricsProvider } from "@/contexts/PlatformMetricsContext";
 import { COMPARISON_PAGES } from "@/lib/comparisonPages";
+import { ChevronDown, ChevronUp, Layers } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const WhatIsShadowTalk = lazy(() => import("@/components/landing/WhatIsShadowTalk"));
 const UseCaseWedgesSection = lazy(() => import("@/components/landing/UseCaseWedgesSection"));
@@ -32,6 +36,8 @@ const ExitIntentPrompt = lazy(() => import("@/components/landing/ExitIntentPromp
 const FreeTierViralPrompt = lazy(() => import("@/components/growth/FreeTierViralPrompt"));
 
 const Index = () => {
+  const [showDeepComparisons, setShowDeepComparisons] = useState(false);
+
   const structuredData = [
     getWebSiteSchema(),
     getSoftwareApplicationSchema(),
@@ -63,24 +69,87 @@ const Index = () => {
       <PlatformMetricsProvider>
         <LandingPageShell>
           <div className="min-h-screen bg-background text-foreground landing-page-content">
+            {/* 3-Bar Navigation Bar with Hamburger Drawer */}
             <LandingNavigation />
+
+            {/* High-Impact Hero Section */}
             <HeroSection />
-            <WhatIsShadowTalk />
-            <UseCaseWedgesSection />
-            <BrandManifestoSection />
-            <CompetitiveComparison />
-            <FeaturesSection />
-            <PricingSection />
-            <TestimonialsSection />
-            <CommunitySection />
-            <CommunityBuildingBlock />
-            <FounderSpotlightSection />
-            <FAQSection />
-            <GrowthAmplifier />
-            <StickyTryCTA />
-            <ExitIntentPrompt />
-            <FreeTierViralPrompt />
-            <Footer />
+
+            {/* Section Hub: Direct Options & Quick Switcher for Services, Founders, Pricing, Contact */}
+            <LandingSectionHub />
+
+            {/* SECTION 1: SERVICES & WORKSPACE CAPABILITIES */}
+            <div id="services" className="relative">
+              <Suspense fallback={<div className="py-12 text-center text-xs text-slate-500">Loading services...</div>}>
+                <WhatIsShadowTalk />
+                <UseCaseWedgesSection />
+              </Suspense>
+            </div>
+
+            {/* SECTION 2: ABOUT US & FOUNDERS SPOTLIGHT (Zain Ahmed & Fatima) */}
+            <div id="founders" className="relative">
+              <Suspense fallback={<div className="py-12 text-center text-xs text-slate-500">Loading founders...</div>}>
+                <FounderSpotlightSection />
+              </Suspense>
+            </div>
+
+            {/* SECTION 3: TRANSPARENT PRICING & TIERS */}
+            <div id="pricing" className="relative">
+              <Suspense fallback={<div className="py-12 text-center text-xs text-slate-500">Loading pricing...</div>}>
+                <PricingSection />
+              </Suspense>
+            </div>
+
+            {/* SECTION 4: CONTACT DETAILS & 24/7 SUPPORT */}
+            <div id="contact" className="relative">
+              <LandingContactSection />
+              <Suspense fallback={null}>
+                <FAQSection />
+              </Suspense>
+            </div>
+
+            {/* Optional Deep-Dive Expander for Users who want in-depth competitive benchmarks */}
+            <div className="py-8 px-4 text-center border-t border-white/5 bg-slate-950/30">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowDeepComparisons(!showDeepComparisons)}
+                className="border-white/10 hover:bg-slate-800 text-xs text-slate-300 hover:text-white"
+              >
+                <Layers className="h-3.5 w-3.5 mr-2 text-cyan-400" />
+                <span>
+                  {showDeepComparisons
+                    ? "Collapse In-Depth Comparisons & Ecosystem"
+                    : "Show In-Depth Comparisons, Community & Features"}
+                </span>
+                {showDeepComparisons ? (
+                  <ChevronUp className="h-3.5 w-3.5 ml-1.5" />
+                ) : (
+                  <ChevronDown className="h-3.5 w-3.5 ml-1.5" />
+                )}
+              </Button>
+            </div>
+
+            {/* Deep-Dive Modules (Rendered when expanded) */}
+            {showDeepComparisons && (
+              <Suspense fallback={<div className="py-12 text-center text-xs text-slate-500">Loading extended analysis...</div>}>
+                <CompetitiveComparison />
+                <BrandManifestoSection />
+                <FeaturesSection />
+                <TestimonialsSection />
+                <CommunitySection />
+                <CommunityBuildingBlock />
+                <GrowthAmplifier />
+              </Suspense>
+            )}
+
+            {/* Conversion Prompts & Footer */}
+            <Suspense fallback={null}>
+              <StickyTryCTA />
+              <ExitIntentPrompt />
+              <FreeTierViralPrompt />
+              <Footer />
+            </Suspense>
           </div>
         </LandingPageShell>
       </PlatformMetricsProvider>
@@ -89,3 +158,4 @@ const Index = () => {
 };
 
 export default Index;
+
