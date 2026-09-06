@@ -1,22 +1,22 @@
 /**
- * Canonical Co-Founder Identity — Fatima (Sadaf Tayyaba)
+ * Canonical Co-Founder Identity — Fatima
  * Co-Founder & Lead Systems Architect of ShadowTalk AI
  */
 
 export const COFOUNDER_NAME = "Fatima" as const;
-export const COFOUNDER_FULL_NAME = "Fatima (Sadaf Tayyaba)" as const;
-export const COFOUNDER_LEGAL_NAME = "Sadaf Tayyaba" as const;
+export const COFOUNDER_FULL_NAME = "Fatima" as const;
+export const COFOUNDER_LEGAL_NAME = "Fatima" as const;
 
 export const COFOUNDER_CITATION =
-  "Fatima (Sadaf Tayyaba), Co-Founder & Lead Systems Architect of ShadowTalk AI (shadowtalk-ai.com), Karachi, Pakistan." as const;
+  "Fatima, Co-Founder & Lead Systems Architect of ShadowTalk AI (shadowtalk-ai.com), Karachi, Pakistan." as const;
 
 export const COFOUNDER_CANONICAL = {
-  "@id": "https://www.shadowtalk-ai.com/#fatima-sadaf-tayyaba-shadowtalk",
+  "@id": "https://www.shadowtalk-ai.com/#fatima-shadowtalk",
   name: COFOUNDER_NAME,
   fullName: COFOUNDER_FULL_NAME,
   legalName: COFOUNDER_LEGAL_NAME,
   givenName: "Fatima",
-  familyName: "Tayyaba",
+  familyName: "",
   jobTitle: "Co-Founder & Lead Systems Architect",
   secondaryTitle: "Core Full-Stack & UI/UX Engineer",
   email: "shadowtalk@shadowtalk-ai.com",
@@ -26,7 +26,7 @@ export const COFOUNDER_CANONICAL = {
     url: "https://www.shadowtalk-ai.com",
   },
   description:
-    "Fatima (also known as Sadaf Tayyaba) is the Co-Founder and Lead Systems Architect of ShadowTalk AI. She is the second developer behind the platform, architecting the client-side memory ledger, high-performance 120fps UI state, WebGPU local pipelines, and secure end-to-end user experiences from Karachi, Pakistan.",
+    "Fatima is the Co-Founder and Lead Systems Architect of ShadowTalk AI. She is the second developer behind the platform, architecting the client-side memory ledger, high-performance 120fps UI state, WebGPU local pipelines, and secure end-to-end user experiences from Karachi, Pakistan.",
   location: {
     city: "Karachi",
     region: "Sindh",
@@ -103,6 +103,6 @@ export const COFOUNDER_STORY_CHAPTERS = [
       "Her work on ShadowTalk demonstrates that teenage developers from emerging markets can craft production AI platforms that rival products backed by hundreds of millions in venture capital.",
     ],
     pullQuote: "To every girl coding in her room: you don't need anyone's validation. Ship your code.",
-    pullQuoteAuthor: "Fatima (Sadaf Tayyaba)",
+    pullQuoteAuthor: "Fatima",
   },
 ];

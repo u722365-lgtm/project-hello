@@ -67,7 +67,7 @@ describe("Dedicated Founder Page Verification", () => {
     expect(content).toContain("Footer");
     expect(content).toContain("COFOUNDER_FULL_NAME");
     expect(content).toContain("Fatima");
-    expect(content).toContain("Sadaf Tayyaba");
+    expect(content).not.toContain("Fatima (Sadaf Tayyaba)");
     expect(content).toContain("shadowtalk@shadowtalk-ai.com");
     expect(content).toContain("Karachi, Pakistan");
   });
@@ -118,13 +118,15 @@ describe("Dedicated Founder Page Verification", () => {
       path.resolve(__dirname, "../components/about/AboutCoFounderSpotlight.tsx"),
       "utf-8"
     );
-    expect(coFounderSpotlightSource).toContain("Fatima (Sadaf Tayyaba)");
+    expect(coFounderSpotlightSource).toContain("Fatima");
+    expect(coFounderSpotlightSource).not.toContain("Fatima (Sadaf Tayyaba)");
     expect(coFounderSpotlightSource).toContain("shadowtalk@shadowtalk-ai.com");
     expect(coFounderSpotlightSource).toContain("Second Developer");
     expect(coFounderSpotlightSource).not.toContain("<img");
 
     const teamSource = fs.readFileSync(path.resolve(__dirname, "../components/about/AboutTeam.tsx"), "utf-8");
-    expect(teamSource).toContain("Fatima (Sadaf Tayyaba)");
+    expect(teamSource).toContain('"Fatima"');
+    expect(teamSource).not.toContain("Fatima (Sadaf Tayyaba)");
     expect(teamSource).toContain("shadowtalk@shadowtalk-ai.com");
 
     const timelineSource = fs.readFileSync(path.resolve(__dirname, "../components/about/AboutTimeline.tsx"), "utf-8");

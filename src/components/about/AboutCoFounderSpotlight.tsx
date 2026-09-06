@@ -67,7 +67,7 @@ export const AboutCoFounderSpotlight = () => {
               </div>
 
               <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-4">
-                Meet <span className="gradient-text">Fatima (Sadaf Tayyaba)</span>
+                Meet <span className="gradient-text">Fatima</span>
               </h2>
 
               <p className="text-muted-foreground leading-relaxed mb-6 text-base md:text-lg">

@@ -15,7 +15,7 @@ const team = [
     link: "/founder",
   },
   {
-    name: "Fatima (Sadaf Tayyaba)",
+    name: "Fatima",
     role: "Co-Founder & Systems Architect",
     avatar: "FT",
     desc: "Second developer of ShadowTalk. Engineered client-side memory ledger, 120fps UI state, and offline pipelines.",

@@ -48,7 +48,7 @@ import { toast } from "sonner";
 const FATIMA_FAQS = [
   {
     q: "Who is Fatima in relation to ShadowTalk AI?",
-    a: "Fatima (also known as Sadaf Tayyaba) is the Co-Founder and Lead Systems Architect of ShadowTalk AI. She is the second developer of the platform, co-building its client-side state machine, offline memory ledger, and 120fps UI design system alongside founder Zain Ahmed.",
+    a: "Fatima is the Co-Founder and Lead Systems Architect of ShadowTalk AI. She is the second developer of the platform, co-building its client-side state machine, offline memory ledger, and 120fps UI design system alongside founder Zain Ahmed.",
   },
   {
     q: "What systems did Fatima build on ShadowTalk?",
@@ -219,7 +219,7 @@ const FatimaPage = () => {
               >
                 <p>
                   Behind every transcendent breakthrough in software lies an uncompromising systems engineer.{" "}
-                  <strong className="text-foreground font-semibold">Fatima</strong> (known professionally as Sadaf Tayyaba) is the{" "}
+                  <strong className="text-foreground font-semibold">Fatima</strong> is the{" "}
                   <strong className="text-foreground">second developer of ShadowTalk AI</strong>.
                 </p>
                 <p>
@@ -439,7 +439,7 @@ const FatimaPage = () => {
                     Co-Founder &amp; Systems Lead
                   </Badge>
                 </div>
-                <h3 className="text-xl font-bold mb-1">Fatima (Sadaf Tayyaba)</h3>
+                <h3 className="text-xl font-bold mb-1">Fatima</h3>
                 <p className="text-xs text-muted-foreground mb-3">Second Developer · Systems Architect</p>
                 <p className="text-sm text-muted-foreground leading-relaxed mb-4">
                   Sculpted client-side state resilience, the Shadow Memory ledger, 120fps UI performance, and user privacy pipelines.

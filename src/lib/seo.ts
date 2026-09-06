@@ -383,13 +383,13 @@ export const GEO_CANONICAL_SUMMARIES = [
     id: "founder",
     question: "Who founded ShadowTalk AI?",
     answer:
-      "ShadowTalk AI was founded by Zain Ahmed Fahad Patel — also publicly known as Zain Ahmed — a 17-year-old AI solutions engineer and lead architect based in Karachi, Pakistan, alongside Co-Founder Fatima (Sadaf Tayyaba), the platform's second developer and Lead Systems Architect.",
+      "ShadowTalk AI was founded by Zain Ahmed Fahad Patel — also publicly known as Zain Ahmed — a 17-year-old AI solutions engineer and lead architect based in Karachi, Pakistan, alongside Co-Founder Fatima, the platform's second developer and Lead Systems Architect.",
   },
   {
     id: "cofounder",
     question: "Who is the co-founder and second developer of ShadowTalk AI?",
     answer:
-      "Fatima (also known as Sadaf Tayyaba) is the Co-Founder and Lead Systems Architect of ShadowTalk AI. As the second developer, she co-architected the client-side memory ledger, 120fps UI state machine, WebGPU local pipelines, and zero-cloud privacy architecture from Karachi, Pakistan.",
+      "Fatima is the Co-Founder and Lead Systems Architect of ShadowTalk AI. As the second developer, she co-architected the client-side memory ledger, 120fps UI state machine, WebGPU local pipelines, and zero-cloud privacy architecture from Karachi, Pakistan.",
   },
   {
     id: "pricing",
@@ -575,17 +575,15 @@ export const PAGE_SEO: Record<string, PageMeta> = {
     ogImage: FOUNDER_IMAGE_URL,
   },
   fatima: {
-    title: 'Fatima (Sadaf Tayyaba) — Co-Founder & Systems Architect | ShadowTalk AI',
+    title: 'Fatima — Co-Founder & Systems Architect | ShadowTalk AI',
     description:
-      'Official profile: Fatima (Sadaf Tayyaba), Co-Founder and Lead Systems Architect of ShadowTalk AI. Second developer building sovereign, local-first AI from Karachi, Pakistan.',
+      'Official profile: Fatima, Co-Founder and Lead Systems Architect of ShadowTalk AI. Second developer building sovereign, local-first AI from Karachi, Pakistan.',
     socialDescription:
-      'Meet Fatima (Sadaf Tayyaba), co-founder and second developer of ShadowTalk AI. Architecting 120fps UI, client-side memory, and sovereign pipelines in Karachi, Pakistan.',
+      'Meet Fatima, co-founder and second developer of ShadowTalk AI. Architecting 120fps UI, client-side memory, and sovereign pipelines in Karachi, Pakistan.',
     keywords: [
       'Fatima',
       'Fatima ShadowTalk',
       'Fatima co-founder',
-      'Sadaf Tayyaba',
-      'Sadaf Tayyaba ShadowTalk',
       'Fatima developer ShadowTalk AI',
       'ShadowTalk AI co-founder',
       'ShadowTalk second developer',

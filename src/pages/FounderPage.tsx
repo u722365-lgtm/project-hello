@@ -618,7 +618,7 @@ const FounderPage = () => {
                 Co-Founder &amp; Second Developer
               </Badge>
               <h3 className="text-2xl sm:text-3xl font-extrabold mb-2 text-foreground">
-                Fatima (Sadaf Tayyaba)
+                Fatima
               </h3>
               <p className="text-sm sm:text-base text-muted-foreground leading-relaxed mb-4">
                 The second developer behind ShadowTalk AI. Fatima co-architected the client-side memory ledger,
