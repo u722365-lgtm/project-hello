@@ -10,7 +10,6 @@ import {
   Copy,
   Check,
   ChevronRight,
-  ExternalLink,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ChatbotLogo from '../ChatbotLogo';
@@ -156,53 +155,62 @@ const LandingNavigation = ({ children }: LandingNavigationProps) => {
         </div>
       </header>
 
-      {/* Minimal & Professional Right-Side Navigation Drawer */}
+      {/* Minimal & Professional Right-Side Navigation Drawer with Frosted Glass Theme */}
       <AnimatePresence>
         {drawerOpen && (
           <div className="fixed inset-0 z-[99999] flex justify-end">
-            {/* Minimal Backdrop Overlay */}
+            {/* Backdrop Blur & Dimmer */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: 0.25 }}
               onClick={closeDrawer}
-              className="fixed inset-0 bg-black/70 backdrop-blur-sm cursor-pointer"
+              className="fixed inset-0 bg-black/75 backdrop-blur-md cursor-pointer"
               aria-hidden="true"
             />
 
-            {/* Sleek Right-Side Drawer (Proportionate, Minimal, Clean) */}
+            {/* Frosted Luxury Glass Blade */}
             <motion.aside
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 320 }}
-              style={{ backgroundColor: '#090d16' }}
-              className="relative w-full sm:max-w-md h-full flex flex-col z-10 border-l border-white/10 shadow-[-20px_0_50px_rgba(0,0,0,0.85)] text-slate-100 overflow-hidden"
+              className="relative w-full sm:max-w-md h-full flex flex-col z-10 bg-slate-950/85 backdrop-blur-3xl border-l border-white/15 shadow-[-25px_0_60px_rgba(0,0,0,0.85),inset_1px_0_0_rgba(255,255,255,0.08)] text-slate-100 overflow-hidden"
               role="dialog"
               aria-label="Site Navigation"
               aria-modal="true"
             >
-              {/* Drawer Minimalist Header */}
-              <div className="px-6 py-5 border-b border-white/[0.08] flex items-center justify-between shrink-0">
+              {/* Internal Glass Ambient Glow Accents */}
+              <div className="absolute -top-12 -right-12 w-80 h-80 bg-cyan-500/15 rounded-full blur-[100px] pointer-events-none" />
+              <div className="absolute top-1/2 -left-20 w-80 h-80 bg-purple-500/12 rounded-full blur-[110px] pointer-events-none" />
+              <div className="absolute -bottom-10 right-0 w-72 h-72 bg-pink-500/10 rounded-full blur-[90px] pointer-events-none" />
+
+              {/* Glass Header */}
+              <div className="px-6 py-5 border-b border-white/10 bg-slate-950/40 backdrop-blur-2xl flex items-center justify-between shrink-0 relative z-10">
                 <Link to="/" onClick={closeDrawer} className="flex items-center gap-3 select-none group">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 border border-white/10 group-hover:border-white/20 transition-colors">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900/90 border border-white/15 shadow-[0_0_15px_rgba(6,182,212,0.2)] group-hover:scale-105 transition-transform">
                     <ChatbotLogo size={18} />
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-semibold tracking-wider text-white uppercase font-sans">
                       ShadowTalk
                     </span>
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-[9px] font-mono text-cyan-300">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      Online
+                    </span>
                   </div>
                 </Link>
 
-                <div className="flex items-center gap-3">
-                  <span className="text-[10px] text-slate-500 font-mono hidden sm:inline">ESC</span>
+                <div className="flex items-center gap-2.5">
+                  <span className="text-[10px] text-slate-400 font-mono hidden sm:inline">
+                    <kbd className="px-1.5 py-0.5 rounded bg-slate-800/80 border border-white/15 text-slate-300">ESC</kbd>
+                  </span>
                   <button
                     type="button"
                     onClick={closeDrawer}
-                    className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
+                    className="h-8 w-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/15 hover:border-white/30 flex items-center justify-center text-slate-300 hover:text-white transition-all cursor-pointer shadow-sm"
                     aria-label="Close navigation menu"
                   >
                     <X className="h-4 w-4" />
@@ -210,12 +218,13 @@ const LandingNavigation = ({ children }: LandingNavigationProps) => {
                 </div>
               </div>
 
-              {/* Scroll Area with Clean Typography & Zero Box Clutter */}
-              <div className="flex-1 overflow-y-auto px-6 py-6 space-y-7 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              {/* Glass Content Area with Clean Typography */}
+              <div className="flex-1 overflow-y-auto px-6 py-6 space-y-7 relative z-10 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                 
                 {/* 1. SERVICES & AI TOOLS */}
                 <div className="space-y-3">
-                  <p className="text-[11px] font-mono uppercase tracking-[0.2em] text-slate-400 font-semibold">
+                  <p className="text-[11px] font-mono uppercase tracking-[0.2em] text-cyan-400/90 font-semibold flex items-center gap-2">
+                    <span className="h-1 w-1 rounded-full bg-cyan-400" />
                     Services & AI Tools
                   </p>
 
@@ -223,7 +232,7 @@ const LandingNavigation = ({ children }: LandingNavigationProps) => {
                     <Link
                       to="/chatbot"
                       onClick={closeDrawer}
-                      className="group flex items-center justify-between py-2.5 px-3 -mx-3 rounded-lg hover:bg-white/[0.04] transition-colors"
+                      className="group flex items-center justify-between py-2.5 px-3 -mx-3 rounded-xl hover:bg-white/[0.06] hover:backdrop-blur-md border border-transparent hover:border-white/10 transition-all"
                     >
                       <div className="flex items-center gap-3">
                         <Bot className="h-4 w-4 text-cyan-400 shrink-0" />
@@ -236,13 +245,13 @@ const LandingNavigation = ({ children }: LandingNavigationProps) => {
                           </p>
                         </div>
                       </div>
-                      <ChevronRight className="h-4 w-4 text-slate-600 group-hover:text-slate-300 group-hover:translate-x-0.5 transition-all" />
+                      <ChevronRight className="h-4 w-4 text-slate-500 group-hover:text-cyan-300 group-hover:translate-x-0.5 transition-all" />
                     </Link>
 
                     <Link
                       to="/workspace"
                       onClick={closeDrawer}
-                      className="group flex items-center justify-between py-2.5 px-3 -mx-3 rounded-lg hover:bg-white/[0.04] transition-colors"
+                      className="group flex items-center justify-between py-2.5 px-3 -mx-3 rounded-xl hover:bg-white/[0.06] hover:backdrop-blur-md border border-transparent hover:border-white/10 transition-all"
                     >
                       <div className="flex items-center gap-3">
                         <Sparkles className="h-4 w-4 text-purple-400 shrink-0" />
@@ -255,13 +264,13 @@ const LandingNavigation = ({ children }: LandingNavigationProps) => {
                           </p>
                         </div>
                       </div>
-                      <ChevronRight className="h-4 w-4 text-slate-600 group-hover:text-slate-300 group-hover:translate-x-0.5 transition-all" />
+                      <ChevronRight className="h-4 w-4 text-slate-500 group-hover:text-purple-300 group-hover:translate-x-0.5 transition-all" />
                     </Link>
 
                     <Link
                       to="/deep-research"
                       onClick={closeDrawer}
-                      className="group flex items-center justify-between py-2.5 px-3 -mx-3 rounded-lg hover:bg-white/[0.04] transition-colors"
+                      className="group flex items-center justify-between py-2.5 px-3 -mx-3 rounded-xl hover:bg-white/[0.06] hover:backdrop-blur-md border border-transparent hover:border-white/10 transition-all"
                     >
                       <div className="flex items-center gap-3">
                         <Brain className="h-4 w-4 text-blue-400 shrink-0" />
@@ -274,13 +283,13 @@ const LandingNavigation = ({ children }: LandingNavigationProps) => {
                           </p>
                         </div>
                       </div>
-                      <ChevronRight className="h-4 w-4 text-slate-600 group-hover:text-slate-300 group-hover:translate-x-0.5 transition-all" />
+                      <ChevronRight className="h-4 w-4 text-slate-500 group-hover:text-blue-300 group-hover:translate-x-0.5 transition-all" />
                     </Link>
 
                     <Link
                       to="/private-ai"
                       onClick={closeDrawer}
-                      className="group flex items-center justify-between py-2.5 px-3 -mx-3 rounded-lg hover:bg-white/[0.04] transition-colors"
+                      className="group flex items-center justify-between py-2.5 px-3 -mx-3 rounded-xl hover:bg-white/[0.06] hover:backdrop-blur-md border border-transparent hover:border-white/10 transition-all"
                     >
                       <div className="flex items-center gap-3">
                         <Shield className="h-4 w-4 text-emerald-400 shrink-0" />
@@ -293,38 +302,39 @@ const LandingNavigation = ({ children }: LandingNavigationProps) => {
                           </p>
                         </div>
                       </div>
-                      <ChevronRight className="h-4 w-4 text-slate-600 group-hover:text-slate-300 group-hover:translate-x-0.5 transition-all" />
+                      <ChevronRight className="h-4 w-4 text-slate-500 group-hover:text-emerald-300 group-hover:translate-x-0.5 transition-all" />
                     </Link>
 
                     <Link
                       to="/studio"
                       onClick={closeDrawer}
-                      className="flex items-center justify-between py-2 px-3 -mx-3 rounded-lg text-xs text-slate-400 hover:text-slate-200 hover:bg-white/[0.03] transition-colors"
+                      className="flex items-center justify-between py-2 px-3 -mx-3 rounded-xl text-xs text-slate-400 hover:text-slate-200 hover:bg-white/[0.04] transition-colors"
                     >
                       <span className="pl-7">Model Studio & Code Playground</span>
-                      <ChevronRight className="h-3.5 w-3.5 text-slate-600" />
+                      <ChevronRight className="h-3.5 w-3.5 text-slate-500" />
                     </Link>
                   </div>
                 </div>
 
                 {/* 2. ABOUT US / FOUNDERS */}
                 <div className="space-y-3">
-                  <p className="text-[11px] font-mono uppercase tracking-[0.2em] text-slate-400 font-semibold">
+                  <p className="text-[11px] font-mono uppercase tracking-[0.2em] text-purple-400/90 font-semibold flex items-center gap-2">
+                    <span className="h-1 w-1 rounded-full bg-purple-400" />
                     About Us / Founders
                   </p>
 
-                  <div className="space-y-2">
+                  <div className="space-y-2.5">
                     {/* Zain Ahmed */}
                     <Link
                       to="/founder"
                       onClick={closeDrawer}
-                      className="group block p-3.5 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/[0.06] hover:border-white/15 transition-all"
+                      className="group block p-3.5 rounded-2xl bg-white/[0.03] hover:bg-white/[0.07] backdrop-blur-md border border-white/[0.08] hover:border-cyan-500/40 transition-all shadow-[0_4px_20px_rgba(0,0,0,0.15)]"
                     >
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-semibold text-white group-hover:text-cyan-300 transition-colors">
                           {FOUNDER_CANONICAL.fullName}
                         </span>
-                        <span className="text-[10px] font-mono text-cyan-400 bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-500/25">
+                        <span className="text-[10px] font-mono text-cyan-300 bg-cyan-950/70 px-2 py-0.5 rounded-full border border-cyan-500/30">
                           Founder & Lead Architect
                         </span>
                       </div>
@@ -337,18 +347,18 @@ const LandingNavigation = ({ children }: LandingNavigationProps) => {
                     <Link
                       to="/fatima"
                       onClick={closeDrawer}
-                      className="group block p-3.5 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/[0.06] hover:border-white/15 transition-all"
+                      className="group block p-3.5 rounded-2xl bg-white/[0.03] hover:bg-white/[0.07] backdrop-blur-md border border-white/[0.08] hover:border-purple-500/40 transition-all shadow-[0_4px_20px_rgba(0,0,0,0.15)]"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className="h-5 w-5 rounded bg-purple-950/80 border border-purple-500/30 font-mono text-[9px] font-bold text-purple-300 flex items-center justify-center">
+                          <span className="h-5 w-5 rounded-md bg-purple-950/90 border border-purple-500/40 font-mono text-[9px] font-bold text-purple-300 flex items-center justify-center">
                             FT
                           </span>
                           <span className="text-sm font-semibold text-white group-hover:text-purple-300 transition-colors">
                             {COFOUNDER_CANONICAL.fullName}
                           </span>
                         </div>
-                        <span className="text-[10px] font-mono text-purple-400 bg-purple-950/60 px-2 py-0.5 rounded border border-purple-500/25">
+                        <span className="text-[10px] font-mono text-purple-300 bg-purple-950/70 px-2 py-0.5 rounded-full border border-purple-500/30">
                           Co-Founder & Systems Architect
                         </span>
                       </div>
@@ -372,20 +382,21 @@ const LandingNavigation = ({ children }: LandingNavigationProps) => {
 
                 {/* 3. PRICING & ACCESS */}
                 <div className="space-y-3">
-                  <p className="text-[11px] font-mono uppercase tracking-[0.2em] text-slate-400 font-semibold">
+                  <p className="text-[11px] font-mono uppercase tracking-[0.2em] text-emerald-400/90 font-semibold flex items-center gap-2">
+                    <span className="h-1 w-1 rounded-full bg-emerald-400" />
                     Pricing & Access
                   </p>
 
                   <Link
                     to="/pricing"
                     onClick={closeDrawer}
-                    className="group block p-3.5 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/[0.06] hover:border-white/15 transition-all"
+                    className="group block p-3.5 rounded-2xl bg-white/[0.03] hover:bg-white/[0.07] backdrop-blur-md border border-white/[0.08] hover:border-emerald-500/40 transition-all shadow-[0_4px_20px_rgba(0,0,0,0.15)]"
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-semibold text-white group-hover:text-emerald-300 transition-colors">
                         Membership Plans & Pricing
                       </span>
-                      <ChevronRight className="h-4 w-4 text-slate-600 group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all" />
+                      <ChevronRight className="h-4 w-4 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all" />
                     </div>
                     <p className="text-xs text-slate-400 mt-1">
                       Free Starter ($0) &bull; Pro Sovereign ($19/mo) &bull; Lifetime Tier
@@ -398,19 +409,20 @@ const LandingNavigation = ({ children }: LandingNavigationProps) => {
 
                 {/* 4. CONTACT DETAILS & SUPPORT */}
                 <div className="space-y-3">
-                  <p className="text-[11px] font-mono uppercase tracking-[0.2em] text-slate-400 font-semibold">
+                  <p className="text-[11px] font-mono uppercase tracking-[0.2em] text-pink-400/90 font-semibold flex items-center gap-2">
+                    <span className="h-1 w-1 rounded-full bg-pink-400" />
                     Contact Details & Support
                   </p>
 
-                  {/* Clean Business Email Row */}
-                  <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-between">
+                  {/* Clean Business Email Row with Frosted Glass */}
+                  <div className="p-3.5 rounded-2xl bg-white/[0.03] backdrop-blur-md border border-pink-500/25 flex items-center justify-between shadow-[0_4px_20px_rgba(0,0,0,0.15)]">
                     <div>
                       <p className="text-[10px] text-slate-400 uppercase tracking-wider font-mono">
                         Official Inquiries
                       </p>
                       <a
                         href="mailto:shadowtalk@shadowtalk-ai.com"
-                        className="text-xs font-mono text-white hover:text-cyan-300 transition-colors font-medium mt-0.5 block"
+                        className="text-xs font-mono text-white hover:text-pink-300 transition-colors font-medium mt-0.5 block"
                       >
                         shadowtalk@shadowtalk-ai.com
                       </a>
@@ -418,7 +430,7 @@ const LandingNavigation = ({ children }: LandingNavigationProps) => {
                     <button
                       type="button"
                       onClick={copyBusinessEmail}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer text-xs flex items-center gap-1 font-mono"
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer text-xs flex items-center gap-1 font-mono"
                     >
                       {copiedEmail ? (
                         <>
@@ -439,14 +451,14 @@ const LandingNavigation = ({ children }: LandingNavigationProps) => {
                     <Link
                       to="/contact"
                       onClick={closeDrawer}
-                      className="p-2.5 rounded-lg bg-white/[0.02] hover:bg-white/[0.05] border border-white/[0.06] text-slate-300 hover:text-white transition-colors"
+                      className="p-2.5 rounded-xl bg-white/[0.02] hover:bg-white/[0.06] backdrop-blur-sm border border-white/[0.08] text-slate-300 hover:text-white transition-colors text-center"
                     >
                       Contact Form
                     </Link>
                     <Link
                       to="/status"
                       onClick={closeDrawer}
-                      className="p-2.5 rounded-lg bg-white/[0.02] hover:bg-white/[0.05] border border-white/[0.06] text-slate-300 hover:text-white transition-colors flex items-center justify-between"
+                      className="p-2.5 rounded-xl bg-white/[0.02] hover:bg-white/[0.06] backdrop-blur-sm border border-white/[0.08] text-slate-300 hover:text-white transition-colors flex items-center justify-center gap-1.5"
                     >
                       <span>Live Status</span>
                       <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
@@ -454,14 +466,14 @@ const LandingNavigation = ({ children }: LandingNavigationProps) => {
                     <Link
                       to="/faq"
                       onClick={closeDrawer}
-                      className="p-2.5 rounded-lg bg-white/[0.02] hover:bg-white/[0.05] border border-white/[0.06] text-slate-300 hover:text-white transition-colors"
+                      className="p-2.5 rounded-xl bg-white/[0.02] hover:bg-white/[0.06] backdrop-blur-sm border border-white/[0.08] text-slate-300 hover:text-white transition-colors text-center"
                     >
                       FAQ
                     </Link>
                     <Link
                       to="/help"
                       onClick={closeDrawer}
-                      className="p-2.5 rounded-lg bg-white/[0.02] hover:bg-white/[0.05] border border-white/[0.06] text-slate-300 hover:text-white transition-colors"
+                      className="p-2.5 rounded-xl bg-white/[0.02] hover:bg-white/[0.06] backdrop-blur-sm border border-white/[0.08] text-slate-300 hover:text-white transition-colors text-center"
                     >
                       Help Center
                     </Link>
@@ -470,12 +482,12 @@ const LandingNavigation = ({ children }: LandingNavigationProps) => {
 
               </div>
 
-              {/* Minimalist Bottom Bar */}
-              <div className="p-5 border-t border-white/[0.08] bg-slate-950/60 flex items-center gap-3 shrink-0">
+              {/* Frosted Glass Bottom Bar */}
+              <div className="p-5 border-t border-white/10 bg-slate-950/50 backdrop-blur-2xl flex items-center gap-3 shrink-0 relative z-10">
                 <Link
                   to="/chatbot"
                   onClick={closeDrawer}
-                  className="w-full py-2.5 px-4 rounded-xl bg-white text-slate-950 hover:bg-slate-200 text-xs font-semibold flex items-center justify-center gap-2 transition-colors shadow-sm"
+                  className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-cyan-500/90 via-purple-600/90 to-pink-600/90 backdrop-blur-md hover:from-cyan-400 hover:to-pink-500 text-white text-xs font-semibold flex items-center justify-center gap-2 transition-all shadow-[0_0_25px_rgba(6,182,212,0.3)] border border-white/20"
                 >
                   <span>Launch Workspace</span>
                   <ArrowRight className="h-3.5 w-3.5" />
