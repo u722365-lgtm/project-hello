@@ -68,7 +68,7 @@ const FOUNDER_FAQS = [
   },
   {
     q: "How can I contact or collaborate with Zain Ahmed?",
-    a: "You can reach Zain directly on LinkedIn (Zain Ahmed Fahad Patel), Instagram (@shadowtalk_ai & @onlyz_ain1), or via email at shadowtalk68@gmail.com for partnerships, enterprise deployments, or press interviews.",
+    a: "You can reach Zain directly on LinkedIn (Zain Ahmed Fahad Patel), Instagram (@shadowtalk_ai & @onlyz_ain1), or via email at shadowtalk@shadowtalk-ai.com for partnerships, enterprise deployments, or press interviews.",
   },
 ];
 
@@ -629,9 +629,9 @@ const FounderPage = () => {
                   Meet Co-Founder Fatima <ArrowRight className="h-3.5 w-3.5" />
                 </Button>
                 <Button variant="outline" size="sm" asChild>
-                  <a href="mailto:sadaftayyaba655@gmail.com">
+                  <a href="mailto:shadowtalk@shadowtalk-ai.com">
                     <Mail className="h-3.5 w-3.5 mr-1 text-accent" />
-                    sadaftayyaba655@gmail.com
+                    shadowtalk@shadowtalk-ai.com
                   </a>
                 </Button>
               </div>

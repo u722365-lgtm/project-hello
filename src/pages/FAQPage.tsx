@@ -94,7 +94,7 @@ const STATIC_FAQS: FAQItem[] = [
     id: "faq-refund-policy",
     category: "pricing",
     question: "Can I get a refund if I am not satisfied?",
-    answer: "Yes. We offer a 100% money-back guarantee for 14 days from your initial subscription date. Simply email shadowtalk68@gmail.com with your account email and our billing team will process your full refund immediately.",
+    answer: "Yes. We offer a 100% money-back guarantee for 14 days from your initial subscription date. Simply email shadowtalk@shadowtalk-ai.com with your account email and our billing team will process your full refund immediately.",
   },
   {
     id: "faq-who-built",

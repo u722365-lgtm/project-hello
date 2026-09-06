@@ -68,7 +68,7 @@ describe("Dedicated Founder Page Verification", () => {
     expect(content).toContain("COFOUNDER_FULL_NAME");
     expect(content).toContain("Fatima");
     expect(content).toContain("Sadaf Tayyaba");
-    expect(content).toContain("sadaftayyaba655@gmail.com");
+    expect(content).toContain("shadowtalk@shadowtalk-ai.com");
     expect(content).toContain("Karachi, Pakistan");
   });
 
@@ -119,16 +119,26 @@ describe("Dedicated Founder Page Verification", () => {
       "utf-8"
     );
     expect(coFounderSpotlightSource).toContain("Fatima (Sadaf Tayyaba)");
-    expect(coFounderSpotlightSource).toContain("sadaftayyaba655@gmail.com");
+    expect(coFounderSpotlightSource).toContain("shadowtalk@shadowtalk-ai.com");
     expect(coFounderSpotlightSource).toContain("Second Developer");
     expect(coFounderSpotlightSource).not.toContain("<img");
 
     const teamSource = fs.readFileSync(path.resolve(__dirname, "../components/about/AboutTeam.tsx"), "utf-8");
     expect(teamSource).toContain("Fatima (Sadaf Tayyaba)");
-    expect(teamSource).toContain("sadaftayyaba655@gmail.com");
+    expect(teamSource).toContain("shadowtalk@shadowtalk-ai.com");
 
     const timelineSource = fs.readFileSync(path.resolve(__dirname, "../components/about/AboutTimeline.tsx"), "utf-8");
     expect(timelineSource).toContain("Fatima Joins as Co-Founder");
+  });
+
+  it("Enforces business email shadowtalk@shadowtalk-ai.com and forbids personal emails", () => {
+    const founderIdentitySource = fs.readFileSync(path.resolve(__dirname, "./founderIdentity.ts"), "utf-8");
+    expect(founderIdentitySource).toContain("shadowtalk@shadowtalk-ai.com");
+    expect(founderIdentitySource).not.toContain("shadowtalk68@gmail.com");
+
+    const cofounderIdentitySource = fs.readFileSync(path.resolve(__dirname, "./cofounderIdentity.ts"), "utf-8");
+    expect(cofounderIdentitySource).toContain("shadowtalk@shadowtalk-ai.com");
+    expect(cofounderIdentitySource).not.toContain("sadaftayyaba655@gmail.com");
   });
 });
 

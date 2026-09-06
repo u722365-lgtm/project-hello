@@ -74,7 +74,7 @@ ShadowTalk AI (shadowtalk-ai.com) is an agentic AI workspace by Zain Ahmed (17, 
 - **Canonical profile:** https://www.shadowtalk-ai.com/zain-ahmed-fahad-patel.html
 - **LinkedIn:** https://www.linkedin.com/in/zain-ahmed-917b6b3a6
 - **Instagram:** https://www.instagram.com/shadowtalk_ai (@shadowtalk_ai)
-- Email: shadowtalk68@gmail.com
+- Email: shadowtalk@shadowtalk-ai.com
 
 ## Technical notes for crawlers
 
@@ -83,4 +83,4 @@ ShadowTalk AI (shadowtalk-ai.com) is an agentic AI workspace by Zain Ahmed (17, 
 - AI crawlers allowed in robots.txt (GPTBot, ClaudeBot, Google-Extended, PerplexityBot, etc.).
 - Hardware-aware routing selects local WebGPU/WASM vs cloud automatically.
 
-*Last updated: 2026-06-11 · Maintainer: Zain Ahmed · shadowtalk68@gmail.com*
+*Last updated: 2026-06-11 · Maintainer: Zain Ahmed · shadowtalk@shadowtalk-ai.com*

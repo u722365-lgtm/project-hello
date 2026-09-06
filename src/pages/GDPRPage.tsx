@@ -333,13 +333,13 @@ export const GDPRPage = () => {
             </p>
             <div className="bg-background/80 p-4 rounded-xl border border-border/40 space-y-1 font-mono text-xs">
               <p><strong className="text-foreground">Data Controller:</strong> ShadowTalk AI (Zain Ahmed Fahad Patel)</p>
-              <p><strong className="text-foreground">Official Email:</strong> shadowtalk68@gmail.com</p>
+              <p><strong className="text-foreground">Official Email:</strong> shadowtalk@shadowtalk-ai.com</p>
               <p><strong className="text-foreground">Location:</strong> Karachi, Pakistan (Serving Global Users)</p>
               <p><strong className="text-foreground">Response SLA:</strong> Within 30 calendar days pursuant to Art. 12(3) GDPR</p>
             </div>
             <div className="pt-2 flex flex-wrap items-center gap-3">
               <Button asChild size="sm" className="bg-primary text-primary-foreground text-xs">
-                <a href="mailto:shadowtalk68@gmail.com?subject=GDPR%20Data%20Subject%20Request">
+                <a href="mailto:shadowtalk@shadowtalk-ai.com?subject=GDPR%20Data%20Subject%20Request">
                   Contact DPO Directly &rarr;
                 </a>
               </Button>

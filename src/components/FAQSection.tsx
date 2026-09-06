@@ -115,7 +115,7 @@ const FAQSection = () => {
               <div className="flex flex-col gap-2">
                 <LandingMagneticButton>
                   <Button size="sm" className="btn-glow justify-start gap-2 w-full" asChild>
-                    <a href="mailto:shadowtalk68@gmail.com">
+                    <a href="mailto:shadowtalk@shadowtalk-ai.com">
                       <Mail className="h-4 w-4" />
                       Email Support
                     </a>

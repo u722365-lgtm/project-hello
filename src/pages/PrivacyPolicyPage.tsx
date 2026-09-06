@@ -133,7 +133,7 @@ Regardless of your country of residence, ShadowTalk provides you with comprehens
 - **Right to Restrict Processing**: Disable optional telemetry, analytics cookies, or cloud sync in favor of local-only browser storage.
 - **Right to Lodge a Complaint**: You have the right to contact your local Data Protection Authority regarding our data processing practices.
 
-To exercise any of these rights immediately, visit our interactive [GDPR Portal](/gdpr) or email our Data Protection Officer at **shadowtalk68@gmail.com**.
+To exercise any of these rights immediately, visit our interactive [GDPR Portal](/gdpr) or email our Data Protection Officer at **shadowtalk@shadowtalk-ai.com**.
     `,
   },
   {
@@ -158,7 +158,7 @@ If you have questions, feedback, or privacy-related requests, please contact our
 
 - **Entity**: ShadowTalk AI
 - **Founder & DPO**: Zain Ahmed Fahad Patel
-- **Dedicated Privacy Email**: shadowtalk68@gmail.com
+- **Dedicated Privacy Email**: shadowtalk@shadowtalk-ai.com
 - **Physical Headquarters**: Karachi, Pakistan
 - **Response SLA**: All formal data privacy inquiries are acknowledged within 48 business hours.
     `,

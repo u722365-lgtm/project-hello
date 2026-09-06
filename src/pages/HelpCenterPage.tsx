@@ -197,7 +197,7 @@ ShadowTalk provides flexible tiers designed for individual developers up to scal
 - **Elite ($20/mo)**: Unlimited deep research briefs, WebGPU model runtime, and priority technical support.
 
 #### 14-Day Money-Back Guarantee
-If you are not completely satisfied with your upgraded tier, contact **shadowtalk68@gmail.com** within 14 days for a no-questions-asked full refund.
+If you are not completely satisfied with your upgraded tier, contact **shadowtalk@shadowtalk-ai.com** within 14 days for a no-questions-asked full refund.
     `,
   },
 

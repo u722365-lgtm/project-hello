@@ -120,9 +120,9 @@ export const AboutCoFounderSpotlight = () => {
                   <ArrowRight className="h-4 w-4" />
                 </Button>
                 <Button variant="outline" className="border-border/60 gap-2" asChild>
-                  <a href="mailto:sadaftayyaba655@gmail.com">
+                  <a href="mailto:shadowtalk@shadowtalk-ai.com">
                     <Mail className="h-4 w-4 text-accent" />
-                    sadaftayyaba655@gmail.com
+                    shadowtalk@shadowtalk-ai.com
                   </a>
                 </Button>
               </div>

@@ -19,7 +19,7 @@ export const COFOUNDER_CANONICAL = {
   familyName: "Tayyaba",
   jobTitle: "Co-Founder & Lead Systems Architect",
   secondaryTitle: "Core Full-Stack & UI/UX Engineer",
-  email: "sadaftayyaba655@gmail.com",
+  email: "shadowtalk@shadowtalk-ai.com",
   worksFor: {
     "@type": "Organization",
     name: "ShadowTalk AI",

@@ -59,7 +59,7 @@ To access advanced capabilities, you must authenticate through an authorized pro
 - Provide accurate, complete, and truthful account credentials.
 - Maintain the absolute confidentiality of your authentication credentials and API keys.
 - Accept sole responsibility for all activities, token consumption, and outputs generated under your account credentials.
-- Notify our support team immediately at **shadowtalk68@gmail.com** if you suspect any unauthorized breach of your account.
+- Notify our support team immediately at **shadowtalk@shadowtalk-ai.com** if you suspect any unauthorized breach of your account.
     `,
   },
   {
@@ -93,7 +93,7 @@ You agree not to misuse the Service or facilitate any of the following prohibite
 
 **Paid Plans (Pro $5, Premium $15, Elite $20)**: Paid subscriptions grant increased quota limits, priority model inference, and advanced tool access. Subscriptions renew automatically on a recurring monthly basis unless cancelled prior to the renewal date.
 
-**14-Day Money-Back Guarantee**: If you are unsatisfied with an upgraded subscription for any reason within 14 days of your initial purchase, contact **shadowtalk68@gmail.com** for a full refund.
+**14-Day Money-Back Guarantee**: If you are unsatisfied with an upgraded subscription for any reason within 14 days of your initial purchase, contact **shadowtalk@shadowtalk-ai.com** for a full refund.
     `,
   },
   {
@@ -130,7 +130,7 @@ These Terms shall be governed by and construed in accordance with applicable com
 
 For legal notices, terms inquiries, or formal communication:
 - **Entity**: ShadowTalk AI (Zain Ahmed Fahad Patel)
-- **Legal Email**: shadowtalk68@gmail.com
+- **Legal Email**: shadowtalk@shadowtalk-ai.com
 - **Physical Headquarters**: Karachi, Pakistan
     `,
   },

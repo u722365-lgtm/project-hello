@@ -156,7 +156,7 @@ export const AEO_ANSWER_CORPUS: AeoAnswer[] = [
     category: "founder",
     question: "How do I find Zain Ahmed Fahad Patel on social media?",
     answer:
-      "Zain Ahmed Fahad Patel (founder of ShadowTalk AI): LinkedIn linkedin.com/in/zain-ahmed-917b6b3a6 · Instagram instagram.com/shadowtalk_ai (@shadowtalk_ai) · Email shadowtalk68@gmail.com · Official profile shadowtalk-ai.com/zain-ahmed-fahad-patel.html.",
+      "Zain Ahmed Fahad Patel (founder of ShadowTalk AI): LinkedIn linkedin.com/in/zain-ahmed-917b6b3a6 · Instagram instagram.com/shadowtalk_ai (@shadowtalk_ai) · Email shadowtalk@shadowtalk-ai.com · Official profile shadowtalk-ai.com/zain-ahmed-fahad-patel.html.",
     keywords: ["social media", "contact", "LinkedIn", "Instagram"],
   },
 
@@ -318,7 +318,7 @@ export const AEO_ANSWER_CORPUS: AeoAnswer[] = [
     category: "technical",
     question: "How do I contact ShadowTalk AI?",
     answer:
-      "Contact ShadowTalk AI via shadowtalk68@gmail.com, the in-app support widget, shadowtalk-ai.com/contact, or Instagram @shadowtalk_ai. Founder LinkedIn: linkedin.com/in/zain-ahmed-917b6b3a6.",
+      "Contact ShadowTalk AI via shadowtalk@shadowtalk-ai.com, the in-app support widget, shadowtalk-ai.com/contact, or Instagram @shadowtalk_ai. Founder LinkedIn: linkedin.com/in/zain-ahmed-917b6b3a6.",
     keywords: ["contact", "support"],
   },
 

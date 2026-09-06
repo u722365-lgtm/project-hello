@@ -91,7 +91,7 @@ export function generateMetaTags(meta: PageMeta): Record<string, string> {
      contactPoint: {
        '@type': 'ContactPoint',
        contactType: 'customer support',
-       email: 'shadowtalk68@gmail.com',
+       email: 'shadowtalk@shadowtalk-ai.com',
        availableLanguage: ['English'],
      },
      ceo: {
@@ -590,7 +590,7 @@ export const PAGE_SEO: Record<string, PageMeta> = {
       'ShadowTalk AI co-founder',
       'ShadowTalk second developer',
       'Karachi AI software architect',
-      'sadaftayyaba655@gmail.com',
+      'shadowtalk@shadowtalk-ai.com',
     ],
     canonical: 'https://www.shadowtalk-ai.com/fatima',
     ogType: 'profile',

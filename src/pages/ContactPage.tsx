@@ -83,22 +83,22 @@ export const ContactPage = () => {
       toast.success("Message received! Our team will respond within 24 hours.");
     } catch (error) {
       console.error("Contact form error:", error);
-      toast.error("Failed to transmit. Please email shadowtalk68@gmail.com directly.");
+      toast.error("Failed to transmit. Please email shadowtalk@shadowtalk-ai.com directly.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleCopyEmail = () => {
-    navigator.clipboard.writeText("shadowtalk68@gmail.com");
-    toast.success("Copied shadowtalk68@gmail.com to clipboard!");
+    navigator.clipboard.writeText("shadowtalk@shadowtalk-ai.com");
+    toast.success("Copied shadowtalk@shadowtalk-ai.com to clipboard!");
   };
 
   const contactMethods = [
     {
       icon: Mail,
       title: "Direct Email",
-      description: "shadowtalk68@gmail.com",
+      description: "shadowtalk@shadowtalk-ai.com",
       detail: "Average response: under 24 hours",
       action: handleCopyEmail,
       actionText: "Copy Email",
@@ -422,7 +422,7 @@ export const ContactPage = () => {
                     Copy Email
                   </Button>
                   <Button asChild variant="ghost" size="sm" className="text-xs gap-1.5 text-muted-foreground hover:text-foreground">
-                    <a href="mailto:shadowtalk68@gmail.com">
+                    <a href="mailto:shadowtalk@shadowtalk-ai.com">
                       Mail App
                       <ExternalLink className="h-3 w-3" />
                     </a>

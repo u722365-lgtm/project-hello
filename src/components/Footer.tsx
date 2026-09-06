@@ -92,7 +92,7 @@ const Footer = () => {
 
   const socials = [
     ...SOCIAL_LINKS,
-    { icon: Mail, href: "mailto:shadowtalk68@gmail.com", label: "Email" },
+    { icon: Mail, href: "mailto:shadowtalk@shadowtalk-ai.com", label: "Email" },
   ];
 
   return (

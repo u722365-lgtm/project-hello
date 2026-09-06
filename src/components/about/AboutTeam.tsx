@@ -22,7 +22,7 @@ const team = [
     tags: ["Co-Founder", "2nd Developer", "Memory Ledger", "120fps UI"],
     gradient: "from-accent to-primary",
     link: "/fatima",
-    email: "sadaftayyaba655@gmail.com",
+    email: "shadowtalk@shadowtalk-ai.com",
   },
   {
     name: "Community Contributors",

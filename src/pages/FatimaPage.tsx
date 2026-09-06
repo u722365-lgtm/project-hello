@@ -64,7 +64,7 @@ const FATIMA_FAQS = [
   },
   {
     q: "How can I contact or collaborate with Fatima?",
-    a: "You can contact Fatima directly via email at sadaftayyaba655@gmail.com for engineering collaborations, technical inquiries, and ecosystem partnerships.",
+    a: "You can contact Fatima directly via email at shadowtalk@shadowtalk-ai.com for engineering collaborations, technical inquiries, and ecosystem partnerships.",
   },
 ];
 
@@ -337,7 +337,7 @@ const FatimaPage = () => {
                     </div>
                     <h3 className="text-xl font-bold text-foreground">Fatima</h3>
                     <p className="text-xs text-accent font-mono font-medium mt-0.5">Co-Founder &amp; Systems Architect</p>
-                    <p className="text-[11px] text-muted-foreground mt-1">sadaftayyaba655@gmail.com</p>
+                    <p className="text-[11px] text-muted-foreground mt-1">shadowtalk@shadowtalk-ai.com</p>
                   </div>
 
                   {/* Telemetry Console Snippet */}

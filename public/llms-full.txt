@@ -32,7 +32,7 @@ ShadowTalk AI is a **sovereign agentic AI workspace** (web + PWA + desktop) that
 | **Role** | Founder & Lead Architect · AI Solutions Engineer |
 | **LinkedIn** | https://www.linkedin.com/in/zain-ahmed-917b6b3a6 |
 | **Instagram** | https://www.instagram.com/shadowtalk_ai (@shadowtalk_ai) |
-| **Email** | shadowtalk68@gmail.com |
+| **Email** | shadowtalk@shadowtalk-ai.com |
 | **GitHub** | https://github.com/zain836/shadowtalk-ai-903ca615 |
 | **Founded** | February 2024 |
 | **Funding** | Bootstrapped |
@@ -182,7 +182,7 @@ A: Yes — passphrase-derived E2EE for conversation content stored in cloud (cip
 
 ---
 
-*Last updated: 2026-06-11 · Maintainer: Zain Ahmed · shadowtalk68@gmail.com*
+*Last updated: 2026-06-11 · Maintainer: Zain Ahmed · shadowtalk@shadowtalk-ai.com*
 
 
 ## Leadership
