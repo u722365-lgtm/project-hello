@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, lazy, Suspense, useCallback } from "react";
+import { useState, useEffect, useRef, lazy, Suspense, useCallback, useMemo } from "react";
 import { Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -73,16 +73,24 @@ import { useAutoImproveContext } from "@/contexts/AutoImproveContext";
 import { trackAgenticEvent } from "@/lib/agenticMetrics";
 
 import { detectChatImageIntent } from "@/lib/chatImageIntent";
-function buildVisionUserMessage(text: string, base64Data: string, mimeType = "image/png") {
+function buildVisionUserMessage(
+  text: string,
+  base64Data: string,
+  mimeType = "image/png",
+): {
+  role: string;
+  content: Array<{ type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }>;
+} {
   const url = base64Data.startsWith("data:") ? base64Data : `data:${mimeType};base64,${base64Data}`;
   return {
     role: "user",
     content: [
-      { type: "text", text: text || "Please analyze this image." },
-      { type: "image_url", image_url: { url } },
+      { type: "text" as const, text: text || "Please analyze this image." },
+      { type: "image_url" as const, image_url: { url } },
     ],
   };
 }
+
 
 const CognitiveLoopPanel = lazy(() =>
   import("@/components/chat/CognitiveLoopPanel").then((m) => ({ default: m.CognitiveLoopPanel })),
@@ -2400,13 +2408,14 @@ Structure and Content Guidelines:
         <DocumentGenerator
           isOpen={showDocumentGenerator}
           onClose={() => setShowDocumentGenerator(false)}
-          initialTopic={documentTopic}
-          onInsertToChat={(docContent) => {
+          initialPrompt={documentTopic}
+          onDocumentGenerated={(docContent) => {
             insertAssistantToChat(docContent);
             setShowDocumentGenerator(false);
           }}
         />
       )}
+
       {showCognitiveLoop && (
         <CognitiveLoopPanel
           isOpen={showCognitiveLoop}
