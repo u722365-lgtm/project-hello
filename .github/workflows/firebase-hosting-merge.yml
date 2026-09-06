@@ -10,6 +10,11 @@ jobs:
       - uses: actions/checkout@v4
       - run: npm ci
       - run: npm run build
+        env:
+          # Public ShadowTalk chat AI endpoint (publishable values — safe in builds)
+          VITE_SUPABASE_URL: https://krsaqoitjivaexhepvll.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_yEjCspr-LLB4ODTFtT_ygw_PPEO-nEG
+          VITE_SUPABASE_PROJECT_ID: krsaqoitjivaexhepvll
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
