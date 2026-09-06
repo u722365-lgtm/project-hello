@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useState, useEffect } from "react";
 import LandingNavigation from "@/components/landing/LandingNavigation";
 import HeroSection from "@/components/HeroSection";
 import LandingSectionHub, { SectionHubTab } from "@/components/landing/LandingSectionHub";
@@ -36,7 +36,22 @@ const ExitIntentPrompt = lazy(() => import("@/components/landing/ExitIntentPromp
 const FreeTierViralPrompt = lazy(() => import("@/components/growth/FreeTierViralPrompt"));
 
 const Index = () => {
+  const [activeSection, setActiveSection] = useState<SectionHubTab>("services");
+  const [viewMode, setViewMode] = useState<"tabbed" | "all">("tabbed");
   const [showDeepComparisons, setShowDeepComparisons] = useState(false);
+
+  // Synchronize hash with activeSection for instant navbar deep-linking
+  useEffect(() => {
+    const handleHash = () => {
+      const hash = window.location.hash.replace("#", "");
+      if (["services", "founders", "pricing", "contact"].includes(hash)) {
+        setActiveSection(hash as SectionHubTab);
+      }
+    };
+    handleHash();
+    window.addEventListener("hashchange", handleHash);
+    return () => window.removeEventListener("hashchange", handleHash);
+  }, []);
 
   const structuredData = [
     getWebSiteSchema(),
@@ -75,38 +90,83 @@ const Index = () => {
             {/* High-Impact Hero Section */}
             <HeroSection />
 
-            {/* Section Hub: Direct Options & Quick Switcher for Services, Founders, Pricing, Contact */}
-            <LandingSectionHub />
+            {/* Section Hub: Unified Interactive Switcher for Services, Founders, Pricing, Contact */}
+            <LandingSectionHub
+              activeTab={activeSection}
+              onTabChange={(tab) => {
+                setActiveSection(tab);
+                const el = document.getElementById(tab);
+                if (el) {
+                  el.scrollIntoView({ behavior: "smooth" });
+                }
+              }}
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+            />
 
-            {/* SECTION 1: SERVICES & WORKSPACE CAPABILITIES */}
-            <div id="services" className="relative">
-              <Suspense fallback={<div className="py-12 text-center text-xs text-slate-500">Loading services...</div>}>
-                <WhatIsShadowTalk />
-                <UseCaseWedgesSection />
-              </Suspense>
-            </div>
+            {/* Dynamic Modular Section Display: In default Tabbed Mode, only 1 section is shown to eliminate endless scrolling */}
+            {viewMode === "tabbed" ? (
+              <div className="relative min-h-[350px]">
+                {/* SECTION 1: SERVICES */}
+                {activeSection === "services" && (
+                  <div id="services" className="relative">
+                    <Suspense fallback={<div className="py-12 text-center text-xs text-slate-500">Loading services...</div>}>
+                      <WhatIsShadowTalk />
+                    </Suspense>
+                  </div>
+                )}
 
-            {/* SECTION 2: ABOUT US & FOUNDERS SPOTLIGHT (Zain Ahmed & Fatima) */}
-            <div id="founders" className="relative">
-              <Suspense fallback={<div className="py-12 text-center text-xs text-slate-500">Loading founders...</div>}>
-                <FounderSpotlightSection />
-              </Suspense>
-            </div>
+                {/* SECTION 2: ABOUT US & FOUNDERS SPOTLIGHT */}
+                {activeSection === "founders" && (
+                  <div id="founders" className="relative">
+                    <Suspense fallback={<div className="py-12 text-center text-xs text-slate-500">Loading founders...</div>}>
+                      <FounderSpotlightSection />
+                    </Suspense>
+                  </div>
+                )}
 
-            {/* SECTION 3: TRANSPARENT PRICING & TIERS */}
-            <div id="pricing" className="relative">
-              <Suspense fallback={<div className="py-12 text-center text-xs text-slate-500">Loading pricing...</div>}>
-                <PricingSection />
-              </Suspense>
-            </div>
+                {/* SECTION 3: TRANSPARENT PRICING & TIERS */}
+                {activeSection === "pricing" && (
+                  <div id="pricing" className="relative">
+                    <Suspense fallback={<div className="py-12 text-center text-xs text-slate-500">Loading pricing...</div>}>
+                      <PricingSection />
+                    </Suspense>
+                  </div>
+                )}
 
-            {/* SECTION 4: CONTACT DETAILS & 24/7 SUPPORT */}
-            <div id="contact" className="relative">
-              <LandingContactSection />
-              <Suspense fallback={null}>
-                <FAQSection />
-              </Suspense>
-            </div>
+                {/* SECTION 4: CONTACT DETAILS & 24/7 SUPPORT */}
+                {activeSection === "contact" && (
+                  <div id="contact" className="relative">
+                    <LandingContactSection />
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* All 4 Modular Sections (Rendered if visitor toggles View All) */
+              <div className="relative space-y-4">
+                <div id="services" className="relative">
+                  <Suspense fallback={<div className="py-12 text-center text-xs text-slate-500">Loading services...</div>}>
+                    <WhatIsShadowTalk />
+                  </Suspense>
+                </div>
+
+                <div id="founders" className="relative">
+                  <Suspense fallback={<div className="py-12 text-center text-xs text-slate-500">Loading founders...</div>}>
+                    <FounderSpotlightSection />
+                  </Suspense>
+                </div>
+
+                <div id="pricing" className="relative">
+                  <Suspense fallback={<div className="py-12 text-center text-xs text-slate-500">Loading pricing...</div>}>
+                    <PricingSection />
+                  </Suspense>
+                </div>
+
+                <div id="contact" className="relative">
+                  <LandingContactSection />
+                </div>
+              </div>
+            )}
 
             {/* Optional Deep-Dive Expander for Users who want in-depth competitive benchmarks */}
             <div className="py-8 px-4 text-center border-t border-white/5 bg-slate-950/30">

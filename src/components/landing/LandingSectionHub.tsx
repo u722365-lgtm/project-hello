@@ -28,11 +28,17 @@ export type SectionHubTab = "services" | "founders" | "pricing" | "contact";
 interface LandingSectionHubProps {
   activeTab?: SectionHubTab;
   onTabChange?: (tab: SectionHubTab) => void;
+  viewMode?: "tabbed" | "all";
+  onViewModeChange?: (mode: "tabbed" | "all") => void;
+  showPreviewPanels?: boolean;
 }
 
 export const LandingSectionHub = ({
   activeTab: controlledTab,
   onTabChange,
+  viewMode = "tabbed",
+  onViewModeChange,
+  showPreviewPanels = false,
 }: LandingSectionHubProps) => {
   const [internalTab, setInternalTab] = useState<SectionHubTab>("services");
   const [copiedEmail, setCopiedEmail] = useState(false);
@@ -199,9 +205,55 @@ export const LandingSectionHub = ({
           </button>
         </div>
 
-        {/* Tab Content Panels */}
-        <div className="rounded-3xl border border-white/15 bg-slate-900/70 backdrop-blur-2xl p-5 sm:p-8 shadow-2xl relative">
-          <AnimatePresence mode="wait">
+        {/* Controls Bar: Compact Tabbed View vs All Sections */}
+        <div className="flex items-center justify-between flex-wrap gap-3 mb-4 px-1">
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-xs text-slate-300 font-medium">
+              {viewMode === "tabbed"
+                ? `Active Focus: ${
+                    activeTab === "services"
+                      ? "01 Services & AI Tools"
+                      : activeTab === "founders"
+                      ? "02 Founders (Zain Ahmed & Fatima)"
+                      : activeTab === "pricing"
+                      ? "03 Membership Plans & Pricing"
+                      : "04 Contact Details & Support"
+                  }`
+                : "Showing All 4 Modular Sections"}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1.5 p-1 rounded-full bg-slate-900/80 border border-white/10 text-xs">
+            <button
+              type="button"
+              onClick={() => onViewModeChange?.("tabbed")}
+              className={`px-3 py-1 rounded-full transition-all cursor-pointer font-medium ${
+                viewMode === "tabbed"
+                  ? "bg-cyan-500 text-black shadow-sm"
+                  : "text-slate-400 hover:text-white"
+              }`}
+            >
+              Compact Tabbed (Fast)
+            </button>
+            <button
+              type="button"
+              onClick={() => onViewModeChange?.("all")}
+              className={`px-3 py-1 rounded-full transition-all cursor-pointer font-medium ${
+                viewMode === "all"
+                  ? "bg-purple-500 text-white shadow-sm"
+                  : "text-slate-400 hover:text-white"
+              }`}
+            >
+              View All
+            </button>
+          </div>
+        </div>
+
+        {/* Tab Content Panels (Rendered when showPreviewPanels is enabled) */}
+        {showPreviewPanels && (
+          <div className="rounded-3xl border border-white/15 bg-slate-900/70 backdrop-blur-2xl p-5 sm:p-8 shadow-2xl relative">
+            <AnimatePresence mode="wait">
             {/* PANEL 1: SERVICES */}
             {activeTab === "services" && (
               <motion.div
@@ -646,6 +698,7 @@ export const LandingSectionHub = ({
             )}
           </AnimatePresence>
         </div>
+        )}
       </div>
     </section>
   );
