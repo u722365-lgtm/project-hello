@@ -74,96 +74,92 @@ const LandingNavigation = ({ children }: LandingNavigationProps) => {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 pt-4 sm:pt-6 px-3 sm:px-4 pointer-events-none flex justify-center">
+      <header className="fixed top-0 left-0 right-0 z-50 pt-3 sm:pt-5 px-3 sm:px-6 pointer-events-none flex justify-center">
         <motion.div
           initial={{ y: -50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ type: 'spring', stiffness: 100, damping: 20 }}
-          className={`pointer-events-auto flex items-center justify-between transition-all duration-500 ease-out 
-            w-full max-w-[880px] ${
+          transition={{ type: 'spring', stiffness: 120, damping: 22 }}
+          className={`pointer-events-auto flex items-center justify-between transition-all duration-300 ease-out 
+            w-full max-w-[940px] ${
               scrolled
-                ? 'shadow-[0_8px_32px_rgba(31,38,135,0.37)] bg-slate-900/80'
-                : 'shadow-[0_4px_24px_rgba(0,0,0,0.3)] bg-slate-900/60'
+                ? 'shadow-[0_12px_36px_rgba(0,0,0,0.5)] bg-slate-900/90 border-white/15'
+                : 'shadow-[0_8px_30px_rgba(0,0,0,0.35)] bg-slate-900/75 border-white/10'
             }
-            rounded-full backdrop-blur-2xl border border-white/10 p-2 pl-3 sm:pl-4 pr-2 sm:pr-3`}
+            rounded-full backdrop-blur-2xl border px-3 sm:px-5 py-2 gap-3`}
         >
           {/* Logo Section */}
-          <a href="/" className="flex items-center gap-2.5 sm:gap-3 group">
-            <div className="relative flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-slate-900 border border-white/10 shadow-inner group-hover:scale-105 transition-transform duration-300">
-              <ChatbotLogo size={22} className="relative z-10" />
+          <a href="/" className="flex items-center gap-2.5 sm:gap-3 shrink-0 whitespace-nowrap select-none group mr-2">
+            <div className="relative flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-slate-950 border border-white/15 shadow-inner group-hover:scale-105 transition-transform shrink-0">
+              <ChatbotLogo size={20} className="relative z-10" />
             </div>
-            <span className="text-base sm:text-lg font-bold tracking-widest text-white uppercase">
+            <span className="text-sm sm:text-base font-bold tracking-widest text-white uppercase shrink-0 whitespace-nowrap">
               ShadowTalk
             </span>
           </a>
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-6" aria-label="Main navigation">
+          {/* Desktop Navigation Links — Shown on wider displays with ample breathing room */}
+          <nav className="hidden xl:flex items-center gap-5 shrink-0 mx-2" aria-label="Main navigation">
             <a
               href="#services"
-              className="text-xs font-semibold uppercase tracking-wider text-slate-300 hover:text-cyan-400 transition-colors"
+              className="text-xs font-semibold uppercase tracking-wider text-slate-300 hover:text-cyan-400 transition-colors shrink-0 whitespace-nowrap px-1.5 py-1"
             >
               Services
             </a>
-            <div className="h-3 w-px bg-slate-700/50" />
+            <div className="h-3 w-px bg-slate-700/60 shrink-0" />
             <a
               href="#founders"
-              className="text-xs font-semibold uppercase tracking-wider text-slate-300 hover:text-purple-400 transition-colors"
+              className="text-xs font-semibold uppercase tracking-wider text-slate-300 hover:text-purple-400 transition-colors shrink-0 whitespace-nowrap px-1.5 py-1"
             >
-              About / Founders
+              Founders
             </a>
-            <div className="h-3 w-px bg-slate-700/50" />
+            <div className="h-3 w-px bg-slate-700/60 shrink-0" />
             <a
               href="#pricing"
-              className="text-xs font-semibold uppercase tracking-wider text-slate-300 hover:text-cyan-400 transition-colors"
+              className="text-xs font-semibold uppercase tracking-wider text-slate-300 hover:text-emerald-400 transition-colors shrink-0 whitespace-nowrap px-1.5 py-1"
             >
               Pricing
             </a>
-            <div className="h-3 w-px bg-slate-700/50" />
+            <div className="h-3 w-px bg-slate-700/60 shrink-0" />
             <a
               href="#contact"
-              className="text-xs font-semibold uppercase tracking-wider text-slate-300 hover:text-pink-400 transition-colors"
+              className="text-xs font-semibold uppercase tracking-wider text-slate-300 hover:text-pink-400 transition-colors shrink-0 whitespace-nowrap px-1.5 py-1"
             >
               Contact
             </a>
           </nav>
 
-          {/* Action Group: 3-Bar Menu Toggle + Open App Button */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          {/* Action Group: Open App Button + 3-Bar Menu Toggle */}
+          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 whitespace-nowrap ml-auto">
             {/* Primary Open App Button */}
-            <motion.a
-              href="/chatbot"
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              className="group relative inline-flex items-center gap-1.5 sm:gap-2 overflow-hidden rounded-full p-[1px]"
+            <Link
+              to="/chatbot"
+              className="group relative inline-flex items-center gap-1.5 overflow-hidden rounded-full p-[1px] shrink-0 whitespace-nowrap"
             >
-              <span className="absolute inset-0 bg-gradient-to-r from-cyan-400 via-purple-500 to-blue-500 opacity-80" />
-              <span className="relative flex h-full w-full items-center gap-1.5 sm:gap-2 rounded-full bg-gradient-to-r from-cyan-500/80 to-purple-500/80 backdrop-blur-md px-3.5 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold text-white transition-colors hover:from-cyan-400/90 hover:to-purple-400/90">
-                Open App
-                <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1" />
+              <span className="absolute inset-0 bg-gradient-to-r from-cyan-400 via-purple-500 to-blue-500 opacity-80 group-hover:opacity-100 transition-opacity" />
+              <span className="relative flex items-center gap-1.5 rounded-full bg-gradient-to-r from-cyan-500/90 to-purple-500/90 backdrop-blur-md px-3.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold text-white transition-all hover:from-cyan-400 hover:to-purple-400 whitespace-nowrap shrink-0 shadow-md">
+                <span className="whitespace-nowrap">Open App</span>
+                <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1 shrink-0" />
               </span>
-            </motion.a>
+            </Link>
 
             {/* Prominent Three-Bar (Hamburger) Navigation Button */}
-            <motion.button
+            <button
               type="button"
               onClick={() => setDrawerOpen(true)}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="flex items-center gap-1.5 px-3 py-1.5 sm:py-2 rounded-full bg-slate-800/80 hover:bg-slate-700/90 border border-white/15 text-slate-200 hover:text-white transition-all shadow-md group cursor-pointer"
+              className="flex items-center gap-2 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-full bg-slate-800/90 hover:bg-slate-700/90 border border-white/15 text-slate-200 hover:text-white transition-all shadow-md group cursor-pointer shrink-0 whitespace-nowrap"
               aria-label="Open navigation menu (Services, Founders, Contact, Pricing)"
               title="Open Navigation Menu"
             >
               {/* Animated 3 bars */}
-              <div className="flex flex-col justify-center items-center gap-[3px] w-4 h-4">
+              <div className="flex flex-col justify-center items-center gap-[3px] w-4 h-3.5 shrink-0">
                 <span className="w-3.5 h-[2px] bg-cyan-400 rounded-full group-hover:w-4 transition-all" />
                 <span className="w-4 h-[2px] bg-purple-400 rounded-full" />
                 <span className="w-2.5 h-[2px] bg-pink-400 rounded-full group-hover:w-4 transition-all" />
               </div>
-              <span className="text-xs font-semibold tracking-wide hidden sm:inline text-slate-200 group-hover:text-white">
+              <span className="text-xs font-semibold tracking-wide text-slate-200 group-hover:text-white shrink-0 whitespace-nowrap">
                 Menu
               </span>
-            </motion.button>
+            </button>
           </div>
         </motion.div>
 

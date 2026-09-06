@@ -62,10 +62,7 @@ const HeroSection = () => {
             {BRAND.heroSubtitle}
           </p>
 
-          <div className="mb-8 sm:mb-10 min-h-[2rem] flex justify-center px-2">
-            <p className="text-sm sm:text-base font-medium text-foreground/90">{BRAND_HOOKS[0] ?? 'ShadowTalk AI'}</p>
-          </div>
-
+          {/* Value Highlights */}
           <div className="mb-3 w-full max-w-2xl mx-auto px-2">
             <div className="glass-subtle rounded-xl border border-success/25 bg-success/5 px-4 py-2.5 text-sm sm:text-center">
               <span className="font-semibold text-success">Early access pricing now:</span>
@@ -105,14 +102,14 @@ const HeroSection = () => {
               <Button
                 variant="outline"
                 size="lg"
-                className="text-base sm:text-lg px-5 sm:px-6 py-5 sm:py-6 border-border/60 bg-card/40 hover:border-primary/40 hover:bg-card/60 rounded-xl w-full sm:w-auto gap-2 group"
-                onClick={() => openCommandPalette()}
+                className="text-base sm:text-lg px-5 sm:px-6 py-5 sm:py-6 border-border/60 bg-card/40 hover:border-cyan-500/40 hover:bg-card/60 rounded-xl w-full sm:w-auto gap-2 group"
+                onClick={() => {
+                  document.getElementById("sections-hub")?.scrollIntoView({ behavior: "smooth" });
+                }}
               >
-                <Search className="h-4 w-4 text-primary group-hover:scale-110 transition-transform" />
-                <span>Search Pages</span>
-                <kbd className="hidden sm:inline-flex items-center gap-0.5 bg-muted/60 text-muted-foreground text-xs px-1.5 py-0.5 rounded border border-border/40 font-mono">
-                  Ctrl+K
-                </kbd>
+                <Target className="h-4 w-4 text-cyan-400 group-hover:scale-110 transition-transform" />
+                <span>Explore Sections</span>
+                <span className="text-xs text-muted-foreground font-mono">↓</span>
               </Button>
             </div>
           </div>
