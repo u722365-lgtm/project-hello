@@ -19,11 +19,11 @@ describe("Landing Page Modularization & 3-Bar Navigation Verification", () => {
     expect(content).toContain("setDrawerOpen");
     expect(content).toContain("aria-label=\"Open navigation menu");
 
-    // All 4 required categories in drawer
-    expect(content).toContain("1. Services & AI Tools");
-    expect(content).toContain("2. About Us / Founders");
-    expect(content).toContain("3. Pricing & Access");
-    expect(content).toContain("4. Contact Details & Support");
+    // All 4 required categories in navigation hub
+    expect(content).toContain("Services & AI Tools");
+    expect(content).toContain("About Us / Founders");
+    expect(content).toContain("Pricing & Access");
+    expect(content).toContain("Contact Details & Support");
 
     // Founder and Co-founder links in drawer
     expect(content).toContain('to="/founder"');
