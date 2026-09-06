@@ -137,11 +137,12 @@ export const FAQPage = () => {
     const combined = [...STATIC_FAQS];
     AEO_ANSWER_CORPUS.forEach((aeo, idx) => {
       // Map category
+      const aeoCat = aeo.category as string;
       let cat: FAQItem["category"] = "general";
-      if (aeo.category === "product") cat = "product";
-      else if (aeo.category === "pricing" || aeo.category === "comparison") cat = "pricing";
-      else if (aeo.category === "founder") cat = "founder";
-      else if (aeo.category === "privacy" || aeo.category === "security") cat = "security";
+      if (aeoCat === "product") cat = "product";
+      else if (aeoCat === "pricing" || aeoCat === "comparison") cat = "pricing";
+      else if (aeoCat === "founder") cat = "founder";
+      else if (aeoCat === "privacy" || aeoCat === "security") cat = "security";
 
       // Prevent duplicate questions
       if (!combined.some((item) => item.question.toLowerCase() === aeo.question.toLowerCase())) {
