@@ -43,7 +43,6 @@ import {
   COFOUNDER_CITATION,
   COFOUNDER_STORY_CHAPTERS,
 } from "@/lib/cofounderIdentity";
-import fatimaImage from "@/assets/fatima-cofounder.jpg";
 import { toast } from "sonner";
 
 const FATIMA_FAQS = [
@@ -295,7 +294,7 @@ const FatimaPage = () => {
               </div>
             </motion.div>
 
-            {/* Right Column: Interactive 3D Co-Founder Portrait */}
+            {/* Right Column: Interactive 3D Systems Console Card */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -310,52 +309,56 @@ const FatimaPage = () => {
                 className="relative w-full max-w-[390px] aspect-square rounded-3xl p-1 group"
               >
                 {/* Glow ring */}
-                <div className="absolute -inset-1 rounded-[28px] bg-gradient-to-r from-accent/30 via-primary/30 to-accent/30 blur-xl opacity-50 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="absolute -inset-1 rounded-[28px] bg-gradient-to-r from-accent/30 via-primary/30 to-accent/30 blur-xl opacity-60 group-hover:opacity-100 transition-opacity duration-500" />
 
                 <motion.div
                   style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
-                  className="relative w-full h-full rounded-2xl overflow-hidden border border-accent/30 bg-card shadow-2xl"
+                  className="relative w-full h-full rounded-2xl overflow-hidden border border-accent/30 bg-card/95 shadow-2xl p-6 sm:p-7 flex flex-col justify-between"
                 >
-                  <img
-                    src={fatimaImage}
-                    alt={`${COFOUNDER_FULL_NAME} — Co-Founder of ShadowTalk AI`}
-                    className="w-full h-full object-cover object-center scale-[1.02] group-hover:scale-105 transition-transform duration-700 ease-out"
-                  />
-
-                  {/* Gradient overlays */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent pointer-events-none" />
-
-                  {/* Top Floating Badge */}
-                  <div className="absolute top-4 left-4 right-4 flex justify-between items-center pointer-events-none">
-                    <span className="glass-strong border border-white/10 rounded-full px-3 py-1 text-xs font-medium text-white flex items-center gap-1.5 shadow-lg">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                      Co-Founder · Karachi
-                    </span>
-                    <span className="glass-strong border border-white/10 rounded-full px-2.5 py-1 text-[11px] font-bold text-accent flex items-center gap-1">
+                  {/* Top Bar with Status */}
+                  <div className="flex justify-between items-center pb-4 border-b border-border/40">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-red-500/80" />
+                      <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
+                      <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
+                      <span className="text-[11px] font-mono text-muted-foreground ml-1">fatima.systems.ts</span>
+                    </div>
+                    <span className="glass-strong border border-white/10 rounded-full px-2.5 py-0.5 text-[11px] font-bold text-accent flex items-center gap-1">
                       <Star className="h-3 w-3 fill-accent text-accent" />
                       2nd Core Dev
                     </span>
                   </div>
 
-                  {/* Bottom Status Card */}
-                  <motion.div
-                    animate={{ y: [0, -4, 0] }}
-                    transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
-                    className="absolute bottom-5 left-5 right-5 glass-strong border border-border/50 rounded-xl p-4 shadow-xl backdrop-blur-xl"
-                  >
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
-                        Systems Architect
-                      </span>
-                      <span className="text-[11px] font-medium text-accent">Karachi, PK</span>
+                  {/* Center Monogram & Title */}
+                  <div className="my-auto py-4 text-center">
+                    <div className="w-24 h-24 mx-auto mb-4 rounded-2xl bg-gradient-to-tr from-accent/20 via-primary/20 to-accent/30 border-2 border-accent/40 flex items-center justify-center shadow-lg relative group-hover:scale-105 transition-transform duration-300">
+                      <span className="text-4xl font-black gradient-text">FT</span>
+                      <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-400 border-2 border-background animate-pulse" />
                     </div>
-                    <p className="text-sm font-bold text-foreground">
-                      &ldquo;The interface IS the trust.&rdquo;
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Architecting client-side memory, 120fps UI, and zero-cloud resilience.
-                    </p>
-                  </motion.div>
+                    <h3 className="text-xl font-bold text-foreground">Fatima</h3>
+                    <p className="text-xs text-accent font-mono font-medium mt-0.5">Co-Founder &amp; Systems Architect</p>
+                    <p className="text-[11px] text-muted-foreground mt-1">sadaftayyaba655@gmail.com</p>
+                  </div>
+
+                  {/* Telemetry Console Snippet */}
+                  <div className="p-3.5 rounded-xl bg-background/80 border border-border/50 font-mono text-[11px] space-y-1 text-muted-foreground">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground/70">Role:</span>
+                      <span className="text-foreground font-semibold">2nd Developer</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground/70">Memory Engine:</span>
+                      <span className="text-accent font-semibold">Shadow Memory (IndexedDB)</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground/70">UI Target:</span>
+                      <span className="text-emerald-400 font-semibold">120 FPS Subtree Stream</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground/70">Origin:</span>
+                      <span className="text-foreground font-semibold">Karachi, Pakistan 🇵🇰</span>
+                    </div>
+                  </div>
                 </motion.div>
               </div>
             </motion.div>

@@ -597,12 +597,21 @@ const FounderPage = () => {
       <section className="py-16 px-4 border-t border-border/40">
         <div className="container mx-auto max-w-4xl">
           <div className="glass-strong border border-accent/30 rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center gap-8">
-            <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-2xl overflow-hidden border-2 border-accent/40 shrink-0 shadow-lg relative group">
-              <img
-                src="/fatima-cofounder.jpg"
-                alt="Fatima (Sadaf Tayyaba) — Co-Founder of ShadowTalk AI"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              />
+            {/* Co-Founder Systems Monogram (No Image Dependency) */}
+            <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-2xl border-2 border-accent/40 bg-gradient-to-br from-accent/20 via-primary/10 to-background shrink-0 shadow-xl flex flex-col items-center justify-center relative group overflow-hidden">
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(168,85,247,0.3),transparent_70%)] pointer-events-none" />
+              <div className="relative z-10 flex flex-col items-center">
+                <span className="text-3xl sm:text-4xl font-black tracking-tight text-foreground group-hover:scale-105 transition-transform duration-300">
+                  FT
+                </span>
+                <span className="text-[10px] font-mono tracking-widest text-accent font-semibold uppercase mt-1">
+                  DEV #2
+                </span>
+              </div>
+              <div className="absolute bottom-1 right-2 flex items-center gap-1 text-[9px] font-mono text-muted-foreground/80">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span>ONLINE</span>
+              </div>
             </div>
             <div className="flex-1 text-center md:text-left">
               <Badge variant="outline" className="mb-2 border-accent/40 text-accent text-xs font-semibold">

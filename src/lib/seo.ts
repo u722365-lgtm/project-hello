@@ -272,12 +272,6 @@ export function getCofounderPersonSchema() {
     jobTitle: COFOUNDER_CANONICAL.jobTitle,
     description: COFOUNDER_CANONICAL.description,
     url: COFOUNDER_CANONICAL.canonicalProfileUrl,
-    image: {
-      '@type': 'ImageObject',
-      url: 'https://www.shadowtalk-ai.com/fatima-cofounder.jpg',
-      contentUrl: 'https://www.shadowtalk-ai.com/fatima-cofounder.jpg',
-      caption: 'Fatima (Sadaf Tayyaba) — Co-Founder of ShadowTalk AI',
-    },
     email: COFOUNDER_CANONICAL.email,
     worksFor: COFOUNDER_CANONICAL.worksFor,
     knowsAbout: [...COFOUNDER_CANONICAL.knowsAbout],
@@ -594,7 +588,6 @@ export const PAGE_SEO: Record<string, PageMeta> = {
     ],
     canonical: 'https://www.shadowtalk-ai.com/fatima',
     ogType: 'profile',
-    ogImage: 'https://www.shadowtalk-ai.com/fatima-cofounder.jpg',
   },
   computer: {
     title: 'Computer Mode — In-Browser Shell',

@@ -96,4 +96,17 @@ describe("Dedicated Founder Page Verification", () => {
     const cmdSource = fs.readFileSync(cmdPalettePath, "utf-8");
     expect(cmdSource).toContain('href: "/fatima"');
   });
+
+  it("Enforces no image dependency for Fatima across FatimaPage, FounderPage, and seo", () => {
+    const fatimaSource = fs.readFileSync(path.join(pagesDir, "FatimaPage.tsx"), "utf-8");
+    expect(fatimaSource).not.toContain("<img");
+    expect(fatimaSource).not.toContain("fatima-cofounder");
+
+    const founderSource = fs.readFileSync(path.join(pagesDir, "FounderPage.tsx"), "utf-8");
+    expect(founderSource).not.toContain("fatima-cofounder");
+
+    const seoSource = fs.readFileSync(path.resolve(__dirname, "./seo.ts"), "utf-8");
+    expect(seoSource).not.toContain("fatima-cofounder");
+  });
 });
+
