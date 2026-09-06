@@ -8,6 +8,7 @@ import { ModeSelector, ChatMode } from "@/components/chat/ModeSelector";
 import { SearchHistory } from "@/components/chat/SearchHistory";
 import type { AIProvider } from "@/lib/aiProviders";
 import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 import {
   Tooltip,
@@ -186,102 +187,117 @@ export const ChatInput = ({
       <div className="relative w-full">
         {voiceBanner}
         <div className={isEmptyState ? "w-full" : "w-full px-0 py-0"}>
-          {selectedFile && (
-            <div className="mb-2 px-3">
-              <FileUpload
-                onFileSelect={onFileSelect}
-                selectedFile={selectedFile}
-                onClear={() => onFileSelect(null)}
-                disabled={isLoading}
-                variant="gemini"
-              />
-            </div>
-          )}
-
-          <div className={`shadowtalk-composer group ${isMultiLine ? "shadowtalk-composer--multiline" : ""}`}>
-            {!selectedFile && (
-              <div className="shadowtalk-composer__attach-wrap shrink-0">
+          <div className="shadowtalk-composer group relative flex flex-col justify-between w-full rounded-2xl sm:rounded-3xl border border-white/[0.12] bg-[#0c121e]/90 backdrop-blur-2xl transition-all duration-200 focus-within:border-indigo-500/50 focus-within:ring-2 focus-within:ring-indigo-500/20 shadow-[0_8px_32px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.08)]">
+            {selectedFile && (
+              <div className="p-3 pb-0">
                 <FileUpload
                   onFileSelect={onFileSelect}
                   selectedFile={selectedFile}
                   onClear={() => onFileSelect(null)}
                   disabled={isLoading}
-                  variant="composer"
+                  variant="gemini"
                 />
               </div>
             )}
 
-            <div className="relative flex-1 min-w-0">
+            {/* Top Area: Full-width Textarea with generous padding */}
+            <div className="w-full px-4 pt-3.5 pb-2">
               <Textarea
                 ref={textareaRef}
                 value={message}
                 onChange={(e) => onMessageChange(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={isListening ? "Listening..." : "Message ShadowTalk, draft a document, or generate code..."}
-                className="shadowtalk-composer__textarea w-full resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 py-2 pl-2 text-base sm:text-[15px] placeholder:text-muted-foreground/50 leading-relaxed overflow-y-auto custom-scrollbar"
+                className="w-full resize-none border-0 bg-transparent p-0 text-base sm:text-[15px] text-slate-100 placeholder:text-muted-foreground/50 leading-relaxed focus-visible:ring-0 focus-visible:ring-offset-0 custom-scrollbar min-h-[44px] max-h-[220px]"
                 disabled={isLoading}
                 rows={1}
                 aria-label="Chat message"
               />
             </div>
 
-            <div className="shadowtalk-composer__actions">
+            {/* Bottom Toolbar: Tools on Left, Actions on Right */}
+            <div className="flex items-center justify-between px-3 pb-3 pt-1 border-t border-white/[0.04]">
+              <div className="flex items-center gap-2">
+                {!selectedFile && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex items-center">
+                          <FileUpload
+                            onFileSelect={onFileSelect}
+                            selectedFile={selectedFile}
+                            onClear={() => onFileSelect(null)}
+                            disabled={isLoading}
+                            variant="composer"
+                          />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="text-xs">
+                        Attach document or image
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+                <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium text-muted-foreground/75 bg-white/[0.03] border border-white/[0.06] select-none">
+                  <Sparkles className="h-3 w-3 text-cyan-400" />
+                  <span>Quantum Studio v4.2</span>
+                </span>
+              </div>
 
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    {isLoading ? (
-                      <Button
-                        onClick={onStopGeneration}
-                        size="icon"
-                        variant="ghost"
-                        className="shadowtalk-composer__mic text-destructive hover:bg-destructive/10"
-                        aria-label="Stop generating"
-                      >
-                        <Square className="h-4 w-4 fill-current" />
-                      </Button>
-                    ) : (
-                      <Button
-                        onClick={onToggleVoice}
-                        variant="ghost"
-                        size="icon"
-                        className={`shadowtalk-composer__mic ${
-                          isListening ? "bg-primary text-primary-foreground border-primary" : ""
-                        }`}
-                        disabled={isLoading}
-                        aria-label={isListening ? "Stop voice input" : "Start voice input"}
-                        aria-pressed={isListening}
-                      >
-                        {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-                      </Button>
-                    )}
-                  </TooltipTrigger>
-                  <TooltipContent side="top" className="text-xs">
-                    {isLoading ? "Stop" : "Voice"}
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <div className="flex items-center gap-2">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      {isLoading ? (
+                        <Button
+                          onClick={onStopGeneration}
+                          size="icon"
+                          variant="ghost"
+                          className="h-8 w-8 rounded-full text-destructive hover:bg-destructive/10"
+                          aria-label="Stop generating"
+                        >
+                          <Square className="h-4 w-4 fill-current" />
+                        </Button>
+                      ) : (
+                        <Button
+                          onClick={onToggleVoice}
+                          variant="ghost"
+                          size="icon"
+                          className={cn(
+                            "h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-white/[0.08] transition-colors",
+                            isListening && "bg-primary text-primary-foreground border-primary"
+                          )}
+                          disabled={isLoading}
+                          aria-label={isListening ? "Stop voice input" : "Start voice input"}
+                          aria-pressed={isListening}
+                        >
+                          {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                        </Button>
+                      )}
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="text-xs">
+                      {isLoading ? "Stop" : "Voice input"}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
 
-              <Button
-                onClick={() => { play('send'); onSend(); }}
-                size="icon"
-                className="shadowtalk-composer__send"
-                disabled={!canSend || isLoading}
-                aria-label="Send message"
-              >
-                <Send className="h-4 w-4" />
-              </Button>
-              <ViralShareButton />
+                <Button
+                  onClick={() => { play('send'); onSend(); }}
+                  size="icon"
+                  className={cn(
+                    "h-8 w-8 rounded-full border-0 text-white transition-all duration-200 cursor-pointer shadow-md",
+                    "bg-gradient-to-r from-cyan-400 via-indigo-500 to-purple-600",
+                    "hover:scale-105 active:scale-95 hover:brightness-110",
+                    "disabled:opacity-25 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:brightness-100"
+                  )}
+                  disabled={!canSend || isLoading}
+                  aria-label="Send message"
+                >
+                  <Send className="h-3.5 w-3.5" />
+                </Button>
+              </div>
             </div>
           </div>
-
-          <p className="shadowtalk-composer__hint hidden sm:block" role="status" aria-live="polite">
-            {isLoading
-              ? "ShadowTalk is thinking… press Stop to cancel"
-              : canSend
-                ? "Enter to send · Shift+Enter for new line"
-                : "Type a message to get started · Shift+Enter for new line"}
-          </p>
         </div>
       </div>
     );

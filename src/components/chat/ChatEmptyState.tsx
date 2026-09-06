@@ -181,7 +181,7 @@ export function ChatEmptyState({
       {/* Floating Frosted-Glass Command Capsule */}
       <motion.div
         variants={staggerItem}
-        className="shadowtalk-chat-input-dock shadowtalk-chat-input-shell shadowtalk-chat-input-shell--empty w-full max-w-3xl mb-7 relative"
+        className="w-full max-w-3xl mb-7 relative px-2 sm:px-0"
         style={composerDockStyle}
       >
         {/* Subtle luminous ambient aura behind the composer */}
