@@ -333,6 +333,15 @@ export const pages: PageEntry[] = [
     keywords: ["about", "mission", "company", "privacy", "team"],
   },
   {
+    name: "Founder: Zain Ahmed",
+    href: "/founder",
+    icon: User,
+    desc: "Zain Ahmed Fahad Patel — 17-year-old founder story, Karachi roots, GIAIC, vision & contacts",
+    group: "Resources & Company",
+    badge: "Founder",
+    keywords: ["founder", "zain", "ahmed", "patel", "story", "karachi", "giaic", "zia khan", "creator", "architect"],
+  },
+  {
     name: "Product Changelog",
     href: "/changelog",
     icon: History,

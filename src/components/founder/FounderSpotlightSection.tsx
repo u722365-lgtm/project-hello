@@ -45,7 +45,7 @@ const FounderSpotlightSection = () => {
         </p>
         <div className="flex flex-wrap gap-3">
           <Button variant="default" size="sm" asChild>
-            <Link to="/zain-ahmed-fahad-patel">Founder profile</Link>
+            <Link to="/founder">Founder profile</Link>
           </Button>
           <Button variant="outline" size="sm" asChild>
             <a href={FOUNDER_SOCIAL_PROFILES.linkedin.url} rel="me noopener noreferrer" target="_blank">

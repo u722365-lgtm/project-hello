@@ -523,6 +523,29 @@ export const PAGE_SEO: Record<string, PageMeta> = {
     ogType: 'profile',
     ogImage: FOUNDER_IMAGE_URL,
   },
+  founder: {
+    title: 'Zain Ahmed Fahad Patel — Founder & Lead Architect | ShadowTalk AI',
+    description:
+      'Official founder page of Zain Ahmed Fahad Patel (Zain Ahmed), founder & lead architect of ShadowTalk AI. 17-year-old AI solutions engineer from Karachi, Pakistan.',
+    socialDescription:
+      'Meet Zain Ahmed Fahad Patel, the 17-year-old founder of ShadowTalk AI from Karachi, Pakistan. Story, vision, GIAIC background, and direct contacts.',
+    keywords: [
+      'Zain Ahmed Fahad Patel',
+      'Zain Ahmed ShadowTalk',
+      'Zain Ahmed founder',
+      'ShadowTalk AI founder',
+      'Zain Ahmed AI builder Karachi',
+      'Zain Ahmed Fahad Patel Pakistan',
+      'Zain Ahmed GIAIC',
+      'Zain Ahmed Sir Zia Khan',
+      'ShadowTalk creator',
+      'Zain Ahmed Fahad Patel LinkedIn',
+      'Zain Ahmed Fahad Patel Instagram',
+    ],
+    canonical: 'https://www.shadowtalk-ai.com/founder',
+    ogType: 'profile',
+    ogImage: FOUNDER_IMAGE_URL,
+  },
   computer: {
     title: 'Computer Mode — In-Browser Shell',
     description:

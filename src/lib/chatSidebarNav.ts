@@ -14,6 +14,7 @@ import {
   Sparkles,
   BookOpen,
   LayoutGrid,
+  User,
 } from "lucide-react";
 
 export interface ChatSidebarNavItem {
@@ -44,6 +45,7 @@ export const CHAT_SIDEBAR_NAV: ChatSidebarNavItem[] = [
   { label: "Developer API", icon: Code2, to: "/developers", section: "explore" },
   { label: "Pricing & Plans", icon: Sparkles, to: "/pricing", section: "explore" },
   { label: "Docs & Guides", icon: BookOpen, to: "/docs", section: "explore" },
+  { label: "Founder Story", icon: User, to: "/founder", section: "explore" },
 ];
 
 export const CHAT_SIDEBAR_WIDTH_EXPANDED = 268;

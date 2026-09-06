@@ -72,7 +72,7 @@ const Footer = () => {
       title: "Company",
       links: [
         { name: "About", href: "/about" },
-        { name: "Zain Ahmed Fahad Patel", href: "/zain-ahmed-fahad-patel" },
+        { name: "Founder (Zain Ahmed)", href: "/founder" },
         { name: "Press", href: "/press" },
         { name: "Careers", href: "/careers" },
         { name: "Founder Access", href: "/founder-access" },
