@@ -20,6 +20,8 @@ import { GoogleIntegrationPanel } from "@/components/chat/GoogleIntegrationPanel
 import { PerceptionDashboard } from "@/components/chat/PerceptionDashboard";
 import { UserContextPanel, type UserContext } from "@/components/chat/UserContextPanel";
 import { DeepResearchPanel } from "@/components/chat/DeepResearchPanel";
+import { DocumentGenerator } from "@/components/chat/DocumentGenerator";
+import { inferDocumentTypeFromMessage } from "@/lib/kimiDocumentGeneration";
 import { CommandPalette } from "@/components/chat/CommandPalette";
 
 const ShadowTalkLive = lazy(() =>
@@ -293,6 +295,8 @@ const ChatbotPage = () => {
   const [showMusicGenerator, setShowMusicGenerator] = useState(false);
   const [musicPrompt, setMusicPrompt] = useState("");
   const [musicAutoGenerate, setMusicAutoGenerate] = useState(false);
+  const [showDocumentGenerator, setShowDocumentGenerator] = useState(false);
+  const [documentTopic, setDocumentTopic] = useState("");
   const [showWordle, setShowWordle] = useState(false);
   const [showGoogleIntegration, setShowGoogleIntegration] = useState(false);
   const [showShadowSpectrePanel, setShowShadowSpectrePanel] = useState(false);
@@ -955,6 +959,29 @@ const ChatbotPage = () => {
         augmented = [{ role: "system", content: userMemoryContext }, ...augmented];
       }
 
+      const docTypeMatch = inferDocumentTypeFromMessage(lastUser);
+      const isDocRequest =
+        docTypeMatch ||
+        /\b(write|create|draft|generate|compose)\s+(a\s+|an\s+)?(document|report|proposal|whitepaper|business\s+plan|contract|essay|memo|sop|article|resume)\b/i.test(lastUser);
+
+      if (isDocRequest) {
+        const inferredType = docTypeMatch || "report";
+        const docDirective = `[PUBLICATION-QUALITY DOCUMENT STANDARDS]
+You are generating a world-class, publication-grade ${inferredType}.
+Structure and Content Guidelines:
+- Line 1: '# Title' (descriptive, authoritative)
+- Line 2: '*Subtitle with key scope or date*'
+- Include an '## Executive Summary' or '## Abstract'
+- Where relevant, include key metrics using [STAT: value | label] syntax (e.g. [STAT: 99.9% | Availability SLA] or [STAT: +45% | Projected ROI])
+- Use clean Markdown tables with aligned headers for data or comparisons
+- Use structured headings: ## for major sections, ### for subsections
+- Include concrete recommendations or next steps
+- Include a '## References' section if data or research is cited
+- NO throat-clearing opening (e.g. 'Sure!', 'Here is your document', 'Below is...'). Begin immediately with '# Title'.
+- Output ONLY the finished Markdown document.`;
+        augmented = [{ role: "system", content: docDirective }, ...augmented];
+      }
+
 
 
       const routerMessages = augmented.map((m) => ({
@@ -1509,6 +1536,17 @@ const ChatbotPage = () => {
           }
         : null);
 
+    if (
+      toolDetection.tool === "document_generator" &&
+      /\b(open|launch|show)\s+(the\s+)?(document\s+(studio|generator|creator)|doc\s+(studio|generator))\b/i.test(msgContent)
+    ) {
+      if (toolDetection.params?.topic) {
+        setDocumentTopic(String(toolDetection.params.topic));
+      }
+      setShowDocumentGenerator(true);
+      return;
+    }
+
     if (appIntent && appIntent.confidence >= 50) {
       const platform = appIntent.platform;
       const statusId = (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); }));
@@ -1805,7 +1843,13 @@ const ChatbotPage = () => {
       case "organize":
         setShowDataOrganizer(true);
         return;
-
+      case "document":
+      case "document-studio":
+      case "document-generator":
+        if (message.trim()) {
+          setDocumentTopic(message.trim());
+        }
+        setShowDocumentGenerator(true);
         return;
       case "uncensored-arena":
         setShowUncensoredArena(true);
@@ -2232,6 +2276,17 @@ const ChatbotPage = () => {
         }}
       />
       {showDeepResearch && <DeepResearchPanel isOpen={showDeepResearch} onClose={() => setShowDeepResearch(false)} onInsertToChat={(c) => setMessages(prev => [...prev, { id: (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })), type: 'ai', content: c, timestamp: new Date() }])} />}
+      {showDocumentGenerator && (
+        <DocumentGenerator
+          isOpen={showDocumentGenerator}
+          onClose={() => setShowDocumentGenerator(false)}
+          initialTopic={documentTopic}
+          onInsertToChat={(docContent) => {
+            insertAssistantToChat(docContent);
+            setShowDocumentGenerator(false);
+          }}
+        />
+      )}
       {showCognitiveLoop && (
         <CognitiveLoopPanel
           isOpen={showCognitiveLoop}

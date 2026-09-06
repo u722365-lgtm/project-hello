@@ -53,4 +53,8 @@ export const CHAT_COMMAND_MODAL_ACTIONS = new Set([
   "organize",
   "uncensored-arena",
   "shadow-cowork",
+  "document-studio",
+  "document-generator",
+  "document",
 ]);
+

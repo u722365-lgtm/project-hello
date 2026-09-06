@@ -17,6 +17,11 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { turboComplete } from "@/lib/turbo/turboEngine";
 import { stringifyChatBody } from "@/lib/chatRequest";
+import {
+  exportWorldClassPdf,
+  exportWorldClassWordDoc,
+  exportWorldClassMarkdown,
+} from "@/lib/worldClassDocumentExport";
 
 interface Source {
   title: string;
@@ -192,15 +197,33 @@ export const DeepResearchPanel = ({ isOpen, onClose, onInsertToChat, initialQuer
     if (!result) return;
     
     let content = `# Research Report: ${query}\n\n`;
-    content += `## Summary\n${result.summary}\n\n`;
+    content += `*Comprehensive Multi-Source Intelligence Synthesis*\n\n`;
+    content += `## Executive Summary\n${result.summary}\n\n`;
     content += `## Key Findings\n${result.keyFindings.map(f => `- ${f}`).join('\n')}\n\n`;
-    content += `## Sources\n${result.sources.map(s => `- [${s.title}](${s.url})`).join('\n')}\n`;
+    content += `## Sources & Evidence\n${result.sources.map(s => `- [${s.title}](${s.url}) — ${s.domain}`).join('\n')}\n`;
 
-    const blob = new Blob([content], { type: 'text/markdown' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `research-${Date.now()}.${format}`;
-    a.click();
+    const baseName = `research_${query.replace(/[^a-z0-9]/gi, '_').toLowerCase().slice(0, 30)}_${Date.now()}`;
+
+    if (format === "pdf") {
+      exportWorldClassPdf(content, `${baseName}.pdf`, {
+        classification: "Technical Whitepaper",
+        author: "ShadowTalk Deep Research Engine",
+        theme: "executive",
+      });
+      toast({ title: "PDF Report Downloaded" });
+    } else if (format === "docx") {
+      exportWorldClassWordDoc(content, `${baseName}.doc`, {
+        classification: "Technical Whitepaper",
+        author: "ShadowTalk Deep Research Engine",
+      });
+      toast({ title: "Word Document Downloaded" });
+    } else {
+      exportWorldClassMarkdown(content, `${baseName}.md`, {
+        classification: "Technical Whitepaper",
+        author: "ShadowTalk Deep Research Engine",
+      });
+      toast({ title: "Markdown Report Downloaded" });
+    }
   };
 
   if (!isOpen && !embedded) return null;

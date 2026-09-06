@@ -8,6 +8,7 @@ import {
   PROFESSIONAL_DOCUMENT_STANDARDS,
   polishProfessionalMarkdown,
 } from "./professionalDocument";
+import { exportWorldClassWordDoc } from "./worldClassDocumentExport";
 import { stringifyChatBody } from "@/lib/chatRequest";
 
 export type KimiDocumentType =
@@ -189,69 +190,8 @@ The output must be clean Markdown only — suitable for immediate export to Word
   return result.content || "";
 }
 
-const WORD_DOC_STYLES = `
-body { font-family: 'Georgia', 'Times New Roman', serif; font-size: 11pt; line-height: 1.6; color: #1a1a1a; max-width: 7in; margin: 1in auto; }
-h1 { font-size: 22pt; font-weight: 700; margin: 0 0 6pt; border-bottom: 1pt solid #ccc; padding-bottom: 8pt; }
-h2 { font-size: 14pt; font-weight: 700; margin: 24pt 0 8pt; color: #222; }
-h3 { font-size: 12pt; font-weight: 600; margin: 16pt 0 6pt; }
-p { margin: 0 0 10pt; text-align: justify; }
-blockquote { margin: 12pt 0; padding: 8pt 16pt; border-left: 3pt solid #666; background: #f7f7f7; color: #444; }
-table { border-collapse: collapse; width: 100%; margin: 12pt 0; font-size: 10pt; }
-th, td { border: 1pt solid #ccc; padding: 6pt 10pt; text-align: left; }
-th { background: #f0f0f0; font-weight: 600; }
-hr { border: none; border-top: 1pt solid #ddd; margin: 24pt 0; }
-ul, ol { margin: 0 0 10pt; padding-left: 24pt; }
-`;
-
 export function downloadAsWordDoc(markdown: string, filename: string): void {
-  const clean = polishProfessionalMarkdown(markdown, { tone: "professional" });
-  const escape = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  let html = "";
-  let inTable = false;
-  let tableRows: string[] = [];
-
-  const flushTable = () => {
-    if (!tableRows.length) return;
-    html += "<table>";
-    tableRows.forEach((row, i) => {
-      const cells = row.split("|").map((c) => c.trim()).filter((c) => c && !/^[-:]+$/.test(c));
-      if (!cells.length) return;
-      const tag = i === 0 ? "th" : "td";
-      html += "<tr>" + cells.map((c) => `<${tag}>${escape(c.replace(/\*\*/g, ""))}</${tag}>`).join("") + "</tr>";
-    });
-    html += "</table>";
-    tableRows = [];
-    inTable = false;
-  };
-
-  for (const line of clean.split("\n")) {
-    const t = line.trim();
-    if (t.startsWith("|")) {
-      inTable = true;
-      tableRows.push(t);
-      continue;
-    }
-    if (inTable) flushTable();
-
-    if (t.startsWith("# ")) html += `<h1>${escape(t.slice(2))}</h1>`;
-    else if (t.startsWith("## ")) html += `<h2>${escape(t.slice(3))}</h2>`;
-    else if (t.startsWith("### ")) html += `<h3>${escape(t.slice(4))}</h3>`;
-    else if (t.startsWith("> ")) html += `<blockquote>${escape(t.slice(2))}</blockquote>`;
-    else if (t === "---") html += "<hr/>";
-    else if (t === "") html += "";
-    else {
-      const body = escape(t).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\*(.+?)\*/g, "<em>$1</em>");
-      html += `<p>${body}</p>`;
-    }
-  }
-  if (inTable) flushTable();
-
-  const doc = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${WORD_DOC_STYLES}</style></head><body>${html}</body></html>`;
-  const blob = new Blob([doc], { type: "application/msword" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename.endsWith(".doc") ? filename : `${filename}.doc`;
-  a.click();
-  URL.revokeObjectURL(url);
+  exportWorldClassWordDoc(markdown, filename);
 }
+
+

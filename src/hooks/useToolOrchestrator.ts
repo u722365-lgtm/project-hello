@@ -148,6 +148,22 @@ const TOOL_PATTERNS: Array<{
     }
   },
   {
+    tool: 'document_generator',
+    patterns: [
+      /\b(open|launch|show)\s+(document\s*studio|doc\s*generator|document\s*generator)/i,
+      /\b(generate|create|write|draft|compose)\s+(a\s+|an\s+)?(document|formal\s+report|whitepaper|business\s+plan|contract|proposal|sop|memo)\b/i,
+      /\bdocument\s+(studio|forge|generator)\b/i,
+    ],
+    priority: 9,
+    autoExecute: true,
+    extractParams: (msg) => {
+      const cleaned = msg
+        .replace(/^(open|launch|show|generate|create|write|draft|compose)\s+(me\s+)?(a\s+|an\s+)?(document|formal\s+report|report|whitepaper|business\s+plan|contract|proposal|sop|memo)?\s*(about|for|on|regarding)?\s*/i, '')
+        .trim();
+      return { topic: cleaned || msg, prompt: cleaned || msg };
+    },
+  },
+  {
     tool: 'agentic_runner',
     patterns: [
       /\b(automate|run\s+agent|execute\s+workflow|multi-?step|autonomous)/i,

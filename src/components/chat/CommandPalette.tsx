@@ -115,6 +115,18 @@ export const CommandPalette = ({ open, onOpenChange, onAction }: CommandPaletteP
       badgeVariant: "default" as const,
     },
     {
+      id: "document-studio",
+      label: "Document Studio",
+      description: "Publication-grade PDF, Word, Markdown & Plain Text reports",
+      icon: <FileText className="h-4 w-4" />,
+      shortcut: "⌘D",
+      category: "AI Tools",
+      action: () => onAction("document-studio"),
+      keywords: ["document", "pdf", "word", "doc", "report", "proposal", "whitepaper", "export", "markdown", "text"],
+      badge: "World Class",
+      badgeVariant: "default" as const,
+    },
+    {
       id: "multi-model",
       label: "Multi-Model Consensus",
       description: "Query GPT + Gemini + Claude together",
