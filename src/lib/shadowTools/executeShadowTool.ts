@@ -79,7 +79,7 @@ export async function executeShadowTool(
       };
     }
 
-    case "image_editor":
+    case "image_editor" as any:
     case "image_edit" as any: {
       const imgData =
         (p.image as string) ||

@@ -5,7 +5,7 @@
  * `stream: true`, and yields incremental text through `onDelta`.
  */
 
-import { supabase } from "@/integrations/supabase/client";
+import { cloudAnonKey, cloudFunctionUrl } from "@/lib/cloudConfig";
 
 export interface CloudChatMessage {
   role: "system" | "user" | "assistant";
@@ -26,12 +26,11 @@ export interface CloudChatResult {
 }
 
 export function isCloudChatConfigured(): boolean {
-  return Boolean(import.meta.env.VITE_SUPABASE_URL);
+  return Boolean(cloudFunctionUrl("chat"));
 }
 
 function getFunctionsUrl(): string {
-  const base = (import.meta.env.VITE_SUPABASE_URL as string | undefined)?.replace(/\/+$/, "") || "";
-  return base ? `${base}/functions/v1/chat` : "";
+  return cloudFunctionUrl("chat");
 }
 
 /** Stream a chat completion from the Lovable Cloud AI edge function. */
@@ -46,7 +45,7 @@ export async function streamCloudChat(
 
   // Auth is handled outside Lovable Cloud, so there is never a Cloud session to
   // look up — skip the lookup entirely and authorize with the publishable key.
-  const anonKey = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string) || "";
+  const anonKey = cloudAnonKey();
 
   const maxRetries = 1;
   let attempt = 0;
