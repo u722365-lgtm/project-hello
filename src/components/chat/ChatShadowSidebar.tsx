@@ -7,9 +7,10 @@ import {
   Trash2,
   Archive,
   Settings,
-  Sparkles
+  Sparkles,
+  Command,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { useSettingsMotion } from "@/hooks/useSettingsMotion";
 import { settingsHapticTick } from "@/lib/settingsFeedback";
@@ -47,6 +48,16 @@ interface ChatShadowSidebarProps {
   onOpenSettings?: () => void;
 }
 
+function cleanProfileName(raw: string): string {
+  if (!raw || raw.trim() === "" || raw.toLowerCase() === "there") {
+    return "User";
+  }
+  const first = raw.trim().split(" ")[0].split("@")[0];
+  const cleaned = first.replace(/\d+$/, "");
+  const target = cleaned.length >= 2 ? cleaned : first;
+  return target.charAt(0).toUpperCase() + target.slice(1);
+}
+
 export function ChatShadowSidebar({
   userInitials,
   userDisplayName,
@@ -62,7 +73,7 @@ export function ChatShadowSidebar({
   onSelect,
   onDelete,
   onArchive,
-  onOpenSettings
+  onOpenSettings,
 }: ChatShadowSidebarProps) {
   const navigate = useNavigate();
   const { spring } = useSettingsMotion();
@@ -70,8 +81,9 @@ export function ChatShadowSidebar({
   const width = isCollapsed ? CHAT_SIDEBAR_WIDTH_COLLAPSED : CHAT_SIDEBAR_WIDTH_EXPANDED;
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
+  const formattedName = useMemo(() => cleanProfileName(userDisplayName), [userDisplayName]);
   const activeConversations = conversations.filter((c) => !isArchived(c));
-  
+
   // Grouping logic
   const grouped = activeConversations.reduce((acc, conv) => {
     const date = new Date(conv.created_at);
@@ -93,201 +105,271 @@ export function ChatShadowSidebar({
   const groupOrder = ["Today", "Yesterday", "Previous 7 Days", "Previous 30 Days", "Earlier"];
 
   return (
-    <TooltipProvider delayDuration={300}>
+    <TooltipProvider delayDuration={250}>
       <motion.aside
         animate={{ width }}
         transition={SETTINGS_SPRING}
         className={cn(
-          "shrink-0 flex flex-col relative z-30 overflow-hidden",
-          mobileDrawer ? "flex h-full min-h-0 bg-[#07090f]" : "hidden md:flex h-full min-h-0 bg-[#07090f] border-r border-cyan-500/10 backdrop-blur-xl"
+          "shrink-0 flex flex-col relative z-30 overflow-hidden select-none",
+          mobileDrawer
+            ? "flex h-full min-h-0 bg-[#070912]"
+            : "hidden md:flex h-full min-h-0 bg-[#070a12]/95 border-r border-white/[0.08] backdrop-blur-2xl shadow-[4px_0_24px_rgba(0,0,0,0.4)]"
         )}
         style={{ width }}
       >
-        {/* Top Header: Hamburger & Title */}
-        <div className="flex h-[64px] shrink-0 items-center px-4 gap-3">
+        {/* Top Header: Hamburger, Brand Title & Pro Badge */}
+        <div className="flex h-[60px] shrink-0 items-center px-3.5 gap-2.5 border-b border-white/[0.04]">
           {onToggleCollapse && !mobileDrawer && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <motion.button
                   type="button"
-                  onClick={() => { settingsHapticTick(); onToggleCollapse(); }}
-                  whileHover={{ backgroundColor: "rgba(6,182,212,0.10)" }}
+                  onClick={() => {
+                    settingsHapticTick();
+                    onToggleCollapse();
+                  }}
+                  whileHover={{ backgroundColor: "rgba(255,255,255,0.06)", scale: 1.05 }}
                   whileTap={{ scale: 0.94 }}
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-cyan-400/60 hover:text-cyan-300 transition-colors"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-slate-400 hover:text-cyan-300 transition-colors"
                 >
-                  <Menu className="h-5 w-5" />
+                  <Menu className="h-4.5 w-4.5" />
                 </motion.button>
               </TooltipTrigger>
-              <TooltipContent side="right">{isCollapsed ? "Expand" : "Collapse"}</TooltipContent>
+              <TooltipContent side="right">{isCollapsed ? "Expand sidebar" : "Collapse sidebar"}</TooltipContent>
             </Tooltip>
           )}
-          
+
           <AnimatePresence>
             {!isCollapsed && (
               <motion.div
-                initial={{ opacity: 0, x: -10 }}
+                initial={{ opacity: 0, x: -8 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -10 }}
+                exit={{ opacity: 0, x: -8 }}
                 transition={spring}
-                className="flex items-center gap-2 overflow-hidden"
+                className="flex items-center gap-2 overflow-hidden flex-1"
               >
-                <Sparkles className="h-5 w-5 text-cyan-400 shrink-0" />
-                <span className="text-[18px] font-semibold bg-gradient-to-r from-cyan-300 to-purple-300 bg-clip-text text-transparent whitespace-nowrap tracking-tight">ShadowTalk</span>
+                <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-400/20 via-indigo-500/20 to-purple-600/20 border border-cyan-500/30">
+                  <Sparkles className="h-3.5 w-3.5 text-cyan-400" />
+                </div>
+                <span className="text-[16px] font-bold bg-gradient-to-r from-white via-cyan-100 to-indigo-200 bg-clip-text text-transparent whitespace-nowrap tracking-tight">
+                  ShadowTalk
+                </span>
+                <span className="ml-auto text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/20">
+                  Pro
+                </span>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        {/* New Chat Button */}
-        <div className="px-3 pb-4 shrink-0">
+        {/* Action: New Chat Button */}
+        <div className="px-3 pt-3 pb-2 shrink-0">
           <Tooltip>
             <TooltipTrigger asChild>
               <motion.button
                 type="button"
-                onClick={() => { settingsHapticTick(); onNewChat(); }}
-                whileHover={{ backgroundColor: "rgba(6,182,212,0.15)", boxShadow: "0 0 16px rgba(6,182,212,0.15)" }}
-                whileTap={{ scale: 0.96 }}
+                onClick={() => {
+                  settingsHapticTick();
+                  onNewChat();
+                }}
+                whileHover={{
+                  scale: 1.02,
+                  boxShadow: "0 0 20px rgba(6,182,212,0.2)",
+                  borderColor: "rgba(6,182,212,0.4)",
+                }}
+                whileTap={{ scale: 0.98 }}
                 className={cn(
-                  "flex items-center rounded-2xl bg-cyan-500/10 text-cyan-300 transition-all overflow-hidden border border-cyan-500/20",
-                  isCollapsed ? "h-11 w-11 justify-center mx-auto" : "h-11 px-4 gap-3 w-full"
+                  "group relative flex items-center rounded-xl transition-all duration-200 overflow-hidden",
+                  "bg-gradient-to-r from-cyan-500/15 via-indigo-500/10 to-purple-500/15",
+                  "border border-cyan-500/30 text-cyan-200 hover:text-white",
+                  isCollapsed ? "h-10 w-10 justify-center mx-auto" : "h-10 px-3.5 gap-2.5 w-full justify-between"
                 )}
               >
-                <Plus className="h-5 w-5 shrink-0" />
-                {!isCollapsed && <span className="font-medium whitespace-nowrap text-sm">New chat</span>}
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <Plus className="h-4 w-4 shrink-0 text-cyan-400 group-hover:rotate-90 transition-transform duration-200" />
+                  {!isCollapsed && <span className="font-semibold text-[13px] whitespace-nowrap">New chat</span>}
+                </div>
+                {!isCollapsed && (
+                  <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-black/30 border border-white/10 text-[10px] text-cyan-300/70 font-mono">
+                    <Command className="h-2.5 w-2.5" />K
+                  </kbd>
+                )}
               </motion.button>
             </TooltipTrigger>
-            {isCollapsed && <TooltipContent side="right">New chat</TooltipContent>}
+            {isCollapsed && <TooltipContent side="right">New chat (⌘K)</TooltipContent>}
           </Tooltip>
         </div>
 
-        {/* Recents / History List & Navigation */}
-        <ScrollArea className="flex-1 px-2">
+        {/* Scrollable Navigation & Recents List */}
+        <ScrollArea className="flex-1 px-1.5 custom-scrollbar">
           <AnimatePresence>
-            {!isCollapsed && (
+            {!isCollapsed ? (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="pb-4"
+                className="pb-4 space-y-4"
               >
-                <div className="px-2 pb-1 shrink-0 mb-4">
+                <div className="px-1.5 shrink-0">
                   <InstalledAgentsPanel compact />
                 </div>
-                
-                {/* Main Sidebar Navigation */}
-                <div className="mb-6">
-                  <ChatSidebarNavList collapsed={isCollapsed} onItemClick={onNavigate} />
-                </div>
 
+                {/* Primary Real-Feature Navigation */}
+                <ChatSidebarNavList collapsed={isCollapsed} onItemClick={onNavigate} />
+
+                {/* Recent Chats Section */}
                 {activeConversations.length > 0 && (
-                  <div className="px-4 pb-2 text-[11px] font-medium text-cyan-500/60">
-                    Recent
+                  <div className="space-y-3 pt-2">
+                    <div className="px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-cyan-400/50">
+                      Recent Conversations
+                    </div>
+
+                    <LayoutGroup id="sidebar-history">
+                      {groupOrder.map((group) => {
+                        const items = grouped[group];
+                        if (!items?.length) return null;
+                        return (
+                          <div key={group} className="space-y-0.5">
+                            <div className="px-3 py-1 text-[10px] font-semibold text-slate-500/70">{group}</div>
+                            {items.map((conv) => {
+                              const isActive = currentConversationId === conv.id;
+                              const isHovered = hoveredId === conv.id;
+                              return (
+                                <motion.div
+                                  key={conv.id}
+                                  layout
+                                  onMouseEnter={() => setHoveredId(conv.id)}
+                                  onMouseLeave={() => setHoveredId(null)}
+                                  className="relative px-1"
+                                >
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      settingsHapticTick();
+                                      onSelect?.(conv.id);
+                                    }}
+                                    className={cn(
+                                      "relative w-full flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-left transition-all duration-150 group",
+                                      isActive
+                                        ? "bg-cyan-500/15 text-cyan-200 border border-cyan-500/30 font-medium"
+                                        : "text-slate-400 hover:text-slate-100 hover:bg-white/[0.05]"
+                                    )}
+                                  >
+                                    <MessageSquare
+                                      className={cn(
+                                        "h-3.5 w-3.5 shrink-0 transition-colors",
+                                        isActive ? "text-cyan-400" : "text-slate-500 group-hover:text-cyan-300"
+                                      )}
+                                    />
+                                    <span className="flex-1 text-[12.5px] truncate pr-4">{conv.title || "Untitled chat"}</span>
+
+                                    <div
+                                      className={cn(
+                                        "absolute right-2 flex items-center gap-1 opacity-0 transition-opacity",
+                                        (isHovered || isActive) && "opacity-100"
+                                      )}
+                                    >
+                                      <motion.button
+                                        whileHover={{ scale: 1.15 }}
+                                        whileTap={{ scale: 0.9 }}
+                                        className="p-1 rounded-md hover:bg-cyan-500/20 text-slate-400 hover:text-cyan-300 transition-colors"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          onArchive?.(conv.id);
+                                        }}
+                                        title="Archive"
+                                      >
+                                        <Archive className="h-3 w-3" />
+                                      </motion.button>
+                                      <motion.button
+                                        whileHover={{ scale: 1.15 }}
+                                        whileTap={{ scale: 0.9 }}
+                                        className="p-1 rounded-md hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition-colors"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          onDelete?.(conv.id);
+                                        }}
+                                        title="Delete"
+                                      >
+                                        <Trash2 className="h-3 w-3" />
+                                      </motion.button>
+                                    </div>
+                                  </button>
+                                </motion.div>
+                              );
+                            })}
+                          </div>
+                        );
+                      })}
+                    </LayoutGroup>
                   </div>
                 )}
-                
-                <LayoutGroup id="sidebar-history">
-                  {groupOrder.map((group) => {
-                    const items = grouped[group];
-                    if (!items?.length) return null;
-                    return (
-                      <div key={group} className="space-y-0.5 mb-4">
-                        <div className="px-4 py-1 text-[11px] font-semibold text-cyan-400/40">{group}</div>
-                        {items.map((conv) => {
-                          const isActive = currentConversationId === conv.id;
-                          const isHovered = hoveredId === conv.id;
-                          return (
-                            <motion.div
-                              key={conv.id}
-                              layout
-                              onMouseEnter={() => setHoveredId(conv.id)}
-                              onMouseLeave={() => setHoveredId(null)}
-                              className="relative px-2"
-                            >
-                              <button
-                                type="button"
-                                onClick={() => { settingsHapticTick(); onSelect?.(conv.id); }}
-                                className={cn(
-                                  "relative w-full flex items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors group",
-                                  isActive ? "bg-cyan-500/15 text-cyan-300" : "text-slate-300 hover:bg-cyan-500/10 hover:text-cyan-200"
-                                )}
-                              >
-                                <MessageSquare className={cn("h-4 w-4 shrink-0", isActive ? "text-cyan-400" : "text-slate-500")} />
-                                <span className="flex-1 text-[13px] truncate pr-4">{conv.title || "Untitled chat"}</span>
-                                
-                                <div className={cn(
-                                  "absolute right-3 flex items-center gap-1 opacity-0 transition-opacity",
-                                  (isHovered || isActive) && "opacity-100"
-                                )}>
-                                  <button
-                                    className="p-1 rounded-md hover:bg-cyan-500/20 text-cyan-500/50 hover:text-cyan-300 transition-colors"
-                                    onClick={(e) => { e.stopPropagation(); onArchive?.(conv.id); }}
-                                    title="Archive"
-                                  >
-                                    <Archive className="h-3.5 w-3.5" />
-                                  </button>
-                                  <button
-                                    className="p-1 rounded-md hover:bg-red-500/20 text-slate-500 hover:text-red-400 transition-colors"
-                                    onClick={(e) => { e.stopPropagation(); onDelete?.(conv.id); }}
-                                    title="Delete"
-                                  >
-                                    <Trash2 className="h-3.5 w-3.5" />
-                                  </button>
-                                </div>
-                              </button>
-                            </motion.div>
-                          );
-                        })}
-                      </div>
-                    );
-                  })}
-                </LayoutGroup>
               </motion.div>
+            ) : (
+              <div className="py-2">
+                <ChatSidebarNavList collapsed={isCollapsed} onItemClick={onNavigate} />
+              </div>
             )}
           </AnimatePresence>
         </ScrollArea>
 
-        {/* Bottom Nav / Settings */}
-        <div className="shrink-0 p-3 flex flex-col gap-1 mt-auto border-t border-cyan-500/10 bg-[#07090f]">
-          {/* Settings */}
+        {/* Bottom Profile & Settings Bar */}
+        <div className="shrink-0 p-2.5 flex flex-col gap-1 border-t border-white/[0.06] bg-[#070a12]/95 backdrop-blur-md">
+          {/* Settings Button */}
           <Tooltip>
             <TooltipTrigger asChild>
-              <button
+              <motion.button
                 type="button"
-                onClick={() => { settingsHapticTick(); onOpenSettings?.(); }}
+                whileHover={{ backgroundColor: "rgba(255,255,255,0.06)" }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => {
+                  settingsHapticTick();
+                  onOpenSettings ? onOpenSettings() : navigate("/settings");
+                }}
                 className={cn(
-                  "flex items-center rounded-xl text-slate-400 hover:text-cyan-300 hover:bg-cyan-500/10 transition-colors",
-                  isCollapsed ? "h-11 w-11 justify-center mx-auto" : "h-11 px-3 gap-3 w-full"
+                  "flex items-center rounded-xl text-slate-400 hover:text-cyan-300 transition-colors",
+                  isCollapsed ? "h-10 w-10 justify-center mx-auto" : "h-10 px-2.5 gap-2.5 w-full"
                 )}
               >
-                <Settings className="h-5 w-5 shrink-0" />
-                {!isCollapsed && <span className="text-sm font-medium">Settings</span>}
-              </button>
+                <Settings className="h-4 w-4 shrink-0" />
+                {!isCollapsed && <span className="text-[13px] font-medium">Settings</span>}
+              </motion.button>
             </TooltipTrigger>
             {isCollapsed && <TooltipContent side="right">Settings</TooltipContent>}
           </Tooltip>
-          
-          {/* Profile */}
+
+          {/* User Profile Card */}
           <Tooltip>
             <TooltipTrigger asChild>
-              <button
+              <motion.button
                 type="button"
-                onClick={() => { settingsHapticTick(); navigate("/profile"); onNavigate?.(); }}
+                whileHover={{ backgroundColor: "rgba(255,255,255,0.06)" }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => {
+                  settingsHapticTick();
+                  navigate("/profile");
+                  onNavigate?.();
+                }}
                 className={cn(
-                  "flex items-center rounded-xl hover:bg-cyan-500/10 transition-colors mt-1",
-                  isCollapsed ? "h-11 w-11 justify-center mx-auto" : "h-11 px-2 gap-3 w-full"
+                  "flex items-center rounded-xl transition-colors",
+                  isCollapsed ? "h-10 w-10 justify-center mx-auto" : "h-10 px-2 gap-2.5 w-full"
                 )}
               >
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-cyan-500 to-purple-600 text-[11px] font-bold text-white shadow-sm">
-                  {userInitials}
+                <div className="relative">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 to-indigo-600 text-[11px] font-bold text-white shadow-sm ring-1 ring-white/20">
+                    {userInitials || "U"}
+                  </div>
+                  <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-400 ring-2 ring-[#070a12]" />
                 </div>
                 {!isCollapsed && (
                   <div className="min-w-0 flex-1 text-left">
-                    <p className="text-[13px] font-medium text-slate-300 truncate">{userDisplayName}</p>
+                    <p className="text-[13px] font-medium text-slate-200 truncate">{formattedName}</p>
+                    <p className="text-[10px] text-cyan-400/70 truncate font-mono">Pro Plan Active</p>
                   </div>
                 )}
-              </button>
+              </motion.button>
             </TooltipTrigger>
-            {isCollapsed && <TooltipContent side="right">Profile</TooltipContent>}
+            <TooltipContent side="right">{userDisplayName || "Profile & Account"}</TooltipContent>
           </Tooltip>
         </div>
       </motion.aside>

@@ -5,12 +5,15 @@ import {
   Brain,
   Network,
   FileText,
-  Radio,
-  Workflow,
-  Code,
+  Compass,
   Plug,
-  Settings,
-  Clapperboard,
+  Shield,
+  BarChart3,
+  Lock,
+  Code2,
+  Sparkles,
+  BookOpen,
+  LayoutGrid,
 } from "lucide-react";
 
 export interface ChatSidebarNavItem {
@@ -20,20 +23,27 @@ export interface ChatSidebarNavItem {
   to: string;
   end?: boolean;
   section: "workspace" | "explore";
+  badge?: string;
 }
 
 export const CHAT_SIDEBAR_NAV: ChatSidebarNavItem[] = [
+  // Workspace section
+  { label: "Chatbot", icon: MessageSquare, to: "/chatbot", end: true, section: "workspace" },
   { label: "Home", icon: Home, to: "/home", end: true, section: "workspace" },
-  { label: "Chat", icon: MessageSquare, to: "/chatbot", end: true, section: "workspace" },
+  { label: "Workspace", icon: FileText, to: "/workspace", section: "workspace" },
+  { label: "Templates", icon: LayoutGrid, to: "/templates", section: "workspace" },
 
-  { label: "Research", icon: Network, to: "/research", section: "explore" },
-  { label: "Workspace", icon: FileText, to: "/workspace", section: "explore" },
-  { label: "Code IDE", icon: Code, to: "/ide", section: "explore" },
-  { label: "Video Studio", shortLabel: "Video", icon: Clapperboard, to: "/video-studio", section: "explore" },
-  { label: "Insights", icon: Radio, to: "/insights", section: "explore" },
-  { label: "Automations", icon: Workflow, to: "/workspace?tab=automate", section: "explore" },
-  { label: "Integrations", icon: Plug, to: "/developers", section: "explore" },
-  { label: "Settings", icon: Settings, to: "/settings", section: "explore" },
+  // Explore section — all real, active production features
+  { label: "Deep Research", icon: Compass, to: "/deep-research", section: "explore", badge: "Live" },
+  { label: "Shadow Twin", icon: Brain, to: "/shadow-twin", section: "explore" },
+  { label: "Cyber Command", icon: Shield, to: "/cyber", section: "explore" },
+  { label: "Data Insights", icon: BarChart3, to: "/data-insights", section: "explore" },
+  { label: "Knowledge Graph", icon: Network, to: "/knowledge-graph", section: "explore" },
+  { label: "Private AI Hub", icon: Lock, to: "/private-ai", section: "explore" },
+  { label: "Integrations", icon: Plug, to: "/integrations", section: "explore" },
+  { label: "Developer API", icon: Code2, to: "/developers", section: "explore" },
+  { label: "Pricing & Plans", icon: Sparkles, to: "/pricing", section: "explore" },
+  { label: "Docs & Guides", icon: BookOpen, to: "/docs", section: "explore" },
 ];
 
 export const CHAT_SIDEBAR_WIDTH_EXPANDED = 268;
