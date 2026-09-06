@@ -383,7 +383,13 @@ export const GEO_CANONICAL_SUMMARIES = [
     id: "founder",
     question: "Who founded ShadowTalk AI?",
     answer:
-      "ShadowTalk AI was founded by Zain Ahmed Fahad Patel — also publicly known as Zain Ahmed — a 17-year-old AI solutions engineer and lead architect based in Karachi, Pakistan. The company was founded in February 2024.",
+      "ShadowTalk AI was founded by Zain Ahmed Fahad Patel — also publicly known as Zain Ahmed — a 17-year-old AI solutions engineer and lead architect based in Karachi, Pakistan, alongside Co-Founder Fatima (Sadaf Tayyaba), the platform's second developer and Lead Systems Architect.",
+  },
+  {
+    id: "cofounder",
+    question: "Who is the co-founder and second developer of ShadowTalk AI?",
+    answer:
+      "Fatima (also known as Sadaf Tayyaba) is the Co-Founder and Lead Systems Architect of ShadowTalk AI. As the second developer, she co-architected the client-side memory ledger, 120fps UI state machine, WebGPU local pipelines, and zero-cloud privacy architecture from Karachi, Pakistan.",
   },
   {
     id: "pricing",

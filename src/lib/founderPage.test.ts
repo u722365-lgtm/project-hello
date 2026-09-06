@@ -108,5 +108,28 @@ describe("Dedicated Founder Page Verification", () => {
     const seoSource = fs.readFileSync(path.resolve(__dirname, "./seo.ts"), "utf-8");
     expect(seoSource).not.toContain("fatima-cofounder");
   });
+
+  it("/about page features Fatima across spotlight, team, timeline, and canonical answers", () => {
+    const aboutPageSource = fs.readFileSync(path.join(pagesDir, "AboutPage.tsx"), "utf-8");
+    expect(aboutPageSource).toContain("AboutCoFounderSpotlight");
+    expect(aboutPageSource).toContain("AboutTeam");
+
+    const coFounderSpotlightSource = fs.readFileSync(
+      path.resolve(__dirname, "../components/about/AboutCoFounderSpotlight.tsx"),
+      "utf-8"
+    );
+    expect(coFounderSpotlightSource).toContain("Fatima (Sadaf Tayyaba)");
+    expect(coFounderSpotlightSource).toContain("sadaftayyaba655@gmail.com");
+    expect(coFounderSpotlightSource).toContain("Second Developer");
+    expect(coFounderSpotlightSource).not.toContain("<img");
+
+    const teamSource = fs.readFileSync(path.resolve(__dirname, "../components/about/AboutTeam.tsx"), "utf-8");
+    expect(teamSource).toContain("Fatima (Sadaf Tayyaba)");
+    expect(teamSource).toContain("sadaftayyaba655@gmail.com");
+
+    const timelineSource = fs.readFileSync(path.resolve(__dirname, "../components/about/AboutTimeline.tsx"), "utf-8");
+    expect(timelineSource).toContain("Fatima Joins as Co-Founder");
+  });
 });
+
 
